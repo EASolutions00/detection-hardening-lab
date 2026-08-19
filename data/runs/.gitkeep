@@ -1,0 +1,11 @@
+Raw capture output goes here, one folder per run: data/runs/<run_id>/
+
+Contents of this folder are gitignored. They are too large for GitHub
+(100 MB per-file limit) and they are raw experiment data, not source code.
+
+Each run folder should hold:
+  archives.json.gz      the raw Wazuh archive export for that capture window
+  run_manifest.json     run_id, phase, change_id, harness commit, Sysmon config
+                        hash, ART commit, Wazuh version, fence timestamps, host load
+
+Derived per-event-type counts belong in data/summaries/, which IS committed.

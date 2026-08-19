@@ -1,0 +1,39 @@
+# Raw capture data. Never commit. Gigabytes per run, 101 runs planned.
+# Lives on this disk only. Summaries in data/summaries/ ARE committed.
+data/runs/*
+!data/runs/.gitkeep
+
+# Secrets. Wazuh API credentials, guest passwords, SSH keys.
+.env
+*.key
+*.pem
+secrets/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# VM and installer artifacts. Never belong in git.
+*.vmdk
+*.vmx
+*.vmsn
+*.vmem
+*.nvram
+*.iso
+*.ova
+
+# Large archives
+*.gz
+*.7z
+*.zip
+
+# Office temp files (thesis docs)
+~$*
+
+# OS junk
+Thumbs.db
+desktop.ini
+.DS_Store

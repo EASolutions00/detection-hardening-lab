@@ -1,0 +1,9 @@
+Small derived files go here and ARE committed to git.
+
+Examples:
+  cov_control_runs.csv        coefficient of variation per event type (spike Q1)
+  run_timings.csv             wall clock per run phase (spike Q2)
+  profile_<run_id>.csv        event type, count, rate per minute
+
+Rule of thumb: if it is under a few MB and a human could read it, it goes here.
+If it is a raw archive, it goes in data/runs/ and stays local.
