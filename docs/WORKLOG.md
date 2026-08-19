@@ -17,6 +17,31 @@ Next:
 
 ---
 
+## 2026-08-19 - CLAUDE.md reviewed and trimmed
+
+**Did:** Reviewed `CLAUDE.md` as an index rather than a document. Cut it from 140 lines to
+104. Removed detail that duplicated the runbook (the reasoning behind the silent-failure
+rules, the spike Q1/Q2 breakdown), the restated voice rules, and a filler `git status` block.
+Created `thesis/README.md` to hold the institutional template and the problem-to-objective
+numbering rule, which previously had no home outside `CLAUDE.md`.
+
+**Result:** All 12 internal links verified as resolving. Nothing was lost, only relocated.
+
+**Fixed while reviewing:**
+- `CLAUDE.md` said the repo is private on GitHub. It is not. `git remote -v` is empty, no
+  GitHub repo exists yet. Now reads "will be created private".
+- "end of September" had no year. Now says September 2026.
+- "gh is not installed" removed from `CLAUDE.md`. That is machine state, not project state,
+  and it is already recorded in this log below.
+
+**Kept deliberately:** the five silent-failure rules stay in `CLAUDE.md` instead of becoming
+a pointer. They have to be loaded before deciding which file to read, otherwise a VM ends up
+on E: without the runbook ever being opened.
+
+**Next:** unchanged from the entry below.
+
+---
+
 ## 2026-08-19 - Repo structure created
 
 **Did:** Turned the folder into an organized git repo. Created `docs/`, `thesis/`, `lab/`,
