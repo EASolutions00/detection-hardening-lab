@@ -17,6 +17,24 @@ Next:
 
 ---
 
+## 2026-08-19 - Reply rules made global
+
+**Did:** Created `C:\Users\Elijah\.claude\CLAUDE.md` holding the full AI rules.
+
+**Why:** The rules were only applying because they were pasted at the start of each chat.
+Nothing loaded them automatically. `~/.claude/CLAUDE.md` did not exist, there was no
+`settings.json`, no output style, and the memory directory was empty. The project CLAUDE.md
+only *linked* to `docs/AI-RULES.txt`, and a link is not a load.
+
+**Result:** Rules now load automatically in every project and every session on this machine.
+No more pasting.
+
+**Note for later:** that file is **outside this repo**, so git does not back it up and it will
+not follow you to another machine. `docs/AI-RULES.txt` is the versioned copy. Verified the two
+are identical apart from a trailing newline. If you edit one, edit both.
+
+---
+
 ## 2026-08-19 - CLAUDE.md reviewed and trimmed
 
 **Did:** Reviewed `CLAUDE.md` as an index rather than a document. Cut it from 140 lines to
