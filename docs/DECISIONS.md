@@ -8,6 +8,31 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-08-19 - T3 loses its fallback status (SigmaHQ has only 6 STP-annotated rules)
+
+**Finding:** `SigmaHQ/sigma` at commit `da9bb07` carries STP robustness tags on only **6 of
+3,783 rules (0.16%)**. See the full evidence in OPEN-QUESTIONS.md, Answered section.
+
+**Decision:** T3 can no longer be treated as the safe fallback to T1. Its Objective 5 (validate
+automated scores against the manually annotated subset with Cohen's kappa) cannot be executed on
+6 rules across 4 levels.
+
+**Why this matters now:** The plan assumed T1 primary, T3 fallback. As of this finding there is
+**no verified fallback.** If T1 fails its spike gate, the options are:
+  1. Redesign T3's validation: annotate a subset yourself with a second annotator and report
+     inter-rater agreement. This turns T3 into a partly manual study and weakens its main
+     selling point (that it validates against someone else's labels).
+  2. Switch the fallback to **T2** (severity inversion), which needs no external annotation
+     corpus. Its weakness is self-created ground truth, which is a smaller problem than having
+     no ground truth at all.
+
+**Cost if wrong:** Low to act on now, high to ignore. Knowing this in August means the fallback
+can be rebuilt calmly. Discovering it in October, after a failed T1 spike, means no time to
+recover.
+
+**Not yet decided:** which of the two paths above. This is a strategic call to make alongside
+the T1 spike result, not before it. T1 is still the primary and still the goal.
+
 ## 2026-08-19 - Repo stays private until the defense
 
 **Decision:** GitHub repo is private now. Flip to public on defense day.

@@ -7,26 +7,6 @@ Ranked by how much damage the wrong answer does.
 
 ---
 
-## 1. How many SigmaHQ rules carry a manual STP robustness annotation?
-
-**Status:** Unverified. Blocking.
-
-**Why it matters most:** T3 is your fallback if T1 fails its spike gate. T3's Objective 5
-is validating automated scores against manually annotated rules using Cohen's kappa. If
-the annotated subset is too small, kappa is not meaningful and Objective 5 fails.
-
-Right now **both** your primary and your fallback have an unverified gate. That means you
-currently have zero verified options. This is the single most important thing to fix.
-
-**How to answer:** Clone `SigmaHQ/sigma`, pin the commit, and count rules carrying the
-Summiting the Pyramid annotation field. Offline. Minutes, not days.
-
-**What a bad answer means:** T3 is not safe either. You would need a different validation
-strategy (for example, annotate a subset yourself and report inter-rater agreement with a
-second annotator), or T2 becomes the real fallback.
-
----
-
 ## 2. Does nested virtualization work for Credential Guard on this host?
 
 **Status:** Untested.
@@ -76,4 +56,28 @@ data collection starts, not after.
 
 ## Answered
 
-Nothing yet.
+### How many SigmaHQ rules carry a manual STP robustness annotation? (answered 2026-08-19)
+
+**Answer: 6 rules out of 3,783. That is 0.16%.** Effectively none.
+
+**Evidence:** Shallow-cloned `SigmaHQ/sigma` at commit `da9bb07d642a2826e89702445d32c795209ec108`
+(dated 2026-08-19). The STP annotation is a Sigma **tag** of the form `stp.<level>` inside a
+rule's `tags:` list, confirmed against the SigmaHQ tag specification. Counted rule files whose
+tags contain a real `stp.` entry.
+
+Level distribution across the 6 rules:
+
+| Tag | Count |
+|---|---|
+| stp.1u | 3 |
+| stp.1k | 1 |
+| stp.2a | 1 |
+| stp.4u | 1 |
+
+**Method note:** a naive `grep stp.` returns 19 files, but 13 of those are false hits on
+`cmstp.exe` and `chrmstp.exe`, which are Windows binaries many rules mention. The real count
+requires matching the tag line `- stp.<digit>`, not the substring `stp`.
+
+**What this means:** T3's Objective 5 as written is dead. Cohen's kappa on 6 data points
+spread across 4 different levels is not a meaningful agreement statistic. T3 is no longer a
+safe fallback without a redesigned validation strategy. See DECISIONS.md, same date.

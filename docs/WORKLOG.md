@@ -17,6 +17,26 @@ Next:
 
 ---
 
+## 2026-08-19 - Counted SigmaHQ STP annotations. Result is bad for T3.
+
+**Did:** Cloned `SigmaHQ/sigma` at commit `da9bb07`, counted rules carrying a Summiting the
+Pyramid robustness tag (`stp.<level>` in the `tags:` list).
+
+**Result:** 6 rules out of 3,783. 0.16%. Levels: stp.1u x3, stp.1k x1, stp.2a x1, stp.4u x1.
+
+**Gotcha worth remembering:** a plain `grep stp.` gave 19 files and looked survivable. 13 were
+false hits on `cmstp.exe` / `chrmstp.exe`. Always match the tag line `- stp.<digit>`, not the
+substring. If I had trusted the first number I would have called T3 safe when it is not.
+
+**Consequence:** T3's Objective 5 is not executable as written. T3 is no longer a safe fallback.
+Recorded in DECISIONS.md and moved the open question to Answered. No decision made yet on whether
+the fallback becomes "T3 with self-annotation" or "T2 instead". That waits for the T1 spike.
+
+**Next:** unchanged. T1 is still primary. But the safety net changed, so the T1 spike matters
+more than before, because a failed spike no longer has a clean landing.
+
+---
+
 ## 2026-08-19 - Reply rules made global
 
 **Did:** Created `C:\Users\Elijah\.claude\CLAUDE.md` holding the full AI rules.
