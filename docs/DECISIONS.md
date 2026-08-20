@@ -33,7 +33,24 @@ recover.
 **Not yet decided:** which of the two paths above. This is a strategic call to make alongside
 the T1 spike result, not before it. T1 is still the primary and still the goal.
 
-## 2026-08-19 - Repo stays private until the defense
+## 2026-08-19 - Repo can be public now (supersedes the private decision below)
+
+**Decision:** The repo can be public from the start. No need to wait for the defense.
+
+**Why:** The professor confirmed two things. There are no intellectual property rules that
+stop a student publishing thesis work early. And there is no similarity-check problem: a
+match between the final paper and the student's own public repo is not treated as an issue.
+
+This removes both reasons the earlier entry gave for staying private.
+
+**Still true, separate point:** the repo has no code yet. It is not a strong portfolio piece
+until the harness exists. Being public early does not harm this, because the value of a public
+repo is the commit history built over time. Publishing now starts that history and also backs
+up the work off the single local disk.
+
+**Cost if wrong:** Low. A public repo can be made private again at any time.
+
+## 2026-08-19 - Repo stays private until the defense (SUPERSEDED, see entry above)
 
 **Decision:** GitHub repo is private now. Flip to public on defense day.
 **Why:** Three unsubmitted thesis proposals in a public repo is an academic integrity and

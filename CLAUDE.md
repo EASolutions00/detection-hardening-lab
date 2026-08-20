@@ -105,5 +105,7 @@ Recorded, not remembered.
 
 ## Git
 
-Repo will be created **private**, then made public on defense day. Reason and cost are in
-[DECISIONS.md](docs/DECISIONS.md). No remote is configured yet.
+Repo can be **public from the start.** The professor confirmed no IP rule and no
+similarity-check problem. Reason and cost are in [DECISIONS.md](docs/DECISIONS.md).
+No remote is configured yet, and `gh` is not installed, so create the repo on the GitHub
+website and add the remote by hand.
