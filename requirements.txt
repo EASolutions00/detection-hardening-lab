@@ -1,0 +1,13 @@
+# Python dependencies for the harness and analysis code.
+# Versions are NOT pinned yet. No code exists (see src/README.md).
+# Pin exact versions when the harness is written, and record the pins in
+# docs/DECISIONS.md, per rule 2 in CLAUDE.md.
+#
+# Install into the venv:
+#   .venv/Scripts/python.exe -m pip install -r requirements.txt
+
+lxml            # parse Windows event XML and Wazuh XML rules
+pyyaml          # parse Sigma YAML rules
+networkx        # dependency graphs (event-rule-technique index; T2 rule graph)
+scikit-learn    # Cohen's kappa and metrics
+pandas          # event profiles, summaries, CSV output

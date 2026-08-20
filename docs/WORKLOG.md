@@ -17,6 +17,43 @@ Next:
 
 ---
 
+## 2026-08-19 - Runbook Phase 0 checks. Mostly pass, one flag.
+
+**Did:** Ran the Phase 0 readiness checks on the host.
+
+**Results:**
+| Check | Result |
+|---|---|
+| F: free space (need 350 GB) | PASS. 732 GB free. |
+| C: free space | 315 GB free. |
+| AMD SVM virtualization in firmware | PASS. VirtualizationFirmwareEnabled = True. |
+| Python 3.11+ on C: | PASS. Python 3.13.14 at C:\Program Files\Python313. |
+| VMware Workstation | PASS. 17.5.1 build-23298084 (matches blueprint pin). |
+| vmrun works | PASS. `vmrun -T ws list` returned "Total running VMs: 0". |
+| ISOs present | PASS. In E:\Homelab files (see paths below). |
+| Python venv created | NOT DONE YET. |
+
+**vmrun path:** `C:\Program Files (x86)\VMware\VMware Workstation\vmrun.exe`
+
+**ISO choices (in E:\Homelab files):**
+- SIEM-01 (Ubuntu LTS): `ubuntu-24.04.4-live-server-amd64.iso`. 24.04 LTS, which Wazuh supports.
+- WIN-EP-01 (Windows): `Windows 11 Enterprise Eval 26200.6584...25h2...CLIENTENTERPRISEEVAL`. The
+  evaluation edition the runbook asks for.
+
+**FLAG worth a decision before the spike:** `HypervisorPresent = True`. A Windows hypervisor
+(VBS/Memory Integrity, WSL2, or Hyper-V) is running. VMware still works, but sharing the machine
+with the Windows hypervisor can add timing changes. T1 measures timing variance, so this is a
+variance source to consider removing before the spike. Not blocking. Linked to OPEN-QUESTIONS
+item on nested virtualization. Do not change it without recording the before/after.
+
+**Also noted:** the host has other virtualization tools present (Proxmox, TrueNAS, OPNsense ISOs;
+other homelab folders). Our whole plan assumes VMware Workstation + vmrun. If the plan ever moves
+to Proxmox, the harness (which calls vmrun) has to be rewritten. Sticking with VMware.
+
+**Next:** decide on the Python venv location, then Phase 1 (virtual networks).
+
+---
+
 ## 2026-08-19 - Repo published to GitHub, public
 
 **Did:** Professor cleared publishing (no IP rule, no similarity-check problem). Installed
