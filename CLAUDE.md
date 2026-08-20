@@ -105,7 +105,7 @@ Recorded, not remembered.
 
 ## Git
 
-Repo can be **public from the start.** The professor confirmed no IP rule and no
-similarity-check problem. Reason and cost are in [DECISIONS.md](docs/DECISIONS.md).
-No remote is configured yet, and `gh` is not installed, so create the repo on the GitHub
-website and add the remote by hand.
+**Live and public** at https://github.com/EASolutions00/detection-hardening-lab
+The professor confirmed no IP rule and no similarity-check problem. Reason and cost are in
+[DECISIONS.md](docs/DECISIONS.md). `gh` is installed and logged in as EASolutions00, so
+`git push` and `gh` commands work directly.

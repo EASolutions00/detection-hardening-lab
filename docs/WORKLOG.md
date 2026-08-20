@@ -17,6 +17,25 @@ Next:
 
 ---
 
+## 2026-08-19 - Repo published to GitHub, public
+
+**Did:** Professor cleared publishing (no IP rule, no similarity-check problem). Installed
+GitHub CLI (`gh` 2.97.0) via winget. User logged in as EASolutions00. Created the public repo
+and pushed all commits.
+
+**Result:** Live at https://github.com/EASolutions00/detection-hardening-lab (public, 6 commits).
+`gh` is now installed and authenticated, so future pushes work directly from the Bash tool.
+
+**Note:** `gh` lives at `C:\Program Files\GitHub CLI`. If a shell cannot find it, add that to
+PATH for the session: `export PATH="$PATH:/c/Program Files/GitHub CLI"`.
+
+**Still open:** no LICENSE file yet. Add one (MIT or Apache 2.0) before pointing anyone at the
+repo, so the "usable by small companies" claim in the proposals is legally true.
+
+**Next:** start the lab. Runbook Phase 0.
+
+---
+
 ## 2026-08-19 - Counted SigmaHQ STP annotations. Result is bad for T3.
 
 **Did:** Cloned `SigmaHQ/sigma` at commit `da9bb07`, counted rules carrying a Summiting the
