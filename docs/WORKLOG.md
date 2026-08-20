@@ -40,11 +40,11 @@ Next:
 - WIN-EP-01 (Windows): `Windows 11 Enterprise Eval 26200.6584...25h2...CLIENTENTERPRISEEVAL`. The
   evaluation edition the runbook asks for.
 
-**FLAG worth a decision before the spike:** `HypervisorPresent = True`. A Windows hypervisor
-(VBS/Memory Integrity, WSL2, or Hyper-V) is running. VMware still works, but sharing the machine
-with the Windows hypervisor can add timing changes. T1 measures timing variance, so this is a
-variance source to consider removing before the spike. Not blocking. Linked to OPEN-QUESTIONS
-item on nested virtualization. Do not change it without recording the before/after.
+**FLAG worth a decision before the spike:** `HypervisorPresent = True`. RESOLVED same day, see
+the entry above dated 2026-08-19 "Runbook Phase 0 cont." and DECISIONS.md. Cause was the Hyper-V
+feature (not a security feature). Turned it off with `bcdedit /set hypervisorlaunchtype off` and
+rebooted. Verified HypervisorPresent = False, VBS = 0, vmrun still works. Host now runs VMware
+natively, before any VM was built, which is the correct time to make this change.
 
 **Also noted:** the host has other virtualization tools present (Proxmox, TrueNAS, OPNsense ISOs;
 other homelab folders). Our whole plan assumes VMware Workstation + vmrun. If the plan ever moves

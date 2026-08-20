@@ -8,6 +8,27 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-08-19 - Windows hypervisor turned off (host runs VMware natively)
+
+**Decision:** Disabled the Windows hypervisor with `bcdedit /set hypervisorlaunchtype off`,
+then rebooted. Verified: HypervisorPresent went True to False, VBS status went 2 to 0, vmrun
+still works.
+
+**Why:** Phase 0 found a Windows hypervisor running. The cause was the Hyper-V feature, not any
+security feature (Memory Integrity off, Credential Guard off, EnableVirtualizationBasedSecurity=0,
+no Docker, no WSL2). Two reasons to turn it off:
+  1. VMware now runs directly on the hardware. Sharing the machine with the Windows hypervisor
+     can add timing changes, and T1 measures timing variance. This removes that variance source.
+  2. Hardening change #8 (Credential Guard) needs nested virtualization inside the guest. VMware
+     exposes that more reliably when the host hypervisor is off.
+
+**Cost if wrong / how to reverse:** `bcdedit /set hypervisorlaunchtype auto` then reboot. This
+also disables Docker Desktop, WSL2, and host Credential Guard while off, but none of those are
+in use here.
+
+**Must stay off for the whole experiment.** Changing this mid-experiment changes timing and
+invalidates prior runs. It is now part of the host baseline, same status as a pinned version.
+
 ## 2026-08-19 - T3 loses its fallback status (SigmaHQ has only 6 STP-annotated rules)
 
 **Finding:** `SigmaHQ/sigma` at commit `da9bb07` carries STP robustness tags on only **6 of
