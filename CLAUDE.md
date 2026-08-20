@@ -25,7 +25,6 @@ later than end of September 2026.
 | [docs/DECISIONS.md](docs/DECISIONS.md) | Why choices were made. Pinned versions. Spike results. |
 | [docs/WORKLOG.md](docs/WORKLOG.md) | What happened each session, newest first. |
 | [docs/OPEN-QUESTIONS.md](docs/OPEN-QUESTIONS.md) | Unverified things that change the plan. Ranked. |
-| [docs/AI-RULES.txt](docs/AI-RULES.txt) | Reply rules, versioned copy. **Authoritative version is `~/.claude/CLAUDE.md`**, which loads automatically everywhere. Edit that one. |
 | [thesis/](thesis/README.md) | Proposal template and numbering rules. |
 | [thesis/T1/](thesis/T1/README.md) | Hardening-induced blind spots. Primary. |
 | [thesis/T2/](thesis/T2/README.md) | Severity inversion in the Wazuh ruleset. Second fallback. |
@@ -84,9 +83,9 @@ fallback are unverified, so there is currently no verified option. This is item 
 - **Do not soften the falsifiable claims.** T1 and T3 pre-declare the result that would prove
   them wrong. That is deliberate and it is the main defense against the sharpest panel
   objection.
-- **Replies.** The rules load automatically from `~/.claude/CLAUDE.md`, so they apply without
-  being read. [docs/AI-RULES.txt](docs/AI-RULES.txt) is a versioned copy for the record. If the
-  two ever differ, the global one is what actually ran.
+- **Replies.** The user's reply rules load automatically from `~/.claude/CLAUDE.md` on the
+  user's machine. That file is private and is kept out of this repo on purpose. It is not
+  backed up here, so if it is lost, ask the user for it again.
 
 ---
 
