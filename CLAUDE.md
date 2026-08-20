@@ -100,6 +100,23 @@ Recorded, not remembered.
 - **Answered unknowns move to the Answered section** of OPEN-QUESTIONS.md with the evidence.
 - Pinned versions and spike results are tables in DECISIONS.md. Fill them in as you go.
 
+## When a runbook phase finishes
+
+Every time a Phase in [docs/RUNBOOK-homelab.md](docs/RUNBOOK-homelab.md) is completed, do all
+of this before starting the next phase. Do not skip it because the phase felt small.
+
+1. **WORKLOG.md (always).** Add an entry: which phase, what was done, the results, and anything
+   that broke with its exact error text.
+2. **DECISIONS.md (if a choice was made).** Record any hard-to-reverse choice or any pinned
+   value set during the phase, with the reason and the cost if wrong.
+3. **OPEN-QUESTIONS.md (if it applies).** Move any answered question to the Answered section
+   with evidence. Add any new unknown the phase revealed.
+4. **Fill the pinned-versions table in DECISIONS.md** if the phase produced a version or hash
+   to pin (Phase 4 especially).
+5. **Commit and push.** So the record is on GitHub, not on one disk only.
+
+The record is the point, not the memory.
+
 ---
 
 ## Git
