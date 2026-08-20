@@ -61,3 +61,12 @@ can be reproduced.
 
 Claims that are engineering judgment rather than sourced fact are labeled `(unverified)`
 inline throughout.
+
+---
+
+## License
+
+Code and documentation are released under the [MIT License](LICENSE). You may use, copy,
+modify, and redistribute the work, including for commercial use, as long as the copyright
+notice is kept. This keeps the tool usable by small companies, which is a stated goal of the
+thesis.
