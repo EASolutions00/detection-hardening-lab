@@ -25,6 +25,7 @@ later than end of September 2026.
 | [docs/DECISIONS.md](docs/DECISIONS.md) | Why choices were made. Pinned versions. Spike results. |
 | [docs/WORKLOG.md](docs/WORKLOG.md) | What happened each session, newest first. |
 | [docs/OPEN-QUESTIONS.md](docs/OPEN-QUESTIONS.md) | Unverified things that change the plan. Ranked. |
+| [docs/COMMANDS.md](docs/COMMANDS.md) | Every command run on this machine, why, and what a correct result looks like. Has the pre-flight check. |
 | [thesis/](thesis/README.md) | Proposal template and numbering rules. |
 | [thesis/T1/](thesis/T1/README.md) | Hardening-induced blind spots. Primary. |
 | [thesis/T2/](thesis/T2/README.md) | Severity inversion in the Wazuh ruleset. Second fallback. |
