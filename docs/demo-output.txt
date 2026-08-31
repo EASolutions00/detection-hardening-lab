@@ -1,0 +1,88 @@
+
+SYNTHETIC DEMONSTRATION
+All numbers are generated. No measurement, no benchmark control claimed.
+
+==============================================================================
+NOISE FLOOR  (measured from the control runs)
+==============================================================================
+
+  event types measured        14
+  median CoV                  3.37%
+  highest CoV                 39.12%
+  median dispersion           1.00
+  share of types over 5% CoV  29%
+
+  This is the answer to the feasibility spike's question Q1.
+  A median CoV near zero would mean the statistical layer buys
+  nothing inside the laboratory, and the study must say so.
+
+  event type                              mean      CoV  dispersion
+  ---------------------------------- --------- -------- -----------
+  WinSec-4697-ServiceInstall               1.4  39.12%        1.00
+  WinSec-5156-NetworkConnect            4083.0   5.69%       13.20
+  Sysmon-12-Filler                       644.0   5.42%        1.89
+  Sysmon-3-Filler                       2171.6   5.35%        6.21
+  Sysmon-25-Filler                        95.8   4.86%        1.00
+  Sysmon-22-Filler                       424.4   4.34%        1.00
+
+==============================================================================
+DIFFERENTIAL ANALYSIS
+==============================================================================
+
+STAGE B  global gate (one chi-square over the whole profile)
+  chi-square = 4,011.1   p = 0   PASSED
+  event types carried into per-type testing: 13
+
+STAGE C  classification
+  LOST              1
+  REDUCED           1
+  NEW               0
+  INCONCLUSIVE      1
+  UNCHANGED        11
+
+REPORTED FINDINGS  (2)
+
+  FINDING 1   LOST   WinSec-4688-ProcessCreation
+    rate before   1,242.0 per window
+    rate after    0.0 per window
+    rate ratio    0.000   95% CI [0.000, 0.001]
+    q value       0   (BH corrected)
+    noise floor   0.33% CoV, dispersion 1.00
+    why           present before (3726 occurrences), absent after
+
+  FINDING 2   REDUCED   WinSec-4776-NtlmAuth
+    rate before   608.0 per window
+    rate after    181.7 per window
+    rate ratio    0.299   95% CI [0.272, 0.329]
+    q value       2.26e-134   (BH corrected)
+    noise floor   1.17% CoV, dispersion 1.00
+    why           rate fell to 0.299 of baseline (q=2.26e-134, drop 70.1% exceeds noise band 3.5%)
+
+NOT TESTED, REPORTED AS INCONCLUSIVE  (1)
+  These are not cleared. There was not enough data to test them.
+    WinSec-4697-ServiceInstall         7 occurrences before the change
+
+==============================================================================
+STAGE D  proposed method versus naive differencing
+==============================================================================
+
+  ground truth (keys the change really removed or reduced): 2
+
+  method                       TP   FP   FN  precision   recall      F1
+  -------------------------- ---- ---- ---- ---------- -------- -------
+  naive differencing            2    8    0     20.0%  100.0%   0.333
+  proposed system               2    0    0    100.0%  100.0%   1.000
+
+  false alarms raised by the naive method only (8):
+    Sysmon-1-Filler                    fell 1.10%, which is inside its own noise
+    Sysmon-10-Filler                   fell 1.38%, which is inside its own noise
+    Sysmon-22-Filler                   fell 4.04%, which is inside its own noise
+    Sysmon-23-Filler                   fell 1.29%, which is inside its own noise
+    Sysmon-25-Filler                   fell 1.03%, which is inside its own noise
+    Sysmon-3-Filler                    fell 2.18%, which is inside its own noise
+    Sysmon-7-Filler                    fell 1.26%, which is inside its own noise
+    WinSec-5156-NetworkConnect         fell 7.15%, which is inside its own noise
+
+  Each of these is an event type that moved on its own. An engineer
+  using subtraction would investigate every one of them.
+

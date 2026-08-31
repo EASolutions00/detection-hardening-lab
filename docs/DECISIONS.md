@@ -29,6 +29,28 @@ in use here.
 **Must stay off for the whole experiment.** Changing this mid-experiment changes timing and
 invalidates prior runs. It is now part of the host baseline, same status as a pinned version.
 
+## 2026-08-31 - Build the analysis core before the lab, using synthetic data
+
+**Decision:** Write stages 2, 3 and 5 of the pipeline (variance model, differential analysis,
+reporting) now, tested against generated counts. Leave stage 1 (acquisition from live VMs) and
+stage 4 (impact scoring) until later.
+
+**Why:** The analyser consumes event counts. It does not care whether a real Windows machine or
+a script produced them. So nothing about stages 2, 3 and 5 needs a lab, Wazuh, or Atomic Red
+Team. Waiting for the lab before writing any code would have cost weeks for no reason.
+
+This also corrects an earlier claim in this log. The broken hardening catalogue
+(OPEN-QUESTIONS item 1) was described as blocking everything. It is not. It blocks the
+**experiment design**, not the analyser.
+
+**Cost if wrong:** Synthetic data proves the code is correct. It proves nothing about real
+telemetry. Real event counts are not normally distributed, and the demo generator draws from a
+rounded normal. No result from `src/demo.py` may be presented as a finding. The moment real
+captures exist, the same tests must be re-run against them.
+
+**Immediate benefit:** the test suite found a genuine crash before any real data existed. See
+the WORKLOG entry for the same date.
+
 ## 2026-08-19 - T3 loses its fallback status (SigmaHQ has only 6 STP-annotated rules)
 
 **Finding:** `SigmaHQ/sigma` at commit `da9bb07` carries STP robustness tags on only **6 of
@@ -110,8 +132,30 @@ can still fail its spike gate.
 
 # Pinned versions (fill these in during Phase 4 of the runbook)
 
-Nothing below is filled in yet. A version bump partway through the experiment means every
-earlier run must be discarded. Record these **before** taking the golden snapshot.
+A version bump partway through the experiment means every earlier run must be discarded.
+Record these **before** taking the golden snapshot.
+
+## Host and analysis stack (recorded 2026-08-31)
+
+| Item | Value | Date recorded |
+|---|---|---|
+| Host OS | Windows 11 Pro 10.0.26200 | 2026-08-31 |
+| CPU | AMD Ryzen 9 7950X, 16C/32T | 2026-08-20 |
+| VMware Workstation | 17.5.1 build-23298084 | 2026-08-20 |
+| Windows hypervisor | **OFF** (`hypervisorlaunchtype off`) | 2026-08-20 |
+| Python | 3.13.14 (`C:\Program Files\Python313`) | 2026-08-31 |
+| numpy | 2.5.2 | 2026-08-31 |
+| scipy | 1.18.1 | 2026-08-31 |
+| pandas | 3.0.5 | 2026-08-31 |
+| PyYAML | 6.0.3 | 2026-08-31 |
+| pytest | 9.1.1 | 2026-08-31 |
+| Analyser git commit | `78f41f4` (first version of the analysis core) | 2026-08-31 |
+
+`scipy` supplies Benjamini-Hochberg through `scipy.stats.false_discovery_control`, so
+`statsmodels` is not a dependency. `scikit-learn` was in the original plan for Cohen's kappa,
+which belonged to T3 and is no longer in scope.
+
+## Lab stack (fill in during Runbook Phase 4)
 
 | Item | Value | Date recorded |
 |---|---|---|
@@ -119,10 +163,16 @@ earlier run must be discarded. Record these **before** taking the golden snapsho
 | Sysmon binary version | not yet recorded | |
 | Sysmon config SHA256 | not yet recorded | |
 | Atomic Red Team commit | not yet recorded | |
-| Windows build number | not yet recorded | |
-| Harness git commit | not yet recorded | |
-| `wazuh/wazuh` clone commit (T2) | not yet recorded | |
-| `SigmaHQ/sigma` clone commit (T3) | not yet recorded | |
+| Windows build number (guest) | not yet recorded | |
+| Ubuntu ISO used | `ubuntu-24.04.4-live-server-amd64.iso` (selected, not yet installed) | 2026-08-20 |
+| Windows ISO used | `Windows 11 Enterprise Eval 26200.6584...25h2` (selected, not yet installed) | 2026-08-20 |
+
+## Reference corpora
+
+| Item | Value | Date recorded |
+|---|---|---|
+| `SigmaHQ/sigma` clone commit | `da9bb07d642a2826e89702445d32c795209ec108` | 2026-08-19 |
+| `wazuh/wazuh` clone commit | not yet cloned | |
 
 ---
 

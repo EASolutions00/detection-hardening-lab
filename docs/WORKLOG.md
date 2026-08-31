@@ -17,6 +17,76 @@ Next:
 
 ---
 
+## 2026-08-31 (second session) - Built the analysis core. First code in the repo.
+
+**Did:** Wrote stages 2, 3 and 5 of the pipeline in Python, with tests, running on synthetic
+data. No lab involved.
+
+**The decision that made this possible:** the analyser consumes event counts and does not care
+where they came from. So only stage 1 (acquisition) needs the lab. Recorded in DECISIONS.md.
+
+**Files written:**
+
+| File | Holds |
+|---|---|
+| `src/blindspot/model.py` | `Phase`, `Finding`, `Classification`, `AnalysisResult` |
+| `src/blindspot/variance.py` | Noise floor: CoV and dispersion from the control runs |
+| `src/blindspot/differential.py` | The core: align, global gate, rate ratio, BH, classify |
+| `src/blindspot/baseline.py` | Naive differencing, the comparison baseline |
+| `src/blindspot/report.py` | Text rendering |
+| `src/blindspot/synth.py` | Synthetic count generator |
+| `src/demo.py` | End-to-end run |
+| `tests/test_differential.py` | 20 tests |
+
+**Result:** 20 tests pass. The demo reproduces the headline claim on synthetic data:
+
+```
+  method                       TP   FP   FN  precision   recall      F1
+  naive differencing            2    8    0     20.0%  100.0%   0.333
+  proposed system               2    0    0    100.0%  100.0%   1.000
+```
+
+Full output saved to [demo-output.txt](demo-output.txt).
+
+**BROKE:** first test run gave `1 failed, 17 passed`. The failure was a real bug, not a bad
+test. When the post-change phase records zero events for every key, `chi2_contingency` raises:
+
+```
+ValueError: The internally computed table of expected frequencies
+has a zero element at (np.int64(1), np.int64(0)).
+```
+
+Cause: an all-zero row makes every expected frequency in that row zero, and the calculation
+divides by it. This is not an artificial case. It is what a dead agent, a dropped network, or
+logging stopped entirely would produce during a real run. The old code would have crashed
+mid-batch instead of reporting the condition.
+
+Fixed in `global_gate()` by checking for degenerate tables before calling chi-square: both
+phases empty means no detectable change, one phase empty means the profile certainly changed,
+otherwise run the test. Added `test_phase_that_emitted_nothing_does_not_crash` and
+`test_two_empty_phases_do_not_crash` so it cannot return.
+
+**Design positions implemented** (all three were argued in the proposal revision and are now
+real code): chi-square applied once globally as a gate rather than per event type; a
+dispersion-aware rate ratio instead of Poisson; and REDUCED requiring the corrected q value,
+the effect size, and the measured noise floor together.
+
+**Versions pinned** in DECISIONS.md and `requirements.txt`. `statsmodels` turned out not to be
+needed, because `scipy.stats.false_discovery_control` provides Benjamini-Hochberg.
+
+**Still missing:** stage 1 acquisition (needs the lab), stage 4 impact scoring (needs the
+dependency index, buildable offline), persistence to disk, run manifest hashing, and the web
+interface.
+
+**Honest limit:** the synthetic generator draws from a rounded normal. Real event counts are
+not normal. The demo proves the code is correct, not that the telemetry behaves this way. No
+demo number may be presented as a finding.
+
+**Next:** OPEN-QUESTIONS item 1b must be settled before stage 1 is written, because it changes
+the profile schema and therefore every stored run.
+
+---
+
 ## 2026-08-31 - T1 approved with revisions. Proposal revision drafted. Walkthrough written and then flagged as wrong.
 
 **Did:** Recorded the outcome of the title proposal defense, drafted answers to the panel's

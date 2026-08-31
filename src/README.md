@@ -2,6 +2,40 @@
 
 Python. The analysis core is written and tested. Acquisition from live VMs is not.
 
+## What it produces
+
+This is the actual output of `src/demo.py`, the part that matters. One hardening change
+was simulated. One event type was removed outright, one was genuinely cut to 30 percent,
+and one noisy type drifted down by 1.4 percent on its own.
+
+```
+STAGE D  proposed method versus naive differencing
+==============================================================================
+
+  ground truth (keys the change really removed or reduced): 2
+
+  method                       TP   FP   FN  precision   recall      F1
+  -------------------------- ---- ---- ---- ---------- -------- -------
+  naive differencing            2    8    0     20.0%  100.0%   0.333
+  proposed system               2    0    0    100.0%  100.0%   1.000
+
+  false alarms raised by the naive method only (8):
+    Sysmon-1-Filler                    fell 1.10%, which is inside its own noise
+    Sysmon-10-Filler                   fell 1.38%, which is inside its own noise
+    Sysmon-22-Filler                   fell 4.04%, which is inside its own noise
+    ...
+    WinSec-5156-NetworkConnect         fell 7.15%, which is inside its own noise
+```
+
+Both methods found both real losses. The difference is the eight false alarms. Each is an
+event type that moved on its own, within the range it was already measured to move in. An
+engineer comparing raw counts would investigate every one of them.
+
+Full output: [docs/demo-output.txt](../docs/demo-output.txt)
+
+**These numbers are synthetic.** They demonstrate that the code works. They are not
+measurements and are not a result of the study.
+
 ## Run it
 
 ```
