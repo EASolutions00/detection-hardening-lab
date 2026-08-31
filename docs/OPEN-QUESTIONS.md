@@ -7,6 +7,95 @@ Ranked by how much damage the wrong answer does.
 
 ---
 
+## 1. Which 16 hardening changes survive the corrected blind-spot definition?
+
+**Status:** Open. Raised 2026-08-20 while stress-testing T1 against a formal definition of
+security hardening. This supersedes the older item 4 below in priority, and absorbs it.
+
+**Why it matters:** Four items in the catalogue in `lab/blueprint.md` section 8 are the
+**opposite** of what the benchmarks require, verified 2026-08-20:
+
+| Catalogue item | What the benchmark actually requires |
+|---|---|
+| 1. Disable Audit Process Creation | CIS requires Success auditing. Level 1. Numbered 17.3.1 or 17.3.2 depending on benchmark version. |
+| 2. Disable `ProcessCreationIncludeCmdLine_Enabled` | CIS requires Enabled. Level 1. 18.9.3.1, or 18.8.3.1 in some versions. |
+| 3. Disable PowerShell ScriptBlock logging | DISA STIG WN10-CC-000326 / V-220860, CAT II, requires Enabled. |
+| 4. Disable PowerShell Module logging | Same family. Benchmarks require enabling it. Exact control ID `(unverified)`. |
+
+Item 15 (narrow the Sysmon config) is genuine security-tool hardening but has no CIS or DISA
+control, so it cannot be described as drawn from a published baseline.
+
+Second and deeper problem: **telemetry loss is not the same as a blind spot.** Disabling SMBv1
+removes SMB1 events, but it also removes SMB1 attacks, so the detection rule should be retired,
+not flagged. The two-tier labeling in `lab/blueprint.md` section 8 does not test whether the
+technique is still executable after the change.
+
+**Corrected definition to adopt in Chapter 3.** A hardening-induced blind spot exists when
+(a) the change is a control from a named benchmark with its control ID recorded, (b) the change
+removes or degrades an event type or a required field, (c) at least one detection rule depends
+on it, and (d) **the technique that rule covers is still executable after the change.**
+
+Classifying the current catalogue against that definition:
+
+| Class | Meaning | Items | Count |
+|---|---|---|---|
+| A | Anti-hardening. Benchmark requires the opposite | 1, 2, 3, 4 | 4 |
+| A' | Real tool hardening, but no benchmark control exists | 15 | 1 |
+| B | Attack removed along with the telemetry. Not a blind spot | 5, 9, 11, 12, 13, 14 | 6 |
+| C | True blind-spot candidate. Attack still possible | 6, 7, 8, 10, 16 | 5 |
+
+Of class C, item 6 (Constrained Language Mode) is content-level and item 2 was field-level, and
+the frequency profile in Module 2 counts event-type rates, so neither is visible to the method
+as written. Item 8 is still blocked on untested nested virtualization. That leaves 3 solid
+positive cases: disable WDigest, restrict NTLM, enforce RDP NLA.
+
+**How to answer:** Replace items 1, 2, 3, 4 with real controls where the technique survives the
+change. Candidates to check, control IDs all `(unverified)`: LSA Protection (RunAsPPL), ASR rule
+blocking Office child processes, block macros from the internet, AppLocker or WDAC enforcement,
+restrict anonymous SAM enumeration, enforce SMB signing, enforce LDAP signing and channel
+binding, disable AutoPlay and AutoRun. Keep the class B items as **negative controls** for the
+impact scorer, where telemetry loss is expected and the impact score should correctly be near
+zero. Keep the count at 16 so the submitted proposal text stays true.
+
+**What a bad answer means:** If fewer than about 8 class C changes can be pinned, the precision
+and recall comparison is underpowered and T1's evaluation has to be restated around a smaller
+labeled set.
+
+---
+
+## 1b. Can Module 2 see field-level telemetry loss?
+
+**Status:** Open. Raised 2026-08-20.
+
+**Why it matters:** Module 2 builds a frequency profile of event-type rates. Removing the
+CommandLine field from 4688 does not change the 4688 rate, and changing 4104 content does not
+change the 4104 rate. Both are invisible to chi-square on a rate that did not move.
+
+**How to answer:** Redefine the unit of analysis as (event type, required field present) rather
+than event type alone. Decide before the harness is written, because it changes the profile
+schema and therefore every stored run.
+
+**What a bad answer means:** Content-level and field-level hardening changes must be dropped
+from the catalogue, and the study says so explicitly.
+
+---
+
+## 1c. Does a redundant telemetry source cancel the blind spot?
+
+**Status:** Open. Raised 2026-08-20.
+
+**Why it matters:** WIN-EP-01 runs Sysmon. Sysmon Event ID 1 records process creation
+independently of Windows audit policy, so losing 4688 may blind nothing at all. A panelist can
+say the measured loss has no operational impact.
+
+**How to answer:** Add a compensating-source check to the impact scoring in Module 4. If a
+redundant source covers the lost event type, the impact score drops toward zero.
+
+**What a bad answer means:** Nothing bad. This turns an objection into a feature, and no
+comparable tool does it. The cost is extra work in the dependency index.
+
+---
+
 ## 2. Does nested virtualization work for Credential Guard on this host?
 
 **Status:** Untested.
