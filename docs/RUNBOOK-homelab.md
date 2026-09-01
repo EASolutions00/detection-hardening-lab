@@ -153,7 +153,15 @@ revocation checks, and time sync all fire on their own schedules. Every one of t
 noise into the exact window you are measuring.
 
 - [ ] Shut down WIN-EP-01 cleanly.
-- [ ] Remove or disconnect vmnet8. Leave vmnet2 only.
+- [ ] **Disconnect** vmnet8. Do not remove the adapter. Leave vmnet2 as the only connected
+      network.
+
+      Disconnect rather than remove because the lab interface is the *second* adapter on
+      SIEM-01 (`ethernet0` is NAT, `ethernet1` is vmnet2), and its Linux interface name
+      (`ens34` or similar) is what the netplan static-IP config in Phase 2 targets. Deleting
+      an adapter can renumber the remaining one and break that config. Unchecking "Connected"
+      in VM settings leaves the device present and the name stable. `(unverified whether
+      removal actually renumbers on this setup; disconnect is the safe choice either way)`
 - [ ] Boot once, confirm no internet, shut down.
 - [ ] Take snapshot `golden-base`.
 - [ ] Boot, apply Config S (Defender off, Windows Update off, scheduled tasks disabled),
