@@ -17,6 +17,37 @@ Next:
 
 ---
 
+## 2026-09-02 - README rewritten for the chosen topic and the working code.
+
+**Did:** Rewrote `README.md`. It still described the three-topic selection process and made no
+mention that working code exists, which was accurate two weeks ago and wrong now.
+
+**Cut:** the three-topic table from the top, "T1 is the primary choice and it is gated behind a
+two week feasibility spike" (T1 is approved), T3 references in the Methodology section, and the
+"rules that cannot be parsed" paragraph, which was T3's language about Sigma parsing and has
+nothing to do with T1.
+
+**Added:** the TeLoS name and the approved thesis title, the problem stated in three sentences,
+the Stage D result table with its synthetic-data caveat, run instructions, an honest status
+table listing what is not built as plainly as what is, and an "Alternatives considered" section
+keeping the T3 finding (6 of 3,783 rules at commit `da9bb07`) as evidence of verifying a claim
+rather than assuming it.
+
+**Reasoning for the reorder:** a portfolio README should lead with what works. A reader who
+sees a result table takes the repo seriously; a reader who sees a topic-selection table does
+not. Being explicit about what is unfinished reads as competence. Overclaiming is what does
+damage.
+
+**Title wording:** used the panel's exact wording, unmodified, on purpose. A title the panel
+has not seen should not appear in a public repo. The grammar problem ("Using Differential
+Analysis Algorithm" is missing an article) is now tracked as OPEN-QUESTIONS item 0, with two
+suggested corrections and a tactful way to raise it with the adviser. It was not tracked
+anywhere before, which was a gap.
+
+Verified: all 7 internal links resolve, no em dash characters.
+
+---
+
 ## 2026-09-02 - Package renamed blindspot to telos. Split-vs-single VMware disk answered.
 
 **Did:** Renamed `src/blindspot/` to `src/telos/` with `git mv`, updated the two files that

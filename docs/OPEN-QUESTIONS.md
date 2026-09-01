@@ -7,6 +7,41 @@ Ranked by how much damage the wrong answer does.
 
 ---
 
+## 0. What is the exact approved title wording?
+
+**Status:** Open. Cheap to close. Raised 2026-09-02.
+
+**Why it matters:** the title now appears in the public README, on every document from here,
+and eventually on the cover page and the library record. It should be settled once, not drifted.
+
+**The panel proposed:**
+> Detecting Security Blind Spots Through Pre- and Post-Hardening Events Using Differential
+> Analysis Algorithm
+
+**The problem:** "Using Differential Analysis Algorithm" is missing an article. English needs
+"a" or "the" before a singular countable noun.
+
+**Two corrections, both keeping the panel's vocabulary:**
+1. Reorder, adding no words: *Detecting Security Blind Spots Through Differential Analysis of
+   Pre- and Post-Hardening Events*
+2. Minimal, add one word: *...Using **a** Differential Analysis Algorithm*
+
+**Currently in use:** the panel's exact wording, unmodified, in `README.md`. Deliberate. A
+title the panel has not seen should not appear in a public repo.
+
+**How to answer:** ask the adviser as a question about wording, not as a correction of the
+panel. For example: "Sir/Ma'am, for the final title, should it read 'Using a Differential
+Analysis Algorithm'? I want the wording correct before it goes on all my documents."
+
+**What a bad answer means:** nothing bad. If they keep their original wording, use it
+everywhere and stop revisiting it.
+
+**Note for Chapter 3:** the approved title names a general method ("Differential Analysis
+Algorithm") rather than a specific one. The specific algorithm must therefore be named and
+defined explicitly in the methodology chapter, since the title no longer does it.
+
+---
+
 ## 1. Which 16 hardening changes survive the corrected blind-spot definition?
 
 **Status:** Open. Raised 2026-08-20 while stress-testing T1 against a formal definition of
