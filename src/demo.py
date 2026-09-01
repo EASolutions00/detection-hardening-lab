@@ -13,9 +13,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from blindspot import VarianceModel, analyse, naive_differencing
-from blindspot.report import render_analysis, render_comparison, render_variance
-from blindspot.synth import demo_scenario
+from telos import VarianceModel, analyse, naive_differencing
+from telos.report import render_analysis, render_comparison, render_variance
+from telos.synth import demo_scenario
 
 N_CONTROL = 5   # control runs, per the study design
 N_REPEAT = 3    # repetitions per phase

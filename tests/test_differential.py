@@ -15,8 +15,8 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from blindspot import Classification, Phase, VarianceModel, analyse, naive_differencing
-from blindspot.differential import global_gate
+from telos import Classification, Phase, VarianceModel, analyse, naive_differencing
+from telos.differential import global_gate
 
 
 def make_control(counts: dict[str, list[int]]) -> VarianceModel:

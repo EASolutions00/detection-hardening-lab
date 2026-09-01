@@ -17,6 +17,27 @@ Next:
 
 ---
 
+## 2026-09-02 - Package renamed blindspot to telos. Split-vs-single VMware disk answered.
+
+**Did:** Renamed `src/blindspot/` to `src/telos/` with `git mv`, updated the two files that
+imported it by name (`src/demo.py`, `tests/test_differential.py`). Verified: `20 passed`,
+demo output unchanged, no remaining `blindspot` string in any `.py` file.
+
+The `docs/DECISIONS.md` and `docs/WORKLOG.md` entries from 2026-08-31 that say `blindspot`
+are left as written. They are an accurate record of what the package was called at that time,
+not a live reference that needed updating.
+
+**Also answered:** split or single file for the VMware `.vmdk`. Checked F:'s filesystem first:
+`NTFS`. The 2 GB split option exists to work around FAT32's 4 GB file limit, which does not
+apply here. Recommended single file: slightly less I/O overhead, one fewer variable in the
+storage layer while T1 measures timing variance, and no benefit from splitting since NTFS has
+no size limit that matters at 200 GB.
+
+**Next:** continue Phase 2. Confirm the SIEM-01 VM was created with split disk unchecked; if
+it was already created with split checked, the disk needs recreating before Ubuntu installs.
+
+---
+
 ## 2026-08-31 (fifth session) - Project named TeLoS. Phase 2 started.
 
 **Did:** Picked a project name from a shortlist (`covdrift`, `Scotoma`, `anino`, `TeLoS`).
