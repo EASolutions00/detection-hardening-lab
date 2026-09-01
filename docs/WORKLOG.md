@@ -17,6 +17,26 @@ Next:
 
 ---
 
+## 2026-08-31 (fifth session) - Project named TeLoS. Phase 2 started.
+
+**Did:** Picked a project name from a shortlist (`covdrift`, `Scotoma`, `anino`, `TeLoS`).
+Landed on **TeLoS**: reads as Telemetry Loss, also the Greek word for purpose. Recorded in
+DECISIONS.md with the reasoning and the other candidates.
+
+Student created `F:\TeLoS Homelab\SIEM-01` and started Phase 2 (build SIEM-01). Verified the
+folder exists and is empty, ready for the VM. The runbook only ever said "create the VM on
+F:", with no fixed subfolder name, so this path satisfies it exactly. Nothing needed correcting
+there.
+
+**Follow-up not yet done:** the Python package is still `src/blindspot/`. Renaming it to match
+TeLoS is cheap now and gets expensive once the harness and stored-run format exist. Do it
+before Phase 3 if the name is considered final.
+
+**Next:** continue Phase 2, steps 1 through 8 (VM creation through indexer replica settings),
+per the procedure already given. Waiting on the student to report each step's result.
+
+---
+
 ## 2026-08-31 (fourth session) - Adapter fix confirmed. Phase 1 complete.
 
 **Did:** Verified the fix after the student ran Virtual Network Editor → Restore Defaults and

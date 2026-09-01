@@ -29,6 +29,25 @@ in use here.
 **Must stay off for the whole experiment.** Changing this mid-experiment changes timing and
 invalidates prior runs. It is now part of the host baseline, same status as a pinned version.
 
+## 2026-08-31 - Project named TeLoS
+
+**Decision:** The system and lab are named **TeLoS**. Chosen from a shortlist that included
+`covdrift`, `Scotoma`, and `anino` (Tagalog for shadow).
+
+**Why:** Two readings land on the same word. "TeLoS" reads as **Telemetry Loss**, which is
+literally the thing the system detects. It is also the Greek word for purpose or end goal,
+which fits a thesis project without being decorative. Checked against PyPI and GitHub search
+at decision time; no existing security tool found using this name `(unverified, spot-check
+only, not an exhaustive trademark search)`.
+
+**Where it is used:** the homelab folder on F: (`F:\TeLoS Homelab\`, with a space, exact
+casing). Runbook paths written before this decision (`F:\Homelab\...`) are corrected to match.
+The Python package is still `src/blindspot/`; renaming it to match is a follow-up task, cheap
+now, expensive after the harness and web layer exist.
+
+**Cost if wrong:** Low. A folder rename on F: is a `Move-Item`. The package rename is more
+work the later it happens, so do it before Phase 3 if the name is final.
+
 ## 2026-08-31 - Build the analysis core before the lab, using synthetic data
 
 **Decision:** Write stages 2, 3 and 5 of the pipeline (variance model, differential analysis,
