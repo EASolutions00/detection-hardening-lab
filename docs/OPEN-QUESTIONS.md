@@ -7,6 +7,28 @@ Ranked by how much damage the wrong answer does.
 
 ---
 
+## 0. Why are the VMware VMnet1/2/3 adapters in Error state?
+
+**Status:** Open. Blocking Phase 1. Found 2026-08-31.
+
+**Why it matters:** the harness runs on the Windows host and reaches the Wazuh API over
+`vmnet2` at 10.20.10.1. `Get-PnpDevice` shows all three host-only adapters as `Status: Error`,
+and none carry an IP address. Nothing past Phase 1 can work until this is fixed.
+
+**Working theory (unverified):** a Hyper-V virtual switch (`vEthernet (Default Switch)`) is
+still up even with `hypervisorlaunchtype off`. The 2026-08-20 fix stops the hypervisor from
+launching at boot; it does not remove the Hyper-V Windows feature or its network filter
+drivers, which may still conflict with VMware's adapters.
+
+**How to answer:** Virtual Network Editor → Restore Defaults, then reconfigure vmnet2/vmnet3
+per Phase 1. Full steps in WORKLOG.md, 2026-08-31 "third session". If that does not fix it,
+the Hyper-V Windows feature likely needs to be removed outright, not just its launch type.
+
+**What a bad answer means:** if adapters stay broken after Restore Defaults, this becomes a
+bigger fix (removing the Hyper-V feature) and needs its own DECISIONS entry before proceeding.
+
+---
+
 ## 1. Which 16 hardening changes survive the corrected blind-spot definition?
 
 **Status:** Open. Raised 2026-08-20 while stress-testing T1 against a formal definition of

@@ -17,6 +17,78 @@ Next:
 
 ---
 
+## 2026-08-31 (third session) - Pre-flight for Phase 1. VMware network adapters broken.
+
+**Did:** Ran the four-command pre-flight check from COMMANDS.md before starting Runbook
+Phase 1, then began Phase 1 itself.
+
+**Pre-flight result: 3 of 4 pass.**
+
+| Check | Result |
+|---|---|
+| `vmrun -T ws list` | PASS. `Total running VMs: 0` |
+| Hypervisor still off | PASS. `HypervisorPresent: False` |
+| F: free space | PASS. 715 GB free (53.1 GB already used by two existing Win11 VMs under `F:\VMWARE`, unrelated to this project) |
+| CLI tools present | `vmware-vdiskmanager.exe` and `vnetlib64.exe` confirmed present, useful for scripting later phases |
+
+**Existing state found on the host, not created this session:**
+- `F:\VMWARE\For Testing\...` and `F:\VMWARE\Fresh Installed\...`: two pre-existing Windows 11
+  VMs, 53.1 GB, unrelated to the thesis. Left alone.
+- `vmnet2` and `vmnet3` already existed in `netmap.conf`, and neither appears in
+  `vmnetdhcp.conf`, so DHCP was already off on both. That part of Phase 1 was already correct.
+
+**BROKE: all three VMware host adapters (VMnet1, VMnet2, VMnet3) are in `Error` state.**
+
+```
+Get-PnpDevice | Where FriendlyName -like '*VMware Virtual Ethernet*'
+
+Status Class FriendlyName
+------ ----- ------------
+Error  Net   VMware Virtual Ethernet Adapter for VMnet1
+Error  Net   VMware Virtual Ethernet Adapter for VMnet2
+Error  Net   VMware Virtual Ethernet Adapter for VMnet3
+```
+
+`Get-NetAdapter` shows all three as `Not Present`, `AdminStatus Down`, with no IP address
+assigned on any of them. The VMware services themselves (`VMnetDHCP`, `VMware NAT Service`)
+are `Running`. The failure is at the adapter/driver level, not the service level.
+
+**This blocks Phase 1 and everything after it.** The harness runs on the host and reaches
+the Wazuh API over the host's vmnet2 interface at 10.20.10.1. With no working adapter, that
+path does not exist, and Runbook Phase 6 cannot function.
+
+**Suspected cause (unverified):** `vEthernet (Default Switch)`, a Hyper-V virtual switch, is
+`Up` at 10 Gbps even though `hypervisorlaunchtype` is off. Hyper-V's network filter drivers
+binding to the stack alongside VMware's adapters is a known cause of this exact `Error` state
+`(unverified as confirmed here, but consistent with the evidence)`. The 2026-08-20 fix turned
+off the hypervisor at boot; it did not remove the Hyper-V Windows feature or its networking
+components, and `vmcompute`/`vmms` services are still `Running`.
+
+**Fix prescribed, not yet done (needs the GUI, is the student's step):**
+1. VMware Workstation → Edit → Virtual Network Editor → Change Settings (admin).
+2. Click **Restore Defaults** to reinstall the adapters. No custom settings are lost, since
+   vmnet2/vmnet3 had no subnets configured yet.
+3. Add VMnet2: Host-only, **host virtual adapter checked** (required, this is the harness's
+   path to the lab), DHCP unchecked, subnet 10.20.10.0/24.
+4. Add VMnet3: Host-only, host adapter unchecked, DHCP unchecked, subnet 10.20.20.0/24.
+5. Leave VMnet8 (NAT) at default.
+
+**Verification once done:**
+```
+Get-NetIPAddress | Where InterfaceAlias -like '*VMnet2*'
+```
+Expect `10.20.10.1`. That address is the proof the harness's path to the lab exists.
+
+**If Restore Defaults does not fix it:** the working theory is wrong or incomplete, and the
+Hyper-V Windows feature itself needs to be removed (`Disable-WindowsOptionalFeature`), not
+just its boot-time hypervisor. Bigger change, needs its own DECISIONS entry if it comes to
+that.
+
+**Next:** waiting on the student to run the Virtual Network Editor steps above. Phase 1 is
+not complete until `Get-NetIPAddress` confirms 10.20.10.1.
+
+---
+
 ## 2026-08-31 (second session) - Built the analysis core. First code in the repo.
 
 **Did:** Wrote stages 2, 3 and 5 of the pipeline in Python, with tests, running on synthetic
