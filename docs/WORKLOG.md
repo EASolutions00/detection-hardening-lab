@@ -17,6 +17,34 @@ Next:
 
 ---
 
+## 2026-08-31 (fourth session) - Adapter fix confirmed. Phase 1 complete.
+
+**Did:** Verified the fix after the student ran Virtual Network Editor → Restore Defaults and
+reconfigured vmnet2/vmnet3, per the steps from the previous session.
+
+**Result: fixed.** All three checks that failed before now pass.
+
+| Check | Before | After |
+|---|---|---|
+| Driver status (`Get-PnpDevice`) | Error, all three | OK, all three |
+| Adapter status | Not Present / Down | Up / Up |
+| VMnet2 IP | none | **10.20.10.1/24** |
+| VMnet3 IP | none | **10.20.20.1/24** |
+| DHCP on 10.20.10.0 or 10.20.20.0 | n/a | confirmed absent from `vmnetdhcp.conf` |
+
+The student set both subnets exactly as specified and connected the host adapter on vmnet2
+only, matching the runbook. No correction needed.
+
+Moved OPEN-QUESTIONS item 0 to Answered with the full before/after evidence.
+
+**Runbook Phase 1 (virtual networks) is complete.** The host has a working path to the lab
+network at 10.20.10.1, which is what the harness needs to reach the Wazuh API in Phase 6.
+
+**Next:** Phase 2, build SIEM-01 (Ubuntu 24.04.4, Wazuh all-in-one, pin the version, disable
+the repo, enable `logall_json`).
+
+---
+
 ## 2026-08-31 (third session) - Pre-flight for Phase 1. VMware network adapters broken.
 
 **Did:** Ran the four-command pre-flight check from COMMANDS.md before starting Runbook

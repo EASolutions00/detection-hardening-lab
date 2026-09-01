@@ -7,28 +7,6 @@ Ranked by how much damage the wrong answer does.
 
 ---
 
-## 0. Why are the VMware VMnet1/2/3 adapters in Error state?
-
-**Status:** Open. Blocking Phase 1. Found 2026-08-31.
-
-**Why it matters:** the harness runs on the Windows host and reaches the Wazuh API over
-`vmnet2` at 10.20.10.1. `Get-PnpDevice` shows all three host-only adapters as `Status: Error`,
-and none carry an IP address. Nothing past Phase 1 can work until this is fixed.
-
-**Working theory (unverified):** a Hyper-V virtual switch (`vEthernet (Default Switch)`) is
-still up even with `hypervisorlaunchtype off`. The 2026-08-20 fix stops the hypervisor from
-launching at boot; it does not remove the Hyper-V Windows feature or its network filter
-drivers, which may still conflict with VMware's adapters.
-
-**How to answer:** Virtual Network Editor → Restore Defaults, then reconfigure vmnet2/vmnet3
-per Phase 1. Full steps in WORKLOG.md, 2026-08-31 "third session". If that does not fix it,
-the Hyper-V Windows feature likely needs to be removed outright, not just its launch type.
-
-**What a bad answer means:** if adapters stay broken after Restore Defaults, this becomes a
-bigger fix (removing the Hyper-V feature) and needs its own DECISIONS entry before proceeding.
-
----
-
 ## 1. Which 16 hardening changes survive the corrected blind-spot definition?
 
 **Status:** Open. Raised 2026-08-20 while stress-testing T1 against a formal definition of
@@ -166,6 +144,34 @@ data collection starts, not after.
 ---
 
 ## Answered
+
+### Why were the VMware VMnet1/2/3 adapters in Error state? (answered 2026-08-31)
+
+**Answer: fixed by Virtual Network Editor → Restore Defaults, then reconfiguring vmnet2 and
+vmnet3.** The working theory (a lingering Hyper-V virtual switch conflicting with VMware's
+adapters) was never confirmed as the exact cause, but the standard repair worked.
+
+**Evidence, verified 2026-08-31 after the student ran the fix:**
+
+```
+Get-PnpDevice | Where FriendlyName -like '*VMware Virtual Ethernet*'
+  Status OK   (was Error)  for VMnet1, VMnet2, VMnet3
+
+Get-NetAdapter | Where InterfaceDescription -like '*VMware*'
+  Status Up   AdminStatus Up   (was Not Present / Down)  for all three
+
+Get-NetIPAddress | Where InterfaceAlias -like '*VMnet*'
+  VMnet2   10.20.10.1/24   (host adapter connected, matches the runbook)
+  VMnet3   10.20.20.1/24
+  VMnet1   192.168.12.1/24  (default, unrelated to this project)
+```
+
+DHCP confirmed off on both lab subnets: `vmnetdhcp.conf` contains no `subnet 10.20.10.0` or
+`subnet 10.20.20.0` block, only the defaults for VMnet1 (192.168.12.0) and VMnet8 (192.168.243.0).
+
+**What this means:** Runbook Phase 1 (virtual networks) is complete. The host now has a working
+path to the lab network at 10.20.10.1, which is what the harness needs to reach the Wazuh API
+in later phases. Proceed to Phase 2 (build SIEM-01).
 
 ### How many SigmaHQ rules carry a manual STP robustness annotation? (answered 2026-08-19)
 
