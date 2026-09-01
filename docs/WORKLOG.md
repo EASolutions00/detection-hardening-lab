@@ -17,6 +17,130 @@ Next:
 
 ---
 
+## 2026-09-02 - Phase 2 complete. SIEM-01 built, Wazuh 4.14.7 installed, `logall_json` proven end to end.
+
+All machine timestamps below are **UTC**, as SIEM-01 runs on `Etc/UTC`. The VM logs read
+2026-09-01 while the local session date is 2026-09-02. Same session, different timezone.
+
+**Did:** Runbook Phase 2 steps 2 through 8, plus four pieces of work the runbook does not list.
+Every step was verified with a command, not assumed.
+
+| Runbook step | Outcome |
+|---|---|
+| 2. Install Ubuntu Server | Ubuntu 24.04.4 LTS, kernel `6.8.0-138-generic`, hostname `siem-01`, OpenSSH installed, installer media disconnected permanently (`sata0:1.startConnected = "FALSE"`) |
+| 3. Confirm internet | ping succeeded, `apt update` reaches `ph.archive.ubuntu.com` and `security.ubuntu.com` |
+| 4. Lab network and static IP | `ens37` up with `10.20.10.10/24`, survived a reboot, reachable by SSH from Windows |
+| 5. Install Wazuh | `4.14.7-1`, all three services `active` |
+| 6. Disable the Wazuh repo | repo line commented, plus `apt-mark hold` on all three packages as a second lock |
+| 7. `logall_json` | set to `yes` and proven end to end with a marker event |
+| 8. Reduce indexer footprint | replicas verified already 0 for current and future indices; retention deliberately deferred |
+
+**Work not in the runbook, all forced by what was found:**
+
+1. **Root filesystem was half the disk.** The guided LVM install gave the root logical volume
+   99 GiB of a 200 GB disk and left 99 GiB unallocated in the volume group. Nothing errored.
+   Found by reading the SSH login banner (`Usage of /: 6.8% of 96.88GB`) and confirmed with
+   `lsblk`, `df -h /`, `vgs`, `lvs`. Fixed online with `lvextend -l +100%FREE` then `resize2fs`.
+   Root went from 97 GB to 195 GB. No reboot needed.
+2. **Automatic package updates were on.** `apt-daily.timer` and `apt-daily-upgrade.timer` were
+   armed and `20auto-upgrades` had both values at `"1"`. Disabled both timers, set both values
+   to `"0"`, then applied all 49 pending updates deliberately. No kernel update was among them.
+3. **Wazuh vulnerability detection was downloading content hourly.** `ossec.conf` had
+   `<feed-update-interval>60m</feed-update-interval>`. Disabled it. Full reasoning in
+   DECISIONS.md.
+4. **Installer read before running.** Downloaded `wazuh-install.sh` and inspected it rather
+   than piping it straight into a root shell. This answered a real question, see Result below.
+
+**Result:**
+
+| Measurement | Value |
+|---|---|
+| Wazuh packages | `wazuh-manager`, `wazuh-indexer`, `wazuh-dashboard`, all `4.14.7-1` |
+| `wazuh-control info` | `WAZUH_VERSION="v4.14.7"`, `WAZUH_REVISION="rc1"`, `WAZUH_TYPE="server"` |
+| Installer SHA256 | `8ebe9514688ace8af9445805e8887cd491dd9f95fa9d421a70f0ea012ab06f3a` |
+| Cluster health | `green`, 1 node, `active_primary_shards: 23`, `active_shards: 23`, `unassigned_shards: 0` |
+| Replicas | all 21 indices `rep 0`; template `wazuh` sets `number_of_replicas: "0"` with `auto_expand_replicas: "0-1"` |
+| Archive growth, idle, no agents | 32,604 to 39,367 bytes in 60 seconds, about **9.7 MB per day** |
+| Disk after install | 195 GB total, 27 GB used, 159 GB free |
+| `/var/ossec/queue/vd` | 12 GB (CVE feed, module now disabled, data kept on purpose) |
+| `ufw` | `Status: inactive`. No firewall. Baseline fact. |
+| Lab NIC MAC | `00:0c:29:8c:83:33` (`ethernet1`, VMnet2) |
+
+**Two findings that change the experiment, not just the build:**
+
+1. **SIEM-01 collects operating system events from `journald` only.** `ossec.conf` lists exactly
+   three sources: `journald`, `/var/ossec/logs/active-responses.log`, and `/var/log/dpkg.log`.
+   There is no `/var/log/syslog` and no `/var/log/auth.log`. Anything that does not pass through
+   those three cannot appear in the results, whatever a hardening change does. New OPEN-QUESTIONS
+   item 1d follows from this.
+2. **The Wazuh all-in-one installer issues certificates for `127.0.0.1`.** Confirmed by reading
+   lines 97 to 106 of `wazuh-install.sh` before running it, and by lines 149, 220, 252, 402 and
+   1796 which show every component talking over loopback. This matters because Phase 5
+   disconnects the NAT adapter. That disconnect **cannot** break Wazuh component communication.
+   The question was raised, then answered with evidence rather than assumed either way.
+
+**Broke / stuck on:**
+
+1. **SSH to `192.168.243.129` timed out.** Cause: the host had **no VMware Network Adapter
+   VMnet8**. `Get-NetAdapter` showed only VMnet1, VMnet2 and VMnet3, so Windows had no interface
+   on `192.168.243.0/24` and no route to the VM. Fixed by ticking "Connect a host virtual adapter
+   to this network" for VMnet8 in the Virtual Network Editor. Note: the literal error line was
+   reported as "connection timed out" but was not captured verbatim.
+
+2. **SSH to `10.20.10.10` refused on a changed host key.** Exact text:
+
+   ```
+   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+   @    WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!     @
+   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+   The fingerprint for the ED25519 key sent by the remote host is
+   SHA256:HQDMPu7HFO/rTFgWsK2M9B08iBLSFpTphHD5Q3LmL6o.
+   Offending ECDSA key in C:\Users\Elijah/.ssh/known_hosts:6
+   Host key for 10.20.10.10 has changed and you have requested strict checking.
+   Host key verification failed.
+   ```
+
+   Not an attack. An earlier machine had used `10.20.10.10` and its three keys were still at
+   lines 4 to 6 of `known_hosts`. Verified before deleting anything, two ways: the MAC answering
+   at `10.20.10.10` was `00-0C-29-8C-83-33`, matching `ethernet1.generatedAddress` in the `.vmx`;
+   and the fingerprint of the key already trusted for `192.168.243.129` (line 7) was
+   `SHA256:HQDMPu7HFO/rTFgWsK2M9B08iBLSFpTphHD5Q3LmL6o`, identical to what SSH was offered.
+   The old key was `SHA256:+H22aT3vGkmkAbvhogV9++MQDOGgRMv5xgso6Noz/mk`. Then cleared with
+   `ssh-keygen -R 10.20.10.10`.
+
+3. **`systemctl is-active ssh` returned `inactive` and looked like a failure.** It was not.
+   Ubuntu 24.04 starts SSH through socket activation, so `ssh.service` is correctly `inactive`
+   until a connection arrives. `systemctl status ssh` showed `TriggeredBy: * ssh.socket` and
+   `systemctl is-enabled ssh.socket` returned `enabled`. **Do not check `ssh.service` on 24.04.
+   Check `ssh.socket`, or just connect.**
+
+4. **A marker search inflated its own count.** `grep -c "TELOS-TEST-EVENT-002"` on
+   `archives.json` returned `2`, then `3` on the next attempt, from a single `logger` event.
+   Cause: `sudo` logs every command line to journald, Wazuh collects journald, so each search
+   created a new event containing the marker. Re-tested from a `sudo -i` root shell, where
+   individual commands are not logged by `sudo`, and got exactly `1`. **One emitted event
+   produces one archive line.** This is a measurement design rule for the Phase 6 harness, now
+   recorded under OPEN-QUESTIONS 1b.
+
+5. **The Wazuh documentation could not be read.** Three `WebFetch` calls to
+   `documentation.wazuh.com` for the indexer tuning and indices pages returned "Command failed
+   with no output". The quickstart and step-by-step pages had loaded earlier in the same session,
+   so the cause is unknown. Worked around by querying the live indexer API and by reading
+   `wazuh-install.sh` directly, which is better evidence anyway because it describes the
+   installed software rather than the documented software.
+
+6. **A web search summary was wrong and was discarded.** A search result claimed the Wazuh
+   docs instruct using `127.0.0.1` for all-in-one node IPs. Fetching the actual page showed it
+   says no such thing, only placeholders like `"<indexer-node-ip>"`. The correct answer was
+   found in the installer source instead. **Treat search summaries as leads, not sources.**
+
+**Next:** Phase 3. Before starting it, three items carried forward that must be settled before
+the Phase 5 golden snapshot: snapd auto-refresh is still enabled (OPEN-QUESTIONS 5), journald
+rate limiting is unmeasured (OPEN-QUESTIONS 1d), and vmnet3 has a host adapter connected which
+contradicts the Phase 1 record (OPEN-QUESTIONS 7).
+
+---
+
 ## 2026-09-02 - README rewritten for the chosen topic and the working code.
 
 **Did:** Rewrote `README.md`. It still described the three-topic selection process and made no

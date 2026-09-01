@@ -113,6 +113,22 @@ schema and therefore every stored run.
 **What a bad answer means:** Content-level and field-level hardening changes must be dropped
 from the catalogue, and the study says so explicitly.
 
+**Measured evidence added 2026-09-02.** Two facts from the first live archive on SIEM-01, both
+of which constrain how the harness may count.
+
+1. **One emitted event produces exactly one line in `archives.json`.** There is no duplicate
+   collection to de-duplicate. Verified with a `logger` marker read from a root shell.
+2. **A search can create the thing it is searching for.** `sudo grep -c "MARKER" archives.json`
+   returned `2`, then `3`, from a single `logger` event. `sudo` writes every command line to
+   journald, Wazuh collects journald, so each search added a new event containing the marker.
+   Reading from a `sudo -i` root shell, where individual commands are not logged by `sudo`,
+   returned the correct `1`.
+
+**Harness rule that follows:** the Phase 6 harness must never place a marker, technique name, or
+search pattern on a command line it runs under `sudo` on a monitored host. Read the archive from
+a root shell, or pass the pattern from a file with `grep -f` so only the filename appears in the
+logged command. Breaking this rule does not error. It silently inflates counts.
+
 ---
 
 ## 1c. Does a redundant telemetry source cancel the blind spot?
@@ -128,6 +144,43 @@ redundant source covers the lost event type, the impact score drops toward zero.
 
 **What a bad answer means:** Nothing bad. This turns an objection into a feature, and no
 comparable tool does it. The cost is extra work in the dependency index.
+
+---
+
+## 1d. Does journald rate limiting silently drop events during a capture?
+
+**Status:** Open, and unmeasured. Raised 2026-09-02 during Phase 2.
+
+**Why it matters:** SIEM-01 collects operating system events from **`journald` only**. Verified
+from `ossec.conf`, which lists exactly three sources:
+
+| Source | Format |
+|---|---|
+| `journald` | `journald` |
+| `/var/ossec/logs/active-responses.log` | `syslog` |
+| `/var/log/dpkg.log` | `syslog` |
+
+There is no `/var/log/syslog` and no `/var/log/auth.log`. Older Wazuh guidance assumes those
+files, and it does not apply here.
+
+**journald discards messages by design when a service exceeds its rate limit.** It writes a short
+"Suppressed N messages" notice and drops the rest. Dropped messages never reach Wazuh, never
+reach `archives.json`, and never appear in any result. That is telemetry loss caused by
+configuration, which is the exact subject of this thesis, sitting **inside the measurement
+pipeline itself**.
+
+If a Phase 6 run generates events faster than the limit, the run loses events for a reason that
+has nothing to do with the hardening change being tested. The loss would look exactly like a
+finding.
+
+**How to answer:** read the effective `RateLimitIntervalSec` and `RateLimitBurst` on SIEM-01 and
+on WIN-EP-01's forwarder path, then generate a burst at the rate a real Atomic Red Team suite
+produces and check `journalctl` for suppression notices. Either raise or disable the limit and
+record it as a pinned baseline value, or keep it and prove the run rate stays under it.
+
+**What a bad answer means:** if the limit is being hit at realistic run rates and is not
+addressed, every T1 result is contaminated by an unmeasured, uncontrolled loss channel. This is
+a threat to validity, not a performance issue.
 
 ---
 
@@ -149,16 +202,36 @@ Low damage. Test it in week 1 so the substitution is not rushed.
 
 ## 3. What is the real indexer heap and archive growth under `logall_json`?
 
-**Status:** Estimated, not measured.
+**Status:** Partly measured 2026-09-02. Idle baseline now known. Load figure still unmeasured.
 
 **Why it matters:** The 16 GB RAM and 200 GB disk figures for SIEM-01 are headroom based on
 judgment, not measurement. If archives grow faster than expected, F: fills mid experiment.
 
-**How to answer:** Measure during Phase 2 and Phase 3 of the runbook. Watch
-`/var/ossec/logs/archives/` size over one full capture window.
+**Measured on SIEM-01, 2026-09-02, idle, no agents connected:**
+
+| Item | Value |
+|---|---|
+| `archives.json` growth | 32,604 to 39,367 bytes in 60 seconds, about **9.7 MB per day** |
+| Archives on disk | 88 KB |
+| Indexer data (`/var/lib/wazuh-indexer`) | 3.4 MB |
+| Root filesystem after the full build | 195 GB total, 27 GB used, **159 GB free** |
+| Largest single consumer | `/var/ossec/queue/vd`, **12 GB**, the CVE feed. Module now disabled, data kept. |
+
+**What this changes:** the disk is not the near-term risk it was assumed to be. At the idle rate
+archives take decades to matter, and the 200 GB allocation is now 195 GB usable rather than the
+97 GB the installer actually gave it (see DECISIONS.md, LVM extend).
+
+**Still unmeasured, and this is the part that counts:** growth under load, with WIN-EP-01
+connected and an Atomic Red Team suite running. That number cannot be known until a real Phase 6
+run exists.
+
+**How to answer the rest:** measure `archives.json` growth across one full capture window in
+Phase 6, then set retention from that number. Retention was deliberately **not** set in Phase 2
+for this reason. See DECISIONS.md, same date.
 
 **What a bad answer means:** Truncate more aggressively, or shrink the technique list.
-The harness should already abort cleanly on low disk (runbook Phase 6).
+The harness must abort cleanly on low disk (runbook Phase 6). That check is now load-carrying,
+because it is the only thing standing between a burst and a filled disk.
 
 ---
 
@@ -175,6 +248,87 @@ specific control ID to each. Anything you cannot pin gets replaced.
 
 **What a bad answer means:** Swap the unpinnable changes for pinnable ones. Do this before
 data collection starts, not after.
+
+---
+
+## 5. Is snapd still refreshing packages on its own schedule?
+
+**Status:** Open. Raised 2026-09-02. **Must be closed before the Phase 5 golden snapshot.**
+
+**Why it matters:** `snapd` was found installed on SIEM-01 (version `2.76`, upgraded to
+`2.76.3` in the Phase 2 patch run). snapd refreshes its snaps automatically, several times a
+day, without asking. That is the same problem as the apt timers, which were disabled on
+2026-09-02, and the same problem as the Wazuh vulnerability feed, which was disabled the same
+day. This one was **not** dealt with.
+
+All featured snaps were skipped at install, but snapd itself and its base snaps are present and
+its refresh timer is live.
+
+**How to answer:** check `systemctl list-timers | grep snap` and `snap refresh --time` on
+SIEM-01. Then either hold refreshes indefinitely, or remove snapd entirely if nothing depends on
+it. Record whichever is chosen in DECISIONS.md with the reversal command.
+
+**What a bad answer means:** a snap refresh inside a capture window changes packages on the
+machine mid-run and generates its own events. Same failure mode as an unattended apt upgrade:
+silent, scheduled, and it invalidates every run collected before it.
+
+---
+
+## 6. How do SIEM-01 and WIN-EP-01 keep their clocks together after Phase 5?
+
+**Status:** Open. Raised 2026-09-02.
+
+**Why it matters:** SIEM-01 currently reports `NTP service: active` and
+`System clock synchronized: yes`, synchronising over the internet through the NAT adapter. Phase
+5 disconnects that adapter. After that, `systemd-timesyncd` has no reachable time server and the
+clock is free to drift, as is WIN-EP-01's.
+
+Runbook rule 5 (fence capture windows in telemetry, not host clock) protects the **window**. It
+does not protect **cross-machine correlation**, which is a different thing. Matching an endpoint
+event to a manager event depends on the two clocks agreeing.
+
+**How to answer:** pick one of three.
+1. Accept drift and correlate only within a single host. Cheapest. Restricts the analysis.
+2. Run a time source on the Windows host, reachable at `10.20.10.1`. Keeps both guests aligned
+   without giving them internet.
+3. Re-enable VMware Tools time sync (`tools.syncTime` is currently `FALSE` in `SIEM-01.vmx`).
+   **Note the catch:** a clock step is itself a logged event and could land inside a capture
+   window, which is probably why it was disabled in the first place.
+
+**What a bad answer means:** if drift is ignored and cross-host correlation is needed later, the
+timestamps cannot be repaired after the fact. Decide before Phase 6, not after.
+
+---
+
+## 7. Does vmnet3 have a host adapter connected, and should it?
+
+**Status:** Open, and the record currently contradicts reality. Raised 2026-09-02.
+
+**Why it matters:** the Phase 1 record and the runbook describe vmnet3 as host-only with **no
+host adapter**. The host says otherwise, verified 2026-09-02:
+
+```
+VMware Network Adapter VMnet3   Up   10.20.20.1/24
+```
+
+The adapter is connected and the Windows host holds an address on that network. If vmnet3 was
+meant to be isolated, that claim is currently false and any statement in the thesis about
+isolation on that segment would be wrong.
+
+Nothing uses vmnet3 yet, so nothing is broken today.
+
+**Separate but related, recorded here so it is not lost:** VMnet8 originally had **no** host
+adapter, which is why the first SSH attempt to `192.168.243.129` timed out. It was enabled
+deliberately on 2026-09-02 via "Connect a host virtual adapter to this network". That is a host
+configuration change and it is now part of the host baseline.
+
+**How to answer:** decide whether vmnet3 is meant to be isolated. If yes, untick its host
+adapter in the Virtual Network Editor and correct the Phase 1 record. If no, correct the record
+to say the adapter is connected on purpose. Either way the document and the machine must agree.
+Do it before the Phase 5 golden snapshot.
+
+**What a bad answer means:** low technical damage, real thesis damage. A written isolation claim
+that the machine does not support is the kind of thing a panelist can check.
 
 ---
 
