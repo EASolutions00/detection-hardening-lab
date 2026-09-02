@@ -1,0 +1,10 @@
+# Files that run on Linux must keep Unix line endings, whatever platform
+# checks them out. A CRLF shell script fails on bash with a confusing error
+# that names the wrong thing.
+
+lab/scripts/telos-archive text eol=lf
+*.sh                      text eol=lf
+
+# Sysmon reads this config on Windows. Keep it exactly as downloaded so the
+# committed SHA256 in docs/DECISIONS.md stays valid.
+lab/configs/sysmonconfig.xml -text
