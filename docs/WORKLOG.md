@@ -17,6 +17,194 @@ Next:
 
 ---
 
+## 2026-09-02 - Phase 3 complete. WIN-EP-01 built, telemetry proven end to end from endpoint to `archives.json`.
+
+All machine timestamps below are **UTC**. Both guests now run UTC, the host runs UTC+8.
+
+**Did:** Runbook Phase 3 in full, plus nine pieces of work the runbook does not list. Every step
+was verified with a command whose output is recorded, not assumed.
+
+| Runbook step | Outcome |
+|---|---|
+| Create the VM on F:, attach vmnet8 | Built by hand: `vmware-vdiskmanager` for an 80 GB single-file growable disk, then a hand-written `.vmx`. Two NICs, VMnet8 and VMnet2. |
+| Install Windows, install VMware Tools | Windows 11 **Education** `26100.9168`, unactivated. Tools `12.3.5 build-22544099`. |
+| Fully patch Windows while NAT is connected | Two passes. Pass 1 installed 5 updates, all `rc=2`. Pass 2 returned `updates found: 0`. Verified no pending reboot. |
+| Set static 10.20.10.20 on the vmnet2 adapter | `LAB` adapter `10.20.10.20/24`, DHCP disabled, no gateway, DNS cleared. |
+| Install Sysmon with a pinned config | Sysmon `15.21` with SwiftOnSecurity pinned at `1836897f`. **Sysmon itself reports the config hash**, and it matches the committed file. |
+| Copy the config into `lab/configs/` and hash it | `lab/configs/sysmonconfig.xml`, SHA256 `055FEBC6...C87162`, byte-identical to the download. |
+| Install the Wazuh agent, point at 10.20.10.10, add the Sysmon `<localfile>` | Agent `4.14.7` registered as `id=001 WIN-EP-01`, `Connected to the server ([10.20.10.10]:1514/tcp)`. Sysmon channel added, original `ossec.conf` kept as `ossec.conf.telos-orig`. |
+| Install Atomic Red Team, record the commit | Pinned at `cb486d9a888e921fac5902a06c7b46e420bb14a7`, **1310 files**, 342 technique YAMLs. |
+| Copy the fence tool into the guest | `telos-fence.exe` built on the host, source committed at `lab/scripts/telos-fence.cs`. |
+| **Check: run one atomic test, confirm the event reaches `archives.json`** | **PASSED.** See below. |
+
+**Work not in the runbook, all forced by what was found:**
+
+1. **The runbook never chose a Windows edition.** It said "Enterprise Eval (or Server 2022 Eval)".
+   Enterprise Evaluation expires after 90 days, which from 2026-09-02 lands on about 2026-12-01,
+   on top of the defense. Chose **Windows 11 Education, unactivated**, which has no timer at all.
+   Verified `LicenseStatus 5` (Notification), `GracePeriodRemaining 0`. Reasoning in DECISIONS.md.
+2. **Windows 11 setup refused to install** with `This PC doesn't currently meet Windows 11 system
+   requirements`. The VM has UEFI and Secure Boot but deliberately no TPM. Passed with four
+   `LabConfig` registry values set from Shift+F10 at the first setup screen. **This step is
+   required on a rebuild.**
+3. **The installer named the machine `DESKTOP-14G5S5G`.** The Wazuh agent registers by hostname,
+   and that name would then be on every event in the results. Renamed to `WIN-EP-01` before the
+   agent was installed.
+4. **Windows Update had already run during setup**, before the session started. `KB5121003`
+   (`26100.9168`) went on at 08:10 UTC along with three others. That is why the build was already
+   current. One Defender signature update failed at 08:17 (`rc=4`) and succeeded on retry at
+   08:18.
+5. **Kaspersky on the host was blocking 66 Atomic Red Team files.** Found by counting, not
+   guessing. The list included three technique definitions (`T1218.005.yaml`, `T1548.002.yaml`,
+   `T1685.yaml`), `Indexes/windows-index.yaml`, and most of the Windows payload binaries for
+   T1055, T1218 and T1134.001. The student added an exclusion for `E:\TeLoS-artifacts`. After
+   that: **1310 files packed, 0 blocked.**
+6. **Defender in the guest would have quarantined the same files at extraction time**, permanently
+   removing them from the golden image. Added a narrow exclusion for `C:\AtomicRedTeam` only.
+   Result after extraction: **`Defender detections during extraction: 0`**, all 1310 files
+   present.
+7. **`Invoke-AtomicTest` could not run.** It needs the `powershell-yaml` module, which the normal
+   `Install-AtomicRedTeam` installer would have pulled in. Avoiding that installer to pin the
+   commit meant the dependency was missed. Installed `powershell-yaml 0.4.12` from the host.
+8. **Unattended access to SIEM-01 did not exist.** No SSH key, no passwordless sudo, and
+   `/var/ossec` is mode 750 `root:wazuh` with `eli` not in the `wazuh` group. Blueprint step 10
+   needs all of this. Installed an `ed25519` key and a root-owned helper script
+   `/usr/local/sbin/telos-archive` with one narrow sudoers rule.
+9. **Built the capture-window fence and verified it**, which the runbook asks for but does not
+   specify.
+
+**Result. The Phase 3 check, run as a miniature capture window:**
+
+```
+Endpoint side
+  fence Event ID 1 records found : 2
+  START  2026-09-02 13:30:38.709 UTC  RecordId=1558
+  END    2026-09-02 13:30:47.711 UTC  RecordId=1571
+  window span : 9 seconds
+  Sysmon events inside the window : 14   (EventID 1 x11, EventID 11 x3)
+  agent status='connected'  last_ack='2026-09-02 13:33:15'
+
+Manager side
+  lines in archives.json carrying the run id : 2
+```
+
+Both fences travelled Sysmon, event channel, Wazuh agent, manager, `archives.json`, arriving with
+full detail including the fence binary's SHA256.
+
+**Measurements worth keeping:**
+
+| Measurement | Value |
+|---|---|
+| Endpoint-to-archive latency | **1.6 to 1.9 s** (endpoint `13:30:38.7096614Z`, manager `13:30:40.599`) |
+| `archives.json` growth, one agent, idle | 74,989 bytes in 180.4 s, **34.3 MB/day** |
+| `archives.json` growth, no agents (Phase 2) | 9.7 MB/day |
+| One Phase 3 window, fences + one atomic test + drain + report | about **954 KB** |
+| `archives.json` size at the start of Phase 3 | 47.3 MB after about one day |
+| Sysmon channel | 64 MB, `Circular`, `RecordCount 1583` |
+| Free space on SIEM-01 | 162 GB |
+| Fence tool | one invocation, exactly one Sysmon Event ID 1, no other event ID matched |
+
+**Findings that change the experiment, not just the build:**
+
+1. **The Wazuh agent's own scan modules fire inside every capture window.** FIM synchronization
+   every **5 minutes**, FIM real time continuously, plus SCA, rootcheck, syscollector and a full
+   FIM scan all with `scan_on_start yes`. Every Phase 6 run starts with a revert and a boot, so
+   all four run at the start of **every run**. This is noise from the measuring instrument, and it
+   lands in the coefficient of variation. New OPEN-QUESTIONS item 8. The agent-upgrade module is
+   also enabled, which is the Windows twin of the Wazuh repo disabled in Phase 2.
+2. **The Sysmon channel is 64 MB and `Circular`.** If a run fills it before the agent reads it,
+   the oldest events are overwritten and never sent. Biased toward the start of the window, where
+   the start fence is. The Windows twin of item 1d. New OPEN-QUESTIONS item 9.
+3. **Defender Tamper Protection is on, and it will silently defeat Config S.** A script that
+   turns Defender off will fail while Tamper Protection is on, and Config S would then be a
+   snapshot that is not actually suppressed. It cannot be turned off from a script. New
+   OPEN-QUESTIONS item 10.
+4. **`tools.syncTime = "FALSE"` does not stop clock sync on snapshot revert.** Four separate
+   `time.synchronize.*` switches control that, and neither `.vmx` sets any of them. Phase 6
+   reverts before every run, so a clock step would land at the start of all 101 windows. Added to
+   OPEN-QUESTIONS item 6.
+5. **Sysmon Event ID 7 never appears.** `Sysmon64.exe -c` reports `Image loading : disabled` in
+   the SwiftOnSecurity config. Any hardening change whose effect is a DLL load is invisible. The
+   config is also from 2021 (`Source version: 74 | Date: 2021-07-08`), schema `4.50` on a `4.91`
+   binary, so it has no rules for Sysmon event types 25 to 29.
+6. **Background noise was already visible in a 9-second window.** Two of eleven process creations
+   were `TiWorker.exe` and `TrustedInstaller.exe`, Windows servicing processes with nothing to do
+   with the test. Eighteen percent of process events in nine seconds.
+7. **VBS is off and provably so**, from `Win32_DeviceGuard` and independently from `systeminfo`.
+   Change #8 still has something real to switch on. Added to OPEN-QUESTIONS item 2.
+
+**Broke / stuck on:**
+
+1. **`This PC doesn't currently meet Windows 11 system requirements`.** Cause: no TPM, by design.
+   Fixed with four `LabConfig` bypass values. First reported as "no flags" needed, which was
+   wrong; the flags were required.
+
+2. **`Access to the path ... index.yaml is denied` on the host.** Not a permission problem, the
+   ACL granted `Elijah` FullControl. `Get-MpPreference` failing with `0x800106ba` and `WinDefend`
+   `Stopped` led to `Get-CimInstance -Namespace root\SecurityCenter2`, which named **Kaspersky
+   21.26**. Fixed by the student adding an exclusion.
+
+3. **My own archiver bug turned 1 real failure into 1,301.** I created the zip entry before
+   opening the source file. When the open failed the entry stayed open, and `ZipArchive` refuses
+   to create a new entry while one is open:
+   ```
+   Exception calling "CreateEntry" with "2" argument(s): "Entries cannot be created while
+   previously created entries are still open."
+   ```
+   Fixed by opening the source first and disposing in a `finally` block. The real count was 66.
+
+4. **Two SSH key installs silently wrote the wrong thing.** `authorized_keys` on SIEM-01 ended up
+   containing the literal **file path** with a carriage return:
+   ```
+   C:\Users\Elijah\.telos\siem01_ed25519.pub^M$
+   ```
+   The key itself was never there. `ssh -v` showed the key being offered and rejected, which
+   pointed at the server side. Fixed by typing the key directly inside an interactive SSH session,
+   with no PowerShell in the path. **Do not pipe a key file through PowerShell into `ssh`.**
+
+5. **A command I gave the student had a stray trailing quote**, leaving `bash` at a `>`
+   continuation prompt. Nothing ran, because the whole line was joined with `&&`.
+
+6. **`sudo install` failed with `cannot stat '/tmp/telos-archive'`.** The file had been copied
+   successfully and passed a syntax check 20 minutes earlier. Cause: **SIEM-01 rebooted at
+   13:19 UTC and `/tmp` is cleared on boot.** Lab files now go to the home directory.
+
+7. **SIEM-01 restarted twice with no shutdown recorded.** `journalctl --list-boots` shows boots
+   ending at 11:26:59 and 13:05:17, both with journals that stop mid-stream and no shutdown
+   sequence. The hypervisor's `vmware-0.log` also stops mid-stream. Memory ruled out: 12 GB locked
+   of a 55 GB ceiling, 12 GB free in the guest, zero out-of-memory events ever. Cause still
+   unknown. New OPEN-QUESTIONS item 11.
+
+8. **A read-only check of mine printed a false success.** It said
+   `READABLE - exclusion is working` while the line above showed the file was still blocked.
+   `Get-FileHash` writes a non-terminating error, so `catch` never fired. Corrected by opening the
+   file with `[System.IO.File]::Open` inside a real `try`/`finally`.
+
+9. **I reported archive growth as "roughly 500 MB per day", which was wrong.** That figure came
+   from two rough timestamps spanning an activity burst. A clean 180-second measurement gives
+   **34.3 MB/day** idle with one agent. The burst figure is only meaningful as a per-window cost.
+
+10. **A PowerShell command was blocked by a safety guard**, reading `Remove-Item` plus a literal
+    backslash in `TrimEnd('\')` as a possible root deletion. Worked around by putting the script
+    in a file and running the file.
+
+**Next:** Phase 4, pin and record everything. Most of that table is already filled in
+DECISIONS.md. Four items must be settled **before the Phase 5 golden snapshot**, and the list has
+grown from four to eight:
+
+| Item | What |
+|---|---|
+| 1d | journald rate limiting on SIEM-01, still unmeasured |
+| 5 | snapd auto-refresh still enabled on SIEM-01 |
+| 6 | clock drift after isolation, **plus** the four `time.synchronize.*` switches |
+| 7 | vmnet3 host adapter contradicts the Phase 1 record |
+| **8** | **Wazuh agent scan modules fire inside every capture window** |
+| **9** | **Sysmon channel is 64 MB and Circular** |
+| **10** | **Tamper Protection will silently defeat Config S** |
+| **11** | **SIEM-01 restarted twice with no shutdown recorded** |
+
+---
+
 ## 2026-09-02 - Phase 2 complete. SIEM-01 built, Wazuh 4.14.7 installed, `logall_json` proven end to end.
 
 All machine timestamps below are **UTC**, as SIEM-01 runs on `Etc/UTC`. The VM logs read

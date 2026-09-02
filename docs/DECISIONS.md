@@ -8,6 +8,248 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-09-02 - WIN-EP-01 runs Windows 11 **Education, unactivated**, not the Enterprise Evaluation ISO
+
+**Decision:** Installed Windows 11 Education from the retail multi-edition ISO
+`Win11_24H2_English_x64.iso`, choosing "I don't have a product key" and selecting Education from
+the edition list (index 4, verified by reading the XML block inside `install.wim` before
+installing). The machine is left **unactivated**. This supersedes the 2026-08-20 choice of
+`Windows 11 Enterprise Eval 26200.6584 25H2`.
+
+**Why:** The runbook offered "Windows 11 Enterprise Eval (or Server 2022 Eval)" and never picked
+one. Windows 11 Enterprise Evaluation runs for **90 days**. Installed 2026-09-02, it stops around
+**2026-12-01** and then shuts down once per hour. Reverting a snapshot does not fix that, because
+the grace period is computed from the install date stored inside the restored image against the
+real clock. Every capture run after that date would be broken, and the December defense sits
+right on the boundary.
+
+Education carries the same security feature set as Enterprise, including Credential Guard and
+AppLocker `(unverified against Microsoft's edition matrix, taken from the edition requirements
+pages)`, so the hardening catalogue is unaffected. The CIS Microsoft Windows 11 Enterprise
+Benchmark and the Microsoft Windows 11 STIG still apply, which keeps OPEN-QUESTIONS 4 answerable.
+Unactivated Windows has **no expiry timer at all**. Verified on the built machine:
+
+```
+Name          : Windows(R), Education edition
+LicenseStatus : 5   (Notification)
+GracePeriodRemaining : 0
+```
+
+`Notification` is the nag state. It does not shut the machine down.
+
+**Cost if wrong:** a desktop watermark, personalization settings locked, and the Software
+Protection service retrying activation on its own schedule and failing. That retry is a
+background event source and must be named in the baseline description. Rebuilding to a different
+edition later would mean a new golden snapshot and discarding every run before it.
+
+**To reverse:** reinstall. There is no in-place path from Education to another edition without a
+key.
+
+## 2026-09-02 - WIN-EP-01 uses UEFI with Secure Boot and **no virtual TPM**
+
+**Decision:** `firmware = "efi"` and `uefi.secureBoot.enabled = "TRUE"` in the `.vmx`, with no
+TPM device. Windows 11 setup was passed with four `LabConfig` registry values set from the
+Shift+F10 command prompt at the first setup screen:
+
+```
+reg add HKLM\SYSTEM\Setup\LabConfig /v BypassTPMCheck        /t REG_DWORD /d 1 /f
+reg add HKLM\SYSTEM\Setup\LabConfig /v BypassSecureBootCheck /t REG_DWORD /d 1 /f
+reg add HKLM\SYSTEM\Setup\LabConfig /v BypassRAMCheck        /t REG_DWORD /d 1 /f
+reg add HKLM\SYSTEM\Setup\LabConfig /v BypassCPUCheck        /t REG_DWORD /d 1 /f
+```
+
+**These are required.** Setup showed `This PC doesn't currently meet Windows 11 system
+requirements` and only proceeded after they were set. Anyone rebuilding from this runbook must
+do this step.
+
+**Why no TPM:** VMware Workstation 17 requires the virtual machine to be encrypted before it will
+attach a TPM. An encrypted VM asks for a password at power-on. The Phase 6 harness must run 101
+cycles unattended, so that password would have to live in the harness configuration, putting a
+secret into a project whose repository is public. Secure Boot without a TPM still permits VBS,
+so hardening change #8 (Credential Guard) remains possible. TPM 2.0 is recommended but not
+required for VBS `(unverified against current Microsoft documentation)`.
+
+**Verified on the built machine:** `TpmPresent : False`, `SecureBootOn : True`.
+
+**Cost if wrong:** no BitLocker, and a panelist may ask whether an endpoint without a TPM is
+representative. The answer is that no control in the 16-change catalogue depends on a TPM.
+
+**To reverse:** add a TPM in VMware, accept the encryption prompt, and give the harness the
+password. The guest keeps working.
+
+## 2026-09-02 - `vhv.enable = "FALSE"` so that Windows cannot switch VBS on by itself
+
+**Decision:** nested virtualization is explicitly disabled in `WIN-EP-01.vmx`.
+
+**Why:** Windows 11 enables Virtualization-Based Security by default on capable hardware. If VBS
+were already running in the golden image, hardening change #8 (Enable Credential Guard) would
+have nothing left to switch on and would measure nothing. Without virtualization extensions in
+the guest, VBS cannot start, so the change stays a real, measurable change.
+
+**Verified twice, from two independent sources.** `Win32_DeviceGuard` reports
+`VirtualizationBasedSecurityStatus : 0` and `SecurityServicesRunning : 0`, and `systeminfo`
+during the Phase 3 atomic test reported `Virtualization-based security: Status: Not enabled`.
+
+**Cost if wrong:** none while it stays off. It must be switched **on** deliberately, and the
+golden snapshot re-examined, when change #8 is tested. This is tied to OPEN-QUESTIONS 2, which is
+still untested.
+
+**To reverse:** set `vhv.enable = "TRUE"` with the VM powered off. Then check whether Windows
+turns VBS on by itself, because that would silently invalidate change #8.
+
+## 2026-09-02 - WIN-EP-01 time zone set to UTC to match SIEM-01
+
+**Decision:** `Set-TimeZone -Id 'UTC'`. Windows setup had left it at `Singapore Standard Time`
+(UTC+8).
+
+**Why:** SIEM-01 runs `Etc/UTC`. Two machines in two time zones turns every cross-host comparison
+into a manual conversion, and OPEN-QUESTIONS 6 already concerns cross-host time. Windows stores
+event times in UTC internally, so this changes how times are displayed, not what is recorded.
+
+**Cost if wrong:** none to the data. The desktop clock inside the VM shows UTC, which is mildly
+confusing when working in the guest by hand.
+
+**To reverse:** `Set-TimeZone -Id 'Singapore Standard Time'`.
+
+## 2026-09-02 - Sysmon baseline config is SwiftOnSecurity at a pinned commit
+
+**Decision:** `SwiftOnSecurity/sysmon-config`, file `sysmonconfig-export.xml`, pinned at commit
+`1836897f12fbd6a0a473665ef6abc34a6b497e31`, committed to the repo as
+`lab/configs/sysmonconfig.xml`.
+
+**Why:** the alternative considered was `olafhartong/sysmon-modular`, which has a wider event
+surface and MITRE ATT&CK mapping. It was rejected for two reasons. First, archive growth under
+load is still unmeasured (OPEN-QUESTIONS 3), and a much more verbose sensor makes an unmeasured
+disk risk worse. Second, catalogue item 15 is "narrow the Sysmon config" treated as a hardening
+change in its own right. That item only means something if the baseline is not already the
+narrowest available option.
+
+**Two limits that must be stated in Chapter 3, both discovered at install time:**
+
+1. `Sysmon64.exe -c` reports `Image loading : disabled`. **Sysmon Event ID 7 never appears.** Any
+   hardening change whose effect would show up as a DLL load is invisible to the method.
+2. The config file's own header reads `Source version: 74 | Date: 2021-07-08`, and Sysmon loaded
+   it as schema `4.50` into a `4.91` binary. It contains no rules for the event types Sysmon
+   added later: 25 (ProcessTampering), 26 (FileDeleteDetected), 27, 28 and 29.
+
+**Cost if wrong:** a config change later invalidates every earlier run under runbook rule 2.
+
+**To reverse:** `Sysmon64.exe -c <newconfig.xml>`, then re-record the hash here and discard all
+prior runs.
+
+## 2026-09-02 - Atomic Red Team is pinned by **commit and file count**, not by archive hash
+
+**Decision:** the pin is `cb486d9a888e921fac5902a06c7b46e420bb14a7` plus the count of 1310 files
+in the `atomics` folder. The transfer archive `atomics.zip` is **not** a valid pin.
+
+**Why:** the archives were built by a custom lock-tolerant archiver that does not preserve file
+timestamps, so the SHA256 of the zip changes on every repack. This was observed directly: the
+same 74-file module produced two different archive hashes on two consecutive packs. Anyone who
+recorded the archive hash as a pinned value would be recording a number that cannot be
+reproduced.
+
+**Cost if wrong:** nothing, provided the distinction is written down. It is written down here and
+in `C:\AtomicRedTeam\TELOS-PROVENANCE.txt` inside the guest.
+
+## 2026-09-02 - Antivirus exclusions on the host and in the guest, for the Atomic Red Team folder only
+
+**Decision:** two exclusions.
+
+1. **Host:** `E:\TeLoS-artifacts` added to Kaspersky 21.26's exclusion list, by the student.
+2. **Guest:** `Add-MpPreference -ExclusionPath "C:\AtomicRedTeam"` on WIN-EP-01.
+
+**Why the host exclusion:** Kaspersky was blocking read access to **66** Atomic Red Team files.
+Verified by counting them, not estimated. The list included three technique definitions
+(`T1218.005.yaml`, `T1548.002.yaml`, `T1685.yaml`), `Indexes/windows-index.yaml`, and most of the
+Windows payload binaries for T1055 process injection, T1218 proxy execution and T1134.001 token
+manipulation. Without the exclusion the pinned commit `cb486d9a` would describe a set of files
+that is not what is on the endpoint, and the reproducibility claim in the proposal would be
+false. After the exclusion: **1310 files packed, 0 blocked.**
+
+Note that Windows Defender is **not running on the host**. `Get-MpPreference` fails with
+`0x800106ba` and `WinDefend` is `Stopped`, because Kaspersky has taken over.
+
+**Why the guest exclusion, and why it is narrow:** without it, Defender quarantines the same class
+of files **once, at extraction time**, before the golden snapshot exists. Quarantined files are
+then permanently absent from the image. That would not be studying an endpoint where antivirus
+blocks attacks. It would be studying an endpoint where an unrecorded subset of test files simply
+does not exist, chosen by whichever signature version was current on the build day. The exclusion
+covers only `C:\AtomicRedTeam` and is identical in Config S and Config N, so it cancels out
+between them. Atomic Red Team is the stimulus generator, part of the instrument, not the machine
+under test.
+
+**Verified:** the exclusion was accepted **despite Tamper Protection being on**
+(`RESULT: ACCEPTED`, `TamperProtection : True`), and after extraction
+`Defender detections during extraction: 0` with all 1310 files present.
+
+**Cost if wrong:** a stated deviation from a default endpoint that must appear in Chapter 3. A
+panelist can reasonably say the baseline is less realistic. The answer is that the alternative is
+an unrecorded and unreproducible difference baked into the golden snapshot, which runbook rule 2
+exists to prevent.
+
+**To reverse:** `Remove-MpPreference -ExclusionPath "C:\AtomicRedTeam"` in the guest, and delete
+the entry from Kaspersky's exclusion list on the host. Remove the host exclusion when the thesis
+is finished.
+
+## 2026-09-02 - Unattended access to SIEM-01: one SSH key and one narrow sudo rule
+
+**Decision:** two changes on SIEM-01.
+
+1. An `ed25519` key pair at `C:\Users\Elijah\.telos\siem01_ed25519`, **no passphrase**, public
+   half in `/home/eli/.ssh/authorized_keys`.
+2. A root-owned helper script `/usr/local/sbin/telos-archive` with a fixed list of subcommands,
+   and exactly one sudoers line in `/etc/sudoers.d/telos-archive`:
+   ```
+   eli ALL=(root) NOPASSWD: /usr/local/sbin/telos-archive
+   ```
+
+**Why:** blueprint run protocol step 10 is "over SSH to SIEM-01: rotate `archives.json`, gzip,
+pull to `E:\runs\`, then truncate on the SIEM", and the harness must complete 101 cycles with
+nobody watching. `/var/ossec` is mode 750 owned by `root:wazuh` and `eli` is not in the `wazuh`
+group, so root is required.
+
+**Why a script rather than adding `eli` to the `wazuh` group.** Group membership was the one
+command answer, but it grants the interactive login account read **and write** access to
+everything Wazuh holds, including `client.keys` and the archive files that are the evidence base
+of the thesis. A panelist can reasonably ask how you know the archives were not altered. "The
+harness account could not write to them" is an answer. "It could, but I did not" is not.
+
+**The script also enforces a measurement rule.** Its `count` and `show` subcommands take a
+**file** holding the search pattern, never the pattern on the command line, because `sudo` writes
+every command line to journald and Wazuh collects journald. That is OPEN-QUESTIONS 1b, found on
+this machine in Phase 2. The design makes the mistake impossible rather than relying on
+discipline.
+
+**Cost if wrong:** a passphrase-less private key on the host can reach SIEM-01. In a disconnected
+lab with one user the practical risk is small, but it is a real credential and it must never be
+committed. It lives in `C:\Users\Elijah\.telos\`, outside the repository.
+
+**To reverse:** `sudo rm /etc/sudoers.d/telos-archive /usr/local/sbin/telos-archive` and delete
+the `telos-harness` line from `~/.ssh/authorized_keys`.
+
+## 2026-09-02 - WIN-EP-01 was built from a hand-written `.vmx`, not the Workstation wizard
+
+**Decision:** the disk was created with `vmware-vdiskmanager.exe -c -s 80GB -a lsilogic -t 0` and
+the `.vmx` was written by hand.
+
+**Why:** the New Virtual Machine wizard forces a virtual TPM and VM encryption for a Windows 11
+guest, which is exactly what the decision above rejects. A hand-written config also means the
+machine's definition can be read, reviewed and committed rather than clicked.
+
+**Deviations from SIEM-01's configuration, each deliberate:**
+
+| Setting | SIEM-01 | WIN-EP-01 | Reason |
+|---|---|---|---|
+| Firmware | BIOS | `efi` + Secure Boot | Windows 11 needs UEFI; Secure Boot keeps VBS possible |
+| Disk controller | LSI SCSI | NVMe | Windows 11 has no in-box LSI SAS driver, setup would not see the disk |
+| Network card | `e1000` | `e1000e` | `e1000` driver is not in-box on Windows 11 24H2 `(unverified)`; `e1000e` is |
+| Sound card | present | absent | one less device and driver emitting background events |
+| 3D graphics | on | off | removes GPU driver activity from the guest |
+| CPU and RAM hot-add | on | off | the device set must not change during a measurement run |
+
+**Cost if wrong:** a malformed `.vmx` would refuse to power on, which is loud and immediate, not
+silent. It powered on first time.
+
 ## 2026-09-02 - Wazuh vulnerability detection disabled on SIEM-01
 
 **Decision:** Set `<enabled>no</enabled>` inside the `<vulnerability-detection>` block of
@@ -366,12 +608,20 @@ which belonged to T3 and is no longer in scope.
 | SIEM-01 kernel | `6.8.0-138-generic` | 2026-09-02 |
 | SIEM-01 patch level | all 49 pending updates applied once, then automatic updates disabled. No kernel update was included. `apt list --upgradable` returns empty. | 2026-09-02 |
 | SIEM-01 lab address | `10.20.10.10/24` on `ens37` (VMnet2), MAC `00:0c:29:8c:83:33` | 2026-09-02 |
-| Sysmon binary version | not yet recorded | |
-| Sysmon config SHA256 | not yet recorded | |
-| Atomic Red Team commit | not yet recorded | |
-| Windows build number (guest) | not yet recorded | |
+| **Sysmon binary version** | **`15.21`**, `Sysmon64.exe` SHA256 `A60AA845457406383277AFDEAD35BD90C7804572B99901D239CC974841DF2528`, from `https://download.sysinternals.com/files/Sysmon.zip` (zip SHA256 `6D48089C7FAE14944C82B06767B79CCBA3CC26D13218A4227ED28C90F80D0F0E`) | 2026-09-02 |
+| **Sysmon config SHA256** | **`055FEBC600E6D7448CDF3812307275912927A62B1F94D0D933B64B294BC87162`**, 123,257 bytes. `SwiftOnSecurity/sysmon-config` pinned at commit `1836897f12fbd6a0a473665ef6abc34a6b497e31`, file `sysmonconfig-export.xml`, committed to the repo as `lab/configs/sysmonconfig.xml`. **Sysmon itself reports this same hash** via `Sysmon64.exe -c`, so the running sensor is provably using the committed file. | 2026-09-02 |
+| Sysmon config caveats | Config schema `4.50` running on a `4.91` binary. `Image loading : disabled`, so Sysmon Event ID 7 never appears. The config's own header reads `Source version: 74 \| Date: 2021-07-08`, so it has no rules for the event types Sysmon added later (25 to 29). | 2026-09-02 |
+| **Atomic Red Team commit** | **`cb486d9a888e921fac5902a06c7b46e420bb14a7`** (`redcanaryco/atomic-red-team`, committed 2026-08-28), shallow clone, **1310 files** in the `atomics` folder, 342 technique YAML files | 2026-09-02 |
+| Invoke-AtomicRedTeam commit | `8af478bb9e4637df568ac1e596553b025b16cd1b` (`redcanaryco/invoke-atomicredteam`, committed 2025-09-08), module version `2.1.0`, 74 files | 2026-09-02 |
+| `powershell-yaml` | `0.4.12`, nupkg SHA256 `D4602BC7A4A093766520422D53CA8B09ACDE162286FAE11E2EE6C8EDFEA07810`. Hard dependency of `Invoke-AtomicTest`, which cannot parse the atomics without it. | 2026-09-02 |
+| **Windows build number (guest)** | **`10.0.26100.9168`**, Windows 11 **Education**, `DisplayVersion 24H2`. Fully patched: two update passes, the second returned `updates found: 0`. 7 hotfixes: KB5120710, KB5050575, KB5054273, KB5122035, KB5121003, KB5043113, KB5123304. | 2026-09-02 |
+| Wazuh agent version | `4.14.7`, stage `rc1`, commit `8c41e20`, from `wazuh-agent-4.14.7-1.msi` SHA256 `E967F36B75589D6210244FD58239C7021FA53A77C38D92315C3B3BD115002EDE`. Registered as `id=001 name=WIN-EP-01`. Matches the manager exactly. | 2026-09-02 |
+| WIN-EP-01 agent `ossec.conf` | as installed SHA256 `4F4531A2129191A5A01FDE646BEE1FBCF0069BB32FEB0C5F5A34E967B2F4D64B` (10,152 bytes); after adding the Sysmon `<localfile>` block SHA256 `F9541429A7C9D95485D13B74D82A89C2D1E8ADCD075CF7278B6EC7CF3DC4D82F` (10,409 bytes). Original kept in the guest as `ossec.conf.telos-orig`. | 2026-09-02 |
+| WIN-EP-01 lab address | `10.20.10.20/24` on adapter `LAB`, MAC `00:0C:29:A7:96:32`. NAT adapter `NAT`, MAC `00:0C:29:A7:96:28`, `192.168.243.130/24`. Default route exists only on NAT. | 2026-09-02 |
+| WIN-EP-01 VMware Tools | `12.3.5 build-22544099` from the Workstation `windows.iso` dated 2024-02-12. Drivers after the Windows Update pass: VMware SVGA 3D `9.17.11.3` (Broadcom), VMCI Bus `9.8.30.0` (Broadcom), Pointing Device `12.5.12.0` (VMware). | 2026-09-02 |
+| Fence tool | `telos-fence.exe`, 4,096 bytes, SHA256 `D35C939B71ECAC94868947932292531C02A171DECFD3046DEE47DB8E3BD0D814`. Built on the host from `lab/scripts/telos-fence.cs` with the .NET Framework compiler. Verified to emit **exactly one** Sysmon Event ID 1 per run, carrying the run id in its command line. | 2026-09-02 |
 | Ubuntu ISO used | `ubuntu-24.04.4-live-server-amd64.iso`, **installed on SIEM-01**. Installer self-update to 24.04.4.1 declined on purpose. | 2026-09-02 |
-| Windows ISO used | `Windows 11 Enterprise Eval 26200.6584...25h2` (selected, not yet installed) | 2026-08-20 |
+| **Windows ISO used** | **`E:\Homelab files\Win11_24H2_English_x64.iso`**, retail multi-edition, **Windows 11 Education selected**, left unactivated. Supersedes the Enterprise Evaluation ISO chosen on 2026-08-20. See the decision entry of 2026-09-02. | 2026-09-02 |
 
 `WAZUH_REVISION` reads `rc1` in `wazuh-control info`. The reason is unknown. Cite the apt package
 version `4.14.7-1`, not `rc1`.

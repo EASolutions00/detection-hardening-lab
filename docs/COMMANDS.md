@@ -402,6 +402,277 @@ baseline change, recorded in OPEN-QUESTIONS item 7.
 
 ---
 
+### 2.10 Phase 3: build WIN-EP-01 (2026-09-02)
+
+Unless a step says otherwise, commands ran **on the Windows host**. Guest commands were driven
+from the host with `vmrun`, so the student never typed inside the VM except where marked
+**STUDENT**.
+
+Two shorthands used below:
+
+```powershell
+$vmrun = "C:\Program Files (x86)\VMware\VMware Workstation\vmrun.exe"
+$vmx   = "F:\TeLoS Homelab\WIN-EP-01\WIN-EP-01.vmx"
+$pw    = Get-Content "$env:USERPROFILE\.telos\WIN-EP-01.pw" -Raw
+$key   = "$env:USERPROFILE\.telos\siem01_ed25519"
+```
+
+#### 2.10.1 Create the virtual disk
+
+```powershell
+& "C:\Program Files (x86)\VMware\VMware Workstation\vmware-vdiskmanager.exe" -c -s 80GB -a lsilogic -t 0 "F:\TeLoS Homelab\WIN-EP-01\WIN-EP-01.vmdk"
+```
+
+| | |
+|---|---|
+| **What** | Creates an empty 80 GB virtual disk as one growable file. Growable means the file starts near zero bytes and only grows as Windows writes. It does not reserve 80 GB. |
+| **Why** | `-t 0` is single growable, matching the 2026-09-02 decision that F: is NTFS so the 2 GB split option has no purpose. The wizard was avoided because it forces a virtual TPM and VM encryption on a Windows 11 guest. |
+| **When** | Folder exists and is empty, no VM running. |
+| **Correct result** | Progress dots, then exactly `Virtual disk creation successful.` A `SSLConfigLoad: Failed to load OpenSSL config file.` warning above it is harmless. |
+| **Undo** | Delete the `.vmdk`. |
+| **Safe to re-run** | **No.** It refuses if the file exists. Delete first. |
+
+The `.vmx` was then written by hand. It is not reproduced here; the file itself is the record, and
+the deviations from SIEM-01 are tabulated in `DECISIONS.md`.
+
+#### 2.10.2 **STUDENT**: bypass the Windows 11 hardware check
+
+At the **first** Windows setup screen, press **Shift+F10**, then run all four:
+
+```
+reg add HKLM\SYSTEM\Setup\LabConfig /v BypassTPMCheck        /t REG_DWORD /d 1 /f
+reg add HKLM\SYSTEM\Setup\LabConfig /v BypassSecureBootCheck /t REG_DWORD /d 1 /f
+reg add HKLM\SYSTEM\Setup\LabConfig /v BypassRAMCheck        /t REG_DWORD /d 1 /f
+reg add HKLM\SYSTEM\Setup\LabConfig /v BypassCPUCheck        /t REG_DWORD /d 1 /f
+```
+
+| | |
+|---|---|
+| **What** | Sets flags that setup reads before its hardware check. They affect setup only. They do not disable Secure Boot and do not weaken the installed system. |
+| **Why** | **Required.** The VM has UEFI and Secure Boot but deliberately no TPM. Setup stops with `This PC doesn't currently meet Windows 11 system requirements` without them. |
+| **When** | Before clicking Install. Then `exit` and continue. |
+| **Correct result** | `The operation completed successfully.` from each. |
+| **Undo** | Not needed. They live only in the temporary setup environment. |
+| **Safe to re-run** | Yes. |
+
+Then: **"I don't have a product key"**, edition **`Windows 11 Education`**, **Custom: Install
+Windows only**. At the sign-in screen use **Sign-in options** then **Domain join instead**, which
+despite its name is the supported route to a plain local account. Username `eli`. Privacy toggles
+all off, diagnostic data **Required only**.
+
+#### 2.10.3 Rename, time zone, static IP, adapter names
+
+Run inside the guest by copying a script in and executing it. The changes made were:
+
+```powershell
+Rename-Computer -NewName 'WIN-EP-01' -Force
+Set-TimeZone -Id 'UTC'
+Rename-NetAdapter -Name <old> -NewName 'LAB'   # matched by MAC 00-0C-29-A7-96-32
+Rename-NetAdapter -Name <old> -NewName 'NAT'   # matched by MAC 00-0C-29-A7-96-28
+Set-NetIPInterface -InterfaceIndex $idx -Dhcp Disabled
+New-NetIPAddress -InterfaceIndex $idx -IPAddress '10.20.10.20' -PrefixLength 24
+Set-DnsClientServerAddress -InterfaceIndex $idx -ResetServerAddresses
+```
+
+| | |
+|---|---|
+| **What** | Renames the machine, sets the clock to UTC, names the two adapters, and gives the lab adapter a static address with **no gateway** and no DNS. |
+| **Why** | The installer named it `DESKTOP-14G5S5G`, and the Wazuh agent registers by hostname, so that name would appear on every event in the results. UTC matches SIEM-01's `Etc/UTC`. No gateway means the lab adapter can never become the default route. DHCP off stops the adapter broadcasting requests nobody answers, which is repeating traffic inside future capture windows. |
+| **When** | Before the Wazuh agent is installed. Scripts match adapters by **MAC**, not by name, because names change. |
+| **Correct result** | `LAB 10.20.10.20/24 gw=` and `NAT 192.168.243.130/24 gw=192.168.243.2`. The rename needs a reboot; confirm with `ComputerName : WIN-EP-01` afterwards. |
+| **Undo** | Each line has a direct reverse. |
+| **Safe to re-run** | Yes, the script detects work already done. |
+
+#### 2.10.4 Patch Windows using the built-in update interface
+
+```powershell
+$session  = New-Object -ComObject Microsoft.Update.Session
+$sr = $session.CreateUpdateSearcher().Search("IsInstalled=0 and IsHidden=0")
+# then CreateUpdateDownloader().Download() and CreateUpdateInstaller().Install()
+```
+
+| | |
+|---|---|
+| **What** | Searches, downloads and installs Windows updates through the COM interface built into Windows. It does not reboot by itself. |
+| **Why** | The common alternative is the `PSWindowsUpdate` module from the PowerShell Gallery. It was **not** used on purpose: it would add third-party software to the golden image and to the software inventory that Chapter 3 has to describe. The built-in interface adds nothing. |
+| **When** | While NAT is connected. Repeat passes until one reports zero. |
+| **Correct result** | `install ResultCode: 2` (2 = succeeded, 3 = succeeded with errors, 4 = failed), then on the next pass `updates found: 0`. |
+| **Undo** | `wusa /uninstall` per KB. Not normally needed. |
+| **Safe to re-run** | Yes, designed for it. |
+
+**Always verify the reboot actually happened** before trusting `updates found: 0`:
+
+```powershell
+Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending'
+Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired'
+(Get-CimInstance Win32_OperatingSystem).LastBootUpTime
+```
+
+Both `False` and a recent boot time. A pending reboot makes a zero result meaningless.
+
+#### 2.10.5 Download and hash the artifacts (host)
+
+```powershell
+$sha = (gh api repos/SwiftOnSecurity/sysmon-config/commits --jq '.[0].sha')
+Invoke-WebRequest -Uri "https://download.sysinternals.com/files/Sysmon.zip" -OutFile "E:\TeLoS-artifacts\Sysmon.zip" -UseBasicParsing
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-config/$sha/sysmonconfig-export.xml" -OutFile "E:\TeLoS-artifacts\sysmonconfig-export.xml" -UseBasicParsing
+Invoke-WebRequest -Uri "https://packages.wazuh.com/4.x/windows/wazuh-agent-4.14.7-1.msi" -OutFile "E:\TeLoS-artifacts\wazuh-agent-4.14.7-1.msi" -UseBasicParsing
+git clone --depth 1 https://github.com/redcanaryco/atomic-red-team.git      "E:\TeLoS-artifacts\atomic-red-team"
+git clone --depth 1 https://github.com/redcanaryco/invoke-atomicredteam.git "E:\TeLoS-artifacts\invoke-atomicredteam"
+Invoke-WebRequest -Uri "https://www.powershellgallery.com/api/v2/package/powershell-yaml" -OutFile "E:\TeLoS-artifacts\psmodules\powershell-yaml.nupkg" -UseBasicParsing
+```
+
+| | |
+|---|---|
+| **What** | Fetches every artifact to the host, pinning the Sysmon config to an exact commit rather than "whatever was there that day". |
+| **Why** | Downloading on the host means each file is hashed **before** it reaches the endpoint, and the guest never runs a browser or a download tool. It also means Phase 5 can disconnect NAT without breaking anything. |
+| **When** | Before any of it is copied into the guest. |
+| **Correct result** | Every SHA256 is in `DECISIONS.md`. `git rev-parse HEAD` in each clone gives the pinned commit. |
+| **Undo** | Delete `E:\TeLoS-artifacts`. |
+| **Safe to re-run** | The downloads yes, the clones no (they refuse if the folder exists). |
+
+**`E:\TeLoS-artifacts` must be excluded in Kaspersky first.** Otherwise 66 Atomic Red Team files
+are unreadable and the pinned commit stops describing what is on disk. See DECISIONS.md.
+
+#### 2.10.6 Install Sysmon (guest)
+
+```powershell
+C:\telos\Sysmon64.exe -accepteula -i C:\telos\sysmonconfig.xml
+```
+
+| | |
+|---|---|
+| **What** | Installs a Windows service and a kernel driver that record process, network, registry, file and DNS activity into their own event channel. |
+| **Why** | This is the sensor. Everything T1 measures on the endpoint comes through it. Installed **before** the Wazuh agent so the channel already exists when the agent starts looking for it. |
+| **When** | After patching, with no pending reboot. |
+| **Correct result** | `Configuration file validated.`, `Sysmon64 installed.`, `SysmonDrv started.`, `Sysmon64 started.` Then `Sysmon64` and `SysmonDrv` both `Running`. |
+| **Undo** | `Sysmon64.exe -u` |
+| **Safe to re-run** | Refuses if already installed. Use `-c` to change config instead. |
+
+**Then prove the sensor is running the committed file:**
+
+```powershell
+C:\telos\Sysmon64.exe -c
+```
+
+Look for `Config hash: SHA256=...` and compare it to `lab/configs/sysmonconfig.xml`. They matched
+on 2026-09-02. The same output also reports `Image loading : disabled`, which is why Sysmon Event
+ID 7 never appears.
+
+#### 2.10.7 Install the Wazuh agent (guest)
+
+```powershell
+msiexec.exe /i C:\telos\wazuh-agent-4.14.7-1.msi /q /l*v C:\telos\wazuh-msi.log WAZUH_MANAGER=10.20.10.10 WAZUH_REGISTRATION_SERVER=10.20.10.10 WAZUH_AGENT_NAME=WIN-EP-01
+```
+
+| | |
+|---|---|
+| **What** | Installs the agent silently and registers it with the manager over port 1515. |
+| **Why** | The version must match the manager exactly. A mismatch is a silent source of behaviour differences. |
+| **When** | SIEM-01 must be **running and reachable** first. Check ports 1514 and 1515 with `Test-NetConnection` before installing. |
+| **Correct result** | Exit code `0` (or `3010`, meaning success plus a reboot). Then in `ossec.log`: `Valid key received`, then `(4102): Connected to the server ([10.20.10.10]:1514/tcp).` |
+| **Undo** | `msiexec /x` with the same MSI. |
+| **Safe to re-run** | Yes, but check for an existing install first. |
+
+**Registration happens when the service starts, not during the MSI.** Checking `client.keys`
+before starting the service shows `0 bytes` and looks like a failure. Start the service, then
+check. A non-empty `client.keys` with the agent id and name is the proof.
+
+**Add the Sysmon channel**, appended as a new `<ossec_config>` block in `ossec.conf`:
+
+```xml
+<ossec_config>
+  <localfile>
+    <location>Microsoft-Windows-Sysmon/Operational</location>
+    <log_format>eventchannel</log_format>
+  </localfile>
+</ossec_config>
+```
+
+Back up the original first. It is kept in the guest as `ossec.conf.telos-orig`, and both hashes
+are recorded in `DECISIONS.md`. Restart with `Restart-Service WazuhSvc`.
+
+#### 2.10.8 Unattended access to SIEM-01
+
+Host side:
+
+```powershell
+ssh-keygen -t ed25519 -f "$env:USERPROFILE\.telos\siem01_ed25519" -N '""' -C "telos-harness" -q
+```
+
+**STUDENT**, typed **inside an interactive SSH session on SIEM-01**, not piped from PowerShell:
+
+```bash
+mkdir -p ~/.ssh && chmod 700 ~/.ssh && echo '<the public key line>' >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys
+```
+
+| | |
+|---|---|
+| **What** | Installs the harness public key so SSH needs no password. |
+| **Why** | Blueprint run-protocol step 10 needs SSH to SIEM-01 for all 101 runs with nobody watching. |
+| **When** | Before the Phase 3 check, which reads `archives.json`. |
+| **Correct result** | `ssh -i <key> -o BatchMode=yes eli@10.20.10.10 hostname` prints `siem-01`. |
+| **Undo** | Delete the `telos-harness` line from `~/.ssh/authorized_keys`. |
+| **Safe to re-run** | Yes, but it appends a duplicate line. Harmless. |
+
+**Do not pipe the key file through PowerShell into `ssh`.** Two attempts did that and wrote the
+literal **file path** into `authorized_keys`, with a carriage return on the end:
+`C:\Users\Elijah\.telos\siem01_ed25519.pub^M$`. It fails silently. `ssh -v` showing the key
+offered and rejected is the symptom. Type it inside the SSH session instead.
+
+Then the helper script and its single sudo rule, both **STUDENT**, on SIEM-01:
+
+```bash
+sudo install -o root -g root -m 755 /home/eli/telos-archive /usr/local/sbin/telos-archive
+```
+```bash
+printf 'eli ALL=(root) NOPASSWD: /usr/local/sbin/telos-archive\n' | sudo tee /etc/sudoers.d/telos-archive > /dev/null && sudo chmod 440 /etc/sudoers.d/telos-archive && sudo visudo -c
+```
+
+| | |
+|---|---|
+| **What** | Installs a root-owned program with a fixed set of subcommands, then grants `eli` passwordless root for that one file and nothing else. |
+| **Why** | `/var/ossec` is mode 750 `root:wazuh` and `eli` is not in the `wazuh` group. Adding `eli` to that group was rejected: it would give the login account write access to the evidence files, and then no one can claim the archives were protected from the harness account. |
+| **When** | After the file is staged. **Stage it in the home directory, not `/tmp`.** `/tmp` is cleared on boot and a reboot silently deleted it once. |
+| **Correct result** | Silence from the first. From the second, every line `parsed OK`, including `/etc/sudoers.d/telos-archive`. Then `sudo -n /usr/local/sbin/telos-archive size` prints a byte count with no password prompt. |
+| **Undo** | `sudo rm /etc/sudoers.d/telos-archive /usr/local/sbin/telos-archive` |
+| **Safe to re-run** | Yes. |
+
+**Root ownership is what makes this safe.** If `eli` could edit that file, the sudo rule would be
+a direct path to full root.
+
+#### 2.10.9 The Phase 3 check
+
+```powershell
+& $vmrun -T ws -gu eli -gp $pw runProgramInGuest $vmx "C:\telos\telos-fence.exe" "START" "telos-p3-check-001"
+# Invoke-AtomicTest T1082 -TestNumbers 1 -PathToAtomicsFolder C:\AtomicRedTeam\atomics
+& $vmrun -T ws -gu eli -gp $pw runProgramInGuest $vmx "C:\telos\telos-fence.exe" "END" "telos-p3-check-001"
+Start-Sleep -Seconds 120
+```
+```powershell
+scp -i $key "$sp\p3pattern.txt" eli@10.20.10.10:/home/eli/p3pattern.txt
+ssh -i $key eli@10.20.10.10 "sudo -n /usr/local/sbin/telos-archive count /home/eli/p3pattern.txt"
+```
+
+| | |
+|---|---|
+| **What** | Fires a fence, runs one harmless discovery test, fires a second fence, drains, then counts lines in `archives.json` carrying the run id. |
+| **Why** | The runbook's own check. It also exercises the Phase 6 harness design rather than just the plumbing. |
+| **When** | Everything else in Phase 3 installed and verified. |
+| **Correct result** | Two fence Event ID 1 records on the endpoint, non-zero Sysmon events between them, and a non-zero count in `archives.json`. On 2026-09-02: 2 fences, 14 Sysmon events, 2 matching archive lines. |
+| **Undo** | Nothing to undo. |
+| **Safe to re-run** | Yes, with a new run id. |
+
+**The search pattern goes in a file, and only the filename is on the command line.** `sudo`
+writes every command line to journald, Wazuh collects journald, so a pattern typed on a `sudo`
+line creates a new event containing that pattern and inflates its own count. That is
+OPEN-QUESTIONS 1b. The helper script's `count` and `show` subcommands take a file for this reason.
+
+**The 120 second drain is not optional.** Measured endpoint-to-archive latency is 1.6 to 1.9
+seconds per event, but the agent buffers and the manager writes on its own schedule.
+
+---
+
 ## Part 3: Read-only checks (safe, change nothing)
 
 ### 3.1 Hardware and Windows state

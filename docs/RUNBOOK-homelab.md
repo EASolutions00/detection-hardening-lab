@@ -417,36 +417,204 @@ DECISIONS, the pinned-versions table, OPEN-QUESTIONS, COMMANDS, then commit and 
 
 VM spec: 4 vCPU, 8 GB RAM, 80 GB thin disk, **stored on F:**.
 
-- [ ] Create the VM on F:. Attach vmnet8 (NAT) for now.
-- [ ] Install Windows. Install **VMware Tools**. This is required, `vmrun` guest commands
-      will not work without it.
-- [ ] Fully patch Windows now, while NAT is still connected. You will disconnect it later
-      and it must never need updates again.
-- [ ] Set static IP 10.20.10.20 on the vmnet2 adapter.
-- [ ] Install Sysmon with a pinned config:
+**Rewritten 2026-09-02 to match the build that was actually executed.** Every command with its
+explanation, expected output and reversal is in `docs/COMMANDS.md` section 2.10. Every pinned
+value is in `docs/DECISIONS.md`.
+
+### 3.0 Decide two things before you start
+
+Both are hard to reverse once the golden snapshot exists.
+
+**Windows edition.** Do **not** use Windows 11 Enterprise Evaluation. It expires after 90 days
+and then shuts down once per hour, and reverting a snapshot does not fix it because the grace
+period counts from the install date inside the restored image against the real clock. Use
+**Windows 11 Education from a retail multi-edition ISO, left unactivated.** Same security feature
+set as Enterprise, and no timer at all. Reasoning in DECISIONS.md.
+
+**Firmware.** UEFI with Secure Boot **on**, and **no virtual TPM**. Workstation 17 requires the VM
+to be encrypted before it will attach a TPM, and an encrypted VM needs a password at power-on,
+which the unattended Phase 6 harness would have to carry in a public repository. Secure Boot
+without a TPM still permits VBS, so hardening change #8 stays possible.
+
+### 3.1 Create the VM
+
+- [ ] Create the disk from the command line, not the wizard. The wizard forces a TPM and
+      encryption on a Windows 11 guest.
+
+```powershell
+vmware-vdiskmanager.exe -c -s 80GB -a lsilogic -t 0 "F:\TeLoS Homelab\WIN-EP-01\WIN-EP-01.vmdk"
+```
+
+- [ ] Write the `.vmx` by hand. Two NICs: `ethernet0` on VMnet8 (NAT), `ethernet1` on VMnet2.
+      Required settings and why:
+
+| Setting | Value | Reason |
+|---|---|---|
+| `firmware` | `efi` | Windows 11 requires UEFI |
+| `uefi.secureBoot.enabled` | `TRUE` | needed later for VBS |
+| `nvme0` | present, disk on `nvme0:0` | Windows 11 has **no in-box LSI SAS driver**. With SCSI, setup does not see the disk. |
+| `ethernet*.virtualDev` | `e1000e` | the older `e1000` driver is not in-box on Windows 11 24H2 `(unverified)` |
+| `vhv.enable` | **`FALSE`** | without it VBS cannot start, so **change #8 still has something to switch on**. Windows 11 turns VBS on by itself on capable hardware. |
+| `tools.syncTime` | `FALSE` | a clock step is itself a logged event |
+| `sound.present` | `FALSE` | one less device emitting background events |
+| `mks.enable3d` | `FALSE` | removes GPU driver activity |
+| `vcpu.hotadd`, `mem.hotadd` | `FALSE` | the device set must not change mid-run |
+
+- [ ] Check the `.vmx` has no UTF-8 byte order mark. Workstation cannot parse the first line if
+      it does. First three bytes must be `2E 65 6E`, not `EF BB BF`.
+
+### 3.2 Install Windows
+
+- [ ] **At the first setup screen, press Shift+F10 and set all four bypass values.** This is
+      required, not optional. Without them setup stops with `This PC doesn't currently meet
+      Windows 11 system requirements`.
+
+```
+reg add HKLM\SYSTEM\Setup\LabConfig /v BypassTPMCheck        /t REG_DWORD /d 1 /f
+reg add HKLM\SYSTEM\Setup\LabConfig /v BypassSecureBootCheck /t REG_DWORD /d 1 /f
+reg add HKLM\SYSTEM\Setup\LabConfig /v BypassRAMCheck        /t REG_DWORD /d 1 /f
+reg add HKLM\SYSTEM\Setup\LabConfig /v BypassCPUCheck        /t REG_DWORD /d 1 /f
+```
+
+- [ ] Product key screen: **"I don't have a product key"**. Edition: **Windows 11 Education**.
+- [ ] Disk: **Custom: Install Windows only**. Do not create partitions by hand.
+- [ ] At the sign-in screen use **Sign-in options**, then **Domain join instead**. The label is
+      misleading. It joins no domain; it is the supported route to a plain local account on Pro,
+      Education and Enterprise. A Microsoft account would bring OneDrive, settings sync and cloud
+      telemetry, all firing on their own schedules inside your capture windows.
+- [ ] Username `eli`, to match SIEM-01. **Keep the password out of the repository.** The harness
+      needs it for `vmrun -gu` and `-gp`. Put it in `C:\Users\<you>\.telos\WIN-EP-01.pw`.
+- [ ] Privacy screens: every toggle **off**, diagnostic data **Required only**.
+- [ ] Install **VMware Tools**. Required, `vmrun` guest commands do not work without it.
+
+### 3.3 Rename and address the machine, before installing anything else
+
+- [ ] **Rename to `WIN-EP-01` and reboot.** The installer picks a name like `DESKTOP-14G5S5G`,
+      the Wazuh agent registers by hostname, and that name then appears on every event in your
+      results. Fix it before the agent exists.
+- [ ] Set the time zone to **UTC**, matching SIEM-01.
+- [ ] Static `10.20.10.20/24` on the VMnet2 adapter, **no gateway, no DNS, DHCP disabled**. No
+      gateway means it can never become the default route. DHCP off stops it broadcasting
+      requests nobody answers.
+- [ ] Match adapters by **MAC address**, not by name. Names change, MACs are set in the `.vmx`.
+
+### 3.4 Patch Windows fully, while NAT is still connected
+
+- [ ] Use the Windows Update COM interface (`Microsoft.Update.Session`), which is built in.
+      **Do not install `PSWindowsUpdate`.** It would add third-party software to the golden image
+      and to the software inventory Chapter 3 must describe.
+- [ ] Repeat passes until one reports `updates found: 0`.
+- [ ] **Verify the reboot actually happened** before believing a zero result. Check
+      `LastBootUpTime` and both pending-reboot registry keys. A pending reboot makes zero
+      meaningless.
+- [ ] If Windows Update ever offers a **feature update** to a newer Windows version, **do not
+      take it.** That is a version change, not a patch, and your CIS and STIG control IDs are
+      tied to a version.
+
+### 3.5 Fetch every artifact to the host and hash it there
+
+Download on the **host**, then copy into the guest. This hashes each artifact before it reaches
+the endpoint, keeps download tools off the measured machine, and means Phase 5 can disconnect NAT
+without breaking anything.
+
+- [ ] Sysmon from `download.sysinternals.com`
+- [ ] The Sysmon config pinned to an **exact commit**, not to a branch
+- [ ] The Wazuh agent MSI **matching the manager version exactly**
+- [ ] Atomic Red Team and `invoke-atomicredteam`, shallow clones, commits recorded
+- [ ] `powershell-yaml`, which `Invoke-AtomicTest` cannot run without
+
+**If the host runs antivirus, exclude the artifact folder first.** Kaspersky blocked 66 Atomic
+Red Team files on this host, including three technique definitions. Without the exclusion the
+pinned commit stops describing what is on the endpoint. Count the files after packing and confirm
+the count matches.
+
+### 3.6 Install Sysmon with a pinned config
 
 ```powershell
 .\Sysmon64.exe -accepteula -i sysmonconfig.xml
 ```
 
-Copy that exact config into `lab/configs/`. Record its SHA256 hash. A Sysmon config change
-is itself a telemetry change and would silently ruin comparisons across runs.
+- [ ] Copy that exact config into `lab/configs/` and record its SHA256 in DECISIONS.md. A Sysmon
+      config change is itself a telemetry change and would silently ruin comparisons across runs.
+- [ ] **Prove the sensor is using the committed file.** `Sysmon64.exe -c` prints
+      `Config hash: SHA256=...`. Compare it to the file in the repo. Do not assume.
+- [ ] Read the rest of that output and write down what it says is **off**. On this build it
+      reports `Image loading : disabled`, meaning Sysmon Event ID 7 never appears at all.
+- [ ] **Record the event channel's size and mode**:
+      `Get-WinEvent -ListLog 'Microsoft-Windows-Sysmon/Operational'`. It defaults to 64 MB and
+      `Circular`, which means a busy run can overwrite its own earliest events before the agent
+      reads them. That is telemetry lost inside the pipeline. See OPEN-QUESTIONS item 9.
 
-- [ ] Install the Wazuh agent, point it at 10.20.10.10, and add a `<localfile>` block for
-      the Sysmon channel `Microsoft-Windows-Sysmon/Operational`.
-- [ ] Install Atomic Red Team, then record the commit:
+### 3.7 Install the Wazuh agent
 
-```powershell
-Install-AtomicRedTeam -getAtomics
-```
+- [ ] **Start SIEM-01 first** and confirm ports 1514 and 1515 answer. An agent installed against
+      an unreachable manager completes successfully and simply never connects.
+- [ ] Install with `WAZUH_MANAGER`, `WAZUH_REGISTRATION_SERVER` and `WAZUH_AGENT_NAME`.
+- [ ] Add a `<localfile>` block for `Microsoft-Windows-Sysmon/Operational` with
+      `<log_format>eventchannel</log_format>`. Back up the original `ossec.conf` first and record
+      both hashes.
+- [ ] **Check `client.keys` after starting the service, not before.** Registration happens at
+      service start. Checked too early it reads 0 bytes and looks like a failure.
+- [ ] Confirm `(4102): Connected to the server` in `ossec.log`.
+- [ ] **Read the rest of `ossec.log` and write down every module that starts on a timer.** On
+      this build: FIM synchronization every 5 minutes, FIM real time, plus SCA, rootcheck,
+      syscollector and a full FIM scan all with `scan_on_start yes`. Every Phase 6 run begins with
+      a revert and a boot, so those four run at the start of **every run**. That is noise from the
+      measuring instrument landing in the coefficient of variation. See OPEN-QUESTIONS item 8.
 
-- [ ] Copy your fence tool into the guest. This is a small uniquely named binary or script
-      that produces one distinctive Sysmon EventID 1 when run. You will use it to mark the
-      start and end of every capture window from inside the telemetry itself, which is far
-      more reliable than host clock time.
+### 3.8 Install Atomic Red Team at a pinned commit
 
-**Check:** run one atomic test, then confirm the event reaches `archives.json` on SIEM-01.
-If it does not arrive, nothing later in this runbook will work.
+Do **not** use `Install-AtomicRedTeam -getAtomics`. It downloads whatever is current and gives you
+no commit to record. Clone on the host at a pinned commit and copy the files in.
+
+- [ ] **Add an antivirus exclusion in the guest for the Atomic Red Team folder before
+      extracting.** Otherwise Defender quarantines payloads once, at extraction, and those files
+      are permanently absent from the golden image. You would not be studying an endpoint where
+      antivirus blocks attacks; you would be studying one where an unrecorded subset of test files
+      does not exist. Keep the exclusion identical in Config S and Config N so it cancels out.
+- [ ] Install `powershell-yaml`. `Invoke-AtomicTest` cannot parse the atomics without it.
+- [ ] **Count the extracted files** and compare to what was packed. A partial extraction is the
+      failure that looks like success.
+- [ ] **The pin is the commit hash plus the file count, not the archive hash.** Transfer archives
+      do not preserve timestamps, so their hash changes on every repack.
+- [ ] Verify with `Invoke-AtomicTest <T-number> -ShowDetailsBrief`, which reads and prints test
+      definitions and executes nothing.
+
+### 3.9 Build and verify the fence tool
+
+A small purpose-built program that prints one line and exits. Source and build instructions are in
+`lab/scripts/`.
+
+- [ ] **Build it on the host**, copy the binary in, and pin its SHA256. Building inside the guest
+      gives different bytes on every rebuild.
+- [ ] **Verify it emits exactly one Sysmon Event ID 1**, and that no other event ID carries the
+      run identifier. Launch it through `vmrun` directly, never through `cmd` or `powershell`,
+      because those create their own processes and each is another Event ID 1.
+
+### Phase 3 check
+
+Run it as a miniature capture window, not as a bare command, so the harness design is exercised
+too:
+
+1. Read the archive size on SIEM-01 first, so growth is measured rather than assumed.
+2. Fire the **start fence** with a unique run id.
+3. Run **one** atomic test. A harmless discovery technique is enough.
+4. Fire the **end fence**.
+5. **Drain 120 seconds.** Per-event latency is only about 1.6 to 1.9 seconds, but the agent
+   buffers and the manager writes on its own schedule.
+6. On the endpoint: find both fences and count the Sysmon events between them.
+7. On the manager: count lines in `archives.json` carrying the run id.
+
+**Put the search pattern in a file and pass only the filename.** `sudo` writes every command line
+to journald, Wazuh collects journald, so a pattern typed on a `sudo` line creates a new event
+containing that pattern and inflates its own count. That is OPEN-QUESTIONS 1b.
+
+**Pass condition:** two fences on the endpoint, a non-zero Sysmon count between them, and a
+non-zero count in `archives.json`. **If the manager count is zero, nothing later in this runbook
+will work.**
+
+**Before starting Phase 4, write up the phase** per the rules in `CLAUDE.md`: WORKLOG, DECISIONS,
+the pinned-versions table, OPEN-QUESTIONS, COMMANDS, then commit and push.
 
 ---
 
