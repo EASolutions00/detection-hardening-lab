@@ -249,8 +249,13 @@ archives take decades to matter, and the 200 GB allocation is now 195 GB usable 
 | Condition | Measurement | Rate |
 |---|---|---|
 | No agents, idle (Phase 2) | 32,604 to 39,367 bytes in 60 s | **9.7 MB/day** |
-| **One agent, idle, no capture** | 48,358,184 to 48,433,173 bytes in 180.4 s | **34.3 MB/day** |
+| One agent, idle, agent scan modules **enabled** | 48,358,184 to 48,433,173 bytes in 180.4 s | **34.3 MB/day** |
+| **One agent, idle, agent scan modules DISABLED** | 49,615,051 to 49,654,191 bytes in 180.4 s | **17.9 MB/day** |
 | One Phase 3 capture window (2 fences, 1 atomic test, 120 s drain, 1 report script) | 47,305,482 to 48,259,184 bytes, about **954 KB** | not a rate, a per-activity cost |
+
+**Disabling the agent's own scan modules cut idle volume roughly in half**, from 34.3 to 17.9
+MB/day, which is about two thirds of everything the agent was contributing over the no-agent
+baseline. See item 8.
 
 `archives.json` was already **47.3 MB** when Phase 3 began, from roughly one day of running.
 
@@ -401,8 +406,9 @@ that the machine does not support is the kind of thing a panelist can check.
 
 ## 8. The Wazuh agent's own scheduled modules fire inside every capture window
 
-**Status:** Open, and measured. Raised 2026-09-02 during Phase 3. **Must be settled before the
-Phase 5 golden snapshot.**
+**Status:** **Mostly fixed 2026-09-02.** Four modules disabled and verified. One part remains
+open, the agent-upgrade module, which has no agent-side switch. See the resolution at the end of
+this item.
 
 **Why it matters:** the agent's default configuration runs five scan modules on their own
 timers. With `logall_json` on, every event they produce lands in `archives.json`. These are
@@ -434,13 +440,121 @@ Upgrade started.` The manager can push a new agent version to the endpoint. That
 twin of the Wazuh apt repo disabled on SIEM-01 in Phase 2, and an agent version bump partway
 through invalidates every earlier run under runbook rule 2.
 
-**How to answer:** decide which modules stay on, then either disable the rest in `ossec.conf` or
-prove their timers cannot fall inside a capture window. Record the choice, re-hash `ossec.conf`,
-and commit it to `lab/configs/`. Disable the agent-upgrade module regardless.
-
 **What a bad answer means:** run-to-run event counts differ for reasons unrelated to any
 hardening change, and the difference is not even constant, because a 12-hour timer lands in some
 runs and not others. That is contamination of the primary measurement, not a performance issue.
+
+### Resolution, 2026-09-02
+
+Four modules disabled in the agent's `ossec.conf`, each with a comment in the file explaining
+why. Verified from what the agent reports about itself after restart, not from the file:
+
+```
+2026/09/02 13:56:21  (6001): File integrity monitoring disabled.
+2026/09/02 13:56:21  rootcheck: Rootcheck disabled.
+2026/09/02 13:56:21  syscollector: Module disabled. Exiting...
+2026/09/02 13:56:21  sca: Module disabled. Exiting.
+```
+
+The measurement path is untouched. `Application`, `Security`, `System`,
+`Microsoft-Windows-Sysmon/Operational` and `active-responses.log` are all still analyzed, and the
+agent reports `Connected to the server` with `status='connected'`.
+
+`ossec.conf` is now **11,848 bytes, SHA256
+`1F36416E1BC59443D98AD0307638F5C5C788BEE12C545140AD993A1E4E8F2658`**, committed as
+`lab/configs/wazuh-agent-ossec.conf`. The previous version is kept in the guest as
+`ossec.conf.telos-pre-item8`.
+
+**Two of those four were more than noise, and this is the part worth remembering.** `sca`
+evaluates a **CIS Windows 11 policy**, so its results change when a hardening change is applied.
+`syscheck` monitors the registry, so it would **observe the hardening script making its change**.
+Both would have produced events that appear only in post-change runs. That is not background
+noise. That is the instrument reacting to the thing being measured, and it would have looked like
+a finding.
+
+**Still open, with reduced scope.** The log still shows:
+
+```
+wazuh-modulesd:agent-upgrade: INFO: (8153): Module Agent Upgrade started.
+```
+
+There is **no agent-side switch** for it. The module waits for an upgrade command from the
+manager. The only control is on the manager: never issue one. An agent version bump partway
+through invalidates every earlier run under runbook rule 2.
+
+**How to close the rest:** decide and record how the manager is prevented from pushing an agent
+upgrade, then confirm the agent version at the start of every run in the run manifest, so a bump
+would be detected rather than assumed impossible.
+
+---
+
+## 12. Active response lets the manager run commands on the endpoint
+
+**Status:** Open. Raised 2026-09-02. Deliberately **not** changed, because it is outside item 8
+and it is an experiment-design decision.
+
+**Why it matters:** the agent's config has
+
+```xml
+<active-response>
+  <disabled>no</disabled>
+</active-response>
+```
+
+Active response lets the **manager execute commands on WIN-EP-01**. That is the measuring
+instrument modifying the machine under test, possibly in the middle of a capture window. It is
+worse than the scan modules in item 8, because those only added events. This changes state.
+
+Nothing has fired so far. The risk is that a default manager rule triggers one during a real
+Atomic Red Team run, which is exactly when the manager is most likely to see something it reacts
+to.
+
+**How to answer:** either set `<disabled>yes</disabled>` on the agent, or list which active
+responses the manager actually has configured and prove none can trigger. The first is one line
+and is reversible; the second is more work but keeps the deployment closer to a real one.
+
+**What a bad answer means:** an untracked state change lands inside a capture window, and the
+post-change run differs for a reason that is not the hardening change and is not recorded
+anywhere.
+
+---
+
+## 13. The agent has its own rate limiter, a third silent loss channel
+
+**Status:** Open, unmeasured. Raised 2026-09-02.
+
+**Why it matters:** the agent config contains
+
+```xml
+<client_buffer>
+  <disabled>no</disabled>
+  <queue_size>5000</queue_size>
+  <events_per_second>500</events_per_second>
+</client_buffer>
+```
+
+If a run produces more than **500 events per second**, the agent throttles. If the **5000-event**
+queue then fills, events are dropped before they are ever sent.
+
+**There are now three loss channels between the endpoint and `archives.json`**, and they are the
+same failure in three places:
+
+| Where | Limit | Item |
+|---|---|---|
+| Sysmon event channel on the endpoint | 64 MB, `Circular` | 9 |
+| **Wazuh agent buffer** | **500 events/s, 5000 queued** | **13** |
+| journald on SIEM-01 | `RateLimitIntervalSec` and `RateLimitBurst`, unread | 1d |
+
+Every one of them drops events silently, and every drop looks exactly like telemetry lost to a
+hardening change.
+
+**How to answer:** during a full capture window, measure the peak event rate on the endpoint and
+watch `ossec.log` for buffer-full warnings. Then either raise the limits and pin the new values,
+or prove the run stays under them. Note that disabling the buffer entirely removes flow control
+rather than removing the loss, so it is not automatically the safer choice.
+
+**What a bad answer means:** the same as 1d and 9. An unmeasured, uncontrolled loss channel
+inside the measurement pipeline. A threat to validity, not a performance issue.
 
 ---
 
@@ -511,9 +625,11 @@ anyone noticing.
 
 ---
 
-## 11. SIEM-01 restarted twice with no shutdown recorded
+## 11. SIEM-01 restarted twice with no shutdown recorded (ANSWERED, see the Answered section)
 
-**Status:** Open. Raised 2026-09-02 during Phase 3. Cause unknown, awaiting the student's answer.
+**Status:** **Answered 2026-09-02.** Host power loss for the second event, a deliberate power off
+for the first. Evidence and reasoning are in the Answered section at the bottom. Kept here so the
+numbering stays stable.
 
 **Why it matters:** a SIEM that stops in the middle of a capture run loses that run. If it
 happens on its own schedule, it can ruin an unattended overnight batch and the loss may not be
@@ -557,6 +673,44 @@ data was never collected.
 ---
 
 ## Answered
+
+### Why did SIEM-01 restart twice with no shutdown recorded? (answered 2026-09-02, item 11)
+
+**Answer: two different causes, neither of them a fault in the VM.** The 13:05 stop was a **host
+power loss**, the power cable was pulled by accident. The 11:27 stop was a **deliberate power
+off**.
+
+**Evidence.** Windows records unexpected shutdowns explicitly, so this was answerable from the
+guest's own System log rather than from reasoning:
+
+```
+2026-09-02 11:27:05 UTC  Id=1074  StartMenuExperienceHost.exe (WIN-EP-01) has initiated the
+                                  power off of computer WIN-EP-01 on behalf of user WIN-EP-01\eli
+2026-09-02 11:56:56 UTC  Id=6005  The Event log service was started.
+
+2026-09-02 13:19:07 UTC  Id=41    The system has rebooted without cleanly shutting down first.
+2026-09-02 13:19:10 UTC  Id=6008  The previous system shutdown at 12:36:56 PM was unexpected.
+```
+
+Event ID 41 with 6008 is exactly the power-loss signature. Both guests also came back within two
+seconds of each other, WIN-EP-01 at `13:19:03` and SIEM-01 at `13:19:05`, which is a host-level
+event and not a VM-level one.
+
+**One thing not to over-read.** `6008` names `12:36:56` as the last shutdown, which is earlier
+than SIEM-01's final journal line at `13:05:17`. That is not a contradiction. Windows writes that
+"still alive" timestamp on a timer, so it is a lower bound on when the machine died, not the
+moment it died.
+
+**What stays as a risk, and it is not the same question.** A 67-hour unattended capture campaign
+has no protection against host power loss. A run interrupted this way is lost, and the harness
+would not know unless it checks. This belongs in the Phase 6 design as a watchdog requirement:
+detect a guest that died mid-run and abort that run cleanly rather than writing a manifest for
+data that was never collected. It is not an open question about a fault, it is a known property
+of the environment.
+
+**Side effect worth remembering:** `/tmp` on SIEM-01 is cleared on boot. A reboot silently deleted
+a staged script and made an install command fail with `cannot stat`. Stage lab files in the home
+directory, never `/tmp`.
 
 ### Why were the VMware VMnet1/2/3 adapters in Error state? (answered 2026-08-31)
 

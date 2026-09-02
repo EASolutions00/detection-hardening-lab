@@ -17,6 +17,161 @@ Next:
 
 ---
 
+## 2026-09-02 (later) - OPEN-QUESTIONS 8 fixed, 11 answered, two new loss channels found, records audited.
+
+**Did:** three jobs after Phase 3 closed. Fixed item 8, closed item 11, then audited whether
+everything that happened today had actually been written down.
+
+### 1. Item 8 fixed, and measured
+
+Disabled `rootcheck`, `sca`, `syscheck` and `syscollector` in the agent's `ossec.conf`, each with
+a comment in the file saying why. Verified from what the agent reports about itself after
+restart, not from the file:
+
+```
+2026/09/02 13:56:21  (6001): File integrity monitoring disabled.
+2026/09/02 13:56:21  rootcheck: Rootcheck disabled.
+2026/09/02 13:56:21  syscollector: Module disabled. Exiting...
+2026/09/02 13:56:21  sca: Module disabled. Exiting.
+```
+
+Measurement path untouched: all four `localfile` channels still analyzed, `Connected to the
+server`, `status='connected'`.
+
+**Measured effect on archive volume, three conditions, same 180-second method:**
+
+| Condition | Rate |
+|---|---|
+| No agent at all (Phase 2) | 9.7 MB/day |
+| One agent, scan modules **enabled** | 34.3 MB/day |
+| One agent, scan modules **disabled** | **17.9 MB/day** |
+
+The scan modules were producing about **two thirds of everything the agent contributed** while
+idle, and roughly half the total archive volume.
+
+**The reason that matters most is not volume.** Two of the four modules **react to the change
+being measured**. `sca` evaluates a CIS Windows 11 policy, so its results change when a hardening
+control is applied. `syscheck` monitors the registry, so it would observe the hardening script
+making its edit. Both would emit events appearing only in post-change runs, and a differential
+analysis would see a systematic pre/post difference caused by the instrument watching the change
+happen. That would have looked like a finding.
+
+`ossec.conf` is now 11,848 bytes, SHA256
+`1F36416E1BC59443D98AD0307638F5C5C788BEE12C545140AD993A1E4E8F2658`, committed as
+`lab/configs/wazuh-agent-ossec.conf`. Previous version kept in the guest as
+`ossec.conf.telos-pre-item8`.
+
+**Item 8 is not fully closed.** The agent-upgrade module still starts and has **no agent-side
+switch**. The only control is on the manager: never issue an upgrade command.
+
+### 2. Item 11 answered: host power loss
+
+The student reported the power cable was accidentally unplugged. Verified rather than accepted,
+because two stops had been recorded and only one explanation was offered. Windows records
+unexpected shutdowns explicitly:
+
+```
+2026-09-02 11:27:05 UTC  Id=1074  StartMenuExperienceHost.exe (WIN-EP-01) has initiated the
+                                  power off of computer WIN-EP-01 on behalf of user WIN-EP-01\eli
+2026-09-02 13:19:07 UTC  Id=41    The system has rebooted without cleanly shutting down first.
+2026-09-02 13:19:10 UTC  Id=6008  The previous system shutdown at 12:36:56 PM was unexpected.
+```
+
+**Two different causes.** The 13:05 stop was the power loss, confirmed by Event ID 41 with 6008,
+and both guests restarted within two seconds of each other (WIN-EP-01 `13:19:03`, SIEM-01
+`13:19:05`). The 11:27 stop was a deliberate power off from the Start menu. Moved to the Answered
+section.
+
+**What stays, and it is a different question:** a 67-hour unattended campaign has no protection
+against host power loss. Phase 6 needs a watchdog that detects a guest which died mid-run and
+aborts that run cleanly, rather than writing a manifest for data never collected.
+
+### 3. Two new loss channels found while reading the agent config
+
+Both found, both **deliberately not changed**, because each is a design decision rather than an
+obvious fix.
+
+**New item 12, active response is enabled.** `<active-response><disabled>no</disabled>` lets the
+**manager execute commands on the endpoint**. That is the instrument modifying the machine under
+test, possibly mid-window. Worse than the scan modules, because it changes state rather than
+adding events.
+
+**New item 13, the agent has its own rate limiter.**
+`<client_buffer><queue_size>5000</queue_size><events_per_second>500</events_per_second>`. Above
+500 events per second the agent throttles; when the 5000-event queue fills, events are dropped
+before they are ever sent.
+
+**There are now three silent loss channels between the endpoint and `archives.json`:**
+
+| Where | Limit | Item |
+|---|---|---|
+| Sysmon event channel | 64 MB, `Circular` | 9 |
+| Wazuh agent buffer | 500 events/s, 5000 queued | **13** |
+| journald on SIEM-01 | rate limit, still unread | 1d |
+
+The same failure in three places, and every one of them looks exactly like telemetry lost to a
+hardening change.
+
+### 4. Documentation audit
+
+Went back over the session looking for things that happened but were never written down. Six
+gaps, now closed:
+
+1. **`git core.autocrlf` is `true` on this host**, and it silently rewrote the pinned Sysmon
+   config on first commit. The stored blob was **123,256 bytes, one byte short** of the 123,257
+   recorded in DECISIONS.md, so a clone would have produced a file whose hash did not match the
+   pin, making the claim that Sysmon runs the committed config false. Fixed with `.gitattributes`
+   and verified from git itself:
+   ```
+   git cat-file blob :lab/configs/sysmonconfig.xml | sha256sum
+   055febc600e6d7448cdf3812307275912927a62b1f94d0d933b64b294bc87162
+   ```
+2. **The guest clock ran about nine hours ahead during Windows installation.** The System log's
+   latest-dated entries are `22:41` and `22:42` with computer names `WIN-DUH56S57VMD` and
+   `MINWINPC`, which are Windows setup names. The clock was corrected later. This explains the
+   `InstallDate : 2026-09-02 22:43:07 UTC` that looked wrong earlier. The earliest Windows log
+   entries carry a wrong timestamp. It does not affect the experiment, since the golden snapshot
+   is far later.
+3. **`vmrun` guest authentication fails on SIEM-01** with `Invalid user name or password for the
+   guest OS`, using a password file that is well formed (32 bytes, no stray whitespace, no
+   carriage return). SSH password authentication with the same account works, so the account is
+   fine. Cause unknown, most likely a PAM configuration for `vmtoolsd` on Ubuntu. **Not chased,
+   because it no longer blocks anything:** SSH key authentication to SIEM-01 works, and that is
+   what the harness needs. Recorded so nobody re-discovers it.
+4. **Kaspersky 21.26 is the host antivirus and Windows Defender is off on the host.** Added to the
+   host baseline table. The `E:\TeLoS-artifacts` exclusion is a host change that must be removed
+   when the thesis is finished.
+5. **`E:\TeLoS-artifacts\` and `C:\Users\Elijah\.telos\`** were being used all session with no
+   entry saying what they are. Both added to the host baseline table, with a note that the
+   credentials folder must never be committed.
+6. **`Host offset from UTC is -08:00` in `vmware.log`** contradicts the host file timestamps and
+   both guests, which agree the host is UTC+8. Most likely VMware's sign convention for that
+   field `(unverified)`. Recorded, not acted on.
+
+**Broke / stuck on:** nothing new. The item 8 edit applied on the first attempt, with each of the
+four replacements checked for exactly one match before writing.
+
+**Next:** Phase 4 is largely already written in DECISIONS.md. The list blocking the Phase 5
+golden snapshot now stands at:
+
+| | Item | Status |
+|---|---|---|
+| 1d | journald rate limiting on SIEM-01 | open, unmeasured |
+| 5 | snapd auto-refresh on SIEM-01 | open |
+| 6 | clock drift plus four unset `time.synchronize.*` switches | open |
+| 7 | vmnet3 host adapter contradicts the record | open |
+| 8 | Wazuh agent scan modules | **mostly fixed**, agent-upgrade remains |
+| 9 | Sysmon channel 64 MB Circular | open, unmeasured |
+| 10 | Tamper Protection will defeat Config S | open |
+| 11 | SIEM-01 restarts | **answered** |
+| 12 | active response enabled | open, awaiting a decision |
+| 13 | agent buffer 500 events/s, 5000 queued | open, unmeasured |
+
+Items 1d, 9 and 13 are the same problem in three places and should be answered together with one
+measurement during a real capture window.
+
+---
+
 ## 2026-09-02 - Phase 3 complete. WIN-EP-01 built, telemetry proven end to end from endpoint to `archives.json`.
 
 All machine timestamps below are **UTC**. Both guests now run UTC, the host runs UTC+8.

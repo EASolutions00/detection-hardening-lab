@@ -8,6 +8,64 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-09-02 - Four Wazuh agent scan modules disabled on WIN-EP-01 (closes most of OPEN-QUESTIONS 8)
+
+**Decision:** disabled `rootcheck`, `sca`, `syscheck` (file integrity monitoring) and
+`syscollector` in the agent's `ossec.conf`. Each change carries a comment in the file saying why.
+The agent is now a log forwarder and nothing else.
+
+**Verified from what the agent reports about itself after restart, not from the file:**
+
+```
+2026/09/02 13:56:21  (6001): File integrity monitoring disabled.
+2026/09/02 13:56:21  rootcheck: Rootcheck disabled.
+2026/09/02 13:56:21  syscollector: Module disabled. Exiting...
+2026/09/02 13:56:21  sca: Module disabled. Exiting.
+```
+
+The measurement path is untouched. `Application`, `Security`, `System`,
+`Microsoft-Windows-Sysmon/Operational` and `active-responses.log` are all still analyzed, and the
+agent reports `Connected to the server` with `status='connected'`.
+
+**Why. There are two separate reasons and the second is the serious one.**
+
+*Noise.* All four have `scan_on_start` behaviour, and every Phase 6 run begins with a snapshot
+revert and a boot, so all four would run at the start of **every one of 101 runs**. FIM also
+synchronises every 5 minutes and watches some paths in real time. With `logall_json` on, every
+event they produce lands in `archives.json`. That is the measuring instrument's own output
+entering the measurement, and it lands in the coefficient of variation that T1's whole
+statistical argument rests on.
+
+*Confounding, which is worse.* Two of the four **react to the change being measured**:
+
+- `sca` evaluates a **CIS Windows 11 policy**. Apply a hardening control and its results change.
+- `syscheck` monitors the **registry**. It would observe the hardening script making its edit.
+
+Both would emit events that appear only in post-change runs. A differential analysis comparing
+pre-change and post-change event profiles would see a systematic difference caused by the
+instrument watching the change happen. That is not background noise, and it would have looked
+like a finding.
+
+**Cost if wrong:** the deployment is a reduced Wazuh agent and Chapter 3 must say so. The answer
+to a panelist is one sentence: the agent's own assessment and inventory modules were disabled
+because they generate events on timers unrelated to the experiment, and two of them respond
+directly to the hardening changes under test, which would confound the comparison. Their data
+cannot show telemetry loss, so nothing measurable is given up.
+
+**Not fixed, and stated as such:** the agent-upgrade module still starts
+(`wazuh-modulesd:agent-upgrade: INFO: (8153): Module Agent Upgrade started.`). There is no
+agent-side switch. The only control is on the manager: never issue an upgrade command.
+OPEN-QUESTIONS 8 stays open with that reduced scope.
+
+**Deliberately not changed, because they are separate decisions:** `active-response` is still
+enabled, which lets the manager run commands on the endpoint (OPEN-QUESTIONS 12), and
+`client_buffer` still throttles at 500 events per second with a 5000-event queue, which is a
+third silent loss channel alongside the Sysmon channel and journald (OPEN-QUESTIONS 13).
+
+**To reverse:** the previous config is in the guest at
+`C:\Program Files (x86)\ossec-agent\ossec.conf.telos-pre-item8`. Copy it back and restart
+`WazuhSvc`. Every change is a single word.
+
 ## 2026-09-02 - WIN-EP-01 runs Windows 11 **Education, unactivated**, not the Enterprise Evaluation ISO
 
 **Decision:** Installed Windows 11 Education from the retail multi-edition ISO
@@ -592,6 +650,10 @@ Record these **before** taking the golden snapshot.
 | PyYAML | 6.0.3 | 2026-08-31 |
 | pytest | 9.1.1 | 2026-08-31 |
 | Analyser git commit | `78f41f4` (first version of the analysis core) | 2026-08-31 |
+| **Host antivirus** | **Kaspersky 21.26** (`AVP21.26` service running). **Windows Defender is OFF on the host** as a result: `WinDefend` is `Stopped` and `Get-MpPreference` fails with `0x800106ba`. Kaspersky blocks Atomic Red Team files, so `E:\TeLoS-artifacts` is on its exclusion list. **Remove that exclusion when the thesis is finished.** | 2026-09-02 |
+| Artifact store | `E:\TeLoS-artifacts\` holds every pinned installer, clone and archive. **Not** in the repo. Binaries do not belong in git. | 2026-09-02 |
+| Credentials store | `C:\Users\Elijah\.telos\` holds `WIN-EP-01.pw`, `SIEM-01.pw` and the `siem01_ed25519` key pair. Outside the repo on purpose, since the repo is public. **Never commit these.** | 2026-09-02 |
+| `git core.autocrlf` | **`true`** on this host. This silently rewrote the pinned Sysmon config on first commit, one byte short of the recorded hash. `.gitattributes` now pins `lab/configs/sysmonconfig.xml` as binary and keeps `lab/scripts/telos-archive` and `*.sh` at LF. | 2026-09-02 |
 
 `scipy` supplies Benjamini-Hochberg through `scipy.stats.false_discovery_control`, so
 `statsmodels` is not a dependency. `scikit-learn` was in the original plan for Cohen's kappa,
@@ -616,7 +678,7 @@ which belonged to T3 and is no longer in scope.
 | `powershell-yaml` | `0.4.12`, nupkg SHA256 `D4602BC7A4A093766520422D53CA8B09ACDE162286FAE11E2EE6C8EDFEA07810`. Hard dependency of `Invoke-AtomicTest`, which cannot parse the atomics without it. | 2026-09-02 |
 | **Windows build number (guest)** | **`10.0.26100.9168`**, Windows 11 **Education**, `DisplayVersion 24H2`. Fully patched: two update passes, the second returned `updates found: 0`. 7 hotfixes: KB5120710, KB5050575, KB5054273, KB5122035, KB5121003, KB5043113, KB5123304. | 2026-09-02 |
 | Wazuh agent version | `4.14.7`, stage `rc1`, commit `8c41e20`, from `wazuh-agent-4.14.7-1.msi` SHA256 `E967F36B75589D6210244FD58239C7021FA53A77C38D92315C3B3BD115002EDE`. Registered as `id=001 name=WIN-EP-01`. Matches the manager exactly. | 2026-09-02 |
-| WIN-EP-01 agent `ossec.conf` | as installed SHA256 `4F4531A2129191A5A01FDE646BEE1FBCF0069BB32FEB0C5F5A34E967B2F4D64B` (10,152 bytes); after adding the Sysmon `<localfile>` block SHA256 `F9541429A7C9D95485D13B74D82A89C2D1E8ADCD075CF7278B6EC7CF3DC4D82F` (10,409 bytes). Original kept in the guest as `ossec.conf.telos-orig`. | 2026-09-02 |
+| **WIN-EP-01 agent `ossec.conf`** | **current: SHA256 `1F36416E1BC59443D98AD0307638F5C5C788BEE12C545140AD993A1E4E8F2658`, 11,848 bytes**, committed as `lab/configs/wazuh-agent-ossec.conf`. History: as installed `4F4531A2...F4D64B` (10,152 bytes), kept in the guest as `ossec.conf.telos-orig`; after adding the Sysmon `<localfile>` block `F9541429...C4D82F` (10,409 bytes), kept as `ossec.conf.telos-pre-item8`; current version additionally disables `rootcheck`, `sca`, `syscheck` and `syscollector`. | 2026-09-02 |
 | WIN-EP-01 lab address | `10.20.10.20/24` on adapter `LAB`, MAC `00:0C:29:A7:96:32`. NAT adapter `NAT`, MAC `00:0C:29:A7:96:28`, `192.168.243.130/24`. Default route exists only on NAT. | 2026-09-02 |
 | WIN-EP-01 VMware Tools | `12.3.5 build-22544099` from the Workstation `windows.iso` dated 2024-02-12. Drivers after the Windows Update pass: VMware SVGA 3D `9.17.11.3` (Broadcom), VMCI Bus `9.8.30.0` (Broadcom), Pointing Device `12.5.12.0` (VMware). | 2026-09-02 |
 | Fence tool | `telos-fence.exe`, 4,096 bytes, SHA256 `D35C939B71ECAC94868947932292531C02A171DECFD3046DEE47DB8E3BD0D814`. Built on the host from `lab/scripts/telos-fence.cs` with the .NET Framework compiler. Verified to emit **exactly one** Sysmon Event ID 1 per run, carrying the run id in its command line. | 2026-09-02 |
