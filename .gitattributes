@@ -5,6 +5,13 @@
 lab/scripts/telos-archive text eol=lf
 *.sh                      text eol=lf
 
-# Sysmon reads this config on Windows. Keep it exactly as downloaded so the
-# committed SHA256 in docs/DECISIONS.md stays valid.
-lab/configs/sysmonconfig.xml -text
+# EVERY file in lab/configs is pinned by SHA256 in docs/DECISIONS.md. Git must
+# never rewrite a single byte of any of them, or the committed file stops
+# matching the hash and the claim that the lab runs the committed config
+# becomes false. This already happened twice on 2026-09-02, to
+# sysmonconfig.xml and then to wazuh-agent-ossec.conf, because
+# core.autocrlf is true on the build host.
+#
+# The rule covers the whole directory on purpose. Naming files one at a time
+# is how the second one was missed.
+lab/configs/** -text
