@@ -148,8 +148,58 @@ gaps, now closed:
    both guests, which agree the host is UTC+8. Most likely VMware's sign convention for that
    field `(unverified)`. Recorded, not acted on.
 
-**Broke / stuck on:** nothing new. The item 8 edit applied on the first attempt, with each of the
-four replacements checked for exactly one match before writing.
+### 5. Shutdown checks, and the first real test of the archive export path
+
+Before shutting down, checked what had been left undone. Four things, three of them acted on.
+
+**The Windows installer ISO was still connected at boot.** `sata0:1.startConnected = "TRUE"` on
+WIN-EP-01, while SIEM-01 had been set to `"FALSE"` back in Phase 2. That left the endpoint
+**depending on E: at every power-on**, and E: is the hard disk the project's first rule says no VM
+may depend on. If that ISO were moved or renamed, WIN-EP-01 would fail to start. Set to `"FALSE"`
+after the guests were powered off, because VMware rewrites the `.vmx` on power off and would have
+discarded an earlier edit.
+
+**Neither VM had a single snapshot.** Two days of work with no restore point, on a machine whose
+power cable came out today. Took `phase3-complete-2026-09-02` on both. This is **not** the Phase 5
+golden snapshot, which comes later with NAT disconnected. It is insurance. F: has 611.6 GB free.
+
+**Blueprint run-protocol step 10 tested for the first time**, using the Phase 3 evidence as the
+payload. Rotate, compress, pull to the host, decompress, verify:
+
+```
+rotate on SIEM-01 : /tmp/archives-20260902T153830Z.json.gz   2,214,413 bytes
+pulled to host    : E:\TeLoS-runs\phase3-check\   2.11 MB
+decompressed      : 48.37 MB, 15,261 lines
+lines carrying telos-p3-check-001 : 2   (expected 2)
+```
+
+The path works. Two numbers worth keeping for planning 101 runs of storage:
+
+| Measurement | Value |
+|---|---|
+| gzip compression on `archives.json` | about **23 to 1** |
+| average size of one archive line | about **3.3 KB** |
+
+**Truncation was deliberately not performed.** The retention decision is still deferred, and
+`archives.json` holds the only copy of some evidence until exports like this one exist.
+
+**Broke / stuck on:**
+
+1. **`vmrun list` changes its return type, and it will bite the Phase 6 harness.** It returns
+   **several lines when VMs are running and one line when none are**, so PowerShell hands back an
+   **array** in the first case and a **string** in the second. A poll written as
+   `if ($l[0] -eq "Total running VMs: 0")` reads the first list entry when it is an array and the
+   first **character** when it is a string, so it prints `T` forever and never matches. My
+   shutdown poll ran to its full 6 minute deadline instead of exiting as soon as the VMs stopped.
+   The outcome was correct, the wait was wasted. **The harness calls this on every one of 101
+   runs.** Force an array, for example `@(& $vmrun -T ws list)`, or match on the joined output.
+
+2. **A PowerShell safety guard blocked a command** containing a remote `rm -f '/tmp/...'`. The
+   cleanup was unnecessary anyway, since `/tmp` on SIEM-01 is cleared on boot, which is what
+   deleted a staged script earlier today. Dropped the step.
+
+Otherwise nothing new. The item 8 edit applied on the first attempt, with each of the four
+replacements checked for exactly one match before writing.
 
 **Next:** Phase 4 is largely already written in DECISIONS.md. The list blocking the Phase 5
 golden snapshot now stands at:

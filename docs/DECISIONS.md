@@ -8,6 +8,37 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-09-02 - WIN-EP-01 installer media disconnected, and a checkpoint snapshot taken on both VMs
+
+**Decision one:** `sata0:1.startConnected = "FALSE"` in `WIN-EP-01.vmx`, matching what Phase 2 did
+for SIEM-01. The CD-ROM device stays present and still points at the ISO, but it no longer
+connects at power-on.
+
+**Why:** with it connected, the endpoint **depended on E: at every boot**, and E: is the hard disk
+that the runbook's first rule says no VM may depend on. Move or rename that ISO and WIN-EP-01
+fails to start. It also left an installer disc inside what becomes the golden image.
+
+**When it has to be done:** with the VM powered off. VMware rewrites the `.vmx` on power off and
+would discard an edit made while it was running.
+
+**To reverse:** set it back to `"TRUE"` with the VM powered off.
+
+**Decision two:** a checkpoint snapshot named `phase3-complete-2026-09-02` on both VMs.
+
+**Why:** neither machine had any restore point, and a host power loss already happened on the same
+day. Two days of build work had no protection at all. F: had 587.6 GB free before, 611.6 GB after
+the guests released their memory files, so cost is not a factor.
+
+**This is not the Phase 5 golden snapshot.** That one is taken later, with NAT disconnected, and
+it is the base of the `cfg-suppressed` and `cfg-natural` branches in `lab/blueprint.md` section 5.
+This is a single flat checkpoint, and the blueprint's warning about branching delta chains does
+not apply to it.
+
+**Cost if wrong:** a snapshot delta grows as the VM changes. If F: gets tight before Phase 5,
+delete it.
+
+**To reverse:** `vmrun -T ws deleteSnapshot <vmx> phase3-complete-2026-09-02`
+
 ## 2026-09-02 - Four Wazuh agent scan modules disabled on WIN-EP-01 (closes most of OPEN-QUESTIONS 8)
 
 **Decision:** disabled `rootcheck`, `sca`, `syscheck` (file integrity monitoring) and
