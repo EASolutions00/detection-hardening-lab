@@ -683,6 +683,20 @@ WIN-EP-01
     └── cfg-natural        (Config N)
 ```
 
+- [ ] **Delete the build checkpoints once `golden-base` exists.** Three linear checkpoints were
+      taken on each VM during Phases 3 and 4, as insurance while the machines were being built:
+
+      WIN-EP-01 : phase3-complete-2026-09-02, agent-hardened-2026-09-03, tamper-off-2026-09-03
+      SIEM-01   : phase3-complete-2026-09-02, timesync-off-2026-09-03,
+                  snapd-off-archive-v2-2026-09-03
+
+      They are superseded by `golden-base` and only consume delta space after that.
+      `vmrun -T ws deleteSnapshot <vmx> <name>` for each.
+
+      **Do not delete them before `golden-base` is taken and verified.** Each one captures state
+      that a revert would otherwise silently undo: Tamper Protection being off, snapd being
+      disabled, the archive tool having no `truncate`, and the six `time.synchronize.*` switches.
+
 **Do not make 16 snapshots for the 16 hardening changes.** Revert to a config snapshot and
 apply the change by script instead. The script is version controlled and auditable, which is
 what your reproducibility claim needs. Sixteen branching snapshot chains would also fill F:.
