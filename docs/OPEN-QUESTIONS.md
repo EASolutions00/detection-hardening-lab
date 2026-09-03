@@ -342,7 +342,8 @@ data collection starts, not after.
 
 ## 5. Is snapd still refreshing packages on its own schedule?
 
-**Status:** Open. Raised 2026-09-02. **Must be closed before the Phase 5 golden snapshot.**
+**Status:** **Answered 2026-09-03.** Four units disabled. One failed lookup per SIEM-01 boot
+remains, deliberately, and a protocol rule covers it. Resolution at the end.
 
 **Why it matters:** `snapd` was found installed on SIEM-01 (version `2.76`, upgraded to
 `2.76.3` in the Phase 2 patch run). snapd refreshes its snaps automatically, several times a
@@ -405,6 +406,58 @@ breaks, revert.
 
 **This cannot be done by the harness account.** The sudoers rule installed on 2026-09-02 grants
 `/usr/local/sbin/telos-archive` and nothing else, so it is a student step by design.
+
+### Resolution, 2026-09-03. Fixed as far as it is worth fixing.
+
+The four units were disabled and the machine rebooted. State afterwards:
+
+```
+snapd.service             enabled=disabled   active=inactive
+snapd.socket              enabled=disabled   active=ACTIVE
+snapd.snap-repair.timer   enabled=disabled   active=inactive
+snapd.autoimport.service  enabled=disabled   active=inactive
+snapd.seeded.service      enabled=enabled    active=active
+```
+
+**The socket is still active, and the exclusion list was the reason.** `snapd.seeded.service` was
+deliberately left alone to protect boot ordering, and it **requires** `snapd.socket`, which
+socket-activates `snapd.service` anyway:
+
+```
+systemctl list-dependencies --reverse snapd.socket
+  snapd.socket
+  ├─snapd.seeded.service
+  └─snapd.service
+```
+
+**What actually happens now, per boot:**
+
+```
+08:40:32  state ensure error: Get "https://api.snapcraft.io/..."  timeout
+08:41:02  snapd.service: Deactivated successfully.
+snapcraft.io contacts this boot : 1
+```
+
+One failed lookup, then snapd shuts itself down. **The repeating timer behaviour is gone**, which
+was the actual problem. What is left is a single event at boot.
+
+**Deliberately stopping here, and this is a judgement call rather than a fix.** Removing the last
+one means disabling `snapd.seeded.service`, which sits in the boot path on a machine that holds
+every piece of evidence the thesis has. Risking a boot failure on the SIEM to remove one log line
+that occurs outside every capture window is a bad trade.
+
+**It is outside every capture window because of a protocol rule that this makes explicit:**
+
+> **SIEM-01 must not be rebooted during a capture campaign.** Only WIN-EP-01 is reverted and
+> booted per run. If SIEM-01 ever has to restart mid-campaign, the runs on either side of that
+> restart carry one extra `snapcraft.io` failure event, and that must be noted in the run
+> manifest rather than discovered later.
+
+Added to `lab/blueprint.md` and runbook Phase 6.
+
+**If it ever needs closing completely:** `sudo systemctl disable --now snapd.seeded.service`, then
+reboot and confirm the machine comes up and Wazuh is active. The `timesync-off-2026-09-03`
+snapshot makes that recoverable.
 
 ---
 
@@ -655,9 +708,9 @@ written into runbook Phase 1 so it cannot be missed.
 
 ## 8. The Wazuh agent's own scheduled modules fire inside every capture window
 
-**Status:** **Mostly fixed 2026-09-02.** Four modules disabled and verified. One part remains
-open, the agent-upgrade module, which has no agent-side switch. See the resolution at the end of
-this item.
+**Status:** **Closed 2026-09-03.** Four modules disabled and verified on 2026-09-02. The
+agent-upgrade remainder is answered procedurally, because it has no agent-side switch. See both
+resolutions at the end of this item.
 
 **Why it matters:** the agent's default configuration runs five scan modules on their own
 timers. With `logall_json` on, every event they produce lands in `archives.json`. These are
@@ -731,9 +784,27 @@ There is **no agent-side switch** for it. The module waits for an upgrade comman
 manager. The only control is on the manager: never issue one. An agent version bump partway
 through invalidates every earlier run under runbook rule 2.
 
-**How to close the rest:** decide and record how the manager is prevented from pushing an agent
-upgrade, then confirm the agent version at the start of every run in the run manifest, so a bump
-would be detected rather than assumed impossible.
+### Resolution of the remainder, 2026-09-03
+
+**There is nothing to disable, and nothing automatic to prevent.** The agent-upgrade module is a
+listener. Wazuh never pushes an upgrade on its own. One only happens if a person triggers it:
+the `agent_upgrade` command line tool on the manager, the Wazuh API, or the **Upgrade** button in
+the dashboard.
+
+So the control is procedural, and it needs two parts because a rule nobody can check is not a
+control:
+
+1. **Never run `agent_upgrade`, never call the upgrade API, and never click Upgrade in the Wazuh
+   dashboard for the whole campaign.** The dashboard button is the realistic risk, because it is
+   one click away while looking at an agent's page.
+2. **Record the agent version in every run manifest**, read from the agent itself at the start of
+   the run. That turns "an upgrade cannot happen" into "an upgrade would be visible in the data",
+   which is the difference between an assumption and a check. Phase 4 already lists the agent
+   version as a pinned value; this makes it a per-run field as well.
+
+**What a bump would cost:** every run collected before it becomes non-comparable under runbook
+rule 2. Detecting it in the manifest means discarding the runs after the bump instead of
+discovering months later that the whole set is mixed.
 
 ---
 
@@ -859,7 +930,8 @@ pipeline, exactly like 1d. Threat to validity, not performance.
 
 ## 10. Defender Tamper Protection will silently defeat Config S
 
-**Status:** Open. Raised 2026-09-02 during Phase 3. **Must be settled before the Phase 5 snapshots.**
+**Status:** **Answered 2026-09-03.** Turned off, and the fix was verified by a functional test,
+not by reading a flag. Resolution at the end.
 
 **Why it matters:** `lab/blueprint.md` section 5 defines Config S as "Defender off, Windows
 Update off, tasks disabled". On WIN-EP-01, `Get-MpComputerStatus` reports:
@@ -886,6 +958,31 @@ effect by reading `Get-MpComputerStatus` back. Never assume the write succeeded.
 **What a bad answer means:** Config S and Config N are the same machine wearing different labels,
 and the whole suppressed-versus-natural comparison in blueprint section 7 collapses without
 anyone noticing.
+
+### Resolution, 2026-09-03
+
+Turned off by hand in Windows Security inside the guest, which is the only way it can be done.
+
+**Reading the flag was not accepted as proof.** `IsTamperProtected : False` is necessary but not
+sufficient. What Phase 5 actually needs is for a **script** to change a Defender setting and have
+the change stick. So a functional test was run: flip one harmless setting, read it back, then put
+it exactly as it was.
+
+```
+IsTamperProtected             : False
+RealTimeProtectionEnabled     : True
+DisableCpuThrottleOnIdleScans : True -> False -> restored to True
+RESULT: scripted changes to Defender ARE accepted. Config S will work.
+ExclusionPath                 : C:\AtomicRedTeam   (still in place)
+WazuhSvc                      : Running, status='connected'
+```
+
+**Rule carried into Phase 5, because a flag can be re-enabled:** after applying Config S, **read
+every setting back and confirm it took effect** before taking the snapshot. Never assume a
+`Set-MpPreference` succeeded. Written into runbook Phase 5.
+
+**Note:** Windows may re-enable Tamper Protection on its own after some updates. It is worth
+re-checking immediately before the golden snapshot rather than trusting today's result.
 
 ---
 

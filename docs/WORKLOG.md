@@ -200,9 +200,80 @@ Runbook Phase 5 also gained two requirements it had only implied: **snapshots mu
 and **Tamper Protection must be turned off by hand before the golden snapshot**, or Config S will
 not actually be suppressed.
 
-**Broke / stuck on:** nothing. Two commands were declined by the sudoers rule, which is correct
-behaviour and not a fault. The corrected `vmrun list` poll, forced to an array, exited on its
-first check instead of running to a 6 minute deadline.
+### Student steps done and verified the same day: items 5, 10, 14
+
+**14, the new archive tool is installed and works.** And it proved the premise it was written
+from:
+
+```
+      483,328 bytes  plain  /var/ossec/logs/archives/2026/Sep/ossec-archive-01.json
+   50,765,553 bytes  plain  /var/ossec/logs/archives/2026/Sep/ossec-archive-02.json
+    8,585,338 bytes  plain  /var/ossec/logs/archives/2026/Sep/ossec-archive-03.json
+size: 8585338 bytes  links=2  archives.json
+truncate -> rejected, prints usage
+disk     -> 195G total, 162G free
+```
+
+Yesterday's **50.7 MB** is intact in the dated tree. Under the old protocol one `truncate` would
+have destroyed it, because `archives.json` is the hard link to today's file.
+
+**5, snapd. Fixed as far as it is worth fixing, and the shortfall was my instruction.** All four
+units are `disabled`, but `snapd.socket` is still `active`:
+
+```
+systemctl list-dependencies --reverse snapd.socket
+  snapd.socket
+  ├─snapd.seeded.service      <- I told the student to leave this alone
+  └─snapd.service
+```
+
+`snapd.seeded.service` **requires** the socket, which socket-activates snapd. What happens now,
+per boot:
+
+```
+08:40:32  state ensure error: Get "https://api.snapcraft.io/..."  timeout
+08:41:02  snapd.service: Deactivated successfully.
+snapcraft.io contacts this boot : 1
+```
+
+**The repeating timer behaviour is gone**, which was the real problem. One event at boot remains.
+**Stopping here deliberately**: removing it means disabling a unit in the boot path of the machine
+holding every piece of evidence, to delete one log line that occurs outside every capture window.
+Bad trade. It is outside every window because of a rule this made explicit: **SIEM-01 must not be
+rebooted during a capture campaign.**
+
+**10, Tamper Protection. Off, and verified by function rather than by flag.**
+
+```
+IsTamperProtected             : False
+DisableCpuThrottleOnIdleScans : True -> False -> restored to True
+RESULT: scripted changes to Defender ARE accepted. Config S will work.
+```
+
+Reading `IsTamperProtected` alone would not have proved anything. What Phase 5 needs is for a
+**script** to change a Defender setting and have it stick, so a harmless setting was flipped, read
+back, and put straight back. Phase 5 now also requires reading Config S settings back after
+applying them, because Windows can re-enable Tamper Protection after updates.
+
+**8, closed.** The agent-upgrade module is a listener with no agent-side switch, and Wazuh never
+upgrades by itself. The only risk is a person clicking **Upgrade** in the dashboard. Control is
+procedural, plus recording the agent version in **every run manifest** so a bump is visible in the
+data rather than assumed impossible.
+
+Three campaign rules added to runbook Phase 6, each from something measured: no SIEM-01 reboot
+mid-campaign, never trigger an agent upgrade and record the version per run, and every timestamp
+comes from the endpoint.
+
+**Broke / stuck on:**
+
+1. **My snapd exclusion list was wrong**, as above. The four commands worked; the fifth unit I
+   told the student to skip undid part of the effect.
+2. **A shell command of mine failed on its own quoting.** Parentheses inside a comment in a
+   here-string broke the remote `bash -c`. Moved to a script file, which is the pattern that has
+   worked all session. Two commands were also declined by the sudoers rule, which is correct
+   behaviour and not a fault.
+3. The corrected `vmrun list` poll, forced to an array, exited on its first check instead of
+   running to a 6 minute deadline.
 
 **Next:** the list blocking the Phase 5 golden snapshot is down to five, and three of them are
 one measurement:
@@ -216,17 +287,22 @@ one measurement:
 | 10 | Tamper Protection will defeat Config S | manual toggle in the guest, student step |
 | **14** | **`archives.json` rotates daily by hard link** | **new, changes the run protocol** |
 
-**Blocking the Phase 5 golden snapshot, current list:**
+**Blocking the Phase 5 golden snapshot, after everything above:**
 
-| | Item | Who |
+| | Item | Status |
 |---|---|---|
-| 5 | snapd phoning home | student, two commands |
-| 8 | agent-upgrade, manager-side control | open |
-| 9, 13 | Sysmon channel and agent buffer, both unmeasured | one measurement during a real capture window |
-| 10 | Tamper Protection defeats Config S | student, manual toggle in the guest |
-| 14 | archive rotation and the destructive truncate step | design decision on the run protocol |
+| ~~5~~ | ~~snapd phoning home~~ | **done**, one boot-time event left on purpose |
+| ~~8~~ | ~~agent-upgrade~~ | **closed**, procedural plus a per-run manifest field |
+| **9, 13** | **Sysmon channel 64 MB circular, agent buffer 500 events/s** | **the only technical work left. One measurement, during one real capture window.** |
+| ~~10~~ | ~~Tamper Protection~~ | **done and functionally verified** |
+| ~~14~~ | ~~archive rotation and truncation~~ | **done**, protocol changed and the tool replaced |
 
-Also for Phase 5: **the golden snapshot must be taken cold.** Currently only implied.
+**Nothing else blocks Phase 5 except items 9 and 13**, and those cannot be answered without a real
+capture window, which is Phase 6 work. Phase 4 is already written in DECISIONS.md.
+
+Phase 5 requirements now written into the runbook rather than implied: snapshots taken **cold**,
+Tamper Protection off **before** the golden snapshot, and Config S settings **read back** after
+applying them.
 
 ---
 

@@ -744,6 +744,21 @@ Guard the harness: check free space before each run with `telos-archive disk` an
 abort cleanly if low. Running out of disk halfway through a 67 hour batch is the failure that
 hurts most, and it matters more now that nothing is ever truncated.
 
+### Three rules for the campaign, each from something measured
+
+- **SIEM-01 must not be rebooted during a capture campaign.** Only WIN-EP-01 is reverted and
+  booted per run. `snapd` makes one failed `api.snapcraft.io` lookup at each SIEM-01 boot and
+  then stops, which is harmless only because it happens outside every capture window. If SIEM-01
+  ever has to restart mid-campaign, note it in the manifests on either side. See
+  OPEN-QUESTIONS 5.
+- **Never run `agent_upgrade`, never call the upgrade API, and never click Upgrade in the Wazuh
+  dashboard.** The agent-upgrade module cannot be switched off on the agent, and Wazuh never
+  upgrades by itself, so the only risk is a person. **Record the agent version in every run
+  manifest**, read from the agent at the start of the run, so a bump is visible in the data
+  rather than assumed impossible. See OPEN-QUESTIONS 8.
+- **Every timestamp comes from the endpoint.** Use `systemTime` or `utcTime` from inside the
+  event, never the manager's `timestamp`. See OPEN-QUESTIONS 6.
+
 **Check:** one full unattended run completes and produces a run folder plus a manifest, and the
 copied archive matches the `sha256_gz` the export printed.
 
