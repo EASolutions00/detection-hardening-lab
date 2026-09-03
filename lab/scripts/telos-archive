@@ -6,27 +6,51 @@
 #
 # Design rules:
 #   1. Fixed subcommands only. No pass-through of arbitrary arguments.
-#   2. Search patterns are read from a FILE, never taken on the command line.
+#   2. READ AND EXPORT ONLY. There is deliberately no truncate, no delete and no
+#      write of any kind into /var/ossec. The harness account cannot alter or
+#      destroy the evidence store, which is a checkable answer to "how do you
+#      know the archives were not modified?". See docs/OPEN-QUESTIONS.md item 14.
+#   3. Search patterns are read from a FILE, never taken on the command line.
 #      sudo writes every command line to journald, Wazuh collects journald, so a
 #      pattern on the command line creates a new event containing that pattern
 #      and inflates its own count. See docs/OPEN-QUESTIONS.md item 1b.
-#   3. Must be owned by root and not writable by eli, or the sudoers rule
+#   4. Must be owned by root and not writable by eli, or the sudoers rule
 #      becomes a path to full root.
+#
+# Wazuh rotates at the day boundary. archives.json is a HARD LINK to the current
+# day's file under YYYY/Mon/ossec-archive-DD.json, so they are one file with two
+# names. Older days may be gzipped by Wazuh. Always export by DATE, never rely on
+# archives.json for a run that might have crossed midnight.
 
 set -u
 
 ARCHIVE_DIR=/var/ossec/logs/archives
 ARCHIVE="$ARCHIVE_DIR/archives.json"
+EXPORT_DIR=/tmp
 
 usage() {
-    echo "usage: telos-archive {size|list|tail N|count FILE|show FILE N|rotate|truncate}"
-    echo "  size        bytes and path of archives.json"
-    echo "  list        directory listing of the archives folder"
-    echo "  tail N      last N lines of archives.json"
-    echo "  count FILE  count lines matching the fixed strings in FILE"
-    echo "  show FILE N first N lines matching the fixed strings in FILE"
-    echo "  rotate      copy and gzip archives.json to /tmp, print the path"
-    echo "  truncate    empty archives.json in place"
+    cat <<'EOF'
+usage: telos-archive <subcommand>
+
+  current state
+    size                     bytes and path of archives.json (today's file)
+    list                     listing of the archives folder
+    disk                     free space on the filesystem holding the archives
+
+  the dated tree, which is what a run should be exported from
+    dated-list               every dated archive with size and compression state
+    dated-path DATE          resolve DATE (YYYY-MM-DD) to its archive path
+    export DATE              copy that day's archive to /tmp as .gz, print the path
+
+  reading
+    tail N [DATE]            last N lines
+    count PATTERNFILE [DATE] count lines matching the fixed strings in PATTERNFILE
+    show PATTERNFILE N [DATE]  first N matching lines
+
+  DATE is YYYY-MM-DD. Omit it to use today's archives.json.
+
+  There is no truncate. This tool cannot modify or delete anything.
+EOF
     exit 2
 }
 
@@ -37,10 +61,47 @@ is_number() {
     esac
 }
 
+# Resolve a YYYY-MM-DD to the uncompressed path Wazuh would use.
+dated_base() {
+    d="${1:-}"
+    case "$d" in
+        [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]) ;;
+        *) echo "date must be YYYY-MM-DD" >&2; exit 2 ;;
+    esac
+    y=$(date -u -d "$d" +%Y 2>/dev/null) || { echo "not a real date: $d" >&2; exit 2; }
+    mon=$(date -u -d "$d" +%b)
+    dd=$(date -u -d "$d" +%d)
+    echo "$ARCHIVE_DIR/$y/$mon/ossec-archive-$dd.json"
+}
+
+# Pick the file to read: today's archives.json, or a dated file, compressed or not.
+# Sets READ_CMD to a command that streams the plain text.
+resolve_source() {
+    if [ -z "${1:-}" ]; then
+        SRC="$ARCHIVE"
+        [ -f "$SRC" ] || { echo "not found: $SRC" >&2; exit 3; }
+        READ_CMD="cat"
+        return
+    fi
+    base=$(dated_base "$1") || exit 2
+    if [ -f "$base" ]; then
+        SRC="$base"; READ_CMD="cat"
+    elif [ -f "$base.gz" ]; then
+        SRC="$base.gz"; READ_CMD="zcat"
+    else
+        echo "no archive for that date. Looked for:" >&2
+        echo "  $base" >&2
+        echo "  $base.gz" >&2
+        exit 3
+    fi
+}
+
 case "${1:-}" in
+
     size)
         if [ -f "$ARCHIVE" ]; then
-            stat -c '%s bytes  %n' "$ARCHIVE"
+            stat -c '%s bytes  links=%h  %n' "$ARCHIVE"
+            echo "note: links=2 means archives.json is a hard link to today's dated file."
         else
             echo "0 bytes  $ARCHIVE (does not exist)"
         fi
@@ -50,16 +111,67 @@ case "${1:-}" in
         ls -l "$ARCHIVE_DIR"
         ;;
 
+    disk)
+        df -h "$ARCHIVE_DIR" | tail -1
+        ;;
+
+    dated-list)
+        found=0
+        while IFS= read -r f; do
+            found=1
+            case "$f" in
+                *.gz) state="gzipped" ;;
+                *)    state="plain" ;;
+            esac
+            printf '%12s bytes  %-8s %s\n' "$(stat -c '%s' "$f")" "$state" "$f"
+        done <<EOT
+$(find "$ARCHIVE_DIR" -type f -name 'ossec-archive-*' 2>/dev/null | sort)
+EOT
+        [ "$found" -eq 0 ] && echo "no dated archives found under $ARCHIVE_DIR"
+        ;;
+
+    dated-path)
+        base=$(dated_base "${2:-}") || exit 2
+        if   [ -f "$base" ];    then echo "$base        (plain)"
+        elif [ -f "$base.gz" ]; then echo "$base.gz     (gzipped)"
+        else
+            echo "does not exist yet: $base"
+            exit 3
+        fi
+        ;;
+
+    export)
+        base=$(dated_base "${2:-}") || exit 2
+        stamp=$(date -u +%Y%m%dT%H%M%SZ)
+        out="$EXPORT_DIR/telos-archive-${2}-$stamp.json.gz"
+        if [ -f "$base.gz" ]; then
+            cp -p "$base.gz" "$out"
+        elif [ -f "$base" ]; then
+            gzip -c "$base" > "$out"
+        else
+            echo "no archive for ${2}. Looked for $base and $base.gz" >&2
+            exit 3
+        fi
+        chmod 644 "$out"
+        # Print the path first, then facts the caller can verify the copy against.
+        echo "$out"
+        echo "bytes_gz   $(stat -c '%s' "$out")"
+        echo "sha256_gz  $(sha256sum "$out" | cut -d' ' -f1)"
+        echo "lines      $(zcat "$out" | wc -l)"
+        ;;
+
     tail)
         n="${2:-20}"
         is_number "$n" || usage
-        tail -n "$n" "$ARCHIVE"
+        resolve_source "${3:-}"
+        $READ_CMD "$SRC" | tail -n "$n"
         ;;
 
     count)
         f="${2:-}"
         [ -f "$f" ] || { echo "count: pattern file not found: $f" >&2; exit 2; }
-        grep -c -F -f "$f" "$ARCHIVE" || true
+        resolve_source "${3:-}"
+        $READ_CMD "$SRC" | grep -c -F -f "$f" || true
         ;;
 
     show)
@@ -67,21 +179,8 @@ case "${1:-}" in
         n="${3:-5}"
         [ -f "$f" ] || { echo "show: pattern file not found: $f" >&2; exit 2; }
         is_number "$n" || usage
-        grep -F -f "$f" "$ARCHIVE" | head -n "$n" || true
-        ;;
-
-    rotate)
-        ts=$(date -u +%Y%m%dT%H%M%SZ)
-        out="/tmp/archives-$ts.json"
-        cp "$ARCHIVE" "$out"
-        gzip -f "$out"
-        chmod 644 "$out.gz"
-        echo "$out.gz"
-        ;;
-
-    truncate)
-        truncate -s 0 "$ARCHIVE"
-        echo "truncated $ARCHIVE"
+        resolve_source "${4:-}"
+        $READ_CMD "$SRC" | grep -F -f "$f" | head -n "$n" || true
         ;;
 
     *)

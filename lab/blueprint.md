@@ -171,10 +171,43 @@ Each capture window, driven by the host harness:
 8. **Drain 120 s.** Agent buffering and manager write to `archives.json` are not
    instantaneous. Cutting the window at ART completion loses tail events.
 9. `vmrun stop <vmx>`
-10. Over SSH to SIEM-01: rotate `archives.json`, `gzip`, pull to
-    `E:\runs\<run_id>\`, then **truncate on the SIEM**
+10. Over SSH to SIEM-01: **export the dated archive for the run's date** with
+    `sudo -n /usr/local/sbin/telos-archive export YYYY-MM-DD`, pull the `.gz` to
+    `E:\runs\<run_id>\`, and **verify** it against the `sha256_gz` and `lines`
+    the export command printed. **Do not truncate anything.**
 11. Write `run_manifest.json`: run_id, phase, change_id, git commit of harness,
     Sysmon config hash, ART commit, Wazuh version, fence timestamps, host load
+
+### Why step 10 no longer truncates (changed 2026-09-03)
+
+The original step said "rotate `archives.json`, gzip, pull, then truncate on the
+SIEM". That was written before anyone looked at how Wazuh stores archives, and it
+was wrong in two ways.
+
+**Wazuh already rotates, at the day boundary, and `archives.json` is a hard link.**
+
+```
+-rw-r----- 2 wazuh wazuh 5272919 Sep  3 08:19 archives.json
+          ^ link count 2: the same file also lives at YYYY/Mon/ossec-archive-DD.json
+```
+
+1. **A run crossing midnight splits across two files.** 101 runs of 25 to 60
+   minutes will run overnight. Reading `archives.json` would export half a run and
+   report success.
+2. **Truncating `archives.json` empties the dated archive too**, because it is one
+   file with two names. That step does not clear a scratch file, it destroys the
+   day's permanent record.
+
+**So the protocol reads by date and never truncates.** Disk is managed by Wazuh's
+own rotation plus a retention policy, and the harness watches free space with
+`telos-archive disk` and aborts cleanly when it gets low, which the risk table
+already required.
+
+**A second benefit, and it is worth stating in Chapter 3.** With truncation gone,
+`telos-archive` has no destructive subcommand at all, so the single sudoers rule
+grants the harness account **read and export only**. It cannot alter or delete the
+evidence store. "How do you know your archives were not modified?" now has a
+checkable answer instead of an assurance.
 
 `vmrun` supports `revertToSnapshot`, `start`, `stop`, `runProgramInGuest`,
 `runScriptInGuest`, and `copyFileFromGuestToHost` on Workstation Pro 17

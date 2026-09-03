@@ -512,7 +512,8 @@ into Phase 5 as a requirement rather than left to inference.**
 
 ## 14. Wazuh rotates `archives.json` daily, by hard link, and the run protocol assumes it does not
 
-**Status:** Open. Found 2026-09-03, when the date rolled over during a session.
+**Status:** **Answered 2026-09-03. The run protocol changed: export by date, never truncate.**
+Resolution at the end of this item.
 
 **Why it matters:** `lab/blueprint.md` run-protocol step 10 says "rotate `archives.json`, gzip,
 pull to `E:\runs\<run_id>\`, then **truncate on the SIEM**". That assumes one growing file per
@@ -550,6 +551,43 @@ dated tree, almost certainly `2026/Sep/ossec-archive-03.json`. Both names point 
 
 **What a bad answer means:** a run silently exports partial data, or the truncate step destroys a
 day of archives that was never successfully copied. Both are unrecoverable after the fact.
+
+### Resolution, 2026-09-03
+
+**Decision: the harness exports by date and never truncates anything.**
+
+`lab/scripts/telos-archive` was rewritten. `truncate` and `rotate` are **removed entirely**, and
+these were added:
+
+| Subcommand | What it does |
+|---|---|
+| `dated-list` | every dated archive with size and whether it is gzipped |
+| `dated-path DATE` | resolve `YYYY-MM-DD` to its archive path |
+| `export DATE` | copy that day's archive to `/tmp` as `.gz`, then print `bytes_gz`, `sha256_gz` and `lines` so the caller can **verify** the copy rather than assume it |
+| `disk` | free space on the filesystem holding the archives |
+
+`tail`, `count` and `show` now take an optional `DATE` and read gzipped dated archives through
+`zcat`. **If a window crosses midnight, export both dates.**
+
+**The second benefit is worth naming in Chapter 3.** With truncation gone, the tool has **no
+destructive subcommand at all**, so the single sudoers rule grants the harness account **read and
+export only**. It cannot alter or delete the evidence store. The question "how do you know your
+archives were not modified?" now has a checkable answer rather than an assurance.
+
+**What this moves rather than removes.** Disk management now depends entirely on Wazuh's own
+rotation plus a retention policy that is still deferred (see item 3). The harness must check free
+space before every run with `telos-archive disk` and abort cleanly when low. That guard was
+already in the blueprint risk table; it is now load-bearing.
+
+**Updated in:** `lab/blueprint.md` section 6 step 10, runbook Phase 6 step 10, and
+`lab/scripts/telos-archive`.
+
+**Installation is a student step**, because replacing a root-owned file needs sudo and the
+harness account has none:
+
+```bash
+sudo install -o root -g root -m 755 /home/eli/telos-archive /usr/local/sbin/telos-archive
+```
 
 ---
 

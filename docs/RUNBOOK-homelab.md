@@ -657,9 +657,21 @@ noise into the exact window you are measuring.
       in VM settings leaves the device present and the name stable. `(unverified whether
       removal actually renumbers on this setup; disconnect is the safe choice either way)`
 - [ ] Boot once, confirm no internet, shut down.
+- [ ] **Turn Defender Tamper Protection OFF by hand, inside the guest, before the golden
+      snapshot.** Windows Security, then Virus and threat protection, then Manage settings,
+      then Tamper Protection to Off. **This cannot be done from a script.** While it is on,
+      any script that tries to disable Defender fails, and Config S would be a snapshot that
+      is not actually suppressed while the analysis assumes it is. See OPEN-QUESTIONS item 10.
+- [ ] **Take every snapshot COLD, with the VM powered off.** Not live, not suspended. A cold
+      revert boots the guest fresh and VMware sets the virtual clock from the host, so the
+      clock is correct without VMware Tools touching it. A live snapshot restores a stale
+      clock. All six `time.synchronize.*` switches are already `FALSE` (OPEN-QUESTIONS 6), so
+      Tools will not correct it either, which is the intended behaviour and the reason cold is
+      required rather than merely preferred.
 - [ ] Take snapshot `golden-base`.
 - [ ] Boot, apply Config S (Defender off, Windows Update off, scheduled tasks disabled),
-      shut down, snapshot `cfg-suppressed`.
+      **then read the settings back and confirm they actually took effect**, shut down,
+      snapshot `cfg-suppressed`. Never assume a `Set-MpPreference` succeeded.
 - [ ] Revert to `golden-base`. Boot, leave defaults on, shut down, snapshot `cfg-natural`.
 
 Tree you should end with:
@@ -698,14 +710,42 @@ One capture window, in order:
 8. **Drain 120 seconds.** The agent buffers and the manager writes to disk. Cutting the
    window at test completion loses the tail.
 9. `vmrun -T ws stop <vmx>`
-10. Over SSH to SIEM-01: rotate `archives.json`, gzip it, copy to
-    `data/runs/<run_id>/`, then **truncate the file on SIEM-01**.
+10. Over SSH to SIEM-01, **export by date and never truncate**:
+
+    ```bash
+    sudo -n /usr/local/sbin/telos-archive export YYYY-MM-DD
+    ```
+
+    It prints the `.gz` path, then `bytes_gz`, `sha256_gz` and `lines`. Copy the file to
+    `data/runs/<run_id>/` and **verify it against those three values**. If the window
+    crossed midnight, export **both** dates.
 11. Write `data/runs/<run_id>/run_manifest.json` with every field listed in Phase 4.
 
-Guard the harness: check free space on F: before each run and abort cleanly if low.
-Running out of disk halfway through a 67 hour batch is the failure that hurts most.
+### Why step 10 does not truncate
 
-**Check:** one full unattended run completes and produces a run folder plus a manifest.
+**Wazuh already rotates at the day boundary, and `archives.json` is a hard link** to the
+current day's file under `YYYY/Mon/ossec-archive-DD.json`. The link count of `2` on
+`archives.json` is the proof. Two things follow:
+
+- **A run crossing midnight splits across two files.** A 67 hour batch runs overnight. Reading
+  `archives.json` would export half a run and report success.
+- **Truncating `archives.json` empties the dated archive too**, because it is one file with two
+  names. That does not clear a scratch file, it destroys the day's permanent record.
+
+Since nothing truncates, `telos-archive` has **no destructive subcommand at all**, so the
+single sudoers rule grants the harness account read and export only. It cannot alter or delete
+the evidence store. See OPEN-QUESTIONS item 14.
+
+**Every timestamp the harness uses must come from the endpoint**, the `systemTime` or `utcTime`
+inside the event, never the manager's `timestamp` field. SIEM-01's clock free-runs after Phase
+5 isolation, and using it would put that drift into the results. See OPEN-QUESTIONS item 6.
+
+Guard the harness: check free space before each run with `telos-archive disk` and on F:, and
+abort cleanly if low. Running out of disk halfway through a 67 hour batch is the failure that
+hurts most, and it matters more now that nothing is ever truncated.
+
+**Check:** one full unattended run completes and produces a run folder plus a manifest, and the
+copied archive matches the `sha256_gz` the export printed.
 
 ---
 

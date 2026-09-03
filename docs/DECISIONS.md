@@ -8,6 +8,43 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-09-03 - The run protocol exports archives by date and never truncates (closes OPEN-QUESTIONS 14)
+
+**Decision:** blueprint run-protocol step 10 and runbook Phase 6 step 10 no longer truncate
+`archives.json`. The harness exports the **dated** archive for the run's date and verifies the
+copy. `lab/scripts/telos-archive` was rewritten: `truncate` and `rotate` are **removed entirely**.
+
+**Why the old step was wrong.** It said "rotate `archives.json`, gzip, pull, then truncate on the
+SIEM", written before anyone looked at how Wazuh stores archives. Observed 2026-09-03 when the
+date rolled over mid-session:
+
+```
+-rw-r----- 2 wazuh wazuh 5272919 Sep  3 08:19 archives.json
+          ^ link count 2
+```
+
+`archives.json` is a **hard link** to the current day's file under
+`YYYY/Mon/ossec-archive-DD.json`. One file, two names. So:
+
+1. **A run crossing midnight splits across two files.** 101 runs of 25 to 60 minutes will run
+   overnight. Reading `archives.json` would export half a run and report success.
+2. **Truncating `archives.json` empties the dated archive too.** That step did not clear a scratch
+   file, it destroyed the day's permanent record. Safe only if the export had already succeeded
+   and been verified, which nothing checked.
+
+**The second benefit, and it is the one that helps at the defense.** With truncation gone,
+`telos-archive` has **no destructive subcommand at all**. The single sudoers rule now grants the
+harness account **read and export only**, so it cannot alter or delete the evidence store.
+"How do you know your archives were not modified?" has a checkable answer instead of an assurance.
+
+**Cost if wrong:** disk management now rests entirely on Wazuh's own rotation plus a retention
+policy that is still deferred (OPEN-QUESTIONS 3). The harness must check free space before every
+run with `telos-archive disk` and abort cleanly when low. That guard existed in the risk table
+already; it is now load-bearing rather than a nicety.
+
+**To reverse:** restore the previous script from git history and re-install it. The sudoers rule
+does not change, only the file it points at.
+
 ## 2026-09-03 - VMware Tools clock synchronisation fully disabled on both VMs, and the analysis will use the endpoint clock only (closes OPEN-QUESTIONS 6)
 
 **Decision one:** all six `time.synchronize.*` switches set to `FALSE` in **both** `.vmx` files,

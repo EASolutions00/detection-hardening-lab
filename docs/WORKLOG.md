@@ -178,6 +178,28 @@ The cleanest fix is probably to stop truncating altogether and export the dated 
 which also removes a destructive step from a 101-run unattended loop. Recorded as item 14 rather
 than fixed, because it changes the run protocol.
 
+### 14 answered the same day: export by date, never truncate
+
+Decision taken and the design changed. `lab/scripts/telos-archive` rewritten with `truncate` and
+`rotate` **removed entirely**, and `dated-list`, `dated-path DATE`, `export DATE` and `disk`
+added. `tail`, `count` and `show` now take an optional `DATE` and read gzipped dated archives
+through `zcat`. `export` prints `bytes_gz`, `sha256_gz` and `lines` so the harness can **verify**
+a copy rather than assume it.
+
+**The second benefit is the one that helps at the defense.** With truncation gone the tool has no
+destructive subcommand at all, so the single sudoers rule grants the harness account **read and
+export only**. It cannot alter or delete the evidence store. "How do you know your archives were
+not modified?" now has a checkable answer.
+
+**What it moves rather than removes:** disk management now rests entirely on Wazuh's own rotation
+plus a retention policy that is still deferred. The free-space guard in the risk table is now
+load-bearing.
+
+Updated: `lab/blueprint.md` section 6, runbook Phase 6 step 10, `lab/scripts/telos-archive`.
+Runbook Phase 5 also gained two requirements it had only implied: **snapshots must be taken cold**,
+and **Tamper Protection must be turned off by hand before the golden snapshot**, or Config S will
+not actually be suppressed.
+
 **Broke / stuck on:** nothing. Two commands were declined by the sudoers rule, which is correct
 behaviour and not a fault. The corrected `vmrun list` poll, forced to an array, exited on its
 first check instead of running to a 6 minute deadline.
