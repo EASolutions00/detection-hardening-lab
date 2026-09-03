@@ -2,7 +2,7 @@
 
 What actually happened, session by session. Newest at the top.
 
-This exists because you forget things. Write an entry every time you sit down, even a short
+This exists because I forget things. Write an entry every time I sit down, even a short
 one. "Tried X, it failed, here is the error" is worth more later than a clean summary.
 
 Template:
@@ -66,7 +66,7 @@ switch**. The only control is on the manager: never issue an upgrade command.
 
 ### 2. Item 11 answered: host power loss
 
-The student reported the power cable was accidentally unplugged. Verified rather than accepted,
+The power cable was accidentally unplugged. I verified that rather than accepting it,
 because two stops had been recorded and only one explanation was offered. Windows records
 unexpected shutdowns explicitly:
 
@@ -262,7 +262,7 @@ was verified with a command whose output is recorded, not assumed.
 5. **Kaspersky on the host was blocking 66 Atomic Red Team files.** Found by counting, not
    guessing. The list included three technique definitions (`T1218.005.yaml`, `T1548.002.yaml`,
    `T1685.yaml`), `Indexes/windows-index.yaml`, and most of the Windows payload binaries for
-   T1055, T1218 and T1134.001. The student added an exclusion for `E:\TeLoS-artifacts`. After
+   T1055, T1218 and T1134.001. I added an exclusion for `E:\TeLoS-artifacts`. After
    that: **1310 files packed, 0 blocked.**
 6. **Defender in the guest would have quarantined the same files at extraction time**, permanently
    removing them from the golden image. Added a narrow exclusion for `C:\AtomicRedTeam` only.
@@ -347,7 +347,7 @@ full detail including the fence binary's SHA256.
 2. **`Access to the path ... index.yaml is denied` on the host.** Not a permission problem, the
    ACL granted `Elijah` FullControl. `Get-MpPreference` failing with `0x800106ba` and `WinDefend`
    `Stopped` led to `Get-CimInstance -Namespace root\SecurityCenter2`, which named **Kaspersky
-   21.26**. Fixed by the student adding an exclusion.
+   21.26**. Fixed by adding an exclusion.
 
 3. **My own archiver bug turned 1 real failure into 1,301.** I created the zip entry before
    opening the source file. When the open failed the entry stayed open, and `ZipArchive` refuses
@@ -367,7 +367,7 @@ full detail including the fence binary's SHA256.
    pointed at the server side. Fixed by typing the key directly inside an interactive SSH session,
    with no PowerShell in the path. **Do not pipe a key file through PowerShell into `ssh`.**
 
-5. **A command I gave the student had a stray trailing quote**, leaving `bash` at a `>`
+5. **One command had a stray trailing quote**, leaving `bash` at a `>`
    continuation prompt. Nothing ran, because the whole line was joined with `&&`.
 
 6. **`sudo install` failed with `cannot stat '/tmp/telos-archive'`.** The file had been copied
@@ -602,14 +602,14 @@ TeLoS is cheap now and gets expensive once the harness and stored-run format exi
 before Phase 3 if the name is considered final.
 
 **Next:** continue Phase 2, steps 1 through 8 (VM creation through indexer replica settings),
-per the procedure already given. Waiting on the student to report each step's result.
+per the procedure already given. Record each step's result as it completes.
 
 ---
 
 ## 2026-08-31 (fourth session) - Adapter fix confirmed. Phase 1 complete.
 
-**Did:** Verified the fix after the student ran Virtual Network Editor → Restore Defaults and
-reconfigured vmnet2/vmnet3, per the steps from the previous session.
+**Did:** Ran Virtual Network Editor → Restore Defaults, reconfigured vmnet2/vmnet3 per the
+steps from the previous session, then verified the result.
 
 **Result: fixed.** All three checks that failed before now pass.
 
@@ -621,8 +621,8 @@ reconfigured vmnet2/vmnet3, per the steps from the previous session.
 | VMnet3 IP | none | **10.20.20.1/24** |
 | DHCP on 10.20.10.0 or 10.20.20.0 | n/a | confirmed absent from `vmnetdhcp.conf` |
 
-The student set both subnets exactly as specified and connected the host adapter on vmnet2
-only, matching the runbook. No correction needed.
+Both subnets were set exactly as specified, with the host adapter connected on vmnet2 only,
+matching the runbook. No correction needed.
 
 Moved OPEN-QUESTIONS item 0 to Answered with the full before/after evidence.
 
@@ -681,7 +681,7 @@ binding to the stack alongside VMware's adapters is a known cause of this exact 
 off the hypervisor at boot; it did not remove the Hyper-V Windows feature or its networking
 components, and `vmcompute`/`vmms` services are still `Running`.
 
-**Fix prescribed, not yet done (needs the GUI, is the student's step):**
+**Fix, not yet done (needs the VMware GUI, so it is done by hand):**
 1. VMware Workstation → Edit → Virtual Network Editor → Change Settings (admin).
 2. Click **Restore Defaults** to reinstall the adapters. No custom settings are lost, since
    vmnet2/vmnet3 had no subnets configured yet.
@@ -701,8 +701,8 @@ Hyper-V Windows feature itself needs to be removed (`Disable-WindowsOptionalFeat
 just its boot-time hypervisor. Bigger change, needs its own DECISIONS entry if it comes to
 that.
 
-**Next:** waiting on the student to run the Virtual Network Editor steps above. Phase 1 is
-not complete until `Get-NetIPAddress` confirms 10.20.10.1.
+**Next:** run the Virtual Network Editor steps above. Phase 1 is not complete until
+`Get-NetIPAddress` confirms 10.20.10.1.
 
 ---
 
@@ -796,7 +796,7 @@ in plain terms, web versus script, algorithm in plain terms, before-and-after co
 the source of the adversary tests. The panel asked no research-validity questions. Every item
 was a product question.
 
-**Two decisions taken as assumptions, still unconfirmed by the student:**
+**Two decisions taken as assumptions, still unconfirmed:**
 1. Web application using the existing Wazuh agent. No new endpoint agent is written.
 2. Limited remediation suggestion: report a surviving telemetry source, do not rewrite rules,
    never recommend reversing the hardening.

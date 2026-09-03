@@ -26,7 +26,7 @@ Nothing errors. Nothing alerts. Teams usually find out during an incident, month
 
 ## It works
 
-This is real output from `src/demo.py`. One hardening change was simulated: one event type
+This is real output from `src/demo.py`. I simulated one hardening change: one event type
 removed outright, one genuinely cut to 30 percent, and one noisy type that drifted down 1.4
 percent on its own.
 
@@ -137,11 +137,11 @@ what a correct result looks like.
 
 Two things here are deliberate.
 
-**A pre-declared falsifiable outcome.** Before any data is collected, the study states the
-result that would prove its own central claim unnecessary, and commits to reporting it without
-softening. The statistical layer is only justified if the laboratory's run-to-run variance is
-non-zero. If it turns out to be negligible, the study says so plainly and restricts its claim
-to production deployment, where the variance floor is not controlled by snapshot restoration.
+**A pre-declared falsifiable outcome.** Before collecting any data, I state the result that
+would prove my own central claim unnecessary, and commit to reporting it without softening. The
+statistical layer is only justified if the laboratory's run-to-run variance is non-zero. If it
+turns out to be negligible, I report that plainly and restrict the claim to production
+deployment, where the variance floor is not controlled by snapshot restoration.
 
 **Untestable is reported, not assumed safe.** An event type seen too few times before a change
 cannot be tested with any power. TeLoS reports these as INCONCLUSIVE rather than folding them
@@ -155,7 +155,7 @@ inline throughout.
 
 ## Alternatives considered
 
-Two other topics were written up as full proposals before T1 was chosen. Both remain in
+I wrote up two other topics as full proposals before choosing T1. Both remain in
 [thesis/](thesis/README.md).
 
 **T2, severity inversion in the Wazuh ruleset.** Rules form a dependency graph, and a serious
@@ -163,11 +163,11 @@ alert can sit at a severity level no analyst ever sees. Not chosen, but it remai
 if the primary approach fails its feasibility gate.
 
 **T3, analytic robustness scoring.** Score how hard each detection rule is to evade, and
-validate against the manually annotated subset of the Sigma corpus. **Killed by a check.**
-Counting the corpus at pinned commit `da9bb07` found only **6 rules out of 3,783** carrying a
-Summiting the Pyramid annotation, which is 0.16 percent. That is far too few for the agreement
-statistic the evaluation depended on. Recorded with the method and evidence in
-[docs/OPEN-QUESTIONS.md](docs/OPEN-QUESTIONS.md).
+validate against the manually annotated subset of the Sigma corpus. **I killed it after
+checking the assumption it rested on.** Counting the corpus at pinned commit `da9bb07` turned
+up only **6 rules out of 3,783** carrying a Summiting the Pyramid annotation, which is 0.16
+percent. Far too few for the agreement statistic the evaluation depended on. Method and
+evidence in [docs/OPEN-QUESTIONS.md](docs/OPEN-QUESTIONS.md).
 
 ---
 

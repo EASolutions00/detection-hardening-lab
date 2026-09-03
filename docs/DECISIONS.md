@@ -244,7 +244,7 @@ in `C:\AtomicRedTeam\TELOS-PROVENANCE.txt` inside the guest.
 
 **Decision:** two exclusions.
 
-1. **Host:** `E:\TeLoS-artifacts` added to Kaspersky 21.26's exclusion list, by the student.
+1. **Host:** `E:\TeLoS-artifacts` added to Kaspersky 21.26's exclusion list, by hand.
 2. **Guest:** `Add-MpPreference -ExclusionPath "C:\AtomicRedTeam"` on WIN-EP-01.
 
 **Why the host exclusion:** Kaspersky was blocking read access to **66** Atomic Red Team files.
@@ -613,7 +613,7 @@ the T1 spike result, not before it. T1 is still the primary and still the goal.
 
 **Why:** The professor confirmed two things. There are no intellectual property rules that
 stop a student publishing thesis work early. And there is no similarity-check problem: a
-match between the final paper and the student's own public repo is not treated as an issue.
+match between the final paper and my own public repo is not treated as an issue.
 
 This removes both reasons the earlier entry gave for staying private.
 

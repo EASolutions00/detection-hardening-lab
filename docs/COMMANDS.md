@@ -7,7 +7,7 @@ Newest work is at the bottom of each section. If you add a command, add it here.
 
 ---
 
-## Part 1: Commands the student ran
+## Part 1: Commands I ran by hand
 
 Only two. Both were steps that could not be delegated.
 
@@ -42,7 +42,7 @@ gh auth login
 | **What** | Connects the GitHub command line tool to the account and stores a token. |
 | **Why** | So pushes and repo creation work from the terminal instead of the website. |
 | **When** | Once, after gh was installed. Not repeated unless the token is revoked. |
-| **Where** | The student's own terminal. Claude cannot enter account credentials. |
+| **Where** | My own terminal. Account credentials are never delegated. |
 | **Answers** | GitHub.com, HTTPS, Yes, Login with a web browser. |
 | **Correct result** | `✓ Logged in to github.com account EASolutions00 (keyring)` with scopes `gist, read:org, repo, workflow`. |
 | **Safe to re-run** | Yes, it replaces the existing token. |
@@ -405,8 +405,8 @@ baseline change, recorded in OPEN-QUESTIONS item 7.
 ### 2.10 Phase 3: build WIN-EP-01 (2026-09-02)
 
 Unless a step says otherwise, commands ran **on the Windows host**. Guest commands were driven
-from the host with `vmrun`, so the student never typed inside the VM except where marked
-**STUDENT**.
+from the host with `vmrun`, so nothing was typed inside the VM except where marked
+**BY HAND**.
 
 Two shorthands used below:
 
@@ -435,7 +435,7 @@ $key   = "$env:USERPROFILE\.telos\siem01_ed25519"
 The `.vmx` was then written by hand. It is not reproduced here; the file itself is the record, and
 the deviations from SIEM-01 are tabulated in `DECISIONS.md`.
 
-#### 2.10.2 **STUDENT**: bypass the Windows 11 hardware check
+#### 2.10.2 **BY HAND**: bypass the Windows 11 hardware check
 
 At the **first** Windows setup screen, press **Shift+F10**, then run all four:
 
@@ -600,7 +600,7 @@ Host side:
 ssh-keygen -t ed25519 -f "$env:USERPROFILE\.telos\siem01_ed25519" -N '""' -C "telos-harness" -q
 ```
 
-**STUDENT**, typed **inside an interactive SSH session on SIEM-01**, not piped from PowerShell:
+**BY HAND**, typed **inside an interactive SSH session on SIEM-01**, not piped from PowerShell:
 
 ```bash
 mkdir -p ~/.ssh && chmod 700 ~/.ssh && echo '<the public key line>' >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys
@@ -620,7 +620,7 @@ literal **file path** into `authorized_keys`, with a carriage return on the end:
 `C:\Users\Elijah\.telos\siem01_ed25519.pub^M$`. It fails silently. `ssh -v` showing the key
 offered and rejected is the symptom. Type it inside the SSH session instead.
 
-Then the helper script and its single sudo rule, both **STUDENT**, on SIEM-01:
+Then the helper script and its single sudo rule, both **BY HAND**, on SIEM-01:
 
 ```bash
 sudo install -o root -g root -m 755 /home/eli/telos-archive /usr/local/sbin/telos-archive

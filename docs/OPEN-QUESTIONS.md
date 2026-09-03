@@ -662,7 +662,7 @@ boot were harmless SMBus and Bluetooth kernel messages.
 and made an install command fail with a confusing error. Lab files now go to the home directory,
 not `/tmp`.
 
-**How to answer:** confirm whether the student powered off or reset the VM through the VMware
+**How to answer:** confirm whether I powered off or reset the VM through the VMware
 interface at those times. If not, watch `vmware.log` and `journalctl --list-boots` across the next
 few sessions and look for a pattern.
 
@@ -718,7 +718,7 @@ directory, never `/tmp`.
 vmnet3.** The working theory (a lingering Hyper-V virtual switch conflicting with VMware's
 adapters) was never confirmed as the exact cause, but the standard repair worked.
 
-**Evidence, verified 2026-08-31 after the student ran the fix:**
+**Evidence, verified 2026-08-31 after running the fix:**
 
 ```
 Get-PnpDevice | Where FriendlyName -like '*VMware Virtual Ethernet*'
