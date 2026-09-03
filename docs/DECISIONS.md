@@ -8,6 +8,32 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-09-03 - Active response disabled on WIN-EP-01 (closes OPEN-QUESTIONS 12)
+
+**Decision:** `<active-response><disabled>yes</disabled>` in the agent's `ossec.conf`, with a
+comment in the file explaining why. Confirmed by the agent itself after restart:
+
+```
+2026/09/03 08:04:36 wazuh-agent: INFO: (1350): Active response disabled.
+```
+
+**Why:** active response lets the **manager execute commands on the endpoint**. The measuring
+instrument must not be able to change the machine under test, and least of all inside a capture
+window. Nothing had fired, but a real Atomic Red Team run is exactly when the manager is most
+likely to see something it reacts to. Unlike the scan modules in item 8, this one changes state
+rather than adding events, so its failure mode is worse and harder to detect after the fact.
+
+`active-responses.log` is still collected as a `<localfile>`. It will simply stay empty, which is
+itself evidence that nothing fired.
+
+**Cost if wrong:** the deployment is one more step away from a default Wazuh install, and Chapter
+3 must say so. The answer to a panelist is one sentence: active response was disabled because it
+allows the monitoring platform to modify the endpoint under measurement, which would introduce
+state changes the experiment does not control or record.
+
+**To reverse:** one word in the file, or restore
+`C:\Program Files (x86)\ossec-agent\ossec.conf.telos-pre-item12` and restart `WazuhSvc`.
+
 ## 2026-09-02 - WIN-EP-01 installer media disconnected, and a checkpoint snapshot taken on both VMs
 
 **Decision one:** `sata0:1.startConnected = "FALSE"` in `WIN-EP-01.vmx`, matching what Phase 2 did
@@ -709,7 +735,7 @@ which belonged to T3 and is no longer in scope.
 | `powershell-yaml` | `0.4.12`, nupkg SHA256 `D4602BC7A4A093766520422D53CA8B09ACDE162286FAE11E2EE6C8EDFEA07810`. Hard dependency of `Invoke-AtomicTest`, which cannot parse the atomics without it. | 2026-09-02 |
 | **Windows build number (guest)** | **`10.0.26100.9168`**, Windows 11 **Education**, `DisplayVersion 24H2`. Fully patched: two update passes, the second returned `updates found: 0`. 7 hotfixes: KB5120710, KB5050575, KB5054273, KB5122035, KB5121003, KB5043113, KB5123304. | 2026-09-02 |
 | Wazuh agent version | `4.14.7`, stage `rc1`, commit `8c41e20`, from `wazuh-agent-4.14.7-1.msi` SHA256 `E967F36B75589D6210244FD58239C7021FA53A77C38D92315C3B3BD115002EDE`. Registered as `id=001 name=WIN-EP-01`. Matches the manager exactly. | 2026-09-02 |
-| **WIN-EP-01 agent `ossec.conf`** | **current: SHA256 `1F36416E1BC59443D98AD0307638F5C5C788BEE12C545140AD993A1E4E8F2658`, 11,848 bytes**, committed as `lab/configs/wazuh-agent-ossec.conf`. History: as installed `4F4531A2...F4D64B` (10,152 bytes), kept in the guest as `ossec.conf.telos-orig`; after adding the Sysmon `<localfile>` block `F9541429...C4D82F` (10,409 bytes), kept as `ossec.conf.telos-pre-item8`; current version additionally disables `rootcheck`, `sca`, `syscheck` and `syscollector`. | 2026-09-02 |
+| **WIN-EP-01 agent `ossec.conf`** | **current: SHA256 `CED16E0B41384BF421192317E3754732D0E3155A85BA98F2CEEDFA846B0278B1`, 12,115 bytes**, committed as `lab/configs/wazuh-agent-ossec.conf`. History, each kept in the guest: as installed `4F4531A2...F4D64B` (10,152 bytes) as `ossec.conf.telos-orig`; plus the Sysmon `<localfile>` block `F9541429...C4D82F` (10,409 bytes) as `ossec.conf.telos-pre-item8`; plus `rootcheck`, `sca`, `syscheck`, `syscollector` disabled `1F36416E...8F2658` (11,848 bytes) as `ossec.conf.telos-pre-item12`; current adds `active-response` disabled. | 2026-09-03 |
 | WIN-EP-01 lab address | `10.20.10.20/24` on adapter `LAB`, MAC `00:0C:29:A7:96:32`. NAT adapter `NAT`, MAC `00:0C:29:A7:96:28`, `192.168.243.130/24`. Default route exists only on NAT. | 2026-09-02 |
 | WIN-EP-01 VMware Tools | `12.3.5 build-22544099` from the Workstation `windows.iso` dated 2024-02-12. Drivers after the Windows Update pass: VMware SVGA 3D `9.17.11.3` (Broadcom), VMCI Bus `9.8.30.0` (Broadcom), Pointing Device `12.5.12.0` (VMware). | 2026-09-02 |
 | Fence tool | `telos-fence.exe`, 4,096 bytes, SHA256 `D35C939B71ECAC94868947932292531C02A171DECFD3046DEE47DB8E3BD0D814`. Built on the host from `lab/scripts/telos-fence.cs` with the .NET Framework compiler. Verified to emit **exactly one** Sysmon Event ID 1 per run, carrying the run id in its command line. | 2026-09-02 |

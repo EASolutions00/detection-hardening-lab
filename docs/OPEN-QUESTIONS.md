@@ -149,7 +149,8 @@ comparable tool does it. The cost is extra work in the dependency index.
 
 ## 1d. Does journald rate limiting silently drop events during a capture?
 
-**Status:** Open, and unmeasured. Raised 2026-09-02 during Phase 2.
+**Status:** **Answered 2026-09-03. No, not as the lab is currently scoped.** Measured, and the
+premise of the question turned out to be partly wrong. Resolution at the end of this item.
 
 **Why it matters:** SIEM-01 collects operating system events from **`journald` only**. Verified
 from `ossec.conf`, which lists exactly three sources:
@@ -181,6 +182,48 @@ record it as a pinned baseline value, or keep it and prove the run rate stays un
 **What a bad answer means:** if the limit is being hit at realistic run rates and is not
 addressed, every T1 result is contaminated by an unmeasured, uncontrolled loss channel. This is
 a threat to validity, not a performance issue.
+
+### Resolution, 2026-09-03
+
+**The premise was partly wrong, and correcting it is most of the answer.** This item assumed the
+endpoint's telemetry travels through journald on SIEM-01. It does not. The Phase 3 evidence in
+`archives.json` shows how WIN-EP-01's events actually arrive:
+
+```
+"decoder":{"name":"windows_eventchannel"}   ...   "location":"EventChannel"
+```
+
+They come over port 1514 into the manager's own queue. **journald on SIEM-01 carries only
+SIEM-01's own operating system events**, which a capture run barely touches. The original worry,
+that a busy run would overrun journald and lose endpoint data, cannot happen by that path.
+
+**Measured on SIEM-01, 2026-09-03:**
+
+| Item | Value |
+|---|---|
+| `RateLimitIntervalSec` | **30s** (default, not overridden anywhere) |
+| `RateLimitBurst` | **10000** (default, not overridden anywhere) |
+| Meaning | more than 10,000 messages from **one service** within 30 s and the rest are dropped |
+| **Suppression notices ever recorded on this machine** | **0** |
+| Journal storage | persistent (`/var/log/journal` exists), 79.5 MB |
+| Only non-default journald setting | `ForwardToSyslog=yes` |
+
+Every journald setting is at its built-in default. The limit has **never** been reached, across
+every boot in the journal.
+
+**A separate finding from the same output.** `rsyslog` is installed and active, and
+`ForwardToSyslog=yes` means **every journald message is written twice**, once to the journal and
+once to `/var/log/syslog`, which is already 1.77 MB. Wazuh does **not** read `/var/log/syslog`,
+so this is duplicate disk writes, not duplicate collection. Minor, but it is disk churn inside
+every capture window and it belongs in the baseline description.
+
+**What is left of this item, and when it comes back.** If a Linux endpoint is ever added
+(`LNX-EP-01` in `lab/blueprint.md` Tier B), its `auditd` and OS events **would** pass through
+journald on that machine, and this question becomes live again for that host. It is answered for
+the current Tier A lab only.
+
+**Related, and still open:** the loss-channel worry is real, just in different places. See items
+9 (Sysmon channel, 64 MB circular) and 13 (agent buffer, 500 events/s).
 
 ---
 
@@ -318,6 +361,51 @@ it. Record whichever is chosen in DECISIONS.md with the reversal command.
 machine mid-run and generates its own events. Same failure mode as an unattended apt upgrade:
 silent, scheduled, and it invalidates every run collected before it.
 
+### Measured 2026-09-03. The problem is real but it is not the one written above.
+
+```
+snap list           : empty, NO snaps are installed at all
+snap refresh --time : last: n/a   next: n/a
+snapd version       : 2.76.3+ubuntu24.04
+```
+
+**Nothing can refresh, because nothing is installed.** The feared "snap refresh mid-run" cannot
+happen. But the journal shows what snapd is actually doing:
+
+```
+Sep 03 08:02:30 siem-01 snapd[5068]: state ensure error:
+  Get "https://api.snapcraft.io/api/v1/snaps/sections": net/http: request canceled while
+  waiting for connection (Client.Timeout exceeded while awaiting headers)
+```
+
+**snapd contacts Canonical on its own loop even with zero snaps installed, and it is already
+failing.** After Phase 5 disconnects NAT it will fail **every time, forever**, and each failure
+is a journald message that Wazuh collects into `archives.json`. That is the same failure mode as
+the Wazuh vulnerability feed disabled in Phase 2: an internet-dependent service on a deliberately
+isolated machine, logging on a timer.
+
+`snapd.snap-repair.timer` is also `enabled`, and it contacts Canonical independently of installed
+snaps.
+
+**Removing snapd is the wrong fix.** `apt-cache rdepends --installed snapd` returns
+`ubuntu-server-minimal`, `ubuntu-server`, `apparmor` and `command-not-found`. Removing the package
+would drag out the server metapackages.
+
+**How to close it: stop the daemon, keep the package.** Disable and stop the units that reach the
+network, leave `snapd.apparmor.service` and `snapd.seeded.service` alone so boot ordering and
+AppArmor are untouched:
+
+```bash
+sudo systemctl disable --now snapd.service snapd.socket snapd.snap-repair.timer snapd.autoimport.service
+```
+
+Then reboot and confirm the machine comes up, Wazuh is active, and no further `api.snapcraft.io`
+lines appear. **The `phase3-complete-2026-09-02` snapshot makes this safe to attempt**: if boot
+breaks, revert.
+
+**This cannot be done by the harness account.** The sudoers rule installed on 2026-09-02 grants
+`/usr/local/sbin/telos-archive` and nothing else, so it is a student step by design.
+
 ---
 
 ## 6. How do SIEM-01 and WIN-EP-01 keep their clocks together after Phase 5?
@@ -374,7 +462,8 @@ timestamps cannot be repaired after the fact. Decide before Phase 6, not after.
 
 ## 7. Does vmnet3 have a host adapter connected, and should it?
 
-**Status:** Open, and the record currently contradicts reality. Raised 2026-09-02.
+**Status:** **Answered 2026-09-03.** Yes it has one, nothing uses vmnet3, and the record has been
+corrected rather than the machine. Resolution at the end of this item.
 
 **Why it matters:** the Phase 1 record and the runbook describe vmnet3 as host-only with **no
 host adapter**. The host says otherwise, verified 2026-09-02:
@@ -401,6 +490,35 @@ Do it before the Phase 5 golden snapshot.
 
 **What a bad answer means:** low technical damage, real thesis damage. A written isolation claim
 that the machine does not support is the kind of thing a panelist can check.
+
+### Resolution, 2026-09-03
+
+**Verified on the host:**
+
+```
+VMware Network Adapter VMnet3   Up   10.20.20.1/24
+
+Which VMs are attached to vmnet3?
+  SIEM-01.vmx   : VMnet8, VMnet2
+  WIN-EP-01.vmx : VMnet8, VMnet2
+```
+
+**No virtual machine is attached to vmnet3 at all.** It is a configured network with a host
+adapter and nothing on it.
+
+**The record was corrected, not the machine.** Re-reading runbook Phase 1, it never actually said
+vmnet3 has no host adapter. It said vmnet2 should keep its adapter and left vmnet3 unstated, and
+the contradiction was with an inference rather than with anything written. Phase 1 now states
+explicitly that vmnet3 **has** a host adapter at `10.20.20.1/24` and is unused.
+
+**Nothing was unticked**, for two reasons. Nothing is on that network, so there is no isolation
+claim to defend today, and unticking requires the Virtual Network Editor with administrator
+rights, which is a manual step with no benefit right now.
+
+**The condition under which this reopens:** if `IDS-01` is ever built on vmnet3 as a promiscuous
+monitor segment (`lab/blueprint.md` Tier B) **and** the thesis claims that segment is isolated,
+the host adapter must be unticked at that point and the claim re-verified. That condition is
+written into runbook Phase 1 so it cannot be missed.
 
 ---
 
@@ -490,8 +608,7 @@ would be detected rather than assumed impossible.
 
 ## 12. Active response lets the manager run commands on the endpoint
 
-**Status:** Open. Raised 2026-09-02. Deliberately **not** changed, because it is outside item 8
-and it is an experiment-design decision.
+**Status:** **Fixed 2026-09-03.** Disabled and verified. Resolution at the end of this item.
 
 **Why it matters:** the agent's config has
 
@@ -516,6 +633,22 @@ and is reversible; the second is more work but keeps the deployment closer to a 
 **What a bad answer means:** an untracked state change lands inside a capture window, and the
 post-change run differs for a reason that is not the hardening change and is not recorded
 anywhere.
+
+### Resolution, 2026-09-03
+
+`<active-response><disabled>yes</disabled>` in the agent config, with a comment in the file saying
+why. Confirmed by the agent itself after restart:
+
+```
+2026/09/03 08:04:36 wazuh-agent: INFO: (1350): Active response disabled.
+```
+
+All five collection channels still analyzed, `status='connected'`. `ossec.conf` is now **12,115
+bytes, SHA256 `CED16E0B41384BF421192317E3754732D0E3155A85BA98F2CEEDFA846B0278B1`**, committed as
+`lab/configs/wazuh-agent-ossec.conf`. Previous version kept in the guest as
+`ossec.conf.telos-pre-item12`.
+
+**To reverse:** one word in the file, or restore `ossec.conf.telos-pre-item12`.
 
 ---
 

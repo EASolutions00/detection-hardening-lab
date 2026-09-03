@@ -17,6 +17,122 @@ Next:
 
 ---
 
+## 2026-09-03 - Four open questions closed. Two of them were smaller than written, one was a different problem entirely.
+
+**Did:** worked the open list. Items 1d, 7 and 12 are now answered or fixed. Item 5 is measured
+and turned out to be a real problem for a different reason than the one recorded.
+
+### 1d, journald rate limiting. Answered: no, not as the lab is scoped.
+
+**The premise was partly wrong, and correcting it is most of the answer.** The item assumed the
+endpoint's telemetry passes through journald on SIEM-01. It does not. The Phase 3 evidence
+already showed how WIN-EP-01's events arrive:
+
+```
+"decoder":{"name":"windows_eventchannel"}   ...   "location":"EventChannel"
+```
+
+Port 1514 into the manager's own queue. journald on SIEM-01 carries only SIEM-01's own OS events.
+
+Measured anyway, for completeness:
+
+| Item | Value |
+|---|---|
+| `RateLimitIntervalSec` | 30s, built-in default, not overridden anywhere |
+| `RateLimitBurst` | 10000, built-in default |
+| **Suppression notices ever recorded** | **0** |
+| Journal storage | persistent, 79.5 MB |
+| Only non-default setting | `ForwardToSyslog=yes` |
+
+The limit has never been reached across every boot in the journal. **It comes back if a Linux
+endpoint is ever added**, because that host's `auditd` events would pass through journald.
+
+**Separate finding from the same output:** `rsyslog` is installed and active, so
+`ForwardToSyslog=yes` means every journald message is written **twice**, to the journal and to
+`/var/log/syslog` (already 1.77 MB). Wazuh does not read `/var/log/syslog`, so it is duplicate
+disk writes, not duplicate collection. Disk churn inside every capture window.
+
+### 5, snapd. Measured. Real problem, different cause.
+
+```
+snap list : empty, NO snaps installed at all
+```
+
+**Nothing can refresh, because nothing is installed.** The recorded fear cannot happen. But:
+
+```
+Sep 03 08:02:30 siem-01 snapd[5068]: state ensure error:
+  Get "https://api.snapcraft.io/api/v1/snaps/sections": net/http: request canceled while
+  waiting for connection (Client.Timeout exceeded while awaiting headers)
+```
+
+**snapd contacts Canonical on its own loop with zero snaps installed, and it is already failing.**
+After Phase 5 removes internet access it will fail every time, forever, and each failure is a
+journald message Wazuh collects. Same shape as the Wazuh vulnerability feed disabled in Phase 2.
+`snapd.snap-repair.timer` is also enabled and phones home independently of snaps.
+
+Removing the package is the wrong fix: `apt-cache rdepends --installed snapd` returns
+`ubuntu-server-minimal`, `ubuntu-server`, `apparmor` and `command-not-found`.
+
+**Handed to the student, because the narrow sudoers rule grants `telos-archive` and nothing
+else.** That is the rule working as designed, not a failure.
+
+### 7, vmnet3. Answered by correcting the record, not the machine.
+
+```
+VMware Network Adapter VMnet3   Up   10.20.20.1/24
+SIEM-01.vmx   : VMnet8, VMnet2
+WIN-EP-01.vmx : VMnet8, VMnet2
+```
+
+**No VM is attached to vmnet3 at all.** Re-reading runbook Phase 1, it never actually claimed
+vmnet3 had no host adapter. It said vmnet2 should keep its adapter and left vmnet3 unstated, so
+the contradiction was with an inference, not with anything written. Phase 1 now states the
+adapter explicitly, plus the condition that reopens the question: if `IDS-01` is ever built there
+and the thesis claims that segment is isolated, untick the adapter first and re-verify.
+
+### 12, active response. Fixed.
+
+```
+2026/09/03 08:04:36 wazuh-agent: INFO: (1350): Active response disabled.
+```
+
+It let the **manager execute commands on the endpoint**. Worse than the item 8 scan modules,
+because it changes state rather than adding events. `active-responses.log` is still collected and
+will simply stay empty, which is itself evidence that nothing fired.
+
+`ossec.conf` is now **12,115 bytes, SHA256
+`CED16E0B41384BF421192317E3754732D0E3155A85BA98F2CEEDFA846B0278B1`**, committed as
+`lab/configs/wazuh-agent-ossec.conf`. Every prior version is kept in the guest:
+`ossec.conf.telos-orig`, `ossec.conf.telos-pre-item8`, `ossec.conf.telos-pre-item12`.
+
+The agent's full module state now reads:
+
+```
+rootcheck       disabled yes      cis-cat         disabled yes
+sca             enabled  no       osquery         disabled yes
+syscheck        disabled yes      active-response disabled yes
+syscollector    disabled yes
+client_buffer   disabled no   queue_size 5000   events_per_second 500   <- item 13, unmeasured
+agent-upgrade   still starts, no agent-side switch                      <- item 8 remainder
+```
+
+**Broke / stuck on:** nothing. Two commands were declined by the sudoers rule, which is correct
+behaviour and not a fault.
+
+**Next:** the list blocking the Phase 5 golden snapshot is down to five, and three of them are
+one measurement:
+
+| | Item | Status |
+|---|---|---|
+| 5 | snapd phoning home | measured, **two commands waiting on the student** |
+| 6 | four unset `time.synchronize.*` switches | **needs the VMs powered off**, do it at the next shutdown |
+| 8 | agent-upgrade, manager-side control | reduced scope |
+| 9, 13 | Sysmon channel 64 MB circular, agent buffer 500 events/s | **the same measurement, during one real capture window** |
+| 10 | Tamper Protection will defeat Config S | manual toggle in the guest, student step |
+
+---
+
 ## 2026-09-02 (later) - OPEN-QUESTIONS 8 fixed, 11 answered, two new loss channels found, records audited.
 
 **Did:** three jobs after Phase 3 closed. Fixed item 8, closed item 11, then audited whether

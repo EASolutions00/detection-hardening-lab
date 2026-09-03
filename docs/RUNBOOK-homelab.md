@@ -38,6 +38,11 @@ for admin rights.
 - [ ] `vmnet2` = Host-only. **Turn DHCP OFF.** Subnet 10.20.10.0/24.
       Leave "Connect a host virtual adapter" ON. The harness needs to reach the Wazuh API.
 - [ ] `vmnet3` = Host-only. DHCP OFF. Subnet 10.20.20.0/24. Tier B only, skip for now.
+      **On this host it has a host adapter connected, at `10.20.20.1/24`, and no VM is attached
+      to it.** Verified 2026-09-03. That is deliberate and harmless while nothing uses the
+      network. **If `IDS-01` is ever built here as a monitor segment and the thesis claims that
+      segment is isolated, untick "Connect a host virtual adapter to this network" first and
+      re-verify the claim.** See OPEN-QUESTIONS item 7.
 - [ ] `vmnet8` = NAT. Leave default. This is for installing and patching only.
 
 Every VM gets a static IP. DHCP lease renewal is itself a logged event, and it fires
