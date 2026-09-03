@@ -117,8 +117,70 @@ client_buffer   disabled no   queue_size 5000   events_per_second 500   <- item 
 agent-upgrade   still starts, no agent-side switch                      <- item 8 remainder
 ```
 
+### 6, clock synchronisation. Fixed, and the drift half answered differently than the item framed it.
+
+**The switches.** All six `time.synchronize.*` set to `FALSE` in both `.vmx` files, alongside the
+`tools.syncTime` already there. `tools.syncTime` alone stops only the periodic sync; the other six
+cover snapshot revert, resume and Tools startup. Phase 6 reverts before every one of 101 runs.
+
+**Verified through a full power cycle**, because VMware rewrites the `.vmx` on every power off and
+could have stripped them. All seven lines survived. Backups kept as
+`<name>.vmx.telos-20260903T081807Z.bak`.
+
+**The drift half. The three options in the item were the wrong question.** Every archive line
+carries both clocks:
+
+```
+endpoint clock : "systemTime":"2026-09-02T13:30:38.7096614Z"
+manager clock  : "timestamp":"2026-09-02T13:30:40.599+0000"
+```
+
+So the answer is not to synchronise the machines, it is to **stop depending on the manager's
+clock**. Harness rule adopted: every window boundary and every measurement uses the endpoint's own
+`systemTime`, and the manager's `timestamp` is used for nothing but latency. SIEM-01 drift then
+cannot reach the results. Option 2, a time server on the host at `10.20.10.1`, is **rejected**: it
+would put a live network service on a segment the thesis calls isolated, to solve a problem the
+rule removes.
+
+**Left for Phase 5:** the golden snapshot must be taken **cold**. A cold revert boots the guest
+fresh and VMware sets the clock from the host; a live snapshot restores a stale clock. The
+blueprint implies cold but never says it.
+
+**Fresh checkpoints taken**, because `phase3-complete-2026-09-02` predates the item 12 fix and
+reverting to it would have silently re-enabled active response:
+
+```
+WIN-EP-01  phase3-complete-2026-09-02, agent-hardened-2026-09-03
+SIEM-01    phase3-complete-2026-09-02, timesync-off-2026-09-03
+```
+
+### New item 14, found by accident: Wazuh rotates `archives.json` daily, by hard link
+
+The date rolled over mid-session and `archives.json` went from 49,654,191 bytes to 5,166,709. It
+did not shrink, it rotated.
+
+```
+drwxr-x--- 3 wazuh wazuh    4096 Sep  1 19:36 2026
+-rw-r----- 2 wazuh wazuh 5272919 Sep  3 08:19 archives.json
+```
+
+**The link count of 2 is the important part.** `archives.json` is a **hard link** to today's file
+in the dated tree. Same inode, two names.
+
+Two consequences for blueprint run-protocol step 10, which assumes one growing file per run:
+
+1. **A run crossing midnight splits across two files.** Unattended overnight batches are exactly
+   when that happens, and the harness would export half a run without noticing.
+2. **Truncating `archives.json` also empties that day's stored archive**, because it is the same
+   inode. The truncate step does not clear a scratch file, it deletes the day's permanent record.
+
+The cleanest fix is probably to stop truncating altogether and export the dated archives instead,
+which also removes a destructive step from a 101-run unattended loop. Recorded as item 14 rather
+than fixed, because it changes the run protocol.
+
 **Broke / stuck on:** nothing. Two commands were declined by the sudoers rule, which is correct
-behaviour and not a fault.
+behaviour and not a fault. The corrected `vmrun list` poll, forced to an array, exited on its
+first check instead of running to a 6 minute deadline.
 
 **Next:** the list blocking the Phase 5 golden snapshot is down to five, and three of them are
 one measurement:
@@ -126,10 +188,23 @@ one measurement:
 | | Item | Status |
 |---|---|---|
 | 5 | snapd phoning home | measured, **two commands waiting on the student** |
-| 6 | four unset `time.synchronize.*` switches | **needs the VMs powered off**, do it at the next shutdown |
+| ~~6~~ | ~~`time.synchronize.*` switches~~ | **done later the same day, see above** |
 | 8 | agent-upgrade, manager-side control | reduced scope |
 | 9, 13 | Sysmon channel 64 MB circular, agent buffer 500 events/s | **the same measurement, during one real capture window** |
 | 10 | Tamper Protection will defeat Config S | manual toggle in the guest, student step |
+| **14** | **`archives.json` rotates daily by hard link** | **new, changes the run protocol** |
+
+**Blocking the Phase 5 golden snapshot, current list:**
+
+| | Item | Who |
+|---|---|---|
+| 5 | snapd phoning home | student, two commands |
+| 8 | agent-upgrade, manager-side control | open |
+| 9, 13 | Sysmon channel and agent buffer, both unmeasured | one measurement during a real capture window |
+| 10 | Tamper Protection defeats Config S | student, manual toggle in the guest |
+| 14 | archive rotation and the destructive truncate step | design decision on the run protocol |
+
+Also for Phase 5: **the golden snapshot must be taken cold.** Currently only implied.
 
 ---
 

@@ -410,7 +410,8 @@ breaks, revert.
 
 ## 6. How do SIEM-01 and WIN-EP-01 keep their clocks together after Phase 5?
 
-**Status:** Open. Raised 2026-09-02.
+**Status:** **Answered and fixed 2026-09-03.** The six switches are set on both machines, and the
+drift half is answered by not depending on the manager's clock at all. Resolution at the end.
 
 **Why it matters:** SIEM-01 currently reports `NTP service: active` and
 `System clock synchronized: yes`, synchronising over the internet through the NAT adapter. Phase
@@ -457,6 +458,98 @@ time-change event was written. Do this before the Phase 5 golden snapshot.
 
 **What a bad answer means:** if drift is ignored and cross-host correlation is needed later, the
 timestamps cannot be repaired after the fact. Decide before Phase 6, not after.
+
+### Resolution, 2026-09-03
+
+**Part one, the switches. Done.** All six are now `FALSE` in **both** `.vmx` files, alongside
+`tools.syncTime`. Verified to survive a full power cycle, which matters because VMware rewrites
+the `.vmx` on every power off:
+
+```
+tools.syncTime                  = "FALSE"
+time.synchronize.continue       = "FALSE"
+time.synchronize.restore        = "FALSE"
+time.synchronize.resume.disk    = "FALSE"
+time.synchronize.resume.host    = "FALSE"
+time.synchronize.shrink         = "FALSE"
+time.synchronize.tools.startup  = "FALSE"
+```
+
+VMware Tools can no longer step either guest's clock in any situation. Backups of both files were
+kept as `<name>.vmx.telos-20260903T081807Z.bak`.
+
+**Part two, the drift. The three options offered above were the wrong question.** Look at what an
+archive line actually contains, from the Phase 3 evidence:
+
+```
+endpoint clock : "systemTime":"2026-09-02T13:30:38.7096614Z"
+manager clock  : "timestamp":"2026-09-02T13:30:40.599+0000"
+```
+
+**Both clocks are in every single event.** So the fix is not to synchronise the two machines, it
+is to **stop depending on the manager's clock**.
+
+**Harness rule, to be enforced in Phase 6:** every capture window boundary and every measurement
+uses the **endpoint's own** `systemTime` or `utcTime` from inside the event. The manager's
+`timestamp` field is used for **nothing** except measuring pipeline latency, and that figure is
+only meaningful while the clocks are known to agree. Under this rule SIEM-01's drift cannot reach
+the results, because it never enters them.
+
+This is runbook rule 5 applied properly: fence in the telemetry, not on a host clock.
+
+**Option 2 is therefore rejected**, not deferred. Running a time server on the Windows host at
+`10.20.10.1` would put a live network service on a segment the thesis describes as isolated, to
+solve a problem the rule above removes.
+
+**One thing that must be decided in Phase 5, and it is currently only an implication.** A **cold**
+snapshot, taken powered off, boots the guest fresh and VMware sets the virtual clock from the host
+at power-on, so the clock is right without Tools touching it. A **live** snapshot, taken with
+memory, restores a stale clock. The blueprint's run protocol reverts then starts, which implies
+cold, but nothing says so. **The golden snapshot must be taken cold, and that has to be written
+into Phase 5 as a requirement rather than left to inference.**
+
+---
+
+## 14. Wazuh rotates `archives.json` daily, by hard link, and the run protocol assumes it does not
+
+**Status:** Open. Found 2026-09-03, when the date rolled over during a session.
+
+**Why it matters:** `lab/blueprint.md` run-protocol step 10 says "rotate `archives.json`, gzip,
+pull to `E:\runs\<run_id>\`, then **truncate on the SIEM**". That assumes one growing file per
+run. Wazuh does not work that way.
+
+**Observed.** `archives.json` was 49,654,191 bytes on 2026-09-02 and 5,166,709 bytes the next
+morning. It did not shrink, it was rotated at the day boundary:
+
+```
+drwxr-x--- 3 wazuh wazuh    4096 Sep  1 19:36 2026
+-rw-r----- 2 wazuh wazuh 5272919 Sep  3 08:19 archives.json
+-rw-r----- 2 wazuh wazuh       0 Sep  3 07:59 archives.log
+```
+
+**Note the link count of 2 on `archives.json`.** It is a **hard link** to today's file inside the
+dated tree, almost certainly `2026/Sep/ossec-archive-03.json`. Both names point at the same inode.
+
+**Two consequences, and the second one destroys data:**
+
+1. **A run crossing midnight splits across two files.** With 101 runs of 25 to 60 minutes each,
+   unattended overnight batches are exactly when this happens. The harness would export half a
+   run and not notice.
+2. **Truncating `archives.json` also empties that day's stored archive**, because it is the same
+   inode. The run protocol's truncate step does not clear a scratch file, it deletes the day's
+   permanent record. Safe only if the export already succeeded and was verified.
+
+**How to answer:**
+- Have the harness read the **dated file** for the run's date rather than `archives.json`, or
+  detect a date boundary inside a window and export both files.
+- Verify the export, by hash or line count, **before** any truncate.
+- Better: stop truncating at all and let Wazuh's own rotation manage the files, exporting the
+  dated archives instead. That removes a destructive step from a 101-run unattended loop.
+- `/usr/local/sbin/telos-archive` needs a subcommand to list and read the dated tree. It cannot
+  today, and the harness account has no other root access by design.
+
+**What a bad answer means:** a run silently exports partial data, or the truncate step destroys a
+day of archives that was never successfully copied. Both are unrecoverable after the fact.
 
 ---
 

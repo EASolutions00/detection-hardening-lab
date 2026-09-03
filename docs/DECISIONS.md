@@ -8,6 +8,78 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-09-03 - VMware Tools clock synchronisation fully disabled on both VMs, and the analysis will use the endpoint clock only (closes OPEN-QUESTIONS 6)
+
+**Decision one:** all six `time.synchronize.*` switches set to `FALSE` in **both** `.vmx` files,
+alongside the `tools.syncTime` that was already there.
+
+```
+tools.syncTime                  = "FALSE"
+time.synchronize.continue       = "FALSE"
+time.synchronize.restore        = "FALSE"
+time.synchronize.resume.disk    = "FALSE"
+time.synchronize.resume.host    = "FALSE"
+time.synchronize.shrink         = "FALSE"
+time.synchronize.tools.startup  = "FALSE"
+```
+
+**Why:** `tools.syncTime` alone stops only the **periodic** sync. The other six cover snapshot
+revert, resume, and Tools startup. Phase 6 reverts a snapshot before **every one of 101 runs**, so
+a clock step there would land at the start of every capture window, in every run, on both sides
+of the pre-change and post-change comparison.
+
+**Verified through a full power cycle**, because VMware rewrites the `.vmx` on every power off and
+could have stripped them. All seven lines were still present afterwards. Backups kept as
+`<name>.vmx.telos-20260903T081807Z.bak`.
+
+**Decision two, and it is the more important half:** the analysis uses the **endpoint's own
+clock** and never the manager's.
+
+Every archive line carries both:
+
+```
+endpoint clock : "systemTime":"2026-09-02T13:30:38.7096614Z"
+manager clock  : "timestamp":"2026-09-02T13:30:40.599+0000"
+```
+
+**Rule for the Phase 6 harness:** every capture-window boundary and every measurement uses the
+endpoint's `systemTime` or `utcTime` from inside the event. The manager's `timestamp` is used for
+nothing except measuring pipeline latency, and that number is only meaningful while the two clocks
+are known to agree. Under this rule SIEM-01's clock drift after isolation cannot reach the
+results, because it never enters them.
+
+This is runbook rule 5 applied properly: fence in the telemetry, not on a host clock.
+
+**What this rejects, deliberately:** running a time source on the Windows host at `10.20.10.1`,
+which was option 2 in OPEN-QUESTIONS 6. It would place a live network service on a segment the
+thesis describes as isolated, in order to solve a problem the rule above removes.
+
+**Cost if wrong:** if some later analysis genuinely needs manager-side timing, the timestamps
+cannot be repaired after the fact. The mitigation is that the endpoint timestamp is present in
+every event, so nothing is lost by preferring it.
+
+**To reverse:** delete the six lines from both `.vmx` files with the VMs powered off, or restore
+the `.bak` files.
+
+**Left for Phase 5, and currently only an implication:** a **cold** snapshot boots the guest fresh
+and VMware sets the virtual clock from the host, so no sync is needed. A **live** snapshot restores
+a stale clock. The blueprint's run protocol implies cold but never says so. **The golden snapshot
+must be taken cold**, and Phase 5 has to state that.
+
+## 2026-09-03 - Second checkpoint snapshot on both VMs
+
+**Decision:** `agent-hardened-2026-09-03` on WIN-EP-01 and `timesync-off-2026-09-03` on SIEM-01,
+both taken cold.
+
+**Why:** the existing `phase3-complete-2026-09-02` checkpoint predates the item 12 fix. Reverting
+to it today would have silently re-enabled active response. The new checkpoint captures items 6, 8
+and 12 together, so a revert cannot lose them.
+
+Two flat snapshots per VM, not a branching chain, so the warning in `lab/blueprint.md` section 5
+about 16 branching delta chains does not apply. F: has 607.4 GB free.
+
+**To reverse:** `vmrun -T ws deleteSnapshot <vmx> <name>`
+
 ## 2026-09-03 - Active response disabled on WIN-EP-01 (closes OPEN-QUESTIONS 12)
 
 **Decision:** `<active-response><disabled>yes</disabled>` in the agent's `ossec.conf`, with a
