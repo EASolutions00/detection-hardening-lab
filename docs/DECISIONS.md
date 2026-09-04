@@ -8,6 +8,66 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-09-04 - The unit of analysis is (event type + populated tracked fields), not event type alone (closes OPEN-QUESTIONS 1b)
+
+**Decision:** an analysis key is the event type **plus which tracked fields were actually
+populated**, written `Security-4688[CommandLine,NewProcessName]`. Chosen over the simpler
+event-type-only key, and chosen now rather than deferred.
+
+**Why.** A hardening change can leave an event firing at exactly its former rate while
+emptying a field inside it. Disabling `ProcessCreationIncludeCmdLine_Enabled` leaves 4688
+firing normally with an empty CommandLine, and every detection rule matching on CommandLine
+goes blind. Keyed on event type alone, the rate never moves, the analyser correctly reports
+UNCHANGED on the evidence it has, and the blind spot is invisible.
+
+Under the composite key the same change produces a matched pair:
+
+```
+Security-4688[CommandLine,NewProcessName]   1247 -> 0      LOST
+Security-4688[NewProcessName]                  0 -> 1247   NEW
+```
+
+A LOST and a NEW at the same rate under one event type is the signature of a field being
+stripped, as distinct from an event type stopping.
+
+**Why now and not later.** This defines the shape of every stored run. Deciding it after
+collection would make every capture unusable. Full-time availability for the remaining weeks
+made the more accurate option affordable, so the permanent risk was removed rather than
+deferred.
+
+**Which fields are tracked.** Not all of them; keying on every field would give almost every
+event its own key. A field belongs in the key only if some detection rule reads it, because
+losing a field no rule reads blinds nothing. `DEFAULT_TRACKED_FIELDS` in `src/telos/eventkey.py`
+is a provisional hand-written map, structured so it can later be generated from the rule set
+(a Sigma rule names the fields it matches on in its detection block) **without changing the key
+format or invalidating stored runs**.
+
+**Present-but-empty counts as absent.** A stripped field usually remains in the event carrying
+an empty value rather than disappearing. Treating that as present would hide the exact loss
+being measured. Windows placeholders (`-`, `N/A`, `(null)`, `NULL`) are treated as absent too.
+Numeric zero is treated as populated, because LogonType 0 and GrantedAccess 0 are real values.
+
+**Honest limit, and it should be stated in the paper.** The composite key is a **profiling**
+improvement, not a statistical one, and it helps the naive baseline equally. In the demo the
+baseline also catches the field loss once it is given field-aware keys. The two contributions
+are separate and should be claimed separately:
+
+| Contribution | What it improves |
+|---|---|
+| Composite key | What can be **seen** at all |
+| Variance model, gate, correction | What can be **trusted** once seen |
+
+An engineer comparing raw event counts by hand would not have field-aware keys, so the baseline
+as implemented is stronger than real hand comparison. That is deliberate: a baseline that has
+been quietly handicapped proves nothing.
+
+**Cost if wrong:** low now, high later. Key format changes are cheap while no real runs exist.
+After collection begins they are not.
+
+**Verification:** 49 tests pass, up from 20. `test_field_loss_is_invisible_to_event_type_keying`
+demonstrates the failure this decision prevents and must not be deleted; if it goes, the reason
+for the composite key goes with it.
+
 ## 2026-09-03 - The run protocol exports archives by date and never truncates (closes OPEN-QUESTIONS 14)
 
 **Decision:** blueprint run-protocol step 10 and runbook Phase 6 step 10 no longer truncate

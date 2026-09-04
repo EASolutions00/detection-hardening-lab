@@ -98,23 +98,12 @@ labeled set.
 
 ---
 
-## 1b. Can Module 2 see field-level telemetry loss?
+## 1b-remainder. Harness counting rules that survive the schema decision
 
-**Status:** Open. Raised 2026-08-20.
+**Status:** Open, but no longer a schema question. The schema itself was decided 2026-09-04,
+see Answered. What remains are two counting rules the Phase 6 harness must obey.
 
-**Why it matters:** Module 2 builds a frequency profile of event-type rates. Removing the
-CommandLine field from 4688 does not change the 4688 rate, and changing 4104 content does not
-change the 4104 rate. Both are invisible to chi-square on a rate that did not move.
-
-**How to answer:** Redefine the unit of analysis as (event type, required field present) rather
-than event type alone. Decide before the harness is written, because it changes the profile
-schema and therefore every stored run.
-
-**What a bad answer means:** Content-level and field-level hardening changes must be dropped
-from the catalogue, and the study says so explicitly.
-
-**Measured evidence added 2026-09-02.** Two facts from the first live archive on SIEM-01, both
-of which constrain how the harness may count.
+**Measured evidence, 2026-09-02,** from the first live archive on SIEM-01.
 
 1. **One emitted event produces exactly one line in `archives.json`.** There is no duplicate
    collection to de-duplicate. Verified with a `logger` marker read from a root shell.
@@ -1034,6 +1023,43 @@ data was never collected.
 ---
 
 ## Answered
+
+### 1b. Can Module 2 see field-level telemetry loss? (answered 2026-09-04)
+
+**Answer: not as originally designed. The schema was changed so it can.**
+
+The unit of analysis is now the event type **plus which tracked fields were populated**, written
+`Security-4688[CommandLine,NewProcessName]`. Full reasoning in DECISIONS.md, same date.
+
+**The failure, demonstrated in code.** Keyed on event type alone, a change that empties
+ScriptBlockText inside PowerShell 4104 leaves the rate at 838 per window in both phases. The
+analyser reports UNCHANGED, correctly on the evidence it has, and the blind spot is invisible.
+Test: `test_field_loss_is_invisible_to_event_type_keying`.
+
+**The fix, demonstrated in code.** Same rates, same statistics, composite key:
+
+```
+PowerShell-4104[Path,ScriptBlockText]   838 -> 0     LOST
+PowerShell-4104[Path]                     0 -> 838   NEW
+lost field(s): ScriptBlockText
+```
+
+Test: `test_field_loss_is_caught_by_field_aware_keying`. The demo prints this as an explicit
+FIELD-LEVEL LOSS section rather than leaving a reader to pair an unexplained LOST with an
+unexplained NEW.
+
+**What it cost:** one new module (`src/telos/eventkey.py`), a rewritten synthetic generator, and
+29 new tests. **No change to `differential.py`, `variance.py` or `baseline.py`** — they treat the
+key as an opaque string, which was verified before starting.
+
+**Honest limit carried into the paper:** this is a profiling improvement, not a statistical one,
+and the naive baseline benefits from it equally. The composite key improves what can be *seen*;
+the variance model and correction improve what can be *trusted*. Two separate contributions,
+to be claimed separately.
+
+**Not resolved by this:** value-level degradation, where a field stays populated but its content
+changes (Constrained Language Mode altering 4104 content, for example). Out of scope, and the
+paper should say so.
 
 ### Why did SIEM-01 restart twice with no shutdown recorded? (answered 2026-09-02, item 11)
 
