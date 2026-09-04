@@ -108,6 +108,19 @@ So every piece of work here carries a second deliverable: the explanation.
 This is why a real test run comes before the proposal revision is submitted: understanding the
 system beats describing it.
 
+### The defense brief
+
+After any design decision, finished component, completed phase, or significant finding, close
+with this shape. Not after routine commands. Scale it to the size of the work.
+
+1. **One sentence.** What the student would say if asked casually, no jargon.
+2. **The mechanism.** Two to four points behind that sentence. Why it works, not just what it does.
+3. **Hard questions.** Three to five of the sharpest an examiner could ask, each answered.
+   Include the one attacking the weakest part, and say when to raise it first.
+4. **Unverified.** What is being relied on that nobody has seen proven, and the check that
+   would prove it. **Never skip this part.**
+5. **Explain it back.** Two or three questions with no answers shown, so gaps surface early.
+
 ## Session habits
 
 Recorded, not remembered.
