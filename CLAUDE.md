@@ -90,6 +90,24 @@ fallback are unverified, so there is currently no verified option. This is item 
 
 ---
 
+## The work must be defensible, not just finished
+
+This is a thesis. It gets defended to a panel that can ask anything, including indirect and
+hostile questions. **A finished component the student cannot explain is worth less than an
+unfinished one they can.**
+
+So every piece of work here carries a second deliverable: the explanation.
+
+- After building or deciding anything, state what now has to be explainable, in plain words.
+- Name the hardest question an examiner would ask about it, and answer it.
+- Where a faster approach is harder to defend, say so and let the choice be made deliberately.
+- Flag plainly when something is being accepted that cannot yet be defended, or when a result
+  is being relied on that was never seen produced.
+- Prefer walking through over doing silently. Say which is happening.
+
+This is why a real test run comes before the proposal revision is submitted: understanding the
+system beats describing it.
+
 ## Session habits
 
 Recorded, not remembered.
