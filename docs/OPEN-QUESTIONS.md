@@ -44,8 +44,35 @@ defined explicitly in the methodology chapter, since the title no longer does it
 
 ## 1. Which 16 hardening changes survive the corrected blind-spot definition?
 
-**Status:** Open. Raised 2026-08-20 while stress-testing T1 against a formal definition of
-security hardening. This supersedes the older item 4 below in priority, and absorbs it.
+**Status:** Open, but substantially advanced 2026-09-08. Raised 2026-08-20 while stress-testing
+T1 against a formal definition of security hardening. This supersedes the older item 4 below in
+priority, and absorbs it.
+
+### Progress, 2026-09-08
+
+The catalogue in `lab/blueprint.md` was rebuilt. The four anti-hardening items and the one with
+no benchmark control are removed. Class B items are retained deliberately as **negative
+controls**, where telemetry is lost but the correct impact score is near zero, which tests
+whether the scorer can distinguish a lost capability from a lost detection.
+
+**Three control IDs verified against DISA STIG Viewer and CIS benchmark sources:**
+
+| Change | Control ID |
+|---|---|
+| Disable WDigest | DISA **V-253358** (Win11), V-220800 (Win10) |
+| LAN Manager auth level, NTLMv2 only | DISA **V-253462** (Win11), V-220938 (Win10), CIS 2.3.11.7 |
+| LSA Protection, LSASS as protected process | CIS Win11 **18.9.27.2**, Level 1 |
+
+Restrict NTLM outgoing has a confirmed CIS number (2.3.11.13) and registry path, but its
+Windows 11 DISA V-ID is not confirmed.
+
+**The pattern that generates more candidates:** class C changes alter *how* something happens;
+class B changes stop it happening at all. This is why nearly every class C candidate is an
+authentication control, and it is a **stated limitation**: the findings generalise to
+authentication telemetry, not to hardening in general.
+
+**Still needed:** two more changes to reach 16, and every remaining `(unverified)` ID resolved
+before data collection begins. Current total is 14.
 
 **Why it matters:** Four items in the catalogue in `lab/blueprint.md` section 8 are the
 **opposite** of what the benchmarks require, verified 2026-08-20:

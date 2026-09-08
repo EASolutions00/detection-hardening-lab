@@ -280,33 +280,104 @@ This yields a defensible labeled set without exhaustive manual annotation.
 Document it explicitly in Chapter 3 — a panelist will ask where the labels came
 from, and "the tool told us" is not an answer.
 
-### Candidate hardening-change catalogue (16)
+### Hardening-change catalogue
 
-`(unverified — general domain knowledge. Each must be pinned to a specific CIS
-Benchmark or DISA STIG control ID, and each must be verified to actually change
-telemetry in your lab. Some will produce no measurable change, which is a valid
-finding to report.)`
+Rebuilt 2026-09-08. The previous list is preserved in git history. Four of its sixteen items
+were the **opposite** of what the benchmarks require, one had no benchmark control at all, and
+six removed the attack along with the telemetry. See OPEN-QUESTIONS item 1 for the analysis.
 
-1. Disable *Audit Process Creation* subcategory → removes 4688
-2. Disable `ProcessCreationIncludeCmdLine_Enabled` → 4688 loses CommandLine
-3. Disable PowerShell ScriptBlock logging → removes 4104
-4. Disable PowerShell Module logging → removes 4103
-5. Remove PowerShell v2 engine → closes the downgrade path
-6. Enforce Constrained Language Mode → changes 4104 content
-7. Disable WDigest → alters 4624 logon-type distribution
-8. Enable Credential Guard → alters Sysmon EventID 10 (LSASS access)
-9. Disable SMBv1 → removes SMB1 protocol events / IDS signatures
-10. Restrict NTLM → removes/reduces 4776
-11. Disable Windows Script Host → removes cscript/wscript process creation
-12. Disable LLMNR and NBT-NS → removes name-resolution network events
-13. Disable Remote Registry → removes a 4624 type-3 subset
-14. Disable Print Spooler → removes spooler operational events
-15. Narrow the Sysmon config (hardening the sensor itself) → removes EventIDs
-16. Enforce RDP NLA → alters 4624/4625 distribution
+**A change qualifies as a blind-spot candidate only when all four hold:**
+(a) it is a control from a named benchmark, with the control ID recorded;
+(b) it removes or degrades an event type or a required field;
+(c) at least one detection rule depends on that evidence;
+(d) **the technique that rule covers is still executable after the change.**
 
-Item 8 requires **nested virtualization** (Virtualize Intel VT-x/EPT or AMD-V/RVI
-in VM settings) for VBS inside the guest. `(unverified on Zen 4 + Workstation
-17.5.1 — test this before including item 8.)`
+**The pattern that separates the classes.** Class C changes alter *how* something happens.
+Class B changes stop it happening at all. That is why almost every class C candidate is an
+authentication control: authentication survives the change, it just proceeds differently.
+
+---
+
+#### Class C: positive cases, where a blind spot can exist
+
+| # | Change | Control ID | Setting | Expected telemetry effect | Why the attack survives |
+|---|---|---|---|---|---|
+| C1 | Disable WDigest | **DISA V-253358** (Win11)<br>V-220800 (Win10) | `HKLM\SYSTEM\CurrentControlSet\Control\SecurityProviders\Wdigest\UseLogonCredential = 0` | 4624 logon-type distribution shifts | Credential theft is still attempted; the attacker gets hashes instead of plaintext |
+| C2 | LAN Manager auth level, NTLMv2 only | **DISA V-253462** (Win11)<br>V-220938 (Win10)<br>**CIS 2.3.11.7** | `HKLM\SYSTEM\CurrentControlSet\Control\Lsa\LmCompatibilityLevel = 5` | 4776 package name changes | Authentication continues at a higher level |
+| C3 | LSA Protection (LSASS as protected process) | **CIS Win11 18.9.27.2**, Level 1 | `HKLM\System\CurrentControlSet\Control\Lsa\RunAsPPL = 1` | Sysmon Event 10 access to `lsass.exe` changes from granted to denied | LSASS access is still attempted; documented bypasses exist |
+| C4 | Restrict NTLM, outgoing traffic to remote servers | **CIS 2.3.11.13**<br>DISA Win11 V-ID `(unverified)` | `HKLM\System\CurrentControlSet\Control\Lsa\MSV1_0\RestrictSendingNTLMTraffic` | 4776 reduced or removed | Authentication continues via Kerberos |
+| C5 | Enforce RDP Network Level Authentication | `(unverified)` | `UserAuthentication = 1` | 4624 / 4625 distribution shifts | RDP is still used; authentication happens earlier |
+| C6 | Reduce cached credentials to 0 | `(unverified)` | `CachedLogonsCount = 0` | Cached and offline logon events reduced | Logon still occurs, against the domain instead |
+| C7 | Disable RC4 for Kerberos | `(unverified)` | Kerberos supported encryption types | 4768 / 4769 ticket encryption fields change | Kerberos authentication continues with AES |
+| C8 | Enable Credential Guard | `(unverified)` | VBS-based | Sysmon Event 10 to `lsass.exe` changes | Credentials are still used, just isolated |
+
+**Verified 2026-09-08:** C1, C2 and C3 have confirmed control IDs. C4 has a confirmed CIS
+number and registry path; its Windows 11 DISA V-ID is not confirmed. C5 to C8 have correct
+settings but **unverified IDs**.
+
+**C8 is blocked** on nested virtualisation (Virtualize AMD-V/RVI in VM settings), still untested
+on Zen 4 with Workstation 17.5.1. See OPEN-QUESTIONS item 2. Do not count on it.
+
+---
+
+#### Class B: negative controls, where telemetry is lost but no blind spot exists
+
+These are kept **on purpose**, not by oversight. The change removes the telemetry *and* the
+attack, so the correct impact score is near zero. They test whether the scorer can tell a lost
+capability from a lost detection. A scorer that flags these is wrong.
+
+| # | Change | Control ID | Expected telemetry effect | Why it is not a blind spot |
+|---|---|---|---|---|
+| B1 | Remove PowerShell v2 engine | `(unverified)` | Closes the downgrade path | The v2 downgrade attack is gone |
+| B2 | Disable SMBv1 | `(unverified)` | Removes SMB1 protocol events | There is no SMB1 traffic to attack |
+| B3 | Disable Windows Script Host | `(unverified)` | Removes cscript/wscript process creation | cscript cannot run |
+| B4 | Disable LLMNR and NBT-NS | `(unverified)` | Removes name-resolution events | LLMNR poisoning is no longer possible |
+| B5 | Disable Remote Registry | `(unverified)` | Removes a 4624 type-3 subset | The service is gone |
+| B6 | Disable Print Spooler | `(unverified)` | Removes spooler operational events | The service is gone |
+
+---
+
+#### Removed from the catalogue
+
+| Was | Why removed |
+|---|---|
+| Disable Audit Process Creation | **CIS requires this ON** (17.3.1 / 17.3.2). Disabling it is de-hardening. |
+| Disable `ProcessCreationIncludeCmdLine_Enabled` | **CIS requires this ON** (18.9.3.1 / 18.8.3.1). |
+| Disable PowerShell ScriptBlock logging | **DISA STIG WN10-CC-000326 / V-220860 requires this ON**, CAT II. |
+| Disable PowerShell Module logging | Benchmarks require it enabled. |
+| Narrow the Sysmon config | Genuine tool hardening, but **no CIS or DISA control exists**, so it cannot be described as drawn from a published baseline. |
+| Enforce Constrained Language Mode | Class C by definition, but it changes 4104 **content** while the rate and the field both stay populated. The method measures presence, not meaning. Out of scope; see the Scope and Limitations note on value-level degradation. |
+
+The CommandLine case is still useful as a **capability demonstration** of field-level detection,
+clearly labelled as not one of the evaluated changes, because CIS requires that setting enabled.
+
+---
+
+#### Current count and what is still needed
+
+| | Count |
+|---|---|
+| Class C with a verified control ID | **3** (C1, C2, C3) |
+| Class C with a partial ID | 1 (C4) |
+| Class C needing lookup | 4 (C5 to C8, one of them blocked) |
+| Class B needing lookup | 6 |
+| **Total catalogue** | **14** |
+
+**Two more changes are needed to reach 16**, and every `(unverified)` ID must be resolved
+before data collection. Candidates not yet assessed: ASR rule blocking Office child processes,
+block macros originating from the internet, AppLocker or WDAC enforcement, restrict anonymous
+SAM enumeration, enforce SMB signing, enforce LDAP signing and channel binding, disable AutoPlay
+and AutoRun.
+
+**How to resolve an ID.** Search the setting name at
+`https://www.stigviewer.com/stigs/microsoft-windows-11-security-technical-implementation-guide/`
+for the DISA V-ID, or the registry value name in the CIS Windows 11 Enterprise Benchmark PDF for
+the CIS number. **Record the benchmark version with the ID**, because numbering changes between
+versions: Audit Process Creation is 17.3.1 in one version and 17.3.2 in another.
+
+**Known limitation to state in the paper.** Every strong class C candidate is an authentication
+control. That is a consequence of the pattern above, not a sampling accident, but it means the
+findings generalise to authentication telemetry rather than to hardening in general.
 
 ---
 
