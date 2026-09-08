@@ -39,12 +39,54 @@ later than end of September 2026.
 
 ---
 
+## Before answering anything about this project
+
+Read `docs/OPEN-QUESTIONS.md` and `docs/DECISIONS.md` before writing, building, or advising.
+Not after. Four rules, each written because breaking it caused a real error here.
+
+**1. Never answer from memory. Read the file.**
+This index goes stale. On 2026-09-08 it still claimed no code existed while 49 tests were
+passing, and still named T3 as the fallback three weeks after T3 was killed. **Treat this file
+as a map, not as truth.** The truth is in the file it points at.
+
+**2. Check documents against the code and the machine, not against other documents.**
+`T1-REVISIONS-LIST.md` described the event key as using field *values*. The code uses field
+*presence*. Reading only documents would have confirmed the error. A `grep` of
+`differential.py` found it. **If a document states a number, a version, or a hash, verify it
+at the source.**
+
+**3. Before stating anything as settled, confirm it appears in `DECISIONS.md`.**
+The web-application deployment was marked ASSUMPTION four times in a draft, never confirmed,
+never tracked in OPEN-QUESTIONS, and then written into a submission document as fact. **A draft
+marked ASSUMPTION is not a decision.** If it is not in `DECISIONS.md`, say so.
+
+**4. Do not invent anything checkable.**
+Control IDs, versions, hashes, commit IDs, file paths, event IDs. Search, or say "I don't
+know." A wrong CIS or DISA control ID is worse than none, because the entire value of a control
+ID is that an examiner can look it up.
+
+**The failure these prevent has one shape: acting before checking the record.** Every mistake
+made in this project so far fits it. `docs/T1-WALKTHROUGH.md` was written around a hardening
+change that OPEN-QUESTIONS had already disproved nineteen days earlier. Two WORKLOG entries
+were dated from file timestamps instead of `git log` and were wrong by a day.
+
+**Where uncertainty goes:** `OPEN-QUESTIONS.md`, not a comment in a draft. An unknown recorded
+only inside a document nobody rereads will be forgotten and then asserted as fact.
+
+---
+
 ## Commands
 
-**None yet. No code has been written. Do not invent any.**
+```bash
+.venv/Scripts/python.exe src/demo.py          # end to end on synthetic data
+.venv/Scripts/python.exe -m pytest tests -q   # expect: 49 passed
+```
 
-Planned stack: Python 3.11+ in a venv on C: with `lxml`, `pyyaml`, `networkx`,
-`scikit-learn`, `pandas`. See [src/](src/README.md).
+Stack pinned in `requirements.txt`: numpy 2.5.2, scipy 1.18.1, pandas 3.0.5, PyYAML 6.0.3,
+pytest 9.1.1. Do not upgrade mid-experiment. See [src/](src/README.md).
+
+The pre-flight check before any runbook phase is in
+[docs/COMMANDS.md](docs/COMMANDS.md) Part 5.
 
 ---
 
@@ -66,12 +108,15 @@ Breaking these produces no error, just wrong results. The reasons are in the run
 
 ## The open decision
 
-T1 is gated behind a two week spike measuring run to run variance and real wall clock for
-101 runs. See [runbook Phase 7](docs/RUNBOOK-homelab.md).
+T1 is **approved** and is the thesis. The spike measuring run-to-run variance and real wall
+clock has still not run. See [runbook Phase 7](docs/RUNBOOK-homelab.md).
 
-**The fallback is T3, and T3 has an unverified gate of its own.** Both the primary and the
-fallback are unverified, so there is currently no verified option. This is item 1 in
-[OPEN-QUESTIONS.md](docs/OPEN-QUESTIONS.md) and it is answerable offline in minutes.
+**T3 is dead as a fallback**, killed 2026-08-19: only 6 of 3,783 SigmaHQ rules carry an STP
+annotation, too few for the agreement statistic its evaluation depended on. Evidence in
+OPEN-QUESTIONS, Answered. **If the spike fails, go to T2. Do not spend time reviving T3.**
+
+The live blocker is **OPEN-QUESTIONS item 1**: of the 16 hardening changes, 4 are
+anti-hardening, 6 remove the attack along with the telemetry, and only 3 are confirmed usable.
 
 ---
 
