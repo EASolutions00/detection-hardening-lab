@@ -125,6 +125,82 @@ labeled set.
 
 ---
 
+## 15. Which submission documents still carry the superseded event key?
+
+**Status:** Open. Raised 2026-09-09 while checking the activity diagram. Ranked here because a
+submitted document that contradicts another submitted document is a defense problem, not a
+tidiness problem.
+
+**What happened.** The unit of analysis changed on 2026-09-04 to (event type + populated tracked
+fields). Anything written before that date describes a system that cannot see a field-level
+blind spot, which is the case the thesis is named after.
+
+**Checked and clean:**
+
+| File | State |
+|---|---|
+| `src/telos/eventkey.py`, `differential.py` | Correct. This is the source of truth. |
+| `proposal-form-FINAL.md` | Correct. Line 61 "event keys", line 350 describes populated fields. |
+| `T1_Activity_Diagram_Revised_Sheet1/2.svg` | **Fixed 2026-09-09**, regenerated from a script. |
+
+**Checked and stale:**
+
+| File | Problem |
+|---|---|
+| `T1_Figure_Analysis_Pipeline.svg` | "Normalize every raw record to an **event-type key**". Also states `λ₀(e) = count / window`; `differential.py:115` computes `a / n1`, count per **run**. Windows are validated equal so the ratio is unaffected, but the formula shown is not the one that runs. |
+| `T1_Detection of Hardening-Induced Blind Spots REVISED.docx` | Embeds `T1_Activity_Diagram_Swimlane.png` from **2026-08-15**, not the revised sheets. Confirmed by size match: `word/media/image1.png` is 326,941 bytes. |
+| `thesis/T1/proposal-form-REVISED.md` | Line 416, "the key is the triple of telemetry source, numeric event...". Superseded by FINAL, so this only matters if REVISED is ever reused. |
+
+**Not yet checked:** `T1_Figure_Noise_Floor.svg`, `T1-PANEL-RESPONSE.md`, `T1-REVISION-DRAFT.md`,
+`T1-REVISIONS-LIST.md` Revision 14 (known separately to say field **values** where the code uses
+field **presence**).
+
+**How to answer:** grep each for "event type", "event-type key", and "field value", and compare
+against `eventkey.py`. Not against another document.
+
+**What a bad answer means:** every stale file found before submission costs minutes. One found by
+a panelist during the defense costs the credibility of every other figure in the document.
+
+---
+
+## 16. Should `global_gate()` distinguish "no change" from "could not test"?
+
+**Status:** Open. Raised 2026-09-09. Lower damage than the items above, but it changes a reported
+result, so it is a real decision and not a cleanup.
+
+**The problem.** `global_gate()` returns not-passed for three different situations:
+
+| Line | Situation | What it means |
+|---|---|---|
+| `differential.py:74` | Fewer than two informative keys | Could not test |
+| `differential.py:84` | Both phases emitted nothing | Could not test, and something is badly wrong |
+| `differential.py:91` | Chi-square could not compute | Could not test |
+
+All three produce `gate_passed=False`, which the activity diagram renders as **"Record no
+significant change"**. Only the ordinary case where chi-square runs and returns `p >= alpha` is
+actually "no significant change".
+
+The code's own comment at `differential.py:93` says the run should be recorded as **inconclusive
+at the profile level**, but `AnalysisResult` carries no field that can say so.
+
+**Why it matters.** "This hardening change was safe" and "this run could not be tested" are
+opposite claims. Reporting a dead agent as a clean result is the same class of error the whole
+thesis is about: absence of signal read as absence of problem.
+
+**Why the diagram was not changed to match.** Relabelling the box would make the figure claim a
+distinction the code does not make. That is the exact failure being fixed elsewhere. Code first,
+figure second.
+
+**How to answer:** add a profile-level outcome to `AnalysisResult` with three values (CHANGED,
+UNCHANGED, NOT_TESTABLE), have `global_gate()` return which, add tests for all three, then
+regenerate the figure with `make_activity_diagram.py`.
+
+**What a bad answer means:** if this is left as is, every "no significant change" in the results
+chapter needs a footnote explaining that it may also mean the run failed. That is a worse
+sentence to defend than the fix is to write.
+
+---
+
 ## 1b-remainder. Harness counting rules that survive the schema decision
 
 **Status:** Open, but no longer a schema question. The schema itself was decided 2026-09-04,

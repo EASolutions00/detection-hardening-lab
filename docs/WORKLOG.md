@@ -17,6 +17,64 @@ Next:
 
 ---
 
+## 2026-09-09 - The activity diagram described the superseded event key. Both sheets regenerated from a script.
+
+**Did:** checked `T1_Activity_Diagram_Revised_Sheet1/2` against `src/telos/`, not against other
+documents. The diagrams are dated 2026-08-28. The decision that changed the unit of analysis is
+dated 2026-09-04 (DECISIONS.md). The figures never caught up.
+
+**Result: six findings, four of them wrong statements.**
+
+| Where | Said | Now says |
+|---|---|---|
+| Sheet 1, Phase 0 | "Fit the noise model per **event type**" | per event key |
+| Sheet 1, Phase 0 | "**event-type** → rule → ATT&CK index" | event key → rule → ATT&CK index |
+| Sheet 1, Phase 1 | "normalize to **event-type keys**" | keyed by event type + populated tracked fields |
+| Sheet 2, Phase 4 | "union of **event-type keys**" | union of event keys |
+| Sheet 2, Phase 4 | decision "Any LOST or REDUCED key **below the noise floor**?" | "Any key classified LOST or REDUCED?" |
+| Sheet 2, Phase 4 | (no box) | new box for `field_loss_pairs()` |
+
+**Why the noise-floor decision was wrong twice.** It was drawn as a separate test after
+classification. In the code the noise floor is one of three conditions **inside** `classify()`
+(`differential.py:231`). And "below the noise floor" inverts the comparison: reporting requires
+`drop > band` (`differential.py:229`). The three conditions now appear inside the classification
+box, where the code applies them.
+
+**Why the missing box mattered.** `field_loss_pairs()` (`eventkey.py:159`) matches a LOST key
+against a NEW key of the same event type differing only by dropped fields. That is the step that
+turns two confusing rows into one readable finding, and it had no box.
+
+**Two things found while checking, both worse than the diagram itself:**
+
+1. **The .docx embeds the diagram from 2026-08-15, not the revised sheets.**
+   `word/media/image1.png` is 326,941 bytes, an exact size match with
+   `T1_Activity_Diagram_Swimlane.png`. The revised sheets were never inserted.
+2. **`T1_Figure_Analysis_Pipeline.svg` has the same stale keying**, plus a formula that does not
+   match the code: it states `λ₀(e) = count / window`, but `differential.py:115` computes
+   `a / n1`, count per **run**. Windows are validated equal, so the rate ratio is unaffected and
+   no result changes. The stated formula is still not what runs.
+
+**Root cause, and the actual fix.** The figures had no source. They existed only as SVG text
+with hand-computed absolute coordinates, so nothing could be updated without hand-editing
+geometry, and so nothing was. Added `thesis/T1/figures/make_activity_diagram.py`, which
+generates both sheets. A design change is now a string edit and a re-run.
+
+**Verified by rendering, not by trusting the script.** Both sheets opened in a browser and read
+at full size. No overlapping boxes, no text past a border, every connector attached, all six
+changes present. The 2026-08-28 SVGs are kept beside the new ones as `*.2026-08-28.svg.bak`.
+
+**Broke / stuck on:** cannot export PNG from SVG here; no renderer is installed. Not needed:
+Word inserts SVG directly and keeps it as vector, which is better for print than the old PNG.
+`(unverified)` for the exact Word version on this machine.
+
+**Left alone on purpose:** the "no" branch still reads "Record no significant change".
+`global_gate()` returns not-passed for three different situations and only one of them is
+"nothing changed" (`differential.py:74`, `:84`, `:91`). Relabelling the box would put the diagram
+ahead of the code and create a fresh mismatch. Recorded as OPEN-QUESTIONS 16 instead.
+
+**Next:** re-check `T1_Figure_Analysis_Pipeline.svg` and `T1_Figure_Noise_Floor.svg` the same
+way, then insert the corrected sheets into the .docx.
+
 ## 2026-09-03 - Four open questions closed. Two of them were smaller than written, one was a different problem entirely.
 
 **Did:** worked the open list. Items 1d, 7 and 12 are now answered or fixed. Item 5 is measured

@@ -8,6 +8,37 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-09-09 - Figures are generated from a script, not hand-drawn
+
+**Decision:** every figure in this thesis is produced by a program kept in the repository. The
+first is `thesis/T1/figures/make_activity_diagram.py`, which writes both sheets of the T1
+activity diagram. Hand-authored SVG is not used again.
+
+**Why.** The 2026-08-28 activity diagram still described the analysis as keyed on event type
+alone, five days after the key changed on 2026-09-04. Four of its labels were wrong and one
+activity had no box at all. The cause was not carelessness about that one edit. **The figure had
+no source.** It existed only as SVG text with hand-computed absolute coordinates, so adding a
+box meant shifting every coordinate below it by hand. Work that expensive does not get done, so
+the figure silently drifted away from the code.
+
+A generated figure changes the economics. Adding a step is one function call, and the layout
+arithmetic is in Python where it can be read and checked.
+
+**The second reason is defense.** A panelist may ask whether the diagram matches the
+implementation. "It is generated from a script in the repository, and here is the commit" is a
+better answer than "I updated it by hand."
+
+**Cost if wrong:** low. The script emits plain SVG with no dependencies beyond the standard
+library, so the output stays editable by any other tool if this convention is later dropped.
+
+**What it does not do.** It does not render PNG. No renderer is installed and none is added.
+Word inserts SVG directly and keeps it as vector, which is better for print than the PNG it
+replaces.
+
+**Verification:** both sheets were regenerated, opened in a browser, and read at full size
+before being installed. The 2026-08-28 originals are kept as `*.2026-08-28.svg.bak` next to
+them. Details and the full finding list are in WORKLOG 2026-09-09.
+
 ## 2026-09-04 - The unit of analysis is (event type + populated tracked fields), not event type alone (closes OPEN-QUESTIONS 1b)
 
 **Decision:** an analysis key is the event type **plus which tracked fields were actually
