@@ -7,8 +7,8 @@ as keyed on event type alone. The unit of analysis changed on 2026-09-04 to
 event type plus populated tracked fields (DECISIONS.md). The figure was never
 updated, because it had no source to update: it existed only as SVG text with
 hand-computed absolute coordinates. Patching those by hand a second time would
-recreate the same failure. Now the figure is generated, so a design change can
-be applied by editing one string and re-running.
+recreate the same failure. Now the figure is generated, so a design change is a
+string edit and a re-run.
 
 What changed from the 2026-08-28 version, and why each change was made:
 
@@ -35,38 +35,18 @@ The "no" branch still reads "Record no significant change". global_gate()
 returns not-passed for three different situations, and only one of them is
 "nothing changed" (differential.py:74, :84, :91). The other two are "could not
 test". Relabelling the box would put the diagram ahead of the code and create a
-new mismatch of exactly the kind this rewrite is fixing. Tracked as an open
-question instead, so the result model is changed first and the figure follows.
+new mismatch of exactly the kind this rewrite is fixing. Tracked as
+OPEN-QUESTIONS 16 instead, so the result model is changed first and the figure
+follows.
 """
 
 from pathlib import Path
 
-# ---------------------------------------------------------------- palette
-
-INK = "#12202E"
-LANE_A = "#FBFCFD"
-LANE_B = "#F1F5F9"
-BAND = "#E2E9F0"
-BAND_INK = "#4A5C72"
-HEADER = "#1D3A56"
-HEADER_SUB = "#A8C2DB"
-STROKE = "#7E93AC"
-ACCENT = "#1D4E79"
-SYS_FILL = "#EAF2F9"
-STORE_FILL = "#F2F7FC"
-DEC_FILL = "#FBF0D6"
-DEC_STROKE = "#B58A2A"
-ARROW = "#5A6E86"
-FRAME = "#9AAABE"
-DIVIDER = "#CBD6E1"
-EDGE_INK = "#3E4E63"
-FRAME_INK = "#42536A"
-
-SANS = "'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif"
-MONO = "'IBM Plex Mono', ui-monospace, monospace"
-
-LINE_H = 17.5          # vertical gap between text lines inside a box
-SYS_TEXT_NUDGE = 3.0   # tinted boxes carry a left accent bar; text shifts right
+from svgkit import (
+    DEFS, DIVIDER, HEADER, HEADER_SUB, LANE_A, LANE_B,
+    action_box, arrow, connector, datastore, decision, edge_label, end_node,
+    line, loop_frame, phase_band, rect, start_node, svg, system_box, text,
+)
 
 # Lane geometry, shared by both sheets.
 LANES = [(0, 330), (330, 450), (780, 320), (1100, 440)]
@@ -75,146 +55,20 @@ SHEET_W = 1690
 BOARD_W = 1540
 HEAD_H = 66
 
-# ---------------------------------------------------------------- helpers
 
-
-def esc(s: str) -> str:
-    return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-
-
-def text(x, y, s, size=13.5, weight=400, anchor="middle", fill=INK,
-         mono=False, spacing=None):
-    fam = MONO if mono else SANS
-    ls = f' letter-spacing="{spacing}"' if spacing else ""
-    return (f'<text x="{x}" y="{y}" font-size="{size}" font-weight="{weight}" '
-            f'text-anchor="{anchor}" fill="{fill}" font-family="{fam}"{ls} '
-            f'dominant-baseline="middle">{esc(s)}</text>')
-
-
-def rect(x, y, w, h, fill, stroke=None, sw=1.5, rx=None):
-    parts = [f'<rect x="{x}" y="{y}" width="{w}" height="{h}"']
-    if rx is not None:
-        parts.append(f'rx="{rx}"')
-    parts.append(f'fill="{fill}"')
-    if stroke:
-        parts.append(f'stroke="{stroke}" stroke-width="{sw}"')
-    return " ".join(parts) + "/>"
-
-
-def _lines(cx, cy, rows, size):
-    """Center a stack of text rows on cy."""
-    out = []
-    top = cy - (len(rows) - 1) * LINE_H / 2
-    for i, row in enumerate(rows):
-        if isinstance(row, tuple):
-            body, row_size = row
-        else:
-            body, row_size = row, size
-        out.append(text(cx, top + i * LINE_H, body, size=row_size))
-    return out
-
-
-def action_box(x, y, w, h, rows, size=13.5):
-    """A plain step. White fill."""
-    out = [rect(x, y, w, h, "#FFFFFF", STROKE, rx=7)]
-    out += _lines(x + w / 2, y + h / 2, rows, size)
-    return out
-
-
-def system_box(x, y, w, h, rows, size=13.5):
-    """A step the proposed system performs. Tinted, with an accent bar."""
-    out = [rect(x, y, w, h, SYS_FILL, STROKE, rx=7),
-           rect(x + 1.5, y + 8, 4.5, h - 16, ACCENT, rx=2.2)]
-    out += _lines(x + w / 2 + SYS_TEXT_NUDGE, y + h / 2, rows, size)
-    return out
-
-
-def datastore(x, y, w, h, rows, size=12.5):
-    out = [rect(x, y, w, h, STORE_FILL, ACCENT, sw=1.6, rx=3),
-           rect(x, y, 5, h, ACCENT)]
-    out += _lines(x + w / 2 + 2, y + h / 2, rows, size)
-    return out
-
-
-def decision(cx, cy, hw, hh, rows, size=12.5):
-    pts = f"M{cx} {cy - hh} L{cx + hw} {cy} L{cx} {cy + hh} L{cx - hw} {cy} Z"
-    out = [f'<path d="{pts}" fill="{DEC_FILL}" stroke="{DEC_STROKE}" '
-           f'stroke-width="1.6"/>']
-    out += _lines(cx, cy, rows, size)
-    return out
-
-
-def arrow(d, dashed=False):
-    marker = "ard" if dashed else "ar"
-    colour = ACCENT if dashed else ARROW
-    dash = ' stroke-dasharray="6 4"' if dashed else ""
-    return (f'<path d="{d}" fill="none" stroke="{colour}" stroke-width="1.6"'
-            f'{dash} marker-end="url(#{marker})"/>')
-
-
-def edge_label(x, y, s, anchor="start", bg=LANE_A):
-    """Small caption sitting on a connector. Width matches the original art."""
-    w = 3.9 * len(s) + 14.0
-    rx = x - 7 if anchor == "start" else x - w + 7 if anchor == "end" else x - w / 2
-    return [rect(rx, y - 8, round(w, 1), 16, bg, rx=3),
-            text(x, y, s, size=10.5, weight=600, anchor=anchor,
-                 fill=EDGE_INK, mono=True)]
-
-
-def loop_frame(x, y, w, h, label):
-    lw = 7.2 * len(label) + 18.0
-    return [f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="6" fill="none" '
-            f'stroke="{FRAME}" stroke-width="1.4" stroke-dasharray="7 5"/>',
-            rect(x, y - 9.5, round(lw, 1), 19, "#DDE5EE", rx=4),
-            text(x + 9, y, label, size=10.5, weight=600, anchor="start",
-                 fill=FRAME_INK, mono=True, spacing="0.06em")]
-
-
-def phase_band(y, label):
-    return [rect(0, y, BOARD_W, 32, BAND),
-            text(14, y + 16, label, size=11.5, weight=600, anchor="start",
-                 fill=BAND_INK, mono=True, spacing="0.09em")]
-
-
-def connector(cx, cy, letter):
-    return [f'<circle cx="{cx}" cy="{cy}" r="17" fill="#FFFFFF" '
-            f'stroke="{ACCENT}" stroke-width="1.8"/>',
-            text(cx, cy, letter, size=14, weight=700, fill=ACCENT, mono=True)]
-
-
-def start_node(cx, cy):
-    return [f'<circle cx="{cx}" cy="{cy}" r="13" fill="{INK}"/>']
-
-
-def end_node(cx, cy):
-    return [f'<circle cx="{cx}" cy="{cy}" r="14" fill="none" stroke="{INK}" '
-            f'stroke-width="1.8"/>',
-            f'<circle cx="{cx}" cy="{cy}" r="8.5" fill="{INK}"/>']
-
-
-def chrome(height, label):
-    """Background, lane bands, lane dividers and the swimlane header."""
-    out = [rect(0, 0, SHEET_W, height, "#FFFFFF")]
-    out.append(
-        '<defs>'
-        '<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" '
-        'markerHeight="7" orient="auto-start-reverse">'
-        f'<path d="M0,0 L10,5 L0,10 z" fill="{ARROW}"/></marker>'
-        '<marker id="ard" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" '
-        'markerHeight="7" orient="auto-start-reverse">'
-        f'<path d="M0,0 L10,5 L0,10 z" fill="{ACCENT}"/></marker>'
-        '</defs>')
+def chrome(height):
+    """Background, marker definitions and lane bands."""
+    out = [rect(0, 0, SHEET_W, height, "#FFFFFF"), DEFS]
     band_h = height - HEAD_H
     for i, (x, w) in enumerate(LANES):
         out.append(rect(x, HEAD_H, w, band_h, LANE_A if i % 2 == 0 else LANE_B))
-    return out, band_h
+    return out
 
 
 def header(height):
     out = []
     for x, _w in LANES[1:]:
-        out.append(f'<line x1="{x}" y1="{HEAD_H}" x2="{x}" y2="{height}" '
-                   f'stroke="{DIVIDER}" stroke-width="1"/>')
+        out.append(line(x, HEAD_H, x, height, DIVIDER, 1))
     out.append(rect(0, 0, BOARD_W, HEAD_H, HEADER))
     out.append(text(CX[0], 33, "Security / Systems Engineer", size=14,
                     weight=600, fill="#FFFFFF"))
@@ -229,26 +83,18 @@ def header(height):
     return out
 
 
-def svg(width, height, aria, body):
-    return (f'<?xml version="1.0" encoding="UTF-8"?>\n'
-            f'<svg width="{width}" height="{height}" viewBox="0 0 {width} {height}" '
-            f'role="img" xmlns="http://www.w3.org/2000/svg" '
-            f'aria-label="{esc(aria)}" class="dg">'
-            + "".join(body) + "</svg>\n")
-
-
 # ---------------------------------------------------------------- sheet 1
 
 def sheet1() -> str:
     H = 2086
-    body, _ = chrome(H, "s1")
+    body = chrome(H)
 
     body += phase_band(76, "PHASE 0  ·  ENVIRONMENT SETUP  ·  runs once "
-                           "per environment, not per change")
-    body += phase_band(758, "PHASE 1  ·  PRE-CHANGE CAPTURE")
-    body += phase_band(1370, "PHASE 2  ·  APPLY THE HARDENING CHANGE")
+                           "per environment, not per change", BOARD_W)
+    body += phase_band(758, "PHASE 1  ·  PRE-CHANGE CAPTURE", BOARD_W)
+    body += phase_band(1370, "PHASE 2  ·  APPLY THE HARDENING CHANGE", BOARD_W)
     body += phase_band(1620, "PHASE 3  ·  POST-CHANGE CAPTURE  ·  identical "
-                             "manifest, nothing else varied")
+                             "manifest, nothing else varied", BOARD_W)
     body += header(H)
 
     body += loop_frame(340, 374, 750, 186, "loop  [ 5 control runs ]")
@@ -361,11 +207,13 @@ def sheet1() -> str:
 
 def sheet2() -> str:
     H = 2154
-    body, _ = chrome(H, "s2")
+    body = chrome(H)
 
-    body += phase_band(76, "PHASE 4  ·  DIFFERENTIAL ANALYSIS AND IMPACT SCORING")
+    body += phase_band(76, "PHASE 4  ·  DIFFERENTIAL ANALYSIS AND IMPACT "
+                           "SCORING", BOARD_W)
     body += phase_band(1222, "PHASE 5  ·  REVIEW, REMEDIATE, RE-VALIDATE  ·  "
-                             "a finding closes only after a passing re-run")
+                             "a finding closes only after a passing re-run",
+                       BOARD_W)
     body += header(H)
 
     # --- phase 4 flow -----------------------------------------------------

@@ -142,18 +142,25 @@ blind spot, which is the case the thesis is named after.
 | `src/telos/eventkey.py`, `differential.py` | Correct. This is the source of truth. |
 | `proposal-form-FINAL.md` | Correct. Line 61 "event keys", line 350 describes populated fields. |
 | `T1_Activity_Diagram_Revised_Sheet1/2.svg` | **Fixed 2026-09-09**, regenerated from a script. |
+| `T1_Figure_Analysis_Pipeline.svg` | **Fixed 2026-09-09.** Had "event-type key"; had `λ₀(e) = count / window` where `differential.py:115` computes `a / n1`, count per **run**; omitted the global gate entirely; omitted the 30-event INCONCLUSIVE rule and the field-loss pairing. |
+| `T1_Figure_Noise_Floor.svg` | **Fixed 2026-09-09.** Had "WinSec 4104", a log channel that does not exist for that event; explained INCONCLUSIVE by band width instead of the 30-event minimum; labelled rows by event type; drew the LOST marker above zero. |
+
+**All four T1 figures are now generated** by scripts in `thesis/T1/figures/`, sharing
+`svgkit.py`. A design change is a string edit and a re-run.
 
 **Checked and stale:**
 
 | File | Problem |
 |---|---|
-| `T1_Figure_Analysis_Pipeline.svg` | "Normalize every raw record to an **event-type key**". Also states `λ₀(e) = count / window`; `differential.py:115` computes `a / n1`, count per **run**. Windows are validated equal so the ratio is unaffected, but the formula shown is not the one that runs. |
-| `T1_Detection of Hardening-Induced Blind Spots REVISED.docx` | Embeds `T1_Activity_Diagram_Swimlane.png` from **2026-08-15**, not the revised sheets. Confirmed by size match: `word/media/image1.png` is 326,941 bytes. |
+| `T1_Detection of Hardening-Induced Blind Spots REVISED.docx` | Embeds `T1_Activity_Diagram_Swimlane.png` from **2026-08-15**, not the revised sheets. Confirmed by size match: `word/media/image1.png` is 326,941 bytes. **This is the remaining piece of this item.** |
 | `thesis/T1/proposal-form-REVISED.md` | Line 416, "the key is the triple of telemetry source, numeric event...". Superseded by FINAL, so this only matters if REVISED is ever reused. |
 
-**Not yet checked:** `T1_Figure_Noise_Floor.svg`, `T1-PANEL-RESPONSE.md`, `T1-REVISION-DRAFT.md`,
-`T1-REVISIONS-LIST.md` Revision 14 (known separately to say field **values** where the code uses
-field **presence**).
+**Not yet checked:** `T1-PANEL-RESPONSE.md`, `T1-REVISION-DRAFT.md`, `T1-REVISIONS-LIST.md`
+Revision 14 (known separately to say field **values** where the code uses field **presence**).
+
+**Note on the PNGs.** The four PNG renders in the documents folder were made from the stale SVGs
+and are now renamed `*.SUPERSEDED-2026-08-28.png`, so the wrong picture cannot be inserted by
+accident. Word inserts SVG directly and keeps it as vector, so no PNG is needed.
 
 **How to answer:** grep each for "event type", "event-type key", and "field value", and compare
 against `eventkey.py`. Not against another document.

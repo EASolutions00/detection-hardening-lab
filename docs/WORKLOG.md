@@ -17,6 +17,57 @@ Next:
 
 ---
 
+## 2026-09-09 (second) - The other two figures were worse. One named a Windows log channel that does not exist.
+
+**Did:** checked `T1_Figure_Noise_Floor.svg` and `T1_Figure_Analysis_Pipeline.svg` against
+`src/telos/`, then rewrote both as generators. Extracted the shared drawing helpers into
+`thesis/T1/figures/svgkit.py` so three generators do not carry three copies.
+
+### The noise floor figure had a factual error, not just stale wording
+
+| Problem | Evidence |
+|---|---|
+| Row labelled **"WinSec 4104"** | Event 4104 is script block logging, in `Microsoft-Windows-PowerShell/Operational`, not the Security log. `eventkey.py:48` says `"PowerShell-4104"`. |
+| **INCONCLUSIVE explained by the wrong rule** | Figure said the key was inconclusive because "its band spans almost everything". `differential.py:138` reports INCONCLUSIVE when fewer than `MIN_PRE_COUNT` (30) events were seen before the change. The band never enters it; the key is not tested at all. |
+| Rows labelled by event type | Unit of analysis is the event key (DECISIONS.md 2026-09-04). |
+| **LOST marker drawn above zero**, at about 4% of the pre-change rate | `differential.py:146` classifies LOST only when the post-change count is exactly zero. |
+
+The wrong INCONCLUSIVE rule is the one that mattered most. **Learning the explanation off that
+figure would have meant giving a panelist the wrong mechanism for one of the five
+classifications.** The rewritten row shows the pre-change count (12), draws no band, and dashes
+the track to say the key was never measured.
+
+### The pipeline figure omitted two steps and stated a formula the code does not use
+
+| Problem | Evidence |
+|---|---|
+| "an **event-type key** e = ( source, event ID, **discriminating fields** )" | Predates the 2026-09-04 decision. The key uses fields that were **populated**. |
+| `λ₀(e) = count / window` | `differential.py:115` computes `a / n1`, count per **run**. `analyse()` rejects phases with unequal windows (`differential.py:266`), so the two are proportional and **the rate ratio is identical either way. No result changes.** The formula shown was still not the one that runs. |
+| **The global gate was missing entirely** | `analyse()` runs one chi-square over the whole 2-by-K profile before any key is tested and returns with no findings when it does not pass (`differential.py:273-281`). A figure without it implies every key is always tested. |
+| No INCONCLUSIVE rule in the decision box | `MIN_PRE_COUNT = 30`. |
+| `field_loss_pairs()` had no step | `eventkey.py:159`. |
+
+**Result:** both regenerated, rendered, and read at full size before installing. Added a second
+caption to the noise floor figure naming all three conditions, because the old one showed the
+band alone and invited the reader to think the band is the whole decision rule.
+
+**How the refactor was proved safe.** Moving the helpers into `svgkit.py` could have changed the
+already-verified activity diagram. Regenerated it and ran `git status`: the two activity SVGs did
+not appear, meaning the output is **byte-identical** to the committed version. Only the generator
+changed.
+
+**Also did:** renamed the four PNG renders in the documents folder to
+`*.SUPERSEDED-2026-08-28.png`. They were made from the stale SVGs, and a stale PNG sitting next
+to a corrected SVG is the easiest way to insert the wrong picture. Nothing deleted; all
+reversible.
+
+**Broke / stuck on:** the "noise floor" label in the pipeline figure first landed on top of the
+new gate box. Moved above it and given a white plate. Caught by rendering, not by reading the
+code.
+
+**Next:** the .docx still embeds `T1_Activity_Diagram_Swimlane.png` from 2026-08-15. Inserting
+the four corrected SVGs is the remaining piece of OPEN-QUESTIONS 15.
+
 ## 2026-09-09 - The activity diagram described the superseded event key. Both sheets regenerated from a script.
 
 **Did:** checked `T1_Activity_Diagram_Revised_Sheet1/2` against `src/telos/`, not against other
