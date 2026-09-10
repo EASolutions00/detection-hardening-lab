@@ -17,6 +17,52 @@ Next:
 
 ---
 
+## 2026-09-10 (second) - Fixed T1-PANEL-RESPONSE.md. Nine changes, two deliberately left.
+
+**Did:** repaired every actionable defect the scan found in `T1-PANEL-RESPONSE.md`. The file lives
+outside the repository, so only this entry is committed.
+
+| Where | Was | Now |
+|---|---|---|
+| Decision rule | `INCONCLUSIVE` tested **before** `NEW` | `NEW` first, then rarity, then `LOST`, matching `_test_key` (`differential.py:132` before `:138`) |
+| Decision rule | `RR(e) < noise_floor(e)`, undefined | `( 1 - RR(e) ) > 3 * CoV(e)`, with a note that the direction is easy to state backwards |
+| Decision rule | no pairing step | added: pair each LOST key with a NEW key whose field set is a strict subset |
+| Report table B | `RR 0.04 ... LOST` | `REDUCED`. LOST needs a post-change count of exactly zero (`differential.py:146`) |
+| Report table B | "41.2 **per min** to 1.6 per min" | "41.2 to 1.6 **per run**" (`differential.py:115`) |
+| Report tables B, C | "one row per event **type**" | per event **key** |
+| Key example | `WinSec : 4688 : ParentImage=cmd.exe` | `Security-4688[CommandLine,NewProcessName,ParentProcessName]`. 4688 carries ParentProcessName; ParentImage is a Sysmon field |
+| Key example | `Suricata : alert : sid=2027000` | removed. Network IDS is out of scope per Revision 14 |
+| Plain terms | "arrive **per minute**" | "arrive during one run" |
+| Steelman, Module 2, Module 3 | "event type" / "discriminating fields" | event key, populated tracked fields |
+
+**Why the branch order was the worst one.** A key that appeared only after the change always has a
+pre-change count of zero, which is below `min_count`. Testing rarity first reports **every NEW key
+as INCONCLUSIVE**, which destroys the LOST-and-NEW pair that is the entire signature of a stripped
+field. The document's own algorithm would have disabled the feature the document argues for. The
+file now says so explicitly, so the ordering is defensible rather than accidental.
+
+**Added rather than removed: the value-level limitation.** The key records *that* a field carried a
+value, not *which* value. Two places now say this plainly, and the LSA Protection worked example
+carries an instruction not to present it to the panel until one capture confirms what
+`GrantedAccess` actually contains after `RunAsPPL = 1`. Writing the limitation in beats deleting
+the example, because the example is good if the capture goes the right way. See OPEN-QUESTIONS 18.
+
+**Left alone on purpose, both pending decisions:**
+- Eight PNG references. The PNGs are stale renders and the fix depends on the unresolved
+  regenerate-or-repoint choice.
+- `:174`, "server-side web application". OPEN-QUESTIONS 17, blocked on the adviser.
+
+**Verified by re-running the scanner, not by eye.** LIVE hits fell 43 to 34, and the file moved to
+"all expected steps mentioned". Every remaining hit in it is one of the two pending decisions or a
+false positive: `:453` correctly describes what the *old* proposal did, and `:625`, `:642`, `:661`
+quote the panel's own title wording.
+
+**RECORD hits rose 27 to 33**, because these worklog and OPEN-QUESTIONS entries quote the defects
+they describe. That is the file-status split working as intended, not new damage.
+
+**Next:** `proposal-form-FINAL.md` and `T1-REVISIONS-LIST.md` hold the remaining 22 LIVE hits, and
+both are blocked on OPEN-QUESTIONS 17 and 18.
+
 ## 2026-09-10 - Scanned all 28 thesis documents. Found a claim that was never decided and is already written as fact.
 
 **Did:** built `tools/check_docs.py` and ran it over `docs/`, `thesis/` and the external documents
