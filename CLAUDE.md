@@ -158,6 +158,25 @@ So every piece of work here carries a second deliverable: the explanation.
 This is why a real test run comes before the proposal revision is submitted: understanding the
 system beats describing it.
 
+### Explaining this project
+
+The reply rules cover how to write. This is what to watch for **here**.
+
+**These terms are explained in plain words the first time they appear in a reply, or they are
+not used.** Each one has caused real confusion in this project:
+
+> chi-square gate, coefficient of variation, dispersion, rate ratio, false discovery rate,
+> Benjamini-Hochberg, q value, event key, field presence, noise floor, manifest hash,
+> snapshot restore, confound.
+
+**Prefer a real number from this project over an abstract description.** "1247 events became 0"
+is clearer than "the telemetry was lost". The numbers are in `WORKLOG.md` and the test files.
+
+**Say which layer you are answering at**, because the same question has three honest answers:
+what the code does today, what the design says, and what a real deployment would need. Mixing
+them is the fastest way to confuse a reader. See "built versus only designed" in
+[docs/PROMPT-new-chat.md](docs/PROMPT-new-chat.md).
+
 ### The defense brief
 
 After any design decision, finished component, completed phase, or significant finding, close
