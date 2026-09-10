@@ -17,6 +17,744 @@ Next:
 
 ---
 
+## 2026-09-11 (sixth) - OPEN-QUESTIONS 19 step 6 PASSES. UWF suppressed nothing, and two bigger findings fell out of it.
+
+**Did:** ran an identical 100-iteration stimulus three times, once with the filter off and twice with
+it on, and compared the telemetry. **Result: pass. UWF did not suppress a single stimulus event.**
+**All six steps of item 19 are now complete.**
+
+### The result, counting only my own events
+
+```
+                              RUN B (filter OFF)   RUN C (filter ON)
+Sysmon id 1, total                   172                 113
+Sysmon id 1, MY stimulus (cmd.exe)   100                 100
+Sysmon id 1, background               72                  13
+```
+
+**100 process creations, 100 logged, in both conditions.** Item 19 risk 4, that UWF might change the
+telemetry it is meant to preserve, is **not supported** for process-creation telemetry.
+
+### I got this wrong first, and the correction is the most useful part of the entry
+
+Comparing **totals** between run A (filter ON) and run B (filter OFF) showed Sysmon registry event
+id 13 at **1 versus 99**, against an identical 100-iteration registry stimulus. That looked like UWF
+suppressing registry telemetry, which would have been a serious finding, and several class C
+hardening changes are registry changes.
+
+**It was wrong.** A third run added a control that settled it: write to **two** keys every iteration,
+one ordinary key that UWF filters and one key added to UWF's registry exclusion list so its writes
+reach the disk untouched. Same process, same loop, same moment, so nothing but UWF differs between
+them.
+
+```
+registry events naming the EXCLUDED key : 0
+registry events naming the FILTERED key : 0
+registry events naming neither          : 15
+read-back: both keys hold Iteration = 100, 0 write errors
+```
+
+**Neither key was ever logged.** The excluded key's writes were not filtered at all and still
+produced nothing. **This Sysmon configuration simply does not watch those keys**, and UWF had nothing
+to do with it. The keys it does watch look like this:
+
+```
+HKLM\SOFTWARE\Microsoft\Windows
+HKLM\SOFTWARE\Microsoft\Wbem\PROVIDERS\Performance\Performance
+HKU\...\Explorer\FileExts\.exe\OpenWithProgids\exefile
+```
+
+**The 1 versus 99 was background noise in both runs**, and run B had far more background activity
+because it was the first writable boot after a series of filtered ones.
+
+**The lesson, and it is the same one three times today:** a difference in a total is not a finding.
+Count only the events your own stimulus produced, and put a control in the same run so the two arms
+differ by exactly one thing.
+
+### Finding 1: under UWF, the machine's own event log rewinds at every reset
+
+Run A ran under the filter, then the machine restarted.
+
+```
+RUN A  filter ON, before a reboot   :  NO EVENTS FOUND
+RUN B  filter OFF                   :  281 events, still present
+Sysmon channel : RecordCount=13105, 64 MB Circular, oldest event held 2026-09-02
+```
+
+Run A's events are **gone, and not by ageing out**, because the channel still holds events from
+2 September. The Sysmon log file lives on C:, C: is filtered, and the reboot discarded the overlay.
+
+**Item 19 risk 3 is wider than written.** It says the Wazuh agent's unsent queue dies at the reboot.
+In fact **the entire local event log dies**. Anything not already forwarded to the SIEM before the
+restart does not exist afterwards. Any UWF capture protocol must treat the drain before reboot as
+load-bearing, and must verify arrival at the SIEM rather than assume it.
+
+### Finding 2, and it is not about UWF at all: WIN-EP-01 does not audit process creation
+
+Two hundred process spawns across the runs produced **zero** Security 4688 events. Confirmed
+directly rather than inferred from absence:
+
+```
+Detailed Tracking
+  Process Creation                        No Auditing
+  Process Termination                     No Auditing
+Policy Change
+  Audit Policy Change                     Success
+Logon/Logoff
+  Logon                                   Success and Failure
+  Special Logon                           Success
+
+ProcessCreationIncludeCmdLine_Enabled : NOT SET
+```
+
+**Why this matters to the thesis, not just to the lab.** `PROMPT-new-chat.md` section 4 gives
+`Security-4688[CommandLine,NewProcessName]` as the canonical example of an event key, and item 18
+calls disabling `ProcessCreationIncludeCmdLine_Enabled` the method's **showcase case**. Both assume
+4688 is firing. **On this endpoint it is not, and the command-line setting is not configured
+either.** Sysmon event 1 is carrying process creation instead, which is item 1c's redundant-source
+question showing up from an unexpected direction.
+
+**This is not part of item 19 and should become its own open question.**
+
+### Two more baseline facts recorded while here
+
+- **This Sysmon configuration does not log file creation.** 100 file creates and deletes per run
+  produced no event 11. A capture fence built on writing a marker **file** is therefore invisible
+  on this machine; the fence must be something the config actually records, such as a process with
+  a distinctive command line.
+- Sysmon binary is `C:\WINDOWS\Sysmon64.exe`. The config dump ran with exit code 0 but my output
+  filter matched nothing, so **what the config actually contains is still unread**.
+
+**Next:** close item 19, record the decision, and decide what state WIN-EP-01 is left in.
+
+## 2026-09-11 (fifth) - OPEN-QUESTIONS 19 step 5 PASSES. No Event ID 2, and the overlay is not what we thought it was.
+
+**Did:** ran a 40-minute window under an active UWF filter, sampling overlay consumption every 60
+seconds. **Result: pass. Peak 191 MB of 1024 MB, zero UWF events.** The item continues to step 6.
+
+### Step 5 could not be run as written, and this is the substitution
+
+Item 19 says *"Run one full capture under UWF, then check for Event ID 2."* **There is no capture
+harness.** Runbook phases 4 to 8 are not built. So the question underneath it was tested instead:
+**does a 1024 MB overlay survive a capture-length window on this machine.**
+
+One 40-minute window, inside item 19's stated 25 to 60 minute range, split so two rates come out of
+one run:
+
+- **Minutes 1 to 20, idle.** The floor: what the machine costs by being switched on.
+- **Minutes 21 to 40, load.** Fixed cycle of spawn a process, write a 4 KB file, delete it, wait
+  1.5 s. 440 cycles total, about 22 a minute.
+
+### The numbers
+
+```
+min  1   IDLE    20 MB   1004 free   sysmon 12232
+min  2   IDLE   138 MB    886 free   sysmon 12260     <- +118 MB in one minute
+min  3   IDLE   139 MB    885 free
+min 20   IDLE   179 MB    845 free   sysmon 12547
+min 21   LOAD   180 MB    844 free   cycles  22
+min 33   LOAD   191 MB    833 free   cycles 286       <- peak
+min 34   LOAD   187 MB    837 free   cycles 308       <- went DOWN
+min 40   LOAD   188 MB    836 free   sysmon 13066   cycles 440
+
+UWF Operational : records=0     UWF Admin : records=0
+```
+
+**Three separate rates, and mixing them gives a wrong answer:**
+
+| Phase | Cost |
+|---|---|
+| Boot | **about 138 MB, once**, most of it in the second minute after power-on |
+| Idle | **2.35 MB/min** (139 MB at min 3 to 179 MB at min 20, 40 MB over 17 min) |
+| Under load | **0.45 MB/min** (179 MB to 188 MB across 20 min) |
+
+### The finding that matters most: an overlay is not a running total
+
+**The load phase cost less than idle**, and at minute 34 consumption **fell** from 191 MB to 187 MB.
+
+**The overlay holds the current difference between the machine and its disk, not the sum of
+everything written to it.** The load generator created a file and then deleted it, so the space came
+back. 440 process spawns and 440 file write-and-delete cycles cost almost nothing.
+
+**This reframes item 19 risk 2.** What fills an overlay is not activity. It is **writes that stay
+written**, which in a capture window mainly means **event logs growing**. Sysmon added 834 records
+across the 40 minutes here.
+
+**It also corrects the alarm raised in entry four.** That entry measured about 25 MB/min and warned
+the overlay might fill in 41 minutes. That figure was taken while test scripts ran back to back and
+is not the machine's rate. **Measured properly it is 2.35 MB/min idle**, which alone would take
+about seven hours to fill 1024 MB.
+
+### Where this result is weakest, and it should be said before anyone else says it
+
+**The load generator deleted what it created. A real capture does not.** Atomic Red Team tests drop
+files, install things, and leave artifacts that persist. Those consume overlay and never give it
+back. **So 0.45 MB/min is a floor, not a forecast**, and the honest statement is that this window
+shows a 1024 MB overlay is not obviously too small, not that it is proven sufficient.
+
+### Diagnostic run before rebooting, while the machine was still in the same state
+
+**There is no page file, so the page file was not the boot burst.** That hypothesis was raised
+during the run, explicitly labelled unverified, and it failed:
+
+```
+Win32_PageFileSetting : none      Win32_PageFileUsage : none reported
+C:\pagefile.sys : not present or not readable
+UWF volume C: Swapfile : 0 MB
+```
+
+Per-process bytes written over 60 idle seconds, about 570 KB a minute in total:
+
+```
+Registry            124    225,280      msedgewebview2.exe 7256   69,316
+taskhostw.exe      3832     81,920      lsass.exe          1020   49,152
+svchost.exe        1568     70,656      wazuh-agent.exe    3492    9,949
+```
+
+Services running that are known heavy writers: **wsearch (Windows Search)**, **WinDefend**,
+**DiagTrack**. `wuauserv` and `VSS` are stopped. **Three `msedgewebview2.exe` processes are running
+on this endpoint** and writing about 120 KB/min between them, which is background noise nobody
+recorded before.
+
+**The cause of the 118 MB boot burst is still unknown.** No sample was taken during it. **The exact
+check:** sample per-process `WriteTransferCount` every 10 s across the first three minutes after
+boot.
+
+### Two measurement traps found during this run
+
+**1. The Security log record count goes down.** Readings ran 22455, 22480, then **22425**. It is a
+circular buffer, so `RecordCount` is not a running total and cannot measure how many events a window
+produced. The Sysmon channel is 64 MB circular (item 9) and behaves the same way. Anything counting
+events this way would silently undercount.
+
+**2. A watcher reading a copy of a file reported a row that never existed.** A background collector
+was replacing the host copy every 3 minutes while a monitor tailed it. The monitor emitted:
+
+```
+30   IDLE   17:35:52  1858  189 MB  835  sysmon 12571  cycles 0
+```
+
+The guest's own file says:
+
+```
+30   LOAD   17:35:51  1857  185 MB  839  sysmon 12811  cycles 220
+```
+
+The phase, the cycle count and the Sysmon count are all wrong, and it was only caught because a
+phase cannot go backwards and a counter cannot reset. **Cause (unverified): reading the copy while
+it was being rewritten. Rule: verify against the file on the machine, never against a copy something
+else is rewriting.**
+
+**Next:** step 6, the last one. Capture the same stimulus with UWF on and with UWF off and compare
+the profiles, which tests risk 4, whether UWF changes what gets logged.
+
+## 2026-09-11 (fourth) - OPEN-QUESTIONS 19 step 4 PASSES, and item 19's cost estimate is wrong in our favour.
+
+**Did:** tested whether a change can be made permanent on a UWF-protected machine. **Result: pass,
+by a cheaper mechanism than item 19 assumed.** The item continues to step 5.
+
+### Item 19 assumed the only way in was servicing mode. It is not.
+
+Risk 1 says *"The documented fix is servicing mode ... Cost: two extra reboots per hardening change."*
+
+**`uwfmgr` has a commit command that writes one specific change through to the real disk while the
+filter stays on.** No servicing mode, no reboot to apply, and it survives the next restart.
+
+```
+uwfmgr file commit C:\telos-uwf-commit-test.txt
+  File "C:\telos-uwf-commit-test.txt" has been successfully committed          EXIT 0
+
+uwfmgr registry commit HKLM\SOFTWARE\TELOS-UWF-TEST Marker
+  Changes on value "Marker" in registry key "HKLM\SOFTWARE\TELOS-UWF-TEST"
+  has successfully been committed.                                             EXIT 0
+```
+
+**No registry exclusion was needed.** `uwfmgr registry help` lists `commit` as its own command,
+separate from `add-exclusion`.
+
+### The result, with a control, because "everything survived" would have been meaningless
+
+Committed at 16:56:46Z. Controls written at 16:58:22Z and deliberately **not** committed. Rebooted
+at 16:59:03Z. Checked at 17:00:04Z.
+
+```
+COMMITTED, expected to survive
+  SURVIVED  C:\telos-uwf-commit-test.txt         content=...stamp=2026-09-10T16:56:46Z
+  SURVIVED  HKLM\SOFTWARE\TELOS-UWF-TEST\Marker  value=...stamp=2026-09-10T16:56:46Z
+
+CONTROL, not committed, expected to vanish
+  GONE      C:\telos-uwf-control.txt
+  GONE      HKLM\SOFTWARE\TELOS-UWF-CONTROL\Marker
+
+Filter state: ON   Commit pending: NO   Servicing State: OFF   Volume state: Protected
+```
+
+**Both halves matter.** If all four had survived, the filter had stopped working and the commit
+would have proved nothing. If all four had vanished, commit does not work. Only this split result
+shows the commit doing something the filter would otherwise have undone.
+
+**The cost line in item 19 risk 1 is wrong and should be corrected when the item closes:** applying
+a hardening change to a UWF host costs **zero** extra reboots, not two.
+
+### What this does NOT prove, and it matters for the real catalogue
+
+`registry commit` takes a **key and one value name**. It works for a hardening change that is one
+registry value, which covers WDigest, LmCompatibilityLevel, RunAsPPL and most of the CIS and DISA
+registry controls. **It has not been shown to work for a change applied any other way**, and several
+in the catalogue are: audit policy set with `auditpol`, anything applied through Group Policy, and
+anything writing many values at once. Those live in policy files rather than single registry values,
+so they would need `uwfmgr file commit` against the right file, or servicing mode.
+
+**Servicing mode itself is still untested.** Step 4's stated proof requirement is met without it,
+but it remains the general-purpose path for a change that is not one value.
+
+### Network state of WIN-EP-01, measured because servicing mode risk depended on it
+
+```
+LAB   ip=10.20.10.20      gateway=none
+NAT   ip=192.168.243.130  gateway=192.168.243.2
+TCP 8.8.8.8:53 (raw internet, no DNS)  : False
+TCP www.microsoft.com:443 (needs DNS)  : False
+Windows Update service : Running, StartType=Manual
+```
+
+**It has a NAT adapter and a default gateway but no working outbound internet.** This was checked
+before considering servicing mode, because servicing mode was thought to run Windows Update on its
+own, which would have broken version pinning permanently.
+
+**That worry was overstated and is corrected here.** `uwfmgr servicing help` shows four commands:
+`enable`, `disable`, **`update-windows`**, `get-config`. Updating Windows is a **separate explicit
+command**, not something entering servicing mode does by itself.
+
+### Two more things from the machine's own help text, worth keeping
+
+- **`uwfmgr registry commit-delete`** commits a deletion. This answers the cleanup problem recorded
+  in entry three, where a file written before the filter was enabled could not be permanently
+  removed.
+- **`add-exclusion`**: *"The excluded registry keys should exist before system volume is protected."*
+  So exclusions cannot be added freely to an already locked-down machine.
+- Syntax trap: it is `uwfmgr registry help`, **not** `uwfmgr help registry`. The wrong order returns
+  generic help with exit code 1, which looks like a failed command rather than a wrong one.
+
+### Overlay readings collected along the way
+
+```
+16:51:27Z   67 s after boot    39 MB
+16:56:46Z  386 s after boot   171 MB
+16:58:22Z  482 s after boot   174 MB
+17:00:04Z   61 s after boot    17 MB   (fresh boot)
+```
+
+Between the 67 s and 386 s readings, 132 MB accumulated in 319 s, about **25 MB per minute**. At
+that rate 1024 MB fills in roughly **41 minutes**, and item 19 describes capture windows of **25 to
+60 minutes**. **This machine was not idle** during those readings, it was running test scripts, so
+the steady rate will be lower. It is still the clearest warning yet that risk 2 is real.
+
+**Next:** step 5, the step that matters most. Run one full capture under UWF and check for
+Event ID 2 in `Microsoft-Windows-UnifiedWriteFilter/Operational`, reading overlay consumption at
+the start and end of the window rather than only checking for the event afterwards.
+
+## 2026-09-11 (third) - OPEN-QUESTIONS 19 step 3 PASSES. The revert works, on files and on the registry.
+
+**Did:** protected C:, enabled the filter, rebooted, planted six markers, rebooted again, and
+checked. **Result: pass. All six were gone.** The item continues to step 4.
+
+### Setup, and where UWF's own event log lives
+
+```
+uwfmgr volume protect C:    The volume C: will be protected by Unified Write Filter after UWF is enabled.   EXIT 0
+uwfmgr filter enable        Unified Write Filter will be enabled after system restart.                      EXIT 0
+
+Current Session : Filter state OFF,  No volumes configured
+Next Session    : Filter state ON,   Volume 454f9329-d283-4408-acbc-9ae77672903c [C:]  Protected
+```
+
+**UWF has two dedicated event channels, and this was not known before today:**
+
+```
+Microsoft-Windows-UnifiedWriteFilter/Operational   records=0  enabled=True
+Microsoft-Windows-UnifiedWriteFilter/Admin         records=0  enabled=True
+```
+
+Item 19 risk 2 says nothing in the pipeline watches for UWF's Event ID 2. **These two channel names
+are where a watcher would have to look**, and both sat at 0 records across every reboot in this
+step, which is the clean baseline to measure against.
+
+### The result
+
+Markers planted at 16:48:14Z and 16:49:33Z, machine rebooted at 16:50:20Z.
+
+```
+GONE      C:\telos-uwf-marker.txt
+GONE      C:\Users\eli\telos-uwf-marker.txt
+GONE      HKLM:\SOFTWARE\TELOS-UWF-TEST
+GONE      HKLM:\SOFTWARE\TELOS-UWF-TEST2
+GONE      HKLM:\SOFTWARE\TELOS-UWF-TEST3
+GONE      HKCU:\Software\TELOS-UWF-TEST
+
+Filter state: ON    Volume state: Protected    Servicing State: OFF    Commit pending: NO
+```
+
+**Both hives were tested on purpose.** `HKLM` and `HKCU` live in different files on disk, so one
+surviving while the other vanished was a real possibility. Neither survived.
+
+### The strongest evidence is the file that did survive
+
+```
+SURVIVED  C:\Users\eli\telos-uwf-step3a.ps1
+GONE      C:\Users\eli\telos-uwf-step3b.ps1
+GONE      C:\Users\eli\telos-uwf-step3b2.ps1
+```
+
+`step3a.ps1` was copied in at 16:46:07, **before** the reboot that switched the filter on, so it
+went to the real disk. The other two were copied in afterwards and went to the overlay. **The
+filter took effect exactly at the boot boundary and the file system records it.** These were written
+by VMware Tools, not by PowerShell, so this also shows the filter catches writes that do not come
+from the shell.
+
+### A consequence that changes how the test protocol must work
+
+**Nothing can be permanently deleted while the filter is on.** A deletion is a write, so it goes to
+the overlay and is undone at the next reboot. `telos-uwf-step3a.ps1` is now stuck on the disk until
+the filter is turned off or servicing mode is used. Any capture protocol built on UWF has to plan
+cleanup around this rather than discovering it later.
+
+### A false alarm that would have killed the item wrongly
+
+The first registry write failed:
+
+```
+New-Item -Path "HKLM:\SOFTWARE\TELOS-UWF-TEST" -Force
+FAILED registry : No more data is available.
+```
+
+**This was not UWF.** Tested through four separate write paths, all under an active filter, all
+successful:
+
+```
+reg.exe add HKLM\SOFTWARE\TELOS-UWF-TEST        EXIT CODE : 0
+PowerShell New-Item, no -Force                  SUCCEEDED
+[Microsoft.Win32.Registry]::LocalMachine.CreateSubKey   SUCCEEDED, readback correct
+reg.exe add HKCU\Software\TELOS-UWF-TEST        EXIT CODE : 0
+```
+
+**`New-Item -Force` on the PowerShell registry provider throws `No more data is available` even when
+the same write succeeds without `-Force`.** Taken at face value the first error would have been
+recorded as "UWF blocks registry writes", which would have made step 4 look impossible and closed
+item 19 for a reason that does not exist. **One error message is not a finding. Four code paths are.**
+
+### Overlay consumption is measurable, and the first numbers are not reassuring
+
+Two subcommands do it, and neither was known before today:
+
+```
+uwfmgr overlay get-consumption      The overlay consumption is 22 MB.   (90 s after boot)
+uwfmgr overlay get-availablespace   The overlay has 1002 MB available space.
+
+uwfmgr overlay get-consumption      The overlay consumption is 39 MB.   (67 s after the next boot)
+uwfmgr overlay get-availablespace   The overlay has 985 MB available space.
+```
+
+Consumption plus available always equals the 1024 MB maximum, so the two agree.
+
+**39 MB in 67 seconds is roughly 35 MB per minute, which would fill 1024 MB in about 29 minutes.
+Item 19 describes capture windows of 25 to 60 minutes.** This is an **upper bound, not a
+prediction**, because most of those 39 MB are boot-time writes and the steady rate on an idle
+machine will be far lower. But it is the first concrete sign that risk 2 is a live problem rather
+than a theoretical one. **Step 5 must measure consumption at the start and end of a real capture
+window, not just check for Event ID 2 afterwards.**
+
+### Two small traps recorded so they are not hit again
+
+- `uwfmgr.exe` writes **UTF-16**. Setting `[Console]::OutputEncoding` to Unicode fixes its output
+  and **breaks `reg.exe` output in the same script**, which came back as `????????`. Exit codes
+  stayed correct. **Set the encoding per command, not once per script.**
+- Overlay consumption is reported in **whole MB**, so writes of a few hundred bytes do not move it.
+  Do not use it to confirm a small write happened.
+
+**Next:** step 4, servicing mode. Apply one registry change, reboot, and confirm it survived. This
+is the step that decides whether a hardening change can be applied to a UWF-protected host at all.
+
+## 2026-09-11 (second) - OPEN-QUESTIONS 19 step 2 PASSES. Activation was not the blocker. The overlay is 1 GB of RAM.
+
+**Did:** ran step 2 of item 19 inside WIN-EP-01, enabling `Client-UnifiedWriteFilter`, rebooting,
+and verifying. **Result: pass, after one failed attempt that was my error.** The item continues to
+step 3.
+
+### First attempt failed, and it was the wrong command rather than a real obstacle
+
+```
+Enable-WindowsOptionalFeature -Online -FeatureName Client-UnifiedWriteFilter -NoRestart
+
+RESULT  : FAILED
+MESSAGE : One or several parent features are disabled so current feature can not be enabled.
+HRESULT : 0xC004000D
+State   : Disabled   (unchanged)
+```
+
+**`-All` was missing.** Windows optional features form a tree and refuse to enable a child while its
+parent is off. `-All` enables the parents.
+
+**The HRESULT was misleading and is recorded so nobody chases it again.** `0xC004000D` sits in the
+numeric range Windows uses for **licensing** errors, while the message text is about **parent
+features**. Those two readings lead to opposite conclusions: one closes item 19 at step 2, the other
+is a one-word fix. The retry was what told them apart. **Trust the message, not that number.**
+
+### Activation, now verified in words rather than from an enumeration
+
+```
+Name: Windows(R), Education edition
+Description: Windows(R) Operating System, RETAIL channel
+Partial Product Key: <redacted, not evidence for anything here>
+License Status: Notification
+Notification Reason: 0xC004F034.
+```
+
+This closes the unverified item from the step 1 brief. `DECISIONS.md:326` saying "unactivated" is
+correct but imprecise: the exact state is **Notification**, meaning the activation grace period has
+ended.
+
+### The retry, and exactly what it changed
+
+```
+Enable-WindowsOptionalFeature -Online -FeatureName Client-UnifiedWriteFilter -All -NoRestart
+
+RESULT : SUCCEEDED   Online : True   RestartNeeded : True
+
+                                BEFORE      AFTER
+Client-DeviceLockdown           Disabled    Enabled
+Client-UnifiedWriteFilter       Disabled    Enabled
+Client-KeyboardFilter           Disabled    Disabled
+Client-EmbeddedShellLauncher    Disabled    Disabled
+Client-EmbeddedBootExp          Disabled    Disabled
+Client-EmbeddedLogon            Disabled    Disabled
+```
+
+**The parent is `Client-DeviceLockdown`.** `-All` enabled parents only and touched no siblings,
+which is what its documentation claims and is now checked rather than assumed. **Two features
+changed on this machine, not one**, and both belong in the software inventory for Chapter 3.
+
+### This answers item 19 risk 5, the one named as the likeliest silent killer
+
+**Windows in `Notification` state, with no valid licence, installed a DISM optional feature.**
+Activation does not block it. Risk 5 is closed by measurement.
+
+### Reboot and verification
+
+```
+& $vr ... runProgramInGuest $vm -noWait "C:\Windows\System32\shutdown.exe" /r /t 5
+```
+
+Guest answered `directoryExistsInGuest` again after **172 s**.
+
+```
+LAST BOOT   : 2026-09-10T16:27:32Z
+Client-DeviceLockdown          Enabled
+Client-UnifiedWriteFilter      Enabled
+Client-KeyboardFilter          Disabled
+uwfmgr.exe present : True
+uwfmgr.exe size    : 230904
+uwfmgr.exe version : 10.0.26100.1 (WinBuild.160101.0800)
+UwfServicingSvc    Stopped    Unified Write Filter Servicing Helper Service
+uwfmgr get-config EXIT CODE : 0
+```
+
+**The silent-failure check passed.** Entry one said step 2 would only be a real pass if `uwfmgr.exe`
+existed **after** the reboot, because DISM's own exit code cannot be trusted to mean the payload
+landed. It exists, it runs, and it returns 0.
+
+### The overlay defaults, which matter more than anything else here
+
+```
+Filter state        : OFF
+Servicing State     : OFF
+Overlay Type        : RAM
+Maximum size        : 1024 MB
+Warning Threshold   : 512 MB
+Critical Threshold  : 1024 MB
+Persistent          : OFF
+Volumes configured  : none
+Registry exclusions : none
+```
+
+**This is the number item 19 risk 2 turns on.** The overlay is **1024 MB and lives in RAM**, and
+Event ID 2 fires at the critical threshold of 1024 MB. **A capture run therefore has a 1 GB total
+write budget to C: before the run is corrupt.** For scale, the Sysmon channel alone is 64 MB
+(item 9).
+
+**A second cost that was not anticipated.** WIN-EP-01 has `memsize = "8192"` and `numvcpus = "4"`.
+A RAM overlay of 1024 MB is **one eighth of the guest's memory**, taken away from the machine under
+test while UWF is on. That is a difference between a UWF host and a non-UWF host, so it belongs
+with risk 4 as an external-validity note, not only as a resource note.
+
+### Small trap in reading uwfmgr output
+
+`uwfmgr.exe` writes **UTF-16**. Captured through PowerShell without setting the console encoding,
+every character arrives separated by a space. The content is still readable but it is not safe to
+parse. Fix before step 3: set `[Console]::OutputEncoding = [System.Text.Encoding]::Unicode` before
+calling it, or redirect to a file and read it with `-Encoding Unicode`.
+
+**Next:** step 3. Protect C:, turn the filter on, reboot, write a file, reboot again, and confirm
+the file is gone. This is the first step where UWF actually filters writes.
+
+## 2026-09-11 (first) - OPEN-QUESTIONS 19 step 1 PASSES. The feature exists and its name is confirmed.
+
+**Did:** ran step 1 of item 19 inside WIN-EP-01, just after midnight. **Result: pass. The item
+continues to step 2.**
+
+### How it was run, and why not as a one-liner
+
+`vmrun runProgramInGuest` returns a program's **exit code only, never its output**. So the query was
+written as a script on the host, copied in, run, and its result file copied back out. A pipeline
+passed inline through `vmrun`'s argument parsing can arrive mangled, and a mangled query returns
+nothing, which reads exactly like "feature not available". That is the failure item 19 warns about
+in its note on the search string.
+
+```
+& $vr -T ws -gu eli -gp $pw copyFileFromHostToGuest $vm "<scratch>\uwf-step1.ps1" "C:\Users\eli\telos-uwf-step1.ps1"
+& $vr -T ws -gu eli -gp $pw runProgramInGuest $vm "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -ExecutionPolicy Bypass -NoProfile -File "C:\Users\eli\telos-uwf-step1.ps1"
+& $vr -T ws -gu eli -gp $pw copyFileFromGuestToHost $vm "C:\Users\eli\telos-uwf-step1.txt" "<scratch>\uwf-step1-out.txt"
+```
+
+All three returned no output, which is `vmrun`'s success result. Both guest files were deleted
+afterwards with `deleteFileInGuest`.
+
+### Exact output
+
+```
+RUNNING AS : WIN-EP-01\eli
+ELEVATED   : True
+EDITION    : Microsoft Windows 11 Education
+BUILD      : 10.0.26100.0
+UBR        : 9168
+uwfmgr.exe : False
+
+----- ACTIVATION (LicenseStatus 1 = Licensed, 0 = Unlicensed) -----
+Windows(R), Education edition                           5
+
+----- Get-WindowsOptionalFeature -Online, FeatureName like *Filter* -----
+TOTAL FEATURES ON THIS BUILD : 137
+MATCHES FOR *Filter*         : 5
+
+TIFFIFilter                                   Disabled
+IIS-RequestFiltering                          Disabled
+IIS-ISAPIFilter                               Disabled
+Client-KeyboardFilter                         Disabled
+Client-UnifiedWriteFilter                     Disabled
+----- end -----
+```
+
+### Three things that were unverified and now are not
+
+1. **The DISM feature name is `Client-UnifiedWriteFilter`.** Entry seven listed this as unverified.
+   The `*Filter*` search returned 5 matches out of 137 features, so the widened search string was
+   worth using: it also surfaced `Client-KeyboardFilter`, from the same feature family.
+2. **`vmrun runProgramInGuest` gets a full administrator token, not a UAC-filtered one.**
+   `ELEVATED : True`. Every remaining step of item 19 can therefore be run from the host without a
+   person at the guest console. This was the open question carried out of entry nine.
+3. **`DECISIONS.md:326` is correct about the machine.** Education, `10.0.26100` with UBR `9168`,
+   which is `10.0.26100.9168`. Read from the machine, not from the document.
+
+### A fact sharper than the record, and it changes what step 2 asks
+
+`DECISIONS.md:326` says "unactivated". The licensing service returns **`LicenseStatus = 5`** for
+`Windows(R), Education edition`. In the `SoftwareLicensingProduct` enumeration 5 is **Notification**,
+not 0 Unlicensed **(unverified this session; the exact check is `slmgr /dlv` inside the guest, which
+prints the status in words)**. Notification is the state an install falls into after the activation
+grace period ends: watermark shown, personalisation locked, servicing otherwise intact.
+
+**Why this matters.** Item 19 risk 5 asks whether a DISM optional feature will enable on
+"unactivated" Windows. The real question is narrower and more answerable: whether it enables in
+**Notification** state. Step 2 is still the test, but it is now a specific question.
+
+### `uwfmgr.exe` is absent, and that is expected rather than a failure
+
+`Test-Path C:\Windows\System32\uwfmgr.exe` returned `False`. The feature state is `Disabled`, and
+enabling the feature is what installs the tool. **This becomes a real failure only if it is still
+`False` after step 2 reports success**, which would mean DISM claimed to enable a feature it did
+not install. Worth checking explicitly in step 2 rather than trusting DISM's exit code.
+
+**Next:** step 2, enable `Client-UnifiedWriteFilter`. This is the first step that changes
+WIN-EP-01. Fallback is `uwf-test-baseline-2026-09-10`.
+
+## 2026-09-10 (ninth) - Fallback snapshots taken on both VMs. No step of item 19 has run yet.
+
+**Did:** took `uwf-test-baseline-2026-09-10` on WIN-EP-01 and on SIEM-01, before anything in
+OPEN-QUESTIONS 19 touches either machine. **This supersedes the line in entry eight saying the
+baseline snapshot has not been taken.**
+
+**Why SIEM-01 as well, when `PROMPT-uwf-test.md` section 4 says not to change it.** Asked for in
+session and approved. A snapshot is protective rather than destructive, but it *is* a change: every
+write from now on goes to a delta disk.
+
+### State before
+
+```
+WIN-EP-01  Total snapshots: 3   phase3-complete-2026-09-02, agent-hardened-2026-09-03,
+                                tamper-off-2026-09-03
+SIEM-01    Total snapshots: 3   phase3-complete-2026-09-02, timesync-off-2026-09-03,
+                                snapd-off-archive-v2-2026-09-03
+F: free                         601,633,779,712 bytes
+Both VMs powered on.
+```
+
+### Commands, exactly as run
+
+```
+& "C:\Program Files (x86)\VMware\VMware Workstation\vmrun.exe" -T ws snapshot "F:\TeLoS Homelab\WIN-EP-01\WIN-EP-01.vmx" "uwf-test-baseline-2026-09-10"
+& "C:\Program Files (x86)\VMware\VMware Workstation\vmrun.exe" -T ws snapshot "F:\TeLoS Homelab\SIEM-01\SIEM-01.vmx" "uwf-test-baseline-2026-09-10"
+```
+
+Both returned **no output**, which is `vmrun`'s success result. WIN-EP-01 finished inside two
+minutes. SIEM-01 took **more than ten minutes** and had to be moved to the background; it exited
+with code 0.
+
+### State after
+
+```
+WIN-EP-01  Total snapshots: 4   ... uwf-test-baseline-2026-09-10
+SIEM-01    Total snapshots: 4   ... uwf-test-baseline-2026-09-10
+F: free                         576,952,819,712 bytes   (24,680,960,000 used)
+SIEM-01 reachable               ping 192.168.243.129 replies <1ms, TCP 22 open
+```
+
+### These are memory snapshots, and the earlier ones were not
+
+`SIEM-01.vmsd` records `snapshot3.type = "1"` for the new one. The other three carry no `type`
+line. The `.vmsn` sizes say the same thing:
+
+```
+SIEM-01-Snapshot3.vmsn       29,939     cold, no memory
+SIEM-01-Snapshot4.vmsn    6,893,571     memory included
+WIN-EP-01-Snapshot3.vmsn    295,453     cold, no memory
+WIN-EP-01-Snapshot4.vmsn  6,794,522     memory included
+```
+
+**Consequence that must not be forgotten.** Reverting to either of these restores the guest clock
+as it stood at 23:33 on 2026-09-10. All six `time.synchronize.*` switches are `FALSE` in both
+`.vmx` files (item 6), so VMware Tools will not correct it. **A revert must be followed by a clock
+fix, or by taking a fresh cold snapshot at that point**, before any capture run. Acceptable for
+these two, whose only job is recovering an unbootable machine.
+
+### A wrong reading, recorded because it would be made again
+
+While SIEM-01's snapshot was still running I read it as hung, on three signals that all looked
+like failure and were not:
+
+```
+SIEM-01-Snapshot4.vmsn  = 0 bytes, unchanged for 10 minutes
+vmware-vmx WriteTransferCount = +864,332 and +366,070 bytes over 20 s (idle rates)
+PhysicalDisk Disk Write Bytes/sec on F: = below 100,000 (did not even clear the filter)
+```
+
+**All three are expected during a live snapshot.** VMware maps the memory file, so Windows credits
+those writes to the system cache and not to the process, and the `.vmsn` is written at the *end* of
+the operation, not during it. The only reliable signal is the exit code. **Do not diagnose a live
+snapshot from file size or process counters. Wait for `vmrun` to return.**
+
+**Next:** step 1 of item 19, the read-only feature query inside WIN-EP-01. Open question carried
+into it: whether `vmrun runProgramInGuest` gets a full administrator token or a UAC-filtered one.
+
 ## 2026-09-10 (eighth) - Audited this session's commits against this log. Four things were unrecorded.
 
 **Did:** listed every commit since 2026-09-09 and checked each against a WORKLOG entry, before

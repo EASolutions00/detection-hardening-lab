@@ -8,6 +8,52 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-09-11 - A write filter is an accepted way to return a host to a known state (closes OPEN-QUESTIONS 19)
+
+**Decision:** the requirement on a target host is **the ability to return it to a known state**, and
+that can be met by a hypervisor snapshot, by the Windows **Unified Write Filter**, or by a disk
+image. It is no longer "the host must be a virtual machine under a hypervisor supporting snapshots".
+
+**The lab does not change.** WIN-EP-01 and SIEM-01 keep using `vmrun`, which reverts in seconds. UWF
+costs a reboot per run. This decision is about **where the method can be deployed**, not about how
+this experiment is run.
+
+**Why.** `proposal-form-FINAL.md:240` states the VM precondition, and it is in the preconditions
+table but **not** in Scope and Limitations, so a reader of the limitations never learns of it. It is
+a larger restriction on where the system can be used than the Windows-only limit that *is* stated.
+The snapshot was never the special part. Returning the machine to a known state is, and Windows
+already ships something that does it.
+
+**What was measured, on 2026-09-11.** All six steps of OPEN-QUESTIONS 19 passed on WIN-EP-01,
+Windows 11 Education `10.0.26100.9168`, **unactivated**. The feature exists and installs; a write
+made before a reboot is gone after it, files and registry alike; a change can be made permanent; a
+40-minute window used 191 MB of a 1024 MB overlay with **zero** UWF events; and an identical
+stimulus produced **exactly 100 of 100** Sysmon Event 1 with the filter both on and off. Full
+evidence in OPEN-QUESTIONS, Answered section, and WORKLOG 2026-09-11.
+
+**Two things this decision depends on, which a deployment must implement.**
+
+1. **Every event must reach the SIEM before the reset.** Under UWF the machine's **entire local event
+   log is discarded at reboot**, not merely the agent's unsent queue. This was measured, not assumed.
+2. **The overlay must be watched during the run.** `uwfmgr overlay get-consumption` at both ends of
+   a capture window, and `Microsoft-Windows-UnifiedWriteFilter/Operational` and `/Admin` checked for
+   Event ID 2. A run that fills its overlay is corrupt while its numbers still look ordinary.
+
+**Cost if wrong: low for this study, real for the deployment claim.** No result in this thesis
+depends on UWF, because the lab uses snapshots. If UWF later turns out to be unusable on real
+hardware, the precondition returns to what it was and nothing already collected is affected. What
+would be lost is the wider deployment claim and the physical-machine path for Credential Guard
+(C8, item 2).
+
+**What is deliberately not decided here.** The wording change to `proposal-form-FINAL.md:240` and the
+matching addition to Scope and Limitations. **That addition should happen regardless of this
+decision**, because the restriction is real and the limitations section does not state it today.
+
+**Known limits of the evidence, carried forward honestly:** no real capture harness existed, so the
+window used a synthetic load that deleted its own files, making the measured 0.45 MB per minute a
+floor rather than a forecast; only Sysmon Event 1 was compared end to end; and servicing mode, the
+route needed for a change that is not a single registry value or file, was never tested.
+
 ## 2026-09-09 - Figures are generated from a script, not hand-drawn
 
 **Decision:** every figure in this thesis is produced by a program kept in the repository. The

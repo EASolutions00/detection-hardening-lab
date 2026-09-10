@@ -125,9 +125,65 @@ labeled set.
 
 ---
 
-## 19. Can the Unified Write Filter replace snapshot restore on a physical endpoint?
+## 20. WIN-EP-01 does not audit process creation, and two headline claims depend on it
 
-**Status:** Open, testing planned. Raised 2026-09-10.
+**Status:** Open. Raised 2026-09-11, measured while testing item 19.
+
+**What was measured.** 200 process spawns across three test runs produced **zero** Security 4688
+events. Confirmed directly rather than inferred from their absence:
+
+```
+auditpol /get /subcategory:"Process Creation"
+  Detailed Tracking
+    Process Creation                        No Auditing
+    Process Termination                     No Auditing
+
+ProcessCreationIncludeCmdLine_Enabled : NOT SET
+```
+
+For contrast, on the same machine: `Logon` is `Success and Failure`, `Special Logon` is `Success`,
+`Audit Policy Change` is `Success`. So auditing is on in general. Process creation specifically is
+not.
+
+**Why it matters, and it is not a lab detail.**
+
+1. **The canonical event key does not exist on this endpoint.** `PROMPT-new-chat.md` section 4 and
+   `DECISIONS.md` 2026-09-04 both use `Security-4688[CommandLine,NewProcessName]` as *the* example
+   of an event key. 4688 never fires here.
+2. **Item 18's showcase case cannot be demonstrated.** Disabling
+   `ProcessCreationIncludeCmdLine_Enabled` is described as the one change the composite key was
+   designed around. That setting is already unset, and the event it would degrade is not being
+   generated.
+3. **Catalogue item 1 cannot be tested either.** "Disable Audit Process Creation" cannot be
+   disabled, because it is already off.
+4. **The machine is currently non-compliant with the CIS control that item 1 cites** (17.3.1 or
+   17.3.2, which require Success auditing). The baseline is not the hardened starting point the
+   catalogue assumes.
+
+**What is carrying process creation instead.** Sysmon Event ID 1, which recorded all 100 spawns in
+every test run. This is **item 1c arriving from an unexpected direction**: the redundant source is
+not compensating for a hardening change, it is compensating for a baseline that was never
+configured.
+
+**How to answer:** decide whether the golden image should enable Process Creation auditing.
+- If **yes**: `auditpol /set /subcategory:"Process Creation" /success:enable`, set
+  `ProcessCreationIncludeCmdLine_Enabled = 1`, re-take the baseline, and re-verify before Phase 5.
+  This also makes catalogue item 1 testable again and fixes the CIS non-compliance.
+- If **no**: rewrite the canonical key example and item 18's showcase case around
+  `Sysmon-1[CommandLine,Image]`, and state plainly that 4688 is not collected.
+
+**What a bad answer means:** if this is left as it is and the documents are not changed, the
+proposal's worked example describes an event the experiment will never observe, and a panelist who
+asks to see one real 4688 event key from the data cannot be shown one.
+
+---
+
+## 19. Can the Unified Write Filter replace snapshot restore on a physical endpoint? (ANSWERED, see the Answered section)
+
+**Status:** **Answered 2026-09-11. Yes. All six steps passed.** Evidence in the Answered section at
+the bottom of this file and in WORKLOG 2026-09-11. The stress test below is kept rather than
+deleted, because measurement confirmed four of its six risks, corrected one in our favour, and
+widened another. Raised 2026-09-10.
 
 **Why this exists.** `proposal-form-FINAL.md:240` states a precondition: target hosts must be
 **virtual machines under a hypervisor supporting snapshots**. That is a large restriction and it
@@ -1346,6 +1402,92 @@ data was never collected.
 ---
 
 ## Answered
+
+### Can the Unified Write Filter replace snapshot restore on a physical endpoint? (answered 2026-09-11, item 19)
+
+**Answer: yes. All six steps passed, and it costs less than the item assumed.**
+
+Tested on WIN-EP-01, Windows 11 **Education**, build `10.0.26100.9168`, licence status
+**Notification**, that is unactivated. Every step run from the host through
+`vmrun runProgramInGuest`, which was found to give a **full administrator token**, so no step
+needed a person at the guest console.
+
+| # | Question | Result |
+|---|---|---|
+| 1 | Does the feature exist on this build | **Pass.** `Client-UnifiedWriteFilter`, `State : Disabled`. 5 of 137 features matched `*Filter*` |
+| 2 | Does it enable on unactivated Windows | **Pass.** Enabled with `-All`. Parent is `Client-DeviceLockdown`. `uwfmgr.exe` present after reboot, 230,904 bytes |
+| 3 | Does a write made before a reboot disappear after it | **Pass.** Six markers, files and registry, `HKLM` and `HKCU`, all gone |
+| 4 | Can a change be made to survive | **Pass, without servicing mode.** `uwfmgr registry commit` and `file commit` |
+| 5 | Does one capture-length window fill the overlay | **Pass.** 40 minutes, peak **191 MB of 1024 MB**, **zero UWF events** |
+| 6 | Does UWF change what Sysmon logs | **Pass.** 100 of 100 stimulus events logged with the filter both on and off |
+
+**Six risks were stated when the item was raised. Measurement changed four of them.**
+
+**Risk 1, UWF reverts the hardening change too. Solved, and the stated cost was wrong.** The item
+budgeted "two extra reboots per hardening change" for servicing mode. **The real cost is zero.**
+`uwfmgr registry commit <key> <value>` and `uwfmgr file commit <path>` write one specific change
+through to the disk while the filter stays on, with no reboot and no exclusion list. Proved with a
+control: two markers committed survived a reboot, two written identically and not committed did not.
+
+**Risk 2, the overlay fills mid-run. Real but far smaller than feared, and the mechanism was
+misunderstood.** An overlay holds the **current difference between the machine and its disk, not the
+sum of everything written to it**. Consumption was observed to *fall* when files it held were
+deleted. Measured on this machine:
+
+```
+boot          about 138 MB, once, almost all in the second minute after power-on
+idle          2.35 MB per minute
+under load    0.45 MB per minute (440 process spawns and file cycles in 20 minutes)
+default overlay : 1024 MB, in RAM, warning at 512 MB, critical at 1024 MB
+```
+
+**The event channel names to watch are `Microsoft-Windows-UnifiedWriteFilter/Operational` and
+`/Admin`.** Both existed, both enabled, both held **0 records** throughout. Overlay usage is readable
+live with `uwfmgr overlay get-consumption` and `get-availablespace`, so a harness can measure it at
+both ends of a window rather than only checking for Event ID 2 afterwards.
+
+**Risk 3, unsent events die at the reboot. Confirmed and wider than written.** It is not only the
+Wazuh agent's queue. **The entire local event log is discarded.** A run's Sysmon events written under
+the filter were absent after the next reboot, while the channel still held events from nine days
+earlier, so this was not ageing out of a circular buffer. Anything not forwarded to the SIEM before
+the restart does not exist afterwards.
+
+**Risk 4, UWF changes the telemetry it is meant to preserve. Not supported.** An identical
+100-iteration stimulus was run with the filter off and with it on. Counting only the events the
+stimulus produced, both runs logged **exactly 100** Sysmon Event 1. Apparent differences in the
+totals were background activity.
+
+**Risk 5, unactivated Windows. Closed.** `slmgr /dlv` reports `License Status: Notification`,
+`Notification Reason: 0xC004F034`. The DISM feature installed anyway. Activation is not a blocker.
+
+**Risk 6, the niche is narrow. Unchanged.** `vmrun` still reverts in seconds and remains correct for
+this lab. UWF's case is a physical host, and C8 (Credential Guard) remains the one candidate that
+justifies it (item 2).
+
+**What this changes.** `proposal-form-FINAL.md:240` can widen its precondition from "virtual machines
+under a hypervisor supporting snapshots" to "the ability to return the host to a known state, by
+hypervisor snapshot, write filter, or disk image", **and the same statement must be added to Scope
+and Limitations, where the restriction is currently missing either way.** That edit is a separate
+decision and was deliberately not made during testing.
+
+**Honest limits on this result, which should be stated wherever it is used.**
+
+1. **No real capture was run**, because no capture harness exists. The 40-minute window used a
+   synthetic load.
+2. **That load deleted the files it created. A real Atomic Red Team run leaves artifacts behind**,
+   and those consume overlay permanently. **0.45 MB per minute is a floor, not a forecast.**
+3. **Only Sysmon Event 1 was verified end to end.** This machine's Sysmon configuration does not log
+   file creation, and does not watch arbitrary registry keys, so those paths could not be compared.
+4. **Servicing mode itself was never tested.** It remains the only known route for a hardening
+   change that is not a single registry value or a single file, such as one applied by `auditpol` or
+   Group Policy.
+
+**A false finding that was caught, recorded because the method matters more than the result.**
+Comparing event **totals** between the filter-on and filter-off runs showed Sysmon registry event 13
+at 1 versus 99 and looked like UWF suppressing registry telemetry. A third run added a control: two
+keys written in the same loop, one filtered by UWF and one added to UWF's exclusion list. **Neither
+was logged**, so this Sysmon configuration never watched those keys and UWF was not involved. **A
+difference in a total is not a finding.**
 
 ### 1b. Can Module 2 see field-level telemetry loss? (answered 2026-09-04)
 
