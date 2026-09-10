@@ -17,6 +17,72 @@ Next:
 
 ---
 
+## 2026-09-10 (third) - Fixed proposal-form-FINAL.md and T1-REVISIONS-LIST.md. LIVE defects now zero.
+
+**Did:** repaired both remaining live documents. Both live outside the repository, so only this
+entry is committed. I raised that both were blocked on OPEN-QUESTIONS 17 and 18; that concern was
+overruled, so I fixed everything that does not depend on those answers and left what does.
+
+### proposal-form-FINAL.md, six changes
+
+| Where | Was | Now |
+|---|---|---|
+| Header | "Same content, written short" | **False.** The title and the event-key definition both changed. Now marked a working note, states what changed, and says to delete it before converting to .docx |
+| Module 2 | signature described, step not | added that the system pairs a lost key with a new key whose field set is a strict subset and names the dropped field |
+| Module 3 | five classifications listed | added that **New is tested before the rarity check**, and why |
+| Phase 0 | "noise model of each event **type**" | event **key** |
+| Activity diagram | `.png` filenames | `.svg`, with the reason |
+| Scope and Limitations | seven limits | eight. New limit 8 states the value-level gap from OPEN-QUESTIONS 18 without presuming its answer |
+
+**Module 2 was already correct.** It defined the key as which tracked fields were "actually
+populated" and described the lost-plus-new signature. My checker reported it missing; that was a
+false negative in my regex, not a defect.
+
+### T1-REVISIONS-LIST.md, nine changes
+
+The header now says plainly that `proposal-form-FINAL.md` supersedes the version this list
+describes, that only Revisions 1 and 14 have been brought forward, and that **where the two
+disagree the final form is the document being submitted**. That is the honest state until the
+REVISED-to-FINAL diff runs.
+
+Revision 14 rewritten: "discriminating field **values**" became which tracked fields **carried a
+value**. Its example changed from an access mask, which is a value change the method cannot see,
+to `ProcessCreationIncludeCmdLine_Enabled`, which empties CommandLine and which the method does
+see. The known limit is stated. Revision 15 gained the branch-order rule and the field-pairing
+step. Five "event type" references became "event key". Revision 18 and the file list point at the
+SVG files and say why.
+
+### Two false negatives in my own checker, both fixed
+
+1. The `field-pairing` pattern only matched "pairing LOST" and "field-level loss", so it reported
+   three documents as missing a step all three described in prose.
+2. After widening it, `[^.\n]` still failed on `proposal-form-FINAL.md`, because these documents
+   wrap at 96 columns and the sentence spans a line break. Changed to `[^.]`.
+
+**Both were fixed in the tool, not by rewording the documents.** Writing prose to satisfy a narrow
+regex would be backwards, and it would have hidden the defect in the checker.
+
+### Result, verified by re-running the scan
+
+**LIVE hits 43 to 16**, and every one of the 16 is accounted for:
+
+| Count | What | Action |
+|---|---|---|
+| 9 | Title `before:` and `after:` records, and the panel's own quoted wording | **Correct. Do not change.** |
+| 3 | "Why chi-square runs once, **not** per event type" | **Correct.** Explains the reassignment |
+| 1 | "Network IDS alerts are out of scope" | **Correct.** This is the sentence that scopes them out |
+| 3 | "server-side web application" | **Left on purpose.** OPEN-QUESTIONS 17, adviser's call |
+
+All three live documents now report "all expected steps mentioned". No PNG references remain in
+any of them.
+
+**Also did:** pointed `T1-PANEL-RESPONSE.md`'s four image embeds at the SVG files. Fixing the other
+two files had left it as the only one still showing the pre-2026-09-09 pictures, which is an
+inconsistency I introduced in this session.
+
+**Next:** the only LIVE item left needing a decision is the web application claim. After that, the
+REVISED-to-FINAL diff.
+
 ## 2026-09-10 (second) - Fixed T1-PANEL-RESPONSE.md. Nine changes, two deliberately left.
 
 **Did:** repaired every actionable defect the scan found in `T1-PANEL-RESPONSE.md`. The file lives

@@ -142,7 +142,16 @@ CHECKS = [
 # Steps that exist in the code and should appear somewhere in a document that
 # describes the method. Absence is reported per LIVE file, not per line.
 EXPECTED = [
-    ("field-pairing", r"pair(ing|ed)? LOST|LOST and NEW|field-level loss",
+    # Widened 2026-09-10. The first version only matched "pairing LOST" and
+    # "field-level loss", so it reported three documents as missing this step
+    # when all three described it in prose: "pairs them automatically, matching
+    # a lost key against a new key", "the field-loss pairing step". Writing the
+    # documents to satisfy a narrow pattern would be backwards.
+    ("field-pairing",
+     # [^.] rather than [^.\n]: these documents wrap at 96 columns, so the
+     # sentence "The system pairs them / automatically, matching a lost key"
+     # spans a line break. Excluding the newline made it invisible.
+     r"pair\w*[^.]{0,80}(lost|LOST)|field-l(evel|oss)|LOST and NEW",
      "field_loss_pairs(), eventkey.py:159"),
     ("global-gate", r"global gate|chi-square|chi square|χ²",
      "global_gate(), differential.py:56"),
