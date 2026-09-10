@@ -17,6 +17,99 @@ Next:
 
 ---
 
+## 2026-09-10 (eighth) - Audited this session's commits against this log. Four things were unrecorded.
+
+**Did:** listed every commit since 2026-09-09 and checked each against a WORKLOG entry, before
+compacting the session. Four gaps found and closed here.
+
+### Gap 1, and it was a real data-loss risk: the global rules file
+
+`C:\Users\Elijah\.claude\CLAUDE.md` gained a new section today and **that file is not backed up
+anywhere.** This repository's own `CLAUDE.md` says so: *"It is not backed up here, so if it is
+lost, ask the user for it again."* Asking works only while someone remembers the content.
+
+**Copied to `DOCS\prep-local\global-CLAUDE.md.backup-2026-09-10`**, 8,466 bytes, verified byte for
+byte. That folder is outside the repository, so the file stays private and is not pushed.
+
+**What was added to it**, so it can be reconstructed if both copies are ever lost:
+
+- A section titled **"Simple and complete are not opposites."** Its core line is *complete means
+  no missing facts, simple means plain words and small steps, so cut the words and keep the
+  facts.* Nine rules under it, including: answer first in one or two sentences; one new idea per
+  paragraph; a real number beats an abstract word; do not stack a table, a list and a defense
+  brief in one reply; length is not completeness; and the defense brief is for decisions and
+  findings, not for every question asked.
+- A section titled **"If I say I am confused, stop."** Do not explain again at greater length.
+  Explain again shorter, with one concrete example, and ask which part is unclear.
+
+**Why it was needed.** The existing rules said "simple English, short sentences" and also "never
+hide complexity to keep an answer short." The second was being read as permission to be long, and
+the answers became unreadable. The new section resolves that conflict directly.
+
+The matching project-level addition is in this repo's `CLAUDE.md` under "Explaining this project":
+a list of terms that must be explained in plain words on first use, a preference for real numbers
+from this project over abstract description, and a rule to say which layer an answer is at,
+because what the code does, what the design says, and what a deployment would need are three
+different honest answers to the same question.
+
+### Gap 2: the testing prompt
+
+`docs/PROMPT-uwf-test.md` was committed with no entry. It is a **working-session** prompt for
+OPEN-QUESTIONS 19 only, and it is finished with when that item closes.
+
+It points at `PROMPT-new-chat.md` rather than copying it, and states that it overrides only that
+file's read-only rule and nothing else. It carries the six-step order as one line each and sends
+the reader to item 19 for the detail, so the reasoning stays in one place.
+
+It names six snapshots as untouchable, puts `src/`, `tests/` and the figures off limits, and
+keeps the proposal documents off limits because what changes if the test passes is a decision to
+make after seeing the result. Credentials are read from the file, never typed, and printing or
+committing the password is forbidden.
+
+### Gap 3: the current state of the machines, as of 2026-09-10
+
+Recorded because this is live state that no document held.
+
+```
+Both VMs powered on.
+
+WIN-EP-01   F:\TeLoS Homelab\WIN-EP-01\WIN-EP-01.vmx
+    phase3-complete-2026-09-02
+    agent-hardened-2026-09-03
+    tamper-off-2026-09-03
+
+SIEM-01     F:\TeLoS Homelab\SIEM-01\SIEM-01.vmx
+    phase3-complete-2026-09-02
+    timesync-off-2026-09-03
+    snapd-off-archive-v2-2026-09-03
+```
+
+**Runbook phases 1, 2 and 3 are complete. Phases 4 to 8 are not.** No pinned version table, no
+golden snapshot, and **no capture harness**. The harness is the long pole.
+
+**`uwf-test-baseline-2026-09-10` has NOT been taken.** The testing prompt instructs that chat to
+take it and to say so first. Do not start step 3 of item 19 without it.
+
+Two unrelated encrypted VMs sit in `F:\VMWARE\`. They are not part of this project, they need a
+password, and `vmrun listSnapshots` returns an error for them. That error is expected.
+
+### Gap 4: how the new-chat prompt reached its current form
+
+Five commits, only partly covered by the sixth entry above. The order, because each step was
+caused by a real defect:
+
+1. `5e69e87` created it as a self-contained briefing.
+2. `63937a0` cut it in half after it turned out to duplicate five sections of `CLAUDE.md`.
+3. `c3d711b` made it work from any folder. Four things broke outside `REPO`, and the worst was
+   that `CLAUDE.md` does not auto-load there, which the prompt had claimed it did.
+4. `4348daa` removed the header and separator so the whole file pastes with select-all.
+5. `63dd7dd` removed all three markdown tables and fixed six defects, including a contradiction
+   between "do not start any work" and a boot sequence, and a commands block that said "all four"
+   while listing three.
+
+**The lesson worth keeping:** every one of those five was caused by writing the file without
+checking what already existed, or without testing how it would actually be used.
+
 ## 2026-09-10 (seventh) - A way to run without a hypervisor, found by asking what the snapshot is actually for.
 
 **Did:** worked through what happens if a monitored endpoint cannot be reverted, then stress
