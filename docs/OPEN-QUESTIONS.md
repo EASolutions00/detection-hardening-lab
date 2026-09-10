@@ -125,6 +125,101 @@ labeled set.
 
 ---
 
+## 19. Can the Unified Write Filter replace snapshot restore on a physical endpoint?
+
+**Status:** Open, testing planned. Raised 2026-09-10.
+
+**Why this exists.** `proposal-form-FINAL.md:240` states a precondition: target hosts must be
+**virtual machines under a hypervisor supporting snapshots**. That is a large restriction and it
+is stated in the preconditions table but **not** in Scope and Limitations, so a reader of the
+limitations never learns of it. Snapshot restore is not a convenience. It is the control that
+makes the before-and-after comparison valid, because it holds everything constant except the
+hardening change.
+
+**What UWF is.** Unified Write Filter, a Microsoft feature built into Windows. It intercepts
+writes to a protected volume, redirects them to an overlay in RAM or on disk, and discards the
+overlay on reboot. That is the same behaviour as Deep Freeze, shipped by Microsoft, driven by
+`uwfmgr.exe`.
+
+**Why it might already be available here.** Microsoft supports UWF on **Enterprise, Education and
+IoT Enterprise**. `DECISIONS.md:326` records that WIN-EP-01 runs **Windows 11 Education**, build
+`10.0.26100.9168`, chosen 2026-09-02 for an unrelated reason (Enterprise Evaluation expires after
+90 days). **The edition decision may have handed this over for free.**
+
+**Two jobs it would do, and only two:**
+
+1. **Answer the deployment question.** It makes the method usable on a physical endpoint, so the
+   precondition can be widened from "virtual machines under a hypervisor" to "the ability to
+   return the host to a known state, by hypervisor snapshot, write filter, or disk image."
+2. **Possibly unblock C8.** Credential Guard is blocked on nested virtualisation, item 2 below.
+   **A physical machine with UWF could test C8 when a VM cannot.**
+
+**It is not for the lab.** `vmrun` reverts in seconds. UWF costs a reboot per run plus a
+servicing-mode sequence per change. Do not replace what already works.
+
+### Six ways it breaks, from the stress test on 2026-09-10
+
+1. **UWF reverts the hardening change too.** The experiment applies a registry setting. UWF sends
+   registry writes to the overlay and discards them at reboot, so rebooting for a clean state also
+   removes the thing being tested. **The documented fix is servicing mode**, in which UWF stops
+   filtering for one boot cycle and changes made in that session become permanent. Cost: two extra
+   reboots per hardening change, not per run. Getting this wrong measures nothing while looking
+   normal.
+
+2. **The overlay can fill mid-run, and nothing currently looks for it.** The overlay is a fixed
+   size. Sysmon and the Windows event logs write constantly during a capture, and the Sysmon
+   channel is already 64 MB (item 9). When the overlay fills, UWF writes **Event ID 2, "The UWF
+   overlay size has reached CRITICAL level"**. **A run that fills the overlay is corrupt and would
+   produce plausible numbers.** Any capture protocol using UWF must check for Event ID 2 and
+   discard the run if it appears. This is the risk to worry about most, because a silently bad run
+   producing believable output is the exact failure this whole thesis is about.
+
+3. **Unsent events die at the reboot.** The Wazuh agent queues events it has not yet forwarded.
+   That queue is on C:, therefore in the overlay, therefore discarded. The existing 120 s drain
+   after the suite (`CLAUDE.md`, rule 5) mitigates it, but it is **a fourth silent loss channel**
+   alongside items 8 and 13 and should be named as one.
+
+4. **UWF may change the telemetry it is meant to preserve.** It is a filter driver in the storage
+   stack. Whether a write redirected to the overlay still produces Sysmon Event 11, and whether
+   the driver itself generates events, is unmeasured. **This does not threaten the comparison**,
+   because UWF is on for both phases and cancels out. **It threatens external validity**, because
+   the study claims its findings apply to machines that do not run UWF.
+
+5. **Windows here is unactivated.** `DECISIONS.md:326` records Education, **unactivated**. Whether
+   a DISM optional feature will enable on unactivated Windows is unverified. If it will not, this
+   item closes immediately.
+
+6. **The niche is narrow.** If a dedicated physical test machine is available, a VM is usually
+   faster and the tooling already exists. UWF only wins where the hardware itself matters, which
+   is why C8 is the case that justifies it.
+
+### Test sequence, cheapest kill first
+
+Run these in order in a working chat. **Stop at the first failure.** Each step can end the item.
+
+| # | Check | Proves | If it fails |
+|---|---|---|---|
+| 1 | Does the feature exist on this build? `Get-WindowsOptionalFeature -Online \| Where-Object FeatureName -like "*Filter*"` in an **admin** PowerShell inside WIN-EP-01 | The capability is present. `State` may read `Disabled`, meaning present but off | Wrong edition or build. Item closes, fall back to disk imaging |
+| 2 | Does it **enable** on unactivated Windows? | Activation is not a blocker | Item closes here. This is the likeliest silent killer |
+| 3 | Enable, reboot, confirm a test file written before the reboot is gone after it | The basic revert works at all | Configuration problem, or the overlay is misconfigured |
+| 4 | Servicing mode: apply one registry change, reboot, confirm it **survived** | Risk 1 is solvable, and hardening changes can be applied | The whole approach fails. There is no way to test a change UWF keeps deleting |
+| 5 | Run one full capture under UWF, then check for **Event ID 2** | Risk 2 is under control at the current overlay size | Enlarge the overlay or move it to disk, then repeat |
+| 6 | Capture the same stimulus with UWF on and with UWF off, and compare the profiles | Risk 4. Whether UWF changes what gets logged | Record it as a stated limitation on external validity, not as a failure |
+
+**Widen the search string in step 1** to `*Filter*` rather than `*WriteFilter*`. If the feature
+name is not what we expect, a narrow search returns nothing and would be read as "not available"
+when it really means "wrong search string."
+
+**What changes if it passes:** `proposal-form-FINAL.md:240` is rewritten to widen the
+precondition, and the same statement is added to Scope and Limitations, where it is currently
+missing. C8 gets a possible path that does not depend on nested virtualisation.
+
+**What changes if it fails:** nothing breaks. The lab keeps using `vmrun`. The precondition stays
+as written, and the VM requirement should still be added to Scope and Limitations, because it is
+a real restriction that the limitations section does not currently state.
+
+---
+
 ## 18. Six of the eight class C changes produce a telemetry effect the analyser cannot measure
 
 **Status:** Open. Raised 2026-09-10. **This is the most serious item in this file.** It is not a
@@ -445,6 +540,12 @@ the current Tier A lab only.
 **Why it matters:** T1 hardening change #8 (Enable Credential Guard) needs VBS inside the
 guest, which needs nested virtualization (Virtualize AMD-V/RVI in VM settings). Unverified
 on Zen 4 with Workstation 17.5.1.
+
+**A second path exists, added 2026-09-10.** If nested virtualization does not work, C8 could be
+tested on a **physical** machine instead, using the Unified Write Filter to return it to a known
+state rather than a hypervisor snapshot. See **item 19**. That path has its own six risks and its
+own test sequence, so it is not a free substitute, but it means a nested-virtualization failure no
+longer forces C8 to be dropped.
 
 **How to answer:** Enable the setting in WIN-EP-01, boot, try to turn on Credential Guard,
 check `msinfo32` for VBS running.

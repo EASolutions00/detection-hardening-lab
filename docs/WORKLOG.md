@@ -17,6 +17,86 @@ Next:
 
 ---
 
+## 2026-09-10 (seventh) - A way to run without a hypervisor, found by asking what the snapshot is actually for.
+
+**Did:** worked through what happens if a monitored endpoint cannot be reverted, then stress
+tested the workaround. Recorded as OPEN-QUESTIONS 19 with a six-step test sequence.
+
+### How it started
+
+The question was how the system reaches a real endpoint. The answer in
+`proposal-form-FINAL.md:226` is that **nothing is installed on it**: one server beside the SIEM,
+driving the existing Wazuh agent. But `:240` carries a precondition that answers the question
+differently: target hosts must be **virtual machines under a hypervisor supporting snapshots**.
+
+**That precondition is in the preconditions table and not in Scope and Limitations.** A reader of
+the limitations never learns of it. It is a bigger restriction on where the system can be used
+than the Windows-only limit that *is* stated.
+
+### The insight that opened it
+
+The snapshot is not the special part. **Returning the machine to a known state is.** Anything that
+does that works, and Windows already ships one: the **Unified Write Filter**, supported on
+Enterprise, Education and IoT Enterprise.
+
+`DECISIONS.md:326` records WIN-EP-01 as Windows 11 **Education**, chosen 2026-09-02 because
+Enterprise Evaluation expires after 90 days. **That edition decision, made for an unrelated
+reason, may have provided this for free.**
+
+### Stress test: six ways it breaks
+
+1. **UWF reverts the hardening change too.** Registry writes go to the overlay and are discarded.
+   Fixed by servicing mode, at two extra reboots per change.
+2. **The overlay can fill mid-run.** UWF writes Event ID 2 when it does. **Nothing in the current
+   pipeline looks for that**, so a corrupt run would produce plausible numbers. This is the one to
+   worry about, because a silently bad run that looks fine is exactly the failure this thesis is
+   about.
+3. **Unsent agent events die at the reboot.** A fourth silent loss channel next to items 8 and 13.
+   The existing 120 s drain mitigates it.
+4. **UWF may change the telemetry it is meant to preserve.** Harmless to the comparison, since it
+   is on for both phases. Harmful to external validity, since the study claims its findings apply
+   to machines without it.
+5. **Windows here is unactivated.** Whether a DISM optional feature enables in that state is
+   unverified and is the likeliest silent killer.
+6. **The niche is narrow.** A VM is faster where one is available.
+
+### What attacking it produced
+
+Risk 6 looked fatal until the exception surfaced: UWF only wins where the hardware matters, and
+**there is exactly one such case in this project.** Credential Guard, change C8, is blocked on
+nested virtualisation (item 2). A physical machine with UWF could test C8 when a VM cannot. Item 2
+now cross-references item 19, so a nested-virtualisation failure no longer forces C8 to be
+dropped.
+
+**The strongest argument for the idea came out of trying to kill it.**
+
+### Corrections to my own earlier answers, recorded because both were wrong
+
+- I recommended **Deep Freeze**, a paid third-party product. UWF is better: built into the Windows
+  already installed, no purchase, and no third-party driver entering the golden image, which
+  matters because Chapter 3 must describe the software inventory.
+- A proposed alternative of **native boot from a differencing VHDX** does not work. Microsoft's
+  deployment documentation states differencing disks are **not supported** for native boot and can
+  cause update failures.
+
+### Verified rather than assumed
+
+| Claim | Source |
+|---|---|
+| UWF is supported on Enterprise, Education, IoT Enterprise | Microsoft Learn, Windows OS Hub |
+| WIN-EP-01 is Windows 11 Education, build `10.0.26100.9168` | `DECISIONS.md:326` |
+| Overlay full writes Event ID 2, "CRITICAL level" | Microsoft Learn, `uwf overlay` |
+| Servicing mode makes changes permanent for one boot cycle | Microsoft Learn |
+| Differencing disks are not supported for native boot | Microsoft Learn, deploy on VHD |
+
+**Not verified:** whether UWF enables on unactivated Windows, and whether the DISM feature name is
+`Client-UnifiedWriteFilter`. I attempted the feature query on the host and got
+`The requested operation requires elevation`, which confirms the failure mode the check predicts
+but proves nothing about the feature. Both are step 1 and step 2 of the test sequence.
+
+**Next:** testing runs in a separate chat, following the sequence in OPEN-QUESTIONS 19. Stop at
+the first failure.
+
 ## 2026-09-10 (sixth) - The index was stale again. Four live claims corrected, and the new prompt cut in half.
 
 **Did:** compared `docs/PROMPT-new-chat.md` against `CLAUDE.md` to answer whether they duplicate
