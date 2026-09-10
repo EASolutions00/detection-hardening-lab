@@ -125,6 +125,75 @@ labeled set.
 
 ---
 
+## 18. Six of the eight class C changes produce a telemetry effect the analyser cannot measure
+
+**Status:** Open. Raised 2026-09-10. **This is the most serious item in this file.** It is not a
+documentation problem. If the answer is bad, the experiment produces UNCHANGED for most of the
+catalogue and the study reports that hardening does not create blind spots, which would be an
+artifact of the key design and not a fact about the world.
+
+**The test already exists in this project.** `lab/blueprint.md:349` removed Constrained Language
+Mode with this reason:
+
+> "it changes 4104 **content** while the rate and the field both stay populated. **The method
+> measures presence, not meaning.**"
+
+That test was applied once and never applied to the rest of the catalogue. Applying it now, using
+each item's own stated telemetry effect from `blueprint.md:305-312`:
+
+| # | Change | Stated telemetry effect | Shape | Analyser sees it? |
+|---|---|---|---|---|
+| C1 | Disable WDigest | "4624 logon-type distribution **shifts**" | `LogonType` value changes, field stays populated | **No** |
+| C2 | NTLMv2 only | "4776 package name **changes**" | `PackageName` value changes | **No** |
+| C3 | LSA Protection | "Sysmon 10 access **changes from granted to denied**" | `GrantedAccess` value changes | **No** |
+| C4 | Restrict NTLM outgoing | "4776 **reduced or removed**" | Rate change | **Yes** |
+| C5 | RDP NLA | "4624 / 4625 distribution **shifts**" | `LogonType` value changes | **No** |
+| C6 | Cached credentials to 0 | "cached and offline logon events **reduced**" | Rate change | **Yes** |
+| C7 | Disable RC4 for Kerberos | "4768 / 4769 ticket encryption **fields change**" | Value change, **and 4768/4769 are absent from `DEFAULT_TRACKED_FIELDS` entirely** | **No** |
+| C8 | Credential Guard | "Sysmon 10 to lsass **changes**" | Value change. Also blocked on nested virtualisation, item 2 | **No** |
+
+**Why the analyser cannot see a value change.** `eventkey.py:121` records which tracked fields were
+*populated*. `is_populated()` returns true for any non-empty value, and `DECISIONS.md:48` states
+explicitly that **numeric zero counts as populated, giving `GrantedAccess 0` as the example**. So
+`GrantedAccess` going from `0x1410` to `0x0` leaves the key identical and the rate identical. The
+analyser correctly reports UNCHANGED on the evidence it has.
+
+**The one change that does work is deliberately excluded.** The composite key was designed around
+disabling `ProcessCreationIncludeCmdLine_Enabled`, which empties CommandLine while 4688 keeps
+firing. `blueprint.md:345` removed it because **CIS requires that setting enabled**, so it is
+de-hardening, and `blueprint.md:351` keeps it only as a "capability demonstration ... clearly
+labelled as not one of the evaluated changes."
+
+So the method's showcase case is not in the experiment, and most of the experiment is not
+measurable by the method.
+
+**Three ways out, and they are not equal:**
+
+1. **Add value-level keying for a small set of fields.** A field belongs in the key by *value*
+   only when detection rules match on specific values, which is knowable from the Sigma rule set
+   the same way tracked fields already are. Bucket the value rather than storing it raw, so the key
+   space stays small. Cost: a key-format change, which `DECISIONS.md:64` says is cheap now and
+   impossible after collection starts.
+2. **Re-scope the study to rate-level blind spots only.** Keep C4 and C6, find more rate-change
+   candidates, and state value-level degradation as an explicit limitation. Cost: the catalogue
+   drops to two verified items and needs rebuilding a third time.
+3. **Measure detection outcomes as well as telemetry.** A rule that stops firing is observable even
+   when the telemetry rate does not move. Cost: this is a different thesis.
+
+**Recommendation: option 1**, because the value change *is* the blind spot in every one of these
+cases, and because the field-value information is already in the archived events. Option 2 discards
+six verified control IDs to protect a design decision.
+
+**How to answer:** run C3 in the lab, capture Sysmon Event 10 before and after `RunAsPPL = 1`, and
+read what `GrantedAccess` actually contains afterwards. If the field is empty or the event stops,
+presence keying already works and this item closes. If it carries a different number, option 1 is
+required. **This is one capture and it settles the whole item.**
+
+**Blocks:** the REVISED-to-FINAL diff, the proposal's Module 2 text, and the start of data
+collection.
+
+---
+
 ## 17. Is the system a server-side web application? Nobody ever decided.
 
 **Status:** Open. Raised 2026-09-09 by an automated scan of every thesis document. Ranked at the
