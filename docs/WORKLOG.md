@@ -17,6 +17,44 @@ Next:
 
 ---
 
+## 2026-09-10 (fifth) - Removed six preparation documents from the public repository.
+
+**Did:** copied six files out of the repository, verified each copy byte for byte, then
+`git rm`'d them. They now live in `prep-local/` inside the external documents folder. Nothing was
+deleted.
+
+| File | Why it left |
+|---|---|
+| `thesis/title-defense-script.md` | A script for one meeting. **Contains a section titled "Part 7. What NOT to bring up tomorrow."** |
+| `docs/DEFENSE-PREP.md` | Contains section 8, "Known weak spots in your own documents" |
+| `thesis/title-defense-bullets.md` | Rehearsal bullets |
+| `thesis/topic-proposal-titles.pptx` | Slides for one meeting |
+| `thesis/T1/proposalll.txt` | Clutter, not risk. A filename with three L's says nobody cleaned up |
+| `thesis/T1/proposal(ongoing verification).txt` | Same, and byte-identical in size to `proposal.txt` |
+
+**The rule applied, and it is worth keeping.** *Would this file exist if there were no defense
+day?* Yes means work product and it stays public. No means performance preparation and it goes.
+A second test settles the hard cases: **does the file contain a fact about the work, or a
+strategy about people?** Facts stay.
+
+The distinction matters because the *content* was never the problem. "Credential Guard nested
+virtualisation is untested" sits in `OPEN-QUESTIONS.md` item 2 and is one of the better things in
+this repository. The same fact written as "do not raise this tomorrow" is a different kind of
+document and belongs nowhere public.
+
+**Checked references before removing, not after.** Renaming four PNGs earlier today broke eight
+document links because I did not check first. This time a grep found one real break, a markdown
+link at `WORKLOG.md:1455`, which is now plain text pointing at this entry. The other three
+mentions are plain-text history and stay as written. `tools/check_docs.py` still names the two
+`.txt` files in its FROZEN set, which remains correct because the checker scans the external
+folder too.
+
+**Not done, and it is a real limit.** `git rm` removes the files from what anyone browsing sees.
+**It does not remove them from git history.** Anyone who knows to look can still recover
+`title-defense-script.md` from an earlier commit. Fully removing it needs `git-filter-repo` and a
+force push, which this project records as the most dangerous command it has run. That decision is
+still open and is deliberately not being taken quietly.
+
 ## 2026-09-10 (fourth) - Wrote a full explainer for the activity diagram, aimed at junior analysts.
 
 **Did:** wrote `ACTIVITY-DIAGRAM-EXPLAINED.md` in the documents folder. Thirteen sections covering
@@ -1452,7 +1490,8 @@ visual check, because LibreOffice is not installed either.
 **Broke / stuck on:** Nothing. First render had cards 1.55 in tall with dead space at the
 bottom and only 0.14 in clearance from the slide edge; reduced to 1.25 in and re-rendered.
 
-**Also did:** Wrote [DEFENSE-PREP.md](DEFENSE-PREP.md), a full preparation guide for the pre-oral
+**Also did:** Wrote `DEFENSE-PREP.md` (moved out of this repository on 2026-09-10, see that
+day's entry), a full preparation guide for the pre-oral
 topic proposal defense. Covers all three topics end to end: threat model, the 5-problem to
 5-objective pairing, the five modules, algorithms, evaluation and baseline, prior work with the
 concrete figures, and the weakest point of each with an honest answer. Includes a glossary, a
