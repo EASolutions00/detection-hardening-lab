@@ -6,7 +6,7 @@ Three candidate topics. They are **alternatives, not components.** One gets buil
 |---|---|---|
 | [T1](T1/README.md) | Hardening-induced blind spots | Primary, gated behind the spike |
 | [T2](T2/README.md) | Severity inversion in the Wazuh ruleset | Second fallback |
-| [T3](T3/README.md) | Analytic robustness scoring | First fallback, has its own gate |
+| [T3](T3/README.md) | Analytic robustness scoring | **Dead, killed 2026-08-19.** Only 6 of 3,783 SigmaHQ rules carry the annotation its evaluation needed |
 
 ---
 

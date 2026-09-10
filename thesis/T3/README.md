@@ -3,7 +3,21 @@
 **Full title:** Automated Analytic-Robustness Scoring of Sigma and Wazuh Detection Rules Using
 a Rule-Feature Dependency Model Based on the Summiting the Pyramid Methodology
 
-**Status:** Not chosen. **First fallback if T1 fails its spike gate.**
+> **STATUS: DEAD. Killed 2026-08-19. This file is kept as a record, not as a plan.**
+>
+> T3's evaluation depended on comparing the system's robustness scores against Sigma rules
+> already annotated by hand under the Summiting the Pyramid methodology. **Only 6 of 3,783
+> SigmaHQ rules carry such an annotation** at commit `da9bb07`. An agreement statistic on six
+> rules means nothing.
+>
+> **If T1 fails its spike gate, go to T2.** Do not spend time reviving T3. Evidence is in
+> `docs/OPEN-QUESTIONS.md`, Answered section.
+>
+> Everything below was written before that check and describes T3 as a live option. It is
+> left unedited so the reasoning, and the mistake of not checking the annotation count first,
+> stay visible.
+
+**Status:** Dead. Superseded by the banner above.
 
 ## The idea in one paragraph
 

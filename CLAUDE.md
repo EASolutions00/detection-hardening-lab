@@ -29,11 +29,11 @@ later than end of September 2026.
 | [thesis/](thesis/README.md) | Proposal template and numbering rules. |
 | [thesis/T1/](thesis/T1/README.md) | Hardening-induced blind spots. Primary. |
 | [thesis/T2/](thesis/T2/README.md) | Severity inversion in the Wazuh ruleset. Second fallback. |
-| [thesis/T3/](thesis/T3/README.md) | Analytic robustness scoring. First fallback. |
+| [thesis/T3/](thesis/T3/README.md) | Analytic robustness scoring. **Dead, killed 2026-08-19.** Kept as a record. |
 | [lab/blueprint.md](lab/blueprint.md) | Lab design, resource budget, go/no-go analysis. |
 | [lab/configs/](lab/configs/README.md) | Pinned Sysmon and Wazuh configs. Hash them. |
 | [lab/scripts/](lab/scripts/README.md) | One script per hardening change. Not snapshots. |
-| [src/](src/README.md) | Python harness and analysis. No code yet. |
+| [src/](src/README.md) | Python package `telos`. Analysis core built: 8 modules, 49 tests passing. |
 | `data/runs/` | Raw archives. Gitignored, too big for GitHub. One disk only, so back up elsewhere. |
 | `data/summaries/` | Small derived CSVs. Committed. |
 
@@ -115,8 +115,13 @@ clock has still not run. See [runbook Phase 7](docs/RUNBOOK-homelab.md).
 annotation, too few for the agreement statistic its evaluation depended on. Evidence in
 OPEN-QUESTIONS, Answered. **If the spike fails, go to T2. Do not spend time reviving T3.**
 
-The live blocker is **OPEN-QUESTIONS item 1**: of the 16 hardening changes, 4 are
-anti-hardening, 6 remove the attack along with the telemetry, and only 3 are confirmed usable.
+The live blocker is **OPEN-QUESTIONS item 18**: six of the eight class C hardening changes
+state a telemetry effect that is a *value change*, and the analyser records which fields were
+**populated**, not what they contained. Only C4 and C6 are rate changes. One lab capture settles
+it: set `RunAsPPL = 1` and read what `GrantedAccess` actually holds afterwards.
+
+Item 1, the catalogue, was rebuilt on 2026-09-08 and is no longer the blocker. Item 17, the
+unconfirmed web-application claim, is blocked on the adviser.
 
 ---
 

@@ -17,6 +17,58 @@ Next:
 
 ---
 
+## 2026-09-10 (sixth) - The index was stale again. Four live claims corrected, and the new prompt cut in half.
+
+**Did:** compared `docs/PROMPT-new-chat.md` against `CLAUDE.md` to answer whether they duplicate
+each other. They do in five places. Fixing that turned up four stale claims in `CLAUDE.md` and its
+neighbours.
+
+### The stale claims, and why this one stings
+
+`CLAUDE.md` rule 1 says: *"This index goes stale. On 2026-09-08 it still claimed no code existed
+while 49 tests were passing."* **It was still claiming exactly that**, two days after the entry
+recording the fix.
+
+| Where | Said | Now |
+|---|---|---|
+| `CLAUDE.md:36` | `src/` "Python harness and analysis. **No code yet.**" | Package `telos`, 8 modules, 49 tests passing |
+| `CLAUDE.md:32` | `thesis/T3/` "**First fallback**" | Dead, killed 2026-08-19. Line 114 of the same file already said so, so **the file contradicted itself** |
+| `CLAUDE.md:118` | "The live blocker is item 1: 4 anti-hardening, 6 remove the attack, 3 usable" | Item **18**. Item 1's catalogue was rebuilt on 2026-09-08 |
+| `thesis/README.md:9` | T3 "First fallback, has its own gate" | Dead, with the reason |
+| `thesis/T3/README.md:6` | "First fallback if T1 fails its spike gate" | Banner added. Body left unedited so the reasoning, and the mistake of not checking the annotation count first, stay visible |
+
+**Why the 2026-09-08 fix missed it.** That session corrected the Commands section, which mentions
+pytest, and stopped there. It never swept the table five rows above. **A correction applied to the
+place you noticed is not a correction.**
+
+`docs/DECISIONS.md:846` also says "the repo has no code yet". **Left alone deliberately.** It sits
+inside a dated decision entry, and the rule in that file is supersede, never edit. It was true
+when written.
+
+### The duplication, and what was cut
+
+`PROMPT-new-chat.md` repeated five things `CLAUDE.md` already carries: the project summary, the
+four answering rules, the commands block, the defense brief, and the record-before-moving-on
+habit. All five removed. The prompt now opens by saying it is a supplement and that `CLAUDE.md`
+loads on its own.
+
+**223 lines to 158.** What is left is only what `CLAUDE.md` has no room for: a routing table from
+question type to file, the settled numbers, the open items, built versus designed, and the short
+list of facts that get stated wrong.
+
+**The trade, stated openly.** The prompt is no longer self-contained, so pasting it into a browser
+chat with no filesystem gives less. That case is covered in the header: paste the two `CLAUDE.md`
+files instead.
+
+### Still over the limit
+
+`CLAUDE.md` is **209 total lines, 154 non-blank**, against a stated limit of 200. It was already
+at 205 before today's edits, so this is not new, but it is not fixed either. The offer stands to
+move "The defense brief" into its own file, which is 13 lines.
+
+**Also:** `Measure-Object -Line` in PowerShell does **not** count blank lines. It reported 154 and
+I nearly recorded that as the file length. Use `(Get-Content file).Count`.
+
 ## 2026-09-10 (fifth) - Removed six preparation documents from the public repository.
 
 **Did:** copied six files out of the repository, verified each copy byte for byte, then
