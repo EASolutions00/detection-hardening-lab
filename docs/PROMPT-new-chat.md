@@ -1,14 +1,20 @@
 # New chat prompt: the project map
 
-Paste everything between the horizontal rules into a new chat opened in `E:\Claude general`.
+Paste everything between the horizontal rules into a new chat. **It works from any folder.**
+Every path in it is absolute, and it tells the model to read `CLAUDE.md` explicitly rather than
+assuming the folder loaded it.
 
-**This is a supplement, not a replacement.** `CLAUDE.md` loads automatically in Claude Code and
-already carries the project summary, the four answering rules, the commands, the rules that fail
-silently, the session habits and the defense brief. **This file deliberately does not repeat any
-of that.** Two copies would drift, which is the failure this project keeps having.
+**This is a supplement, not a replacement.** `CLAUDE.md` carries the project summary, the four
+answering rules, the commands, the rules that fail silently, the session habits and the defense
+brief. **This file deliberately does not repeat any of that.** Two copies would drift, which is
+the failure this project keeps having. It adds what `CLAUDE.md` has no room for: a routing table
+from question to file, the settled numbers, the open items, and built versus only designed.
 
-What this file adds is the part `CLAUDE.md` has no room for: a routing table from question to
-file, the settled numbers, the open items, and what is built versus only designed.
+**Two things to know when pasting outside `E:\Claude general`:**
+
+1. `CLAUDE.md` does **not** load on its own. Step 1 of the boot sequence reads it explicitly.
+2. Reads outside the chat's working directory may need permission. The prompt tells the model to
+   say so rather than guess.
 
 **If you paste this where there is no filesystem** (a browser chat, a phone), nothing here can be
 read. Paste the two `CLAUDE.md` files instead and expect narrower answers.
@@ -20,17 +26,45 @@ than no map, because it gets trusted.
 
 # Project map, supplement to CLAUDE.md
 
-Read `CLAUDE.md` first; it loads on its own. This message adds what it does not carry. **Do not
-start any work.** It exists so that when I ask something, you already know where to look.
+**Do not start any work.** This message exists so that when I ask something, you already know
+where to look.
+
+## 0. Paths, read this first
+
+This chat may not be running inside the project folder, so every path below is absolute.
+
+```
+REPO = E:\Claude general
+DOCS = E:\Elijah MASTER COPY DO NOT DELETE\Documents\New folder (5)
+```
+
+Wherever you see `REPO\` or `DOCS\` below, **expand it to the full path above before reading.**
+
+`REPO` is the git repository, public at `github.com/EASolutions00/detection-hardening-lab`.
+`DOCS` is outside the repository and is not version controlled; the `.docx` files are assembled
+there. `DOCS\prep-local\` holds defense preparation deliberately removed from the public repo on
+2026-09-10. Do not propose putting it back.
+
+**If a read is refused because the path is outside your working directory, tell me plainly.** I
+will either grant access or reopen the chat in `REPO`. **Do not guess at file contents instead,
+and do not answer from memory of this project.**
 
 ## 1. Boot sequence
 
-1. `CLAUDE.md`. **It goes stale. Treat it as a map, not as truth.** Three claims in it were wrong
-   on 2026-09-10 and were corrected that day.
-2. `docs/OPEN-QUESTIONS.md`, **items 15 to 18**. These are the live ones.
-3. `docs/DECISIONS.md`, the newest five entries.
-4. `docs/WORKLOG.md`, the newest three entries.
-5. `git log --oneline -8`
+Read these, in order. Expand `REPO` first.
+
+1. `REPO\CLAUDE.md`. **This auto-loads only if the chat was opened in `REPO`. Otherwise read it
+   explicitly.** It goes stale: four claims in it were wrong on 2026-09-10 and were corrected
+   that day. **Treat it as a map, not as truth.**
+2. `REPO\docs\OPEN-QUESTIONS.md`, **items 15 to 18**. These are the live ones.
+3. `REPO\docs\DECISIONS.md`, the newest five entries.
+4. `REPO\docs\WORKLOG.md`, the newest three entries.
+
+Then run, exactly as written, so it works from any folder:
+
+```
+git -C "E:\Claude general" log --oneline -8
+```
 
 Then tell me in five lines: what is decided, what is blocked, what is next. Then stop and wait.
 
@@ -38,42 +72,39 @@ Then tell me in five lines: what is decided, what is blocked, what is next. Then
 
 | If I ask about | Read |
 |---|---|
-| **Why a choice was made**, or whether something is settled | `docs/DECISIONS.md` |
-| **What is uncertain**, what might change the plan | `docs/OPEN-QUESTIONS.md` |
-| **What happened, and when** | `docs/WORKLOG.md` newest first, plus `git log` |
-| **A command that was run**, or what a correct result looks like | `docs/COMMANDS.md` |
-| **Building the lab**, VMs, networking, phases | `docs/RUNBOOK-homelab.md` |
-| **Lab design**, resource budget, the hardening catalogue | `lab/blueprint.md` |
-| **The event key**, what is counted, field presence | `src/telos/eventkey.py` |
-| **The statistics**: gate, rate ratio, correction, classification | `src/telos/differential.py` |
-| **The noise floor**, coefficient of variation, dispersion | `src/telos/variance.py` |
-| **The naive baseline** the method is measured against | `src/telos/baseline.py` |
-| **Data shapes**: Phase, Finding, Classification | `src/telos/model.py` |
-| **The activity diagram** | `thesis/T1/figures/make_activity_diagram.py`, which **is** the diagram |
-| **The other three figures** | `make_pipeline_figure.py`, `make_noise_floor_figure.py`, `svgkit.py` |
-| **The diagram in plain words** | `ACTIVITY-DIAGRAM-EXPLAINED.md` in the documents folder |
-| **The proposal being submitted** | `proposal-form-FINAL.md` in the documents folder |
-| **Panel questions and the reasoning per answer** | `T1-PANEL-RESPONSE.md` in the documents folder |
-| **What changed after the title defense** | `T1-REVISIONS-LIST.md` in the documents folder |
-| **Whether documents contradict the code** | `tools/check_docs.py`, see section 6 |
-
-**The documents folder** is `E:\Elijah MASTER COPY DO NOT DELETE\Documents\New folder (5)`,
-outside the repository and not version controlled. `prep-local/` inside it holds defense
-preparation deliberately removed from the public repo on 2026-09-10. Do not propose putting it
-back.
+| **Why a choice was made**, or whether something is settled | `REPO\docs\DECISIONS.md` |
+| **What is uncertain**, what might change the plan | `REPO\docs\OPEN-QUESTIONS.md` |
+| **What happened, and when** | `REPO\docs\WORKLOG.md` newest first, plus `git log` |
+| **A command that was run**, or what a correct result looks like | `REPO\docs\COMMANDS.md` |
+| **Building the lab**, VMs, networking, phases | `REPO\docs\RUNBOOK-homelab.md` |
+| **Lab design**, resource budget, the hardening catalogue | `REPO\lab\blueprint.md` |
+| **The event key**, what is counted, field presence | `REPO\src\telos\eventkey.py` |
+| **The statistics**: gate, rate ratio, correction, classification | `REPO\src\telos\differential.py` |
+| **The noise floor**, coefficient of variation, dispersion | `REPO\src\telos\variance.py` |
+| **The naive baseline** the method is measured against | `REPO\src\telos\baseline.py` |
+| **Data shapes**: Phase, Finding, Classification | `REPO\src\telos\model.py` |
+| **The activity diagram** | `REPO\thesis\T1\figures\make_activity_diagram.py`, which **is** the diagram |
+| **The other three figures** | `REPO\thesis\T1\figures\` : `make_pipeline_figure.py`, `make_noise_floor_figure.py`, `svgkit.py` |
+| **Proposal numbering and template rules** | `REPO\thesis\README.md` |
+| **The diagram in plain words** | `DOCS\ACTIVITY-DIAGRAM-EXPLAINED.md` |
+| **The proposal being submitted** | `DOCS\proposal-form-FINAL.md` |
+| **Panel questions and the reasoning per answer** | `DOCS\T1-PANEL-RESPONSE.md` |
+| **What changed after the title defense** | `DOCS\T1-REVISIONS-LIST.md` |
+| **Whether documents contradict the code** | `REPO\tools\check_docs.py`, see section 7 |
 
 ## 3. Authority order, when two sources disagree
 
-1. **The code** in `src/telos/`. What is actually built.
-2. **`docs/DECISIONS.md`.** What was decided, and why.
-3. **`proposal-form-FINAL.md`.** What will be submitted.
+1. **The code** in `REPO\src\telos\`. What is actually built.
+2. **`REPO\docs\DECISIONS.md`.** What was decided, and why.
+3. **`DOCS\proposal-form-FINAL.md`.** What will be submitted.
 4. Everything else is explanatory and loses.
 
 **A document is never evidence about another document.**
 
 ## 4. Settled numbers, so you start from the right place
 
-Verify any you rely on. Listed so you do not re-derive them every session.
+Verify any you rely on. Listed so you do not re-derive them every session. All files below are
+in `REPO\src\telos\` unless stated.
 
 | Fact | Where |
 |---|---|
@@ -89,7 +120,7 @@ Verify any you rely on. Listed so you do not re-derive them every session.
 | Rate is count divided by **number of runs**, not per unit time | `differential.py` |
 | Dispersion is floored at 1.0 | `variance.py` |
 | Field-loss pairing matches a LOST key to a NEW key of the same event type whose field set is a strict subset | `eventkey.py`, `field_loss_pairs()` |
-| 16 changes, 5 control runs, 3 pre and 3 post per change | `lab/blueprint.md` |
+| 16 changes, 5 control runs, 3 pre and 3 post per change | `REPO\lab\blueprint.md` |
 
 ### Facts that get stated wrong, including by me
 
@@ -116,30 +147,44 @@ Verify any you rely on. Listed so you do not re-derive them every session.
 
 **Do not describe designed parts as if they exist.**
 
-**Built and tested:** `eventkey.py`, `variance.py`, `differential.py`, `baseline.py`,
-`report.py`, `model.py`, `synth.py`. Two test files, 49 tests.
+**Built and tested:** in `REPO\src\telos\` : `eventkey.py`, `variance.py`, `differential.py`,
+`baseline.py`, `report.py`, `model.py`, `synth.py`. Two test files in `REPO\tests\`, 49 tests.
 
 **Designed only:** the event-key to rule to ATT&CK dependency index, impact scoring, remediation
 candidate generation, all of Phase 5, and the capture harness that would drive Phases 0 to 3.
 
-**The lab:** SIEM-01 and WIN-EP-01 exist. The runbook is partly executed. Read `WORKLOG.md` for
-how far rather than assuming.
+**The lab:** SIEM-01 and WIN-EP-01 exist. The runbook is partly executed. Read
+`REPO\docs\WORKLOG.md` for how far rather than assuming.
 
 **T3 is dead**, killed 2026-08-19. If T1 fails its spike, go to T2.
 
-## 7. Two commands CLAUDE.md does not list
+## 7. Commands that work from any folder
+
+Copy these literally. **No `cd` is needed and no shell-specific syntax is used.** All four were
+tested from an unrelated directory on 2026-09-10 and work unchanged.
 
 ```
-.venv/Scripts/python.exe tools/check_docs.py "<documents folder>"
-.venv/Scripts/python.exe thesis/T1/figures/make_activity_diagram.py
+git -C "E:\Claude general" log --oneline -8
+
+"E:\Claude general\.venv\Scripts\python.exe" -m pytest "E:\Claude general\tests" -q
+
+"E:\Claude general\.venv\Scripts\python.exe" "E:\Claude general\tools\check_docs.py" "E:\Elijah MASTER COPY DO NOT DELETE\Documents\New folder (5)"
+
+"E:\Claude general\.venv\Scripts\python.exe" "E:\Claude general\thesis\T1\figures\make_activity_diagram.py"
 ```
 
-The first flags statements in any document that contradict the code. **It flags, it does not
-judge.** A hit is a question. File status decides whether it matters: FROZEN files are the
+In PowerShell a quoted command needs the call operator, so write `& "E:\Claude general\.venv\...`
+for the last three. In cmd or bash the quotes alone are enough.
+
+`pytest` should print `49 passed`. If it prints anything else, stop and tell me, because the
+record is stale.
+
+`check_docs.py` flags statements in any document that contradict the code. **It flags, it does
+not judge.** A hit is a question. File status decides whether it matters: FROZEN files are the
 version the panel read, so old wording there is **correct**. It produces false positives on
 purpose, for example a sentence explaining why chi-square is *not* per event type.
 
-The second regenerates the activity diagram. **Then render it and look at it.**
+The diagram generator writes two SVG files. **Then render them and look.**
 
 **Never run** `git-filter-repo`, a force push, or any history rewrite without asking me first.
 
@@ -150,9 +195,9 @@ The second regenerates the activity diagram. **Then render it and look at it.**
 2. **When I question something, do not change it on contact.** Verify at the source, show me the
    evidence, say plainly whether you were wrong or right, then propose. My question is not proof
    you were wrong.
-3. **When you do not know, say so**, then name the file that would answer it and offer to read it.
-   Do not fill a gap with something plausible.
+3. **When you do not know, say so**, then name the file that would answer it and offer to read
+   it. Do not fill a gap with something plausible.
 
 ---
 
-Now give me the five lines from section 1, then wait for my question.
+Now do the boot sequence in section 1, give me the five lines, then wait for my question.
