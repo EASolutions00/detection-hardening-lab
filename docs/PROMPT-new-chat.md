@@ -1,33 +1,21 @@
-# New chat prompt: the project map
+# TeLoS project map
 
-Paste everything between the horizontal rules into a new chat. **It works from any folder.**
-Every path in it is absolute, and it tells the model to read `CLAUDE.md` explicitly rather than
-assuming the folder loaded it.
+**Paste this whole file into a new chat. Select all, copy, paste. Nothing needs trimming.**
 
-**This is a supplement, not a replacement.** `CLAUDE.md` carries the project summary, the four
-answering rules, the commands, the rules that fail silently, the session habits and the defense
-brief. **This file deliberately does not repeat any of that.** Two copies would drift, which is
-the failure this project keeps having. It adds what `CLAUDE.md` has no room for: a routing table
-from question to file, the settled numbers, the open items, and built versus only designed.
+## Read only
 
-**Two things to know when pasting outside `E:\Claude general`:**
+**Do not edit or create any file. Do not run anything that changes state.** No commits, no
+pushes, no generated files. Answer my questions. If something needs changing, tell me **what**
+and **where**, and I will decide whether to do it here or in a separate working chat.
 
-1. `CLAUDE.md` does **not** load on its own. Step 1 of the boot sequence reads it explicitly.
-2. Reads outside the chat's working directory may need permission. The prompt tells the model to
-   say so rather than guess.
+**Do not start any work.** This message is orientation, so that when I ask something, you already
+know where to look.
 
-**If you paste this where there is no filesystem** (a browser chat, a phone), nothing here can be
-read. Paste the two `CLAUDE.md` files instead and expect narrower answers.
-
-**Keep this current.** When an open item closes or a file moves, update it. A stale map is worse
-than no map, because it gets trusted.
-
----
-
-# Project map, supplement to CLAUDE.md
-
-**Do not start any work.** This message exists so that when I ask something, you already know
-where to look.
+This map is a **supplement**. `CLAUDE.md` in the repository carries the project summary, the four
+answering rules, the commands, the rules that fail silently, the session habits, and the defense
+brief. This file deliberately does not repeat any of it. It adds what `CLAUDE.md` has no room
+for: a routing table from question to file, the settled numbers, the open items, and what is
+built versus only designed.
 
 ## 0. Paths, read this first
 
@@ -46,8 +34,12 @@ there. `DOCS\prep-local\` holds defense preparation deliberately removed from th
 2026-09-10. Do not propose putting it back.
 
 **If a read is refused because the path is outside your working directory, tell me plainly.** I
-will either grant access or reopen the chat in `REPO`. **Do not guess at file contents instead,
-and do not answer from memory of this project.**
+will either grant access or reopen the chat in `REPO`. **Do not guess at file contents, and do
+not answer from memory of this project.**
+
+**If you have no filesystem at all** (a browser chat, a phone), say so immediately. Nothing here
+is readable, and you should ask me to paste `REPO\CLAUDE.md` and `C:\Users\Elijah\.claude\CLAUDE.md`
+instead. Expect narrower answers.
 
 ## 1. Boot sequence
 
@@ -103,8 +95,8 @@ Then tell me in five lines: what is decided, what is blocked, what is next. Then
 
 ## 4. Settled numbers, so you start from the right place
 
-Verify any you rely on. Listed so you do not re-derive them every session. All files below are
-in `REPO\src\telos\` unless stated.
+Verify any you rely on. Listed so you do not re-derive them every session. Files below are in
+`REPO\src\telos\` unless stated.
 
 | Fact | Where |
 |---|---|
@@ -128,8 +120,8 @@ in `REPO\src\telos\` unless stated.
   `Microsoft-Windows-PowerShell/Operational`. **Not** the Security log.
 - **Event 4688 carries `ParentProcessName`.** `ParentImage` is a Sysmon field.
 - **Rate is per run, not per minute.**
-- **Figures are generated, not drawn.** Edit the generator, re-run, then **render it and look.**
-  Two real defects here were caught only by looking at the picture.
+- **Figures are generated, not drawn.** The generator is the source. Two real defects here were
+  caught only by rendering the picture and looking at it.
 
 ## 5. Open, so do not state these as settled
 
@@ -158,9 +150,9 @@ candidate generation, all of Phase 5, and the capture harness that would drive P
 
 **T3 is dead**, killed 2026-08-19. If T1 fails its spike, go to T2.
 
-## 7. Commands that work from any folder
+## 7. Read-only commands that work from any folder
 
-Copy these literally. **No `cd` is needed and no shell-specific syntax is used.** All four were
+Copy these literally. **No `cd` is needed and no shell-specific chaining is used.** All four were
 tested from an unrelated directory on 2026-09-10 and work unchanged.
 
 ```
@@ -169,12 +161,10 @@ git -C "E:\Claude general" log --oneline -8
 "E:\Claude general\.venv\Scripts\python.exe" -m pytest "E:\Claude general\tests" -q
 
 "E:\Claude general\.venv\Scripts\python.exe" "E:\Claude general\tools\check_docs.py" "E:\Elijah MASTER COPY DO NOT DELETE\Documents\New folder (5)"
-
-"E:\Claude general\.venv\Scripts\python.exe" "E:\Claude general\thesis\T1\figures\make_activity_diagram.py"
 ```
 
-In PowerShell a quoted command needs the call operator, so write `& "E:\Claude general\.venv\...`
-for the last three. In cmd or bash the quotes alone are enough.
+In PowerShell a quoted executable needs the call operator, so write `& "E:\Claude general\.venv\...`.
+In cmd or bash the quotes alone are enough.
 
 `pytest` should print `49 passed`. If it prints anything else, stop and tell me, because the
 record is stale.
@@ -184,20 +174,22 @@ not judge.** A hit is a question. File status decides whether it matters: FROZEN
 version the panel read, so old wording there is **correct**. It produces false positives on
 purpose, for example a sentence explaining why chi-square is *not* per event type.
 
-The diagram generator writes two SVG files. **Then render them and look.**
+**Do not run the figure generators in this chat.** They write files, and this chat is read only.
 
-**Never run** `git-filter-repo`, a force push, or any history rewrite without asking me first.
+**Never run** `git-filter-repo`, a force push, or any history rewrite.
 
 ## 8. Answering, beyond what CLAUDE.md already says
 
 1. **Answer the question I asked, then add what I will need next.** Do not make me ask three
    follow-ups to get a complete answer.
-2. **When I question something, do not change it on contact.** Verify at the source, show me the
-   evidence, say plainly whether you were wrong or right, then propose. My question is not proof
-   you were wrong.
+2. **When I question something, do not change your answer on contact.** Verify at the source,
+   show me the evidence, say plainly whether you were wrong or right, then propose. My question
+   is not proof you were wrong.
 3. **When you do not know, say so**, then name the file that would answer it and offer to read
    it. Do not fill a gap with something plausible.
+4. **If anything in this message contradicts what you actually read, tell me.** This map goes
+   stale, and the file it points at is always the truth.
 
----
+## 9. Start
 
-Now do the boot sequence in section 1, give me the five lines, then wait for my question.
+Do the boot sequence in section 1, give me the five lines, then wait for my question.
