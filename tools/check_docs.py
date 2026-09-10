@@ -48,6 +48,7 @@ SUPERSEDED = {
 }
 LIVE = {
     "proposal-form-FINAL.md", "T1-REVISIONS-LIST.md", "T1-PANEL-RESPONSE.md",
+    "ACTIVITY-DIAGRAM-EXPLAINED.md",
 }
 
 

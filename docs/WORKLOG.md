@@ -17,6 +17,40 @@ Next:
 
 ---
 
+## 2026-09-10 (fourth) - Wrote a full explainer for the activity diagram, aimed at junior analysts.
+
+**Did:** wrote `ACTIVITY-DIAGRAM-EXPLAINED.md` in the documents folder. Thirteen sections covering
+every box, decision, datastore and connector on both sheets, for an audience of junior security
+analysts and a detection engineer new to the project.
+
+**Sourced from the generator and the code, not from memory.** Re-read
+`make_activity_diagram.py` for the exact box wording and confirmed the module list in
+`src/telos/` with a glob before claiming which parts are built.
+
+**What it covers beyond a box-by-box walkthrough:**
+
+- The problem stated for someone who has never met it: hardening changes configuration,
+  configuration decides what is logged, and a dead detection looks exactly like a quiet one.
+- A vocabulary section defining every term once, including the ones people get wrong. Event 4104
+  is in PowerShell/Operational, not Security. Rate here is per **run**, not per minute.
+- Why the chi-square runs once globally, both reasons.
+- Why the classification order is NEW, then INCONCLUSIVE, then LOST, and what breaks if it is not.
+- The three REDUCED conditions with the arithmetic worked, including the direction of the noise
+  floor comparison, which is the one people state backwards.
+- A complete worked example, ending with what event-ID-only counting would have reported instead.
+- A limits section carrying the value-versus-presence gap (OPEN-QUESTIONS 18) and the
+  "no significant change" conflation (OPEN-QUESTIONS 16), stated openly rather than hidden.
+- A built-versus-designed table, so a new joiner does not go looking for the index, the impact
+  scorer or Phase 5 in code that does not contain them.
+- Ten self-test questions with no answers shown.
+
+**Added the file to the LIVE set in `tools/check_docs.py`** and scanned it. One hit, and it is the
+sentence warning readers **not** to say "below the noise floor". A false positive: the mistake is
+being quoted to warn against it. The file reports "all expected steps mentioned".
+
+**Not copied into the repository.** It lives only in the documents folder, where it was asked
+for. Duplicating it would create the exact drift this session spent its time repairing.
+
 ## 2026-09-10 (third) - Fixed proposal-form-FINAL.md and T1-REVISIONS-LIST.md. LIVE defects now zero.
 
 **Did:** repaired both remaining live documents. Both live outside the repository, so only this
