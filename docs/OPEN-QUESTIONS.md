@@ -125,6 +125,49 @@ labeled set.
 
 ---
 
+## 17. Is the system a server-side web application? Nobody ever decided.
+
+**Status:** Open. Raised 2026-09-09 by an automated scan of every thesis document. Ranked at the
+top because **it is already written as settled fact in the document that will be submitted**, and
+it is the only item here where the record was never made at all.
+
+**What three live documents assert:**
+
+| File | Line | Text |
+|---|---|---|
+| `proposal-form-FINAL.md` | 217 | "The system is a **server-side web application**." |
+| `T1-PANEL-RESPONSE.md` | 174 | "It is a **server-side web application**." |
+| `T1-REVISIONS-LIST.md` | 111 | "The system is a server-side web application." |
+
+**What the record says:** nothing. A search of `DECISIONS.md` and this file for "web
+application", "web-based", "web interface" and "System Type" returns only Wazuh deployment-mode
+entries. **There is no decision.**
+
+**How it became fact.** It was marked ASSUMPTION four times in `T1-PROPOSAL-REVISION.md`,
+confirmation was asked for twice and never given, it was never entered here, and it was then
+written into a submission document without the marking. This is the exact failure that rule 3 in
+`CLAUDE.md` exists to prevent: *a draft marked ASSUMPTION is not a decision.*
+
+**Why it matters more than wording.** It answers panel questions Q1 and Q8 directly, and it sets
+scope. A web application implies a front end, sessions, and a deployment story, none of which
+exist in `src/telos/`. What exists is a Python package with a command line. `proposal-form-FINAL.md`
+lines 221 to 223 already say the analytical core "also runs from the command line without the web
+interface" and that the headless mode produces every measurement in the study. **So the document
+commits to building a web application whose only stated role is to not be used for the results.**
+
+**How to answer:** ask the adviser, in the same message as the title wording. "Sir/Ma'am, does the
+system need a web or graphical interface, or is a command-line tool with generated reports
+acceptable for this scope?"
+
+**What a bad answer means:** if a web interface is required, it is a second system to build,
+document and defend, on top of a lab and an analyser, before end of September. If it is not
+required, three documents need one paragraph changed each and the scope shrinks.
+
+**Do not run the REVISED-to-FINAL diff until this is answered.** The claim appears in both files,
+so the answer changes the diff.
+
+---
+
 ## 15. Which submission documents still carry the superseded event key?
 
 **Status:** Open. Raised 2026-09-09 while checking the activity diagram. Ranked here because a

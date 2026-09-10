@@ -17,6 +17,70 @@ Next:
 
 ---
 
+## 2026-09-10 - Scanned all 28 thesis documents. Found a claim that was never decided and is already written as fact.
+
+**Did:** built `tools/check_docs.py` and ran it over `docs/`, `thesis/` and the external documents
+folder. Twelve patterns, each carrying the code reference that settles it. 28 files, 138 hits.
+
+**Why a script instead of reading.** Nine documents, twelve patterns. Reading catches whatever the
+reader happens to remember on that pass. This catches the same things every time, and it can be
+re-run before every submission. The personal documents path is passed as an argument, so it is not
+committed to a public repository.
+
+**The key design choice: file status decides whether a hit matters.**
+
+| Status | Meaning | A hit here is |
+|---|---|---|
+| FROZEN | The version the panel read, and its exports | **Correct.** Changing it would falsify the record. |
+| LIVE | Will be submitted or read by the adviser | A defect |
+| SUPERSEDED | Replaced by a later file | Fix only if reused |
+| RECORD | This project's own logs | Fine inside a quoted history |
+
+Without that split the tool reports 138 problems, of which 25 are the historical record being
+correctly historical. With it, the 43 LIVE hits are the list that matters.
+
+### The finding that matters most: nobody ever decided the system is a web application
+
+Three live documents state it as settled:
+
+| File | Line |
+|---|---|
+| `proposal-form-FINAL.md` | 217 |
+| `T1-PANEL-RESPONSE.md` | 174 |
+| `T1-REVISIONS-LIST.md` | 111 |
+
+A search of `DECISIONS.md` and `OPEN-QUESTIONS.md` for "web application", "web-based", "web
+interface" and "System Type" returns **only Wazuh deployment-mode entries**. There is no decision
+and there was no open question. It was marked ASSUMPTION in a draft, never confirmed, and written
+into a submission document without the marking.
+
+Worse, `proposal-form-FINAL.md:221-223` says the analytical core "also runs from the command line
+without the web interface" and that headless mode produces every measurement in the study. **The
+document commits to building a web application whose only stated role is to not be used for the
+results.** Recorded as OPEN-QUESTIONS 17.
+
+### Two flaws in my own tool, found by using it
+
+1. **It printed only the basename.** `README.md` exists five times here, and
+   `proposal-form-REVISED.md` exists both in the repo and in the documents folder, so hits were
+   ambiguous and some appeared twice. I misread a hit as being the root `README.md` when it was
+   `thesis/T1/README.md`. Fixed: paths now print relative to the repo, external files as `[ext]`.
+2. **Regex cannot see ordering.** The wrong branch order in `T1-PANEL-RESPONSE.md:390-392`
+   (INCONCLUSIVE tested before NEW, so every NEW key would be reported INCONCLUSIVE) was found by
+   reading, not by the tool, and no pattern would have caught it. The tool narrows where to look;
+   it does not replace looking.
+
+**Result: two public files carry the pre-panel title.** The root `README.md` correctly carries the
+panel's exact wording, which OPEN-QUESTIONS 0 says is deliberate. But `thesis/T1/README.md:3` still
+carries "Detection of Hardening-Induced Blind Spots via Differential Sequence Alignment", the title
+from before the defense. Those two files disagree with each other in public.
+
+**Broke / stuck on:** nothing broke. The scan is read-only.
+
+**Next:** the REVISED-to-FINAL diff must not run until OPEN-QUESTIONS 17 and the value-keying
+question are answered, because both claims appear in **both** files and the answers change the
+diff.
+
 ## 2026-09-09 (second) - The other two figures were worse. One named a Windows log channel that does not exist.
 
 **Did:** checked `T1_Figure_Noise_Floor.svg` and `T1_Figure_Analysis_Pipeline.svg` against
