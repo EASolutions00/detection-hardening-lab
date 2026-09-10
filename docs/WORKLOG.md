@@ -17,6 +17,65 @@ Next:
 
 ---
 
+## 2026-09-11 (seventh) - Item 19 pushed, WIN-EP-01 reverted to its pre-test state, and one snapshot trap worth keeping.
+
+**Did:** committed and pushed the item 19 record, then reverted WIN-EP-01 and verified it.
+
+**Commit `4aaa85c`**, `49d5f9d..4aaa85c main -> main`, 3 files, 928 insertions.
+`Partial Product Key: 7CFBY` was redacted from the step 2 entry before pushing. It is a fragment of
+a licence key, the repository is public, and the licence **status** was the evidence, not the key.
+
+### The revert, verified rather than assumed
+
+```
+vmrun revertToSnapshot WIN-EP-01.vmx uwf-test-baseline-2026-09-10     exit 0
+
+Client-UnifiedWriteFilter      Disabled      uwfmgr.exe present : False
+Client-DeviceLockdown          Disabled      UwfServicingSvc : not installed
+Client-KeyboardFilter          Disabled
+all 8 leftover test files      GONE
+all 6 leftover registry keys   GONE
+WazuhSvc Running   Sysmon64 Running   Sysmon RecordCount 4040
+Snapshots still present on WIN-EP-01 : 4, all three milestones intact
+```
+
+### The trap: reverting to a memory snapshot does not give you a cold boot
+
+`vmrun list` showed WIN-EP-01 as not running after the revert, which reads as "powered off". **It was
+not powered off, it was suspended**, because the snapshot contains memory. `vmrun start` then
+**resumed** it in 15 seconds with the snapshot's clock still in place:
+
+```
+HOST  TIME 2026-09-10T20:34:40Z
+GUEST TIME 2026-09-10T15:30:31Z     about 5 hours 4 minutes behind
+LAST BOOT  2026-09-10T15:10:33Z     the snapshot's boot, not a new one
+```
+
+All six `time.synchronize.*` switches are `FALSE` (item 6), so VMware Tools does not correct it, and
+a guest-level restart would not either, because the virtual clock keeps its restored value.
+
+**Only a real power cycle fixes it.** `vmrun stop <vmx> soft`, then `vmrun start`. VMware sets the
+virtual clock from the host at power-on:
+
+```
+HOST  TIME 2026-09-10T20:39:31Z
+GUEST TIME 2026-09-10T20:39:34Z     3 seconds apart, sampled moments apart
+LAST BOOT  2026-09-10T20:38:35Z     a real boot
+System log: id 6005 at 20:38:42Z, and NO id 41 or 6008, so the shutdown was clean
+```
+
+**Why this matters beyond today.** Item 6 already requires the Phase 5 golden snapshot to be taken
+**cold**. This is the same rule from the other side: **a snapshot taken with memory cannot be
+reverted into a clean run**, because the run would start with a wrong clock and the harness rule is
+that every measurement uses the endpoint's own timestamps. Any snapshot used in the run protocol
+must be cold, and `vmrun list` reporting a VM as not running is **not** proof that it is powered off.
+
+### Left over and worth reclaiming
+
+`uwf-test-baseline-2026-09-10` on **SIEM-01** is now unused. It holds a 16 GB memory image and about
+17 GB of disk, and SIEM-01 was never modified during this test. Deleting it is safe and frees that
+space. Not done here, because deleting a snapshot is destructive and was not asked for.
+
 ## 2026-09-11 (sixth) - OPEN-QUESTIONS 19 step 6 PASSES. UWF suppressed nothing, and two bigger findings fell out of it.
 
 **Did:** ran an identical 100-iteration stimulus three times, once with the filter off and twice with
