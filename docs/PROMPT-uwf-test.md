@@ -96,8 +96,10 @@ returns nothing reads as "not available" when it may mean "wrong search string".
 ## 4. What you may not do
 
 - **Do not delete or overwrite these snapshots.** They are project milestones, not test scratch:
-  WIN-EP-01: `phase3-complete-2026-09-02`, `agent-hardened-2026-09-03`, `tamper-off-2026-09-03`
-  SIEM-01: `phase3-complete-2026-09-02`, `timesync-off-2026-09-03`, `snapd-off-archive-v2-2026-09-03`
+  WIN-EP-01: `phase3-complete-2026-09-02`, `agent-hardened-2026-09-03`,
+  `tamper-off-2026-09-03`
+  SIEM-01: `phase3-complete-2026-09-02`, `timesync-off-2026-09-03`,
+  `snapd-off-archive-v2-2026-09-03`
 - **Do not edit** `REPO\src\`, `REPO\tests\`, or `REPO\thesis\T1\figures\`. Nothing in this test
   touches the analyser or the diagrams.
 - **Do not edit the proposal documents in DOCS.** Item 19 says what changes if the test passes.
