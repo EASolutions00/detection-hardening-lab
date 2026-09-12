@@ -5,31 +5,36 @@ Python. The analysis core is written and tested. Acquisition from live VMs is no
 ## What it produces
 
 This is the actual output of `src/demo.py`, the part that matters. One hardening change
-was simulated. One event type was removed outright, one was genuinely cut to 30 percent,
-and one noisy type drifted down by 1.4 percent on its own.
+was simulated. One event key was removed outright, one lost a field while the event kept
+firing, one was genuinely cut to 29 percent, and seven quiet keys drifted on their own.
 
 ```
 STAGE D  proposed method versus naive differencing
 ==============================================================================
 
-  ground truth (keys the change really removed or reduced): 2
+  ground truth (keys the change really removed or reduced): 3
 
   method                       TP   FP   FN  precision   recall      F1
   -------------------------- ---- ---- ---- ---------- -------- -------
-  naive differencing            2    8    0     20.0%  100.0%   0.333
-  proposed system               2    0    0    100.0%  100.0%   1.000
+  naive differencing            3    7    0     30.0%  100.0%   0.462
+  proposed system               3    0    0    100.0%  100.0%   1.000
 
-  false alarms raised by the naive method only (8):
-    Sysmon-1-Filler                    fell 1.10%, which is inside its own noise
-    Sysmon-10-Filler                   fell 1.38%, which is inside its own noise
-    Sysmon-22-Filler                   fell 4.04%, which is inside its own noise
-    ...
-    WinSec-5156-NetworkConnect         fell 7.15%, which is inside its own noise
+  false alarms raised by the naive method only (7):
+    Security-5156[Application,DestPort] fell 4.33%, which is inside its own noise
+    Sysmon-11[Image]                   fell 1.88%, which is inside its own noise
+    Sysmon-13[Image]                   fell 2.07%, which is inside its own noise
+    Sysmon-1[Image]                    fell 0.21%, which is inside its own noise
+    Sysmon-22[Image]                   fell 0.16%, which is inside its own noise
+    Sysmon-25[Image]                   fell 2.77%, which is inside its own noise
+    Sysmon-3[Image]                    fell 0.81%, which is inside its own noise
 ```
 
-Both methods found both real losses. The difference is the eight false alarms. Each is an
-event type that moved on its own, within the range it was already measured to move in. An
+Both methods found all three real losses. The difference is the seven false alarms. Each is
+an event key that moved on its own, within the range it was already measured to move in. An
 engineer comparing raw counts would investigate every one of them.
+
+The demo is deterministic. `demo_scenario(seed=7)` fixes the generator, so these numbers
+reproduce exactly on any machine.
 
 Full output: [docs/demo-output.txt](../docs/demo-output.txt)
 
@@ -51,11 +56,13 @@ because the analyser consumes event counts and does not care where they came fro
 | Stage | Module | Status |
 |---|---|---|
 | 1. Acquisition (snapshots, stimulus, event retrieval) | not written | **needs the lab** |
+| 2. Event keying | `eventkey.py` | done |
 | 2. Profiling and variance model | `variance.py` | done |
 | 3. Differential analysis | `differential.py` | done |
 | 4. Impact scoring and coverage mapping | not written | needs the dependency index |
-| 5. Reporting | `report.py` | text only, no web interface yet |
+| 5. Reporting | `report.py` | text only. No CSV, JSON or Navigator export yet |
 | Baseline for comparison | `baseline.py` | done |
+| Data shapes | `model.py` | done |
 | Synthetic data for testing | `synth.py` | done |
 
 ## The method, in the order it runs
@@ -93,20 +100,36 @@ does not support, and would inflate the reported recall.
 
 ## Tests
 
-20 tests in `tests/test_differential.py`. The two that matter most:
+**49 tests**, 20 in `tests/test_differential.py` and 29 in `tests/test_eventkey.py`.
+The three that matter most:
 
 - `test_drop_inside_the_noise_band_is_not_reported`
 - `test_same_drop_on_a_stable_key_is_reported`
 
-Together they are the whole argument: the same percentage fall means different things
-for different event types, and only a measured noise floor tells them apart.
+Together those two are the whole statistical argument: the same percentage fall means
+different things for different event keys, and only a measured noise floor tells them
+apart.
+
+- `test_field_loss_is_invisible_to_event_type_keying`
+
+That one demonstrates the failure the composite key exists to prevent. **It must not be
+deleted.** If it goes, the reason for the key format goes with it.
 
 `test_phase_that_emitted_nothing_does_not_crash` is a regression test for a real bug
 found by the suite: an all-zero post-change phase used to raise from `chi2_contingency`.
 
-## Not yet decided, and it changes the schema
+## The unit of analysis, decided 2026-09-04
 
-OPEN-QUESTIONS item 1b: is the unit of analysis the event type alone, or
-(event type, required field present)? Removing the CommandLine field from 4688 does not
-change the 4688 rate, so field-level losses are invisible to the current design.
-**Decide before the acquisition stage is written**, because it changes every stored run.
+An analysis key is the event type **plus which tracked fields were populated**, written
+`Security-4688[CommandLine,NewProcessName]`. See `eventkey.py` and the decision entry in
+`docs/DECISIONS.md`.
+
+Keying on the event type alone cannot see a field-level loss. Emptying CommandLine leaves
+4688 firing at its former rate, so the profile reports UNCHANGED while every rule matching
+on CommandLine is blind. Under the composite key the same change produces a LOST key and a
+NEW key at the same rate, which is the signature of a stripped field.
+
+**The honest limit.** The key records *that* a tracked field carried a value, never *which*
+value. A change that alters a field's contents while leaving it populated moves neither the
+key nor its rate. Whether a small set of fields should also be keyed by value is
+OPEN-QUESTIONS item 18, and one lab capture settles it.

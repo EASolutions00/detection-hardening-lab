@@ -1,7 +1,7 @@
 """Render results as text.
 
-Plain text on purpose. The web interface comes later; the analysis has to be
-readable and checkable before anything is put in a browser.
+Plain text on purpose. The analysis has to be readable and checkable on its
+own before any other presentation layer is considered.
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ def render_variance(vm: VarianceModel, show: int = 6) -> str:
     s = vm.summary()
     out = [LINE, "NOISE FLOOR  (measured from the control runs)", LINE, ""]
     out.append(
-        f"  event types measured        {int(s['n_keys'])}\n"
+        f"  event keys measured         {int(s['n_keys'])}\n"
         f"  median CoV                  {s['median_cov']:.2%}\n"
         f"  highest CoV                 {s['max_cov']:.2%}\n"
         f"  median dispersion           {s['median_dispersion']:.2f}\n"
@@ -29,7 +29,7 @@ def render_variance(vm: VarianceModel, show: int = 6) -> str:
     out.append("  A median CoV near zero would mean the statistical layer buys")
     out.append("  nothing inside the laboratory, and the study must say so.")
     out.append("")
-    out.append(f"  {'event type':<34} {'mean':>9} {'CoV':>8} {'dispersion':>11}")
+    out.append(f"  {'event key':<34} {'mean':>9} {'CoV':>8} {'dispersion':>11}")
     out.append(f"  {'-'*34} {'-'*9} {'-'*8} {'-'*11}")
     stats = sorted(vm._stats.values(), key=lambda k: -k.cov)[:show]
     for k in stats:
@@ -49,7 +49,7 @@ def render_analysis(result: AnalysisResult) -> str:
         out.append("  The emitted profile did not change detectably.")
         out.append("  Recorded as 'coverage survived this change', not discarded.")
         return "\n".join(out)
-    out.append(f"  event types carried into per-type testing: {result.n_tested}")
+    out.append(f"  event keys carried into per-key testing: {result.n_tested}")
     out.append("")
 
     out.append("STAGE C  classification")
@@ -67,8 +67,8 @@ def render_analysis(result: AnalysisResult) -> str:
     for i, f in enumerate(hits, 1):
         rr = "0.000" if f.rate_ratio == 0 else f"{f.rate_ratio:.3f}"
         out.append(f"  FINDING {i}   {f.classification.value}   {f.key}")
-        out.append(f"    rate before   {f.pre_rate:,.1f} per window")
-        out.append(f"    rate after    {f.post_rate:,.1f} per window")
+        out.append(f"    rate before   {f.pre_rate:,.1f} per run")
+        out.append(f"    rate after    {f.post_rate:,.1f} per run")
         out.append(f"    rate ratio    {rr}"
                    + (f"   95% CI [{f.ci_low:.3f}, {f.ci_high:.3f}]"
                       if f.ci_low is not None and f.ci_high is not None else ""))
@@ -119,7 +119,7 @@ def render_comparison(result: AnalysisResult, naive: list[BaselineFinding],
             nf = next(f for f in naive if f.key == k)
             out.append(f"    {k:<34} fell {nf.drop:.2%}, which is inside its own noise")
         out.append("")
-        out.append("  Each of these is an event type that moved on its own. An engineer")
+        out.append("  Each of these is an event key that moved on its own. An engineer")
         out.append("  using subtraction would investigate every one of them.")
     else:
         out.append("  The naive method raised no false alarms on this data.")

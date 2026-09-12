@@ -38,6 +38,14 @@ import re
 import sys
 from pathlib import Path
 
+# The documents contain characters outside the Windows console codepage (cp1252),
+# and printing one used to abort the run with UnicodeEncodeError partway through
+# the output. A half-printed report looks like a finished one, which is the worst
+# possible failure for a tool whose job is to find things. Force UTF-8 and never
+# let an unprintable character end the scan.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
 FROZEN = {
     "proposal-form.md", "proposal.txt", "proposalll.txt",
     "proposal(ongoing verification).txt",

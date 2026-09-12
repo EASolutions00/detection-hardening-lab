@@ -6,83 +6,102 @@ All numbers are generated. No measurement, no benchmark control claimed.
 NOISE FLOOR  (measured from the control runs)
 ==============================================================================
 
-  event types measured        14
-  median CoV                  3.37%
-  highest CoV                 39.12%
+  event keys measured         15
+  median CoV                  3.14%
+  highest CoV                 34.23%
   median dispersion           1.00
-  share of types over 5% CoV  29%
+  share of types over 5% CoV  27%
 
   This is the answer to the feasibility spike's question Q1.
   A median CoV near zero would mean the statistical layer buys
   nothing inside the laboratory, and the study must say so.
 
-  event type                              mean      CoV  dispersion
+  event key                               mean      CoV  dispersion
   ---------------------------------- --------- -------- -----------
-  WinSec-4697-ServiceInstall               1.4  39.12%        1.00
-  WinSec-5156-NetworkConnect            4083.0   5.69%       13.20
-  Sysmon-12-Filler                       644.0   5.42%        1.89
-  Sysmon-3-Filler                       2171.6   5.35%        6.21
-  Sysmon-25-Filler                        95.8   4.86%        1.00
-  Sysmon-22-Filler                       424.4   4.34%        1.00
+  Security-4697[ServiceFileName,ServiceName]       1.6  34.23%        1.00
+  Sysmon-23[Image]                       127.4   7.44%        1.00
+  Security-5156[Application,DestPort]    4083.0   5.69%       13.20
+  Sysmon-25[Image]                        95.4   5.67%        1.00
+  Sysmon-3[Image]                       2181.2   4.82%        5.06
+  Sysmon-11[Image]                      1124.4   3.53%        1.40
 
 ==============================================================================
 DIFFERENTIAL ANALYSIS
 ==============================================================================
 
 STAGE B  global gate (one chi-square over the whole profile)
-  chi-square = 4,011.1   p = 0   PASSED
-  event types carried into per-type testing: 13
+  chi-square = 9,092.5   p = 0   PASSED
+  event keys carried into per-key testing: 14
 
 STAGE C  classification
-  LOST              1
+  LOST              2
   REDUCED           1
-  NEW               0
+  NEW               1
   INCONCLUSIVE      1
   UNCHANGED        11
 
-REPORTED FINDINGS  (2)
+REPORTED FINDINGS  (3)
 
-  FINDING 1   LOST   WinSec-4688-ProcessCreation
-    rate before   1,242.0 per window
-    rate after    0.0 per window
+  FINDING 1   LOST   PowerShell-4104[Path,ScriptBlockText]
+    rate before   832.7 per run
+    rate after    0.0 per run
+    rate ratio    0.000   95% CI [0.000, 0.001]
+    q value       0   (BH corrected)
+    noise floor   1.55% CoV, dispersion 1.00
+    why           present before (2498 occurrences), absent after
+
+  FINDING 2   LOST   Security-4688[CommandLine,NewProcessName,ParentProcessName]
+    rate before   1,247.0 per run
+    rate after    0.0 per run
     rate ratio    0.000   95% CI [0.000, 0.001]
     q value       0   (BH corrected)
     noise floor   0.33% CoV, dispersion 1.00
-    why           present before (3726 occurrences), absent after
+    why           present before (3741 occurrences), absent after
 
-  FINDING 2   REDUCED   WinSec-4776-NtlmAuth
-    rate before   608.0 per window
-    rate after    181.7 per window
-    rate ratio    0.299   95% CI [0.272, 0.329]
-    q value       2.26e-134   (BH corrected)
+  FINDING 3   REDUCED   Security-4776[PackageName,TargetUserName,Workstation]
+    rate before   611.7 per run
+    rate after    180.0 per run
+    rate ratio    0.294   95% CI [0.267, 0.324]
+    q value       4.08e-137   (BH corrected)
     noise floor   1.17% CoV, dispersion 1.00
-    why           rate fell to 0.299 of baseline (q=2.26e-134, drop 70.1% exceeds noise band 3.5%)
+    why           rate fell to 0.294 of baseline (q=4.08e-137, drop 70.6% exceeds noise band 3.5%)
 
 NOT TESTED, REPORTED AS INCONCLUSIVE  (1)
   These are not cleared. There was not enough data to test them.
-    WinSec-4697-ServiceInstall         7 occurrences before the change
+    Security-4697[ServiceFileName,ServiceName] 7 occurrences before the change
+
+==============================================================================
+FIELD-LEVEL LOSS
+==============================================================================
+
+  The event still fires at its normal rate. A field inside it stopped
+  being populated, so any detection rule matching on that field is blind.
+  A profile keyed on event type alone cannot see this.
+
+  was  PowerShell-4104[Path,ScriptBlockText]
+  now  PowerShell-4104[Path]
+  lost field(s): ScriptBlockText
 
 ==============================================================================
 STAGE D  proposed method versus naive differencing
 ==============================================================================
 
-  ground truth (keys the change really removed or reduced): 2
+  ground truth (keys the change really removed or reduced): 3
 
   method                       TP   FP   FN  precision   recall      F1
   -------------------------- ---- ---- ---- ---------- -------- -------
-  naive differencing            2    8    0     20.0%  100.0%   0.333
-  proposed system               2    0    0    100.0%  100.0%   1.000
+  naive differencing            3    7    0     30.0%  100.0%   0.462
+  proposed system               3    0    0    100.0%  100.0%   1.000
 
-  false alarms raised by the naive method only (8):
-    Sysmon-1-Filler                    fell 1.10%, which is inside its own noise
-    Sysmon-10-Filler                   fell 1.38%, which is inside its own noise
-    Sysmon-22-Filler                   fell 4.04%, which is inside its own noise
-    Sysmon-23-Filler                   fell 1.29%, which is inside its own noise
-    Sysmon-25-Filler                   fell 1.03%, which is inside its own noise
-    Sysmon-3-Filler                    fell 2.18%, which is inside its own noise
-    Sysmon-7-Filler                    fell 1.26%, which is inside its own noise
-    WinSec-5156-NetworkConnect         fell 7.15%, which is inside its own noise
+  false alarms raised by the naive method only (7):
+    Security-5156[Application,DestPort] fell 4.33%, which is inside its own noise
+    Sysmon-11[Image]                   fell 1.88%, which is inside its own noise
+    Sysmon-13[Image]                   fell 2.07%, which is inside its own noise
+    Sysmon-1[Image]                    fell 0.21%, which is inside its own noise
+    Sysmon-22[Image]                   fell 0.16%, which is inside its own noise
+    Sysmon-25[Image]                   fell 2.77%, which is inside its own noise
+    Sysmon-3[Image]                    fell 0.81%, which is inside its own noise
 
-  Each of these is an event type that moved on its own. An engineer
+  Each of these is an event key that moved on its own. An engineer
   using subtraction would investigate every one of them.
 

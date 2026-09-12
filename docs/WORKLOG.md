@@ -17,6 +17,114 @@ Next:
 
 ---
 
+## 2026-09-12 - Documentation sweep. Eleven panel answers re-checked, five defects fixed, and three findings that are not yet OPEN-QUESTIONS items.
+
+**Did:** scanned 31 files in 3 folders with `tools/check_docs.py`, then read `T1-PANEL-RESPONSE.md`
+against the code and `DECISIONS.md` line by line rather than against other documents.
+
+### All ten paper edits the panel response demanded did land in FINAL
+
+Verified one at a time: the title with the article, the rewritten algorithms table, the deployment
+paragraph, remediation and lifecycle in Features, populated fields in Module 2, the five-way
+classification and the pairing step in Module 3, the re-validation modes in Module 5, the new
+Inputs and Preconditions subsection, the revised diagram reference, and the evasion limit in Scope.
+
+The four SVGs are byte-identical across `New folder (5)`, its `Activity Diagram` subfolder, and
+`thesis/T1/figures/`. No stale copy is waiting to be inserted by mistake.
+
+### Fixed today
+
+| # | Where | Was | Now |
+|---|---|---|---|
+| 1 | `T1-PANEL-RESPONSE.md` "Files in this folder" | Told the reader to use the SVGs, then eight lines later told them to **use the PNGs**, "rendered at 2x ... roughly 500 DPI" | One instruction. Two table rows that had fallen outside the table are back inside it. A new line states plainly that **nothing in this project renders PNG** |
+| 2 | `T1-PANEL-RESPONSE.md:186` | Named **statsmodels** as a dependency | NumPy, SciPy, pandas. `requirements.txt` excludes statsmodels on purpose; scipy supplies Benjamini-Hochberg |
+| 3 | `src/telos/report.py` | `rate before 1,247.0 per window`, and three places saying "event type" for the unit | `per run`, matching `differential.py:115` which computes `a / n1`. "event key" throughout |
+| 3b | `src/telos/report.py` docstring | "The web interface comes later" | Neutral wording. The web application is OPEN-QUESTIONS 17 and was never decided, so the code should not assert it |
+| 4 | `docs/demo-output.txt` | Dated 2026-08-31, showed `WinSec-4688-ProcessCreation`, the key format superseded on 2026-09-04 | Regenerated. Now shows `Security-4688[CommandLine,NewProcessName,ParentProcessName]`. Deterministic at `seed=7`, so it reproduces exactly |
+| 4b | `src/README.md` | Said 20 tests, said the key format was undecided, and said "field-level losses are invisible to the current design" | 49 tests (20 + 29), the decision recorded, and the real limit stated: the key sees presence, not value |
+| 5 | `tools/check_docs.py` | **Crashed** with `UnicodeEncodeError: 'charmap' codec can't encode characters in position 95-96` partway through the RECORD section, on the exact command `PROMPT-new-chat.md` section 7 documents | `sys.stdout.reconfigure(encoding="utf-8", errors="replace")` at import. Runs to completion: **139 pattern hits** |
+
+**Why fix 5 mattered more than it looks.** The crash stopped the scan after the LIVE section, and
+a half-printed report looks like a finished one. It was also hiding the tool's coverage check
+entirely, which reports whether each live document mentions every step that exists in the code.
+That check had never once been seen. It now reports "all expected steps mentioned" for
+`proposal-form-FINAL.md`, `T1-PANEL-RESPONSE.md` and `T1-REVISIONS-LIST.md`.
+
+**Verified after editing:** `49 passed`. The string changes broke no test.
+
+### Sweep result on the documents
+
+17 LIVE hits. **Three are real**, and all three are the same defect: the server-side web
+application stated as settled in `proposal-form-FINAL.md:218`, `T1-PANEL-RESPONSE.md:174` and
+`T1-REVISIONS-LIST.md:119`. That is OPEN-QUESTIONS 17, left deliberately until the adviser answers.
+The other 14 are correct as written: quotations of the panel's own title wording, and sentences
+explaining why chi-square is *not* run per event type.
+
+**A third false negative in the checker, not fixed.** The `figure-png` rule at `check_docs.py:137`
+matches only a literal filename, so "Use the PNG files for Word" at line 729 passed clean. Two
+false negatives of the same shape were fixed in the `field-pairing` rule on 2026-09-10. The tool
+also reads only `.md` and `.txt`, which is why the wrong unit in `report.py` survived four months.
+
+### Three findings from this session that are NOT yet OPEN-QUESTIONS items
+
+Recorded here so they are not lost. **None has an item number yet.**
+
+**1. Every class C change is an authentication control, and there is no domain controller.**
+`F:\TeLoS Homelab` holds two VMs, SIEM-01 and WIN-EP-01. `DC-01` appears only in the Tier B table
+at `blueprint.md:52`, marked "optional, add only if the spike says you have time", and that table
+itself says DC-01 is what "enables identity telemetry (4768/4769/4776)".
+
+Apply both filters together and the measurable catalogue empties:
+
+- OPEN-QUESTIONS 18 leaves only **C4 and C6** as rate changes the analyser can see.
+- C4 needs outgoing NTLM to a remote server. The only other machine on the lab network is Ubuntu
+  and shares nothing, so the baseline is already zero and the change moves zero to zero.
+- C6 needs domain cached credentials. Its own justification at `blueprint.md:310` reads "Logon
+  still occurs, against the domain instead."
+- C7 needs a key distribution centre. Events 4768 and 4769 cannot appear on a standalone machine.
+
+So the experiment as it stands would report UNCHANGED across class C, and the study's conclusion
+would be produced by a missing virtual machine rather than by anything true about Windows.
+OPEN-QUESTIONS 1 already sets the bar: fewer than about 8 class C changes and the precision and
+recall comparison is underpowered. **Value-level keying does not rescue this**, because zero to
+zero has no value to key on.
+
+**The cheap check before building anything**, against data already on SIEM-01. Pattern in a file,
+never on the command line, per OPEN-QUESTIONS 1b:
+
+```bash
+sudo -n /usr/local/sbin/telos-archive tail 1 2026-09-02      # read the exact field spelling
+printf '"eventID":"4768"\n"eventID":"4769"\n"eventID":"4776"\n' > /tmp/telos-ids.txt
+sudo -n /usr/local/sbin/telos-archive count /tmp/telos-ids.txt 2026-09-02
+```
+
+Zero or low single digits confirms it. Hundreds means 4776 fires locally often enough to measure
+and only C7 is dead.
+
+**2. The stimulus is asserted identical and never verified.** `T1-PANEL-RESPONSE.md:513` answers
+panel Q6 with "the same test IDs, in the same order, with the same delay", and calls the manifest
+"the single strongest answer to the question". Same commands are not the same behaviour. If a
+hardening change makes an atomic test fail or exit early, the manifest hashes still match, the
+comparison proceeds, and a stimulus failure is reported as telemetry loss. Fix: record per-atomic
+exit status and duration in the run manifest, plus a stimulus fingerprint such as the count of
+process creations between the two fences, and **void the run** when the fingerprint moves more than
+the control spread. Cheap to build with the harness, impossible to reconstruct afterwards.
+
+**3. `global_gate()` ignores the alpha passed to `analyse()`.** `differential.py:273` calls
+`global_gate(pre, post, keys)`, whose signature at line 56 takes no alpha, and line 96 compares
+against the module constant. So `analyse(alpha=0.01)` moves the per-key tests and silently leaves
+the gate at 0.05. `proposal-form-FINAL.md:283` promises a sensitivity analysis on exactly these
+thresholds. Related and separate: the gate is the only stage that ignores the measured variance
+floor, so it may pass on run-to-run noise alone. Both are settled by running `global_gate()` on
+control run 1 versus control run 2, where nothing changed.
+
+**Broke / stuck on:** nothing broke. The five fixes are cosmetic to small; the three findings above
+are not.
+
+**Next:** raise findings 1, 2 and 3 as OPEN-QUESTIONS items. Run the 4768/4769/4776 count before
+deciding anything about DC-01. Send the adviser the title and web-interface message, which unblocks
+OPEN-QUESTIONS 0 and 17 and the three remaining LIVE defects.
+
 ## 2026-09-11 (seventh) - Item 19 pushed, WIN-EP-01 reverted to its pre-test state, and one snapshot trap worth keeping.
 
 **Did:** committed and pushed the item 19 record, then reverted WIN-EP-01 and verified it.
