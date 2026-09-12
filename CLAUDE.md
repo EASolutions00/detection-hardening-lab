@@ -115,10 +115,15 @@ clock has still not run. See [runbook Phase 7](docs/RUNBOOK-homelab.md).
 annotation, too few for the agreement statistic its evaluation depended on. Evidence in
 OPEN-QUESTIONS, Answered. **If the spike fails, go to T2. Do not spend time reviving T3.**
 
-The live blocker is **OPEN-QUESTIONS item 18**: six of the eight class C hardening changes
-state a telemetry effect that is a *value change*, and the analyser records which fields were
-**populated**, not what they contained. Only C4 and C6 are rate changes. One lab capture settles
-it: set `RunAsPPL = 1` and read what `GrantedAccess` actually holds afterwards.
+The live blocker is **OPEN-QUESTIONS item 21**, raised 2026-09-12: every class C hardening change
+is an authentication control, and there is **no domain controller**. `DC-01` is Tier B and was
+never built. One archive count settles it, and it decides how many changes exist to measure.
+
+**Item 18 is second, not first.** Six of the eight class C changes state a telemetry effect that
+is a *value change*, and the analyser records which fields were **populated**, not what they
+contained. Only C4 and C6 are rate changes, and item 21 shows both of those need the missing
+domain. Value keying cannot rescue an event that never fires. One lab capture settles item 18:
+set `RunAsPPL = 1` and read what `GrantedAccess` actually holds afterwards.
 
 Item 1, the catalogue, was rebuilt on 2026-09-08 and is no longer the blocker. Item 17, the
 unconfirmed web-application claim, is blocked on the adviser.

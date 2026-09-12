@@ -59,7 +59,8 @@ Read these four, in order. Expand `REPO` first.
    **Treat it as a map, not as truth.**
 
 2. `REPO\docs\OPEN-QUESTIONS.md`
-   Items **0, 1, and 15 to 18** are the live ones. All six are summarised in section 5.
+   Items **0, 1, 15 to 18, and 20 to 23** are the live ones. All are summarised in section 5.
+   Item 19 is answered. The file is ranked by damage, so read from the top.
 
 3. `REPO\docs\DECISIONS.md`
    The newest five entries.
@@ -211,11 +212,33 @@ in `REPO\src\telos\` unless stated otherwise.
 
 ## 5. Open, so do not state these as settled
 
+Item 21 — blocks the catalogue, the golden snapshot, and data collection
+    Every class C hardening change is an authentication control, and there is no domain
+    controller. `DC-01` is Tier B in `lab/blueprint.md` and was never built. Combined with item
+    18 the measurable class C set is currently zero. One count against the existing archive
+    settles it. **Answer this before item 18.**
+
 Item 18 — blocks data collection
     The key sees field presence, not value. Six of the eight class C hardening changes state a
     telemetry effect that is a value change, which the analyser cannot see. Only C4 and C6 are
-    rate changes. One lab capture settles it: set `RunAsPPL = 1`, then read what
-    `GrantedAccess` actually contains.
+    rate changes, and item 21 shows both of those need the missing domain. One lab capture
+    settles it: set `RunAsPPL = 1`, then read what `GrantedAccess` actually contains.
+
+Item 22 — blocks the harness design
+    The stimulus is asserted identical across the two phases and never verified. A hardening
+    change that makes an atomic test fail produces a rate drop the analyser reports as LOST.
+    Per-atomic exit status and a stimulus fingerprint must go in the run manifest, because they
+    cannot be reconstructed after the run.
+
+Item 23 — blocks a reported result
+    `global_gate()` ignores the alpha passed to `analyse()`, and it is the only stage with no
+    noise model, so it may pass on run-to-run variation alone. Ten control pairs from the Phase
+    7 spike settle the second half. Fix with item 16, same function.
+
+Item 20 — blocks two headline claims
+    WIN-EP-01 does not audit process creation. 200 process spawns produced zero `Security-4688`
+    events, so the canonical event key example does not exist on this endpoint. Sysmon Event 1
+    is carrying process creation instead.
 
 Item 17 — blocks on the adviser
     Three live documents state the system is a server-side web application. It is in no decision

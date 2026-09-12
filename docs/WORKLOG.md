@@ -121,9 +121,29 @@ control run 1 versus control run 2, where nothing changed.
 **Broke / stuck on:** nothing broke. The five fixes are cosmetic to small; the three findings above
 are not.
 
-**Next:** raise findings 1, 2 and 3 as OPEN-QUESTIONS items. Run the 4768/4769/4776 count before
-deciding anything about DC-01. Send the adviser the title and web-interface message, which unblocks
-OPEN-QUESTIONS 0 and 17 and the three remaining LIVE defects.
+### The three findings were raised as items, same session
+
+Commit `e851fbc` carried the five fixes. A second commit carried the items.
+
+| Finding | Item | Placed |
+|---|---|---|
+| No domain controller under any class C change | **21** | Above item 20, and above 18. It is now the live blocker |
+| The stimulus is asserted identical, never verified | **22** | With item 18, because it contaminates results rather than reducing them |
+| `global_gate()` ignores its alpha, and has no noise model | **23** | With item 16, which is the other half of the same function |
+
+Cross-references added so none of them can be read alone: item 18 now says "answer item 21 first"
+and records why it is no longer the most serious item in the file; item 16 says to fix it together
+with item 23 in one change to `global_gate()` rather than touching that function twice.
+
+**`CLAUDE.md` and `PROMPT-new-chat.md` were both stale within an hour of the items existing**, which
+is the failure `CLAUDE.md` rule 1 describes. Both named item 18 as the live blocker, and neither
+listed item 20, raised the day before. Both now name item 21 and list items 0, 1, 15 to 18, and 20
+to 23.
+
+**Next:** run the 4768/4769/4776 count before deciding anything about DC-01. Send the adviser the
+title and web-interface message, which unblocks items 0 and 17 and the three remaining LIVE
+defects. Not done: the `figure-png` false negative in `check_docs.py`, which matches only a literal
+filename.
 
 ## 2026-09-11 (seventh) - Item 19 pushed, WIN-EP-01 reverted to its pre-test state, and one snapshot trap worth keeping.
 

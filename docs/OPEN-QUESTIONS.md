@@ -125,6 +125,91 @@ labeled set.
 
 ---
 
+## 21. Every class C change is an authentication control, and there is no domain controller
+
+**Status:** Open. Raised 2026-09-12 during a documentation sweep. **Ranked above item 18 because
+item 18's recommended fix does not reach this problem.**
+
+**What was verified.**
+
+```
+F:\TeLoS Homelab   ->   SIEM-01, WIN-EP-01
+```
+
+Two virtual machines. `DC-01` appears only in the Tier B table at `lab/blueprint.md:52`, marked
+"optional, add only if the spike says you have time". That same table says DC-01 is what
+"enables identity telemetry (4768/4769/4776)". It was never built, and no entry in `DECISIONS.md`
+or `WORKLOG.md` records building a domain.
+
+**Why it matters. Apply both filters together and the measurable catalogue empties.**
+
+`blueprint.md:295` explains why every class C candidate is an authentication control: class C
+changes alter *how* something happens, and authentication survives the change while proceeding
+differently. That pattern was recorded as a limitation on generality. **Nobody checked whether
+this lab can produce authentication telemetry at all.**
+
+| Change | Stated effect | What it needs | On this lab |
+|---|---|---|---|
+| C4 Restrict outgoing NTLM | "4776 reduced or removed" | Outgoing NTLM to a remote server | The only other machine is Ubuntu and shares nothing. Baseline already zero |
+| C6 Cached credentials to 0 | "cached and offline logon events reduced" | Domain cached credentials. Its own note at `blueprint.md:310` reads "against the domain instead" | No domain, so nothing to reduce |
+| C7 Disable RC4 for Kerberos | "4768 / 4769 fields change" | A key distribution centre | Those events cannot appear on a standalone machine |
+| C2 NTLMv2 only | "4776 package name changes" | NTLM validation traffic | Local SAM validation only, rate unmeasured |
+
+Item 18 leaves **C4 and C6** as the only two rate changes the analyser can see. Both are in the
+table above. So the measurable class C set is currently **zero**, and the experiment would report
+UNCHANGED across the whole catalogue. The study's conclusion would then be produced by a missing
+virtual machine and a keying decision, not by anything true about Windows.
+
+Item 1 already sets the bar: fewer than about 8 class C changes and the precision and recall
+comparison is underpowered.
+
+**Why item 18's fix does not help here.** Value-level keying works when the event still fires and
+its contents change. It does nothing when the event never fires. **Zero to zero has no value to
+key on.** This item is therefore answered first, and item 18 second.
+
+### The cheap check, before building anything
+
+Run against the Phase 3 archive already on SIEM-01. The pattern goes in a file and never on the
+command line, per item 1b:
+
+```bash
+sudo -n /usr/local/sbin/telos-archive tail 1 2026-09-02      # read the exact field spelling
+printf '"eventID":"4768"\n"eventID":"4769"\n"eventID":"4776"\n' > /tmp/telos-ids.txt
+sudo -n /usr/local/sbin/telos-archive count /tmp/telos-ids.txt 2026-09-02
+```
+
+**Zero, or low single digits:** confirmed. **Hundreds:** 4776 fires locally often enough to
+measure, and only C7 is dead.
+
+### Four ways out, not equal
+
+1. **Build DC-01.** Tier B already specifies 2 vCPU, 6 GB, 60 GB, and F: has room. Restores C2,
+   C4, C6 and C7. With item 18 answered, the measurable set goes from 0 to about 7. **Cost:** one
+   to two days, plus domain-joining WIN-EP-01 changes the baseline, so the golden snapshot must be
+   re-taken and every version re-pinned. **This must happen before the golden snapshot, never
+   after.**
+2. **One Windows file server, no domain.** Gives the endpoint somewhere to send outgoing NTLM, so
+   C4 becomes measurable. Half a day, buys one change, no Kerberos and no cached credentials.
+3. **Re-scope to local-only controls.** **C3 (LSA Protection) is the strongest**, because Sysmon
+   Event 10 access to `lsass.exe` is entirely local. C1 writes 4624 for local interactive logons.
+   C5 works if RDP is driven from the host. All three are value changes, so this path needs item
+   18 answered as option 1. Yields two or three positives, not eight.
+4. **Report the restriction.** State in Chapter 3 that the laboratory was a standalone endpoint,
+   that authentication telemetry requiring a domain was out of reach, and restrict every claim to
+   what was measured.
+
+**Recommendation: 1, conditional on the check**, with 3 as the fallback if there is no time left
+to rebuild the golden image.
+
+**What a bad answer means:** if the count comes back at zero and nothing changes, the experiment
+runs to completion and reports that hardening does not create blind spots. That is the worst
+available outcome, because it is a confident result with a cause nobody recorded.
+
+**Blocks:** the size of the catalogue, the golden snapshot, and therefore the start of data
+collection.
+
+---
+
 ## 20. WIN-EP-01 does not audit process creation, and two headline claims depend on it
 
 **Status:** Open. Raised 2026-09-11, measured while testing item 19.
@@ -278,10 +363,14 @@ a real restriction that the limitations section does not currently state.
 
 ## 18. Six of the eight class C changes produce a telemetry effect the analyser cannot measure
 
-**Status:** Open. Raised 2026-09-10. **This is the most serious item in this file.** It is not a
-documentation problem. If the answer is bad, the experiment produces UNCHANGED for most of the
-catalogue and the study reports that hardening does not create blind spots, which would be an
-artifact of the key design and not a fact about the world.
+**Status:** Open. Raised 2026-09-10. It is not a documentation problem. If the answer is bad, the
+experiment produces UNCHANGED for most of the catalogue and the study reports that hardening does
+not create blind spots, which would be an artifact of the key design and not a fact about the
+world.
+
+**Answer item 21 first.** This item was the most serious in the file until 2026-09-12, when item 21
+found that the two changes it leaves measurable, C4 and C6, both need a domain controller that does
+not exist. Value-level keying cannot rescue an event that never fires, so the order is 21 then 18.
 
 **The test already exists in this project.** `lab/blueprint.md:349` removed Constrained Language
 Mode with this reason:
@@ -342,6 +431,63 @@ required. **This is one capture and it settles the whole item.**
 
 **Blocks:** the REVISED-to-FINAL diff, the proposal's Module 2 text, and the start of data
 collection.
+
+---
+
+## 22. The stimulus is asserted identical and never verified
+
+**Status:** Open. Raised 2026-09-12. **This one contaminates results rather than reducing them**,
+so it ranks with item 18 rather than with the cleanup items.
+
+**Where the claim is made.** `T1-PANEL-RESPONSE.md:513` answers panel question Q6 with three
+mechanisms for making two runs comparable, and calls the run manifest "the single strongest answer
+to the question":
+
+> "**Machine-driven stimulus.** The same test IDs, in the same order, with the same delay between
+> them, run by a scheduler. No human types anything during a capture."
+
+`proposal-form-FINAL.md:205` states the same premise: "Identical activity comes from running the
+same scripted adversary emulation suite in both windows, so any difference is attributable to the
+configuration change rather than to different behaviour."
+
+**Why it fails. The same commands are not the same behaviour.** If a hardening change makes an
+atomic test fail, exit early, or take a different path, that test emits fewer events. The manifest
+hashes still match, because the parameters did not change. The comparison proceeds. The analyser
+sees a rate drop and reports LOST.
+
+**The correct reading is "the attack did not happen", not "the evidence disappeared."** Those are
+opposite findings and nothing in the current design can tell them apart.
+
+This is the same distinction the class B and class C split exists to make, applied at run level
+instead of at catalogue level. `blueprint.md:293` requires that "the technique that rule covers is
+**still executable** after the change", which is a judgement made once when the catalogue is
+written. It is never measured per run.
+
+**It cuts both ways, and that is worth stating.** Item 21's class B changes are kept as negative
+controls precisely because they remove the attack along with the telemetry. If a class C change
+partly blocks its own atomic test, that change quietly behaves like a class B one and the labelling
+is wrong for that run only.
+
+**How to answer:** make stimulus success part of the run record, not an assumption.
+
+1. Record **per-atomic exit status and duration** from `Invoke-AtomicTest` in
+   `run_manifest.json`. The runner already returns both.
+2. Record a **stimulus fingerprint**, for example the count of process creations between the start
+   and end fences, or the count of Sysmon Event 1 records carrying the run id.
+3. Measure the fingerprint's own spread across the 5 control runs, where nothing changed. That
+   spread is the tolerance.
+4. **Void the run** when the fingerprint moves by more than that tolerance, and do not analyse it.
+   A voided run is recorded with its reason, not silently dropped.
+
+**Cheap now, impossible later.** The exit statuses exist only while the run is happening. A run
+archived without them cannot be checked afterwards, so this must be in the harness from the first
+version.
+
+**What a bad answer means:** without it, every LOST finding carries an unanswerable question at the
+defense. A panelist asks "how do you know the attack still ran?" and the honest answer is "the same
+commands were issued", which is not the same claim.
+
+**Blocks:** the Phase 6 harness design, and the manifest field list in runbook Phase 4.
 
 ---
 
@@ -438,6 +584,10 @@ a panelist during the defense costs the credibility of every other figure in the
 **Status:** Open. Raised 2026-09-09. Lower damage than the items above, but it changes a reported
 result, so it is a real decision and not a cleanup.
 
+**Read with item 23**, which is the other half of the same function: this item is about the gate's
+failure modes being conflated, item 23 is about its success being unearned. Fix them together, in
+one change to `global_gate()`, rather than touching that function twice.
+
 **The problem.** `global_gate()` returns not-passed for three different situations:
 
 | Line | Situation | What it means |
@@ -468,6 +618,73 @@ regenerate the figure with `make_activity_diagram.py`.
 **What a bad answer means:** if this is left as is, every "no significant change" in the results
 chapter needs a footnote explaining that it may also mean the run failed. That is a worse
 sentence to defend than the fix is to write.
+
+---
+
+## 23. `global_gate()` ignores the alpha it is given, and is the only stage with no noise model
+
+**Status:** Open. Raised 2026-09-12. Two defects in one function. The first is a plain bug, the
+second is a design question. Ranked here with item 16, which is about the same function.
+
+### Defect one: the alpha parameter does not reach the gate
+
+`analyse()` takes `alpha` at `differential.py:253` and passes it to `classify()` at line 284. But
+line 273 calls the gate with no alpha:
+
+```python
+passed, gate_p, gate_stat = global_gate(pre, post, keys)
+```
+
+and its signature at line 56 accepts none, so line 96 compares against the module constant:
+
+```python
+def global_gate(pre: Phase, post: Phase, keys: list[str]) -> tuple[bool, float, float]:
+    ...
+    return bool(p < ALPHA), float(p), float(chi2)
+```
+
+So `analyse(alpha=0.01)` moves every per-key test and **silently leaves the gate at 0.05**.
+
+**Why it matters beyond tidiness.** `proposal-form-FINAL.md:283` promises that the thresholds are
+"configurable parameters of the system, not constants of the method, and the sensitivity of
+precision and recall to each is examined during evaluation". A sensitivity sweep on alpha would
+produce a curve in which one stage of the pipeline never moved, and nothing in the output would
+say so.
+
+**Fix:** add `alpha: float = ALPHA` to `global_gate()`, pass it from `analyse()`, and add a test
+that a gate which passes at 0.05 does not pass at a small enough alpha.
+
+### Defect two: the gate has no noise model, unlike every other stage
+
+The per-key test uses the dispersion and the coefficient of variation measured from the control
+runs. **The gate uses neither.** It is the only stage in the pipeline that ignores the measured
+variance floor, which is the project's central idea.
+
+**Why that may break it.** Chi-square power grows with sample size. The demo measures a CoV of
+0.33 to 1.55 percent, so ordinary run-to-run variation shifts the profile proportions by a small
+but non-zero amount. With thousands of events per phase, a shift that size can reach `p < 0.05`.
+**A gate that passes on noise is not a gate**, and everything downstream is conditioned on it.
+
+Item 16 is the other half of the same problem: the gate's *failure* modes are conflated. This item
+is about its *success* being unearned.
+
+**How to answer, and it costs no new infrastructure.** Run `global_gate()` on control run 1 versus
+control run 2, where nothing changed, and on every other control pair. Five control runs give ten
+pairs.
+
+- **The gate does not pass on any pair:** it is sound at these counts. Record the result and close
+  this half.
+- **The gate passes on some pair:** it is measuring noise. Then either calibrate its threshold from
+  the control pairs instead of fixing alpha at 0.05, or report an effect size such as Cramér's V
+  beside the p value and state plainly that the gate answers only "did anything change at all".
+
+**This is a Phase 7 spike deliverable**, not separate work. The control runs are already required
+for Q1.
+
+**What a bad answer means:** if the gate passes on noise and this is never checked, the global test
+is presented as a safeguard that does no filtering. A panelist who knows how chi-square behaves at
+large N will ask, and "we did not test it" is a bad answer when the control data needed to test it
+was collected anyway.
 
 ---
 
