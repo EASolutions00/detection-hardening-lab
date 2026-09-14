@@ -564,12 +564,19 @@ blind spot, which is the case the thesis is named after.
 | `T1_Detection of Hardening-Induced Blind Spots REVISED.docx` | Embeds `T1_Activity_Diagram_Swimlane.png` from **2026-08-15**, not the revised sheets. Confirmed by size match: `word/media/image1.png` is 326,941 bytes. **This is the remaining piece of this item.** |
 | `thesis/T1/proposal-form-REVISED.md` | Line 416, "the key is the triple of telemetry source, numeric event...". Superseded by FINAL, so this only matters if REVISED is ever reused. |
 
-**Not yet checked:** `T1-PANEL-RESPONSE.md`, `T1-REVISION-DRAFT.md`, `T1-REVISIONS-LIST.md`
-Revision 14 (known separately to say field **values** where the code uses field **presence**).
+**Checked since:** `T1-PANEL-RESPONSE.md` and `T1-REVISIONS-LIST.md`, on 2026-09-10 and again on
+2026-09-14, against the code and the regenerated figures. `T1-REVISIONS-LIST.md` Revision 14 now
+describes field **presence**. **Still not checked:** `T1-REVISION-DRAFT.md`, which is superseded
+and only matters if reused.
 
-**Note on the PNGs.** The four PNG renders in the documents folder were made from the stale SVGs
-and are now renamed `*.SUPERSEDED-2026-08-28.png`, so the wrong picture cannot be inserted by
-accident. Word inserts SVG directly and keeps it as vector, so no PNG is needed.
+**Note on the PNGs, corrected 2026-09-14.** This note used to say the four PNG renders were renamed
+`*.SUPERSEDED-2026-08-28.png`. That was true on 2026-09-09. **The files are no longer in the
+documents folder**, and no record says when they were removed. The only PNG there is the original
+2026-08-15 diagram. Word inserts SVG directly and keeps it as vector, so no PNG is needed.
+
+**Figures regenerated again on 2026-09-14** for D1, D2, D3, the capture check and baseline
+promotion, and installed in the documents folder. **The `.docx` still embeds the 2026-08-15 image**,
+so the remaining piece of this item is unchanged: insert the four current SVGs into the Word file.
 
 **How to answer:** grep each for "event type", "event-type key", and "field value", and compare
 against `eventkey.py`. Not against another document.

@@ -17,6 +17,89 @@ Next:
 
 ---
 
+## 2026-09-14 (third) - Step 4. The documents now agree with the code, the figures and today's decisions.
+
+**Did:** edited two repository documents and four thesis documents so they match the gate fix, D1, D2,
+D3 and baseline promotion, and corrected two false statements of my own from 2026-09-12. Commit
+`5ccabc2` carried Step 3 before this began. Code first, figures second, documents third, as planned.
+
+### Repository
+
+| File | Change |
+|---|---|
+| `lab/blueprint.md` run protocol | Steps 4 and 5 swapped: the change, its reboot and a second settle now come **before** the start fence (D2). Step 11 splits the manifest into hashed parameters and an unhashed record |
+| `docs/RUNBOOK-homelab.md` Phase 6 | The same reorder, with the reason and the unmeasured residual reboot stated. Step 11 names both manifest parts and warns that an unsorted or timestamped `parameters` block makes every hash differ. "The Wazuh API is reachable" became the archive export it actually uses |
+| `docs/DECISIONS.md` | A correction entry superseding "No renderer is installed" from 2026-09-09, with the Edge and PowerPoint evidence, and the unrecorded disappearance of the renamed PNGs |
+| `docs/OPEN-QUESTIONS.md` item 15 | PNG note corrected; the panel response and revisions list recorded as checked; the `.docx` still the remaining piece |
+
+### Thesis documents
+
+**`proposal-form-FINAL.md`**, the submission, with the template structure untouched:
+- Research Design and Concept: the manifest in two parts; the change applied before the window;
+  "the only variable that differs" softened to "designed to be", with per-run test completion named as
+  the check.
+- Preconditions: "a SIEM with a programmatic interface, indexer API credentials" became "a SIEM that
+  keeps every event, read access to the event archive".
+- Outputs: the verdict is "no blind spot found", "blind spots found", or "not testable".
+- Module 1: change kept outside the hash; applied by script before the window; events exported from
+  the archive, not "retrieved through its indexer API".
+- Module 3: **four** stages, not three; the capture check and single-key case; LOST defined in full.
+- Module 5: the detection engineer, not the module, decides risk acceptance; promotion on both closures.
+- Activity diagram text: Phases 2, 3 and 4 rewritten for D2 and the capture check; "not the PNG files
+  beside them" removed, because there are none.
+
+**`T1-REVISIONS-LIST.md`:** the same corrections in its own revision entries, `per-event-type` fixed at
+Revision 12, a dated note under Revision 18 saying what changed in the diagram on 14 September, and the
+PNG sentence removed.
+
+**`T1-PANEL-RESPONSE.md`:**
+- The legend now says tint means "the system performs this step", and **"the tint says who performs a
+  step, not whether it is built yet"**.
+- A new row in the "what was wrong" table: a failed capture looked like a result.
+- The Q7 walkthrough, the words said aloud to the panel, rewritten for D2, the capture check, ranked
+  fields instead of drafted fixes, and promotion.
+- The decision-rule pseudocode now starts with the capture check and the gate, and LOST requires the
+  correction. Stated precisely: a drop to zero survives easily for a steady key and may not for a very
+  noisy one, because the test divides by that key's dispersion.
+- Q5 tier 3 is "ranked fields", not "a skeleton Sigma rule", with the date and reason.
+- Q6 manifest in two parts, and **the stimulus limit said before a panelist can raise it**.
+- The defense sentence changed from "Repeatability is not a promise, it is enforced" to "designed to be
+  enforced ... Neither check is built yet."
+- My two 2026-09-12 errors removed: the PNG files "beside them", and "Nothing in this project renders PNG".
+
+**`ACTIVITY-DIAGRAM-EXPLAINED.md`:** box numbers 1 to 31 kept stable, with the capture check added as
+**Decision 0** and the outcome box described without a number. Snapshot "byte for byte" became "a known
+state", with the measured 5 h 4 min clock as the example. "Five is the minimum" became "the number the
+design fixes, with no recorded statistical reason". A warning that the 4688 CommandLine example cannot
+be run on WIN-EP-01 (items 20 and 18). The description of the original diagram corrected against the
+image. Section 10's wrong list of three "could not test" cases replaced by what the capture check still
+misses. Present tense for unbuilt parts changed to "designed to". Three new self-test questions.
+
+### Verified
+
+```
+55 passed
+LIVE (18 hits)   all four live documents: "all expected steps mentioned"
+```
+
+**LIVE fell from 21 to 18.** The three real `per-event-type` defects are gone. The 18 left are 15
+correct explanations the patterns cannot tell from defects, two of which moved down a few lines when
+text was added above them, and the 3 web-application claims waiting on the adviser (item 17).
+
+### Deliberately not done
+
+- **The VM precondition** at `proposal-form-FINAL.md:240`, `T1-PANEL-RESPONSE.md:244` and the Scope
+  and Limitations section. `DECISIONS.md` 2026-09-11 records that wording as a separate decision not yet
+  made. Still undecided.
+- **The web application claim**, item 17, blocked on the adviser.
+- **Inserting the current SVGs into the `.docx`**, item 15. A Word task.
+- **`T1-REVISION-DRAFT.md`**, superseded, never checked line by line.
+- **`VarianceModel.from_control()` accepting an empty control run.** A code defect, recorded in the
+  explainer's limits and in the Step 2 entry, still without an item number.
+
+**Broke / stuck on:** nothing failed. One inconsistency caught on the final read: FINAL's Research
+Design had been softened while its Concept section still made the full-strength claim. Both now match.
+
 ## 2026-09-14 (second) - Step 3. All four figures regenerated for D1, D2, D3 and the new gate, and looked at.
 
 **Did:** rewrote `make_activity_diagram.py`, edited the pipeline and noise floor generators, regenerated

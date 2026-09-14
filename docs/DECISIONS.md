@@ -8,6 +8,38 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-09-14 - Correction to 2026-09-09: PNG can be rendered on this host, and the renamed PNGs are gone
+
+**This supersedes one sentence of the 2026-09-09 entry "Figures are generated from a script, not
+hand-drawn". That entry is kept as written.**
+
+**What it said:** "It does not render PNG. No renderer is installed and none is added."
+
+**What is true.** The first sentence is right about the figure scripts: they write SVG and nothing
+else. **The second is false.** This log's WORKLOG entry of 2026-08-20 records rendering a slide to
+PNG "through the installed PowerPoint COM object". And on 2026-09-14 Microsoft Edge in headless mode
+rendered all four figures to PNG so they could be looked at:
+
+```
+msedge.exe --headless=new --disable-gpu --hide-scrollbars --screenshot=<scratch>.png ... <figure>.svg
+exit=0
+```
+
+**The decision does not change.** The figures are generated as SVG, and SVG is what goes into Word,
+because Word keeps it as vector. Only the reason given was wrong. PNG renders made for checking are
+scratch files and are never committed or placed in the documents folder.
+
+**How the false sentence spread.** On 2026-09-12 it was repeated into `T1-PANEL-RESPONSE.md` as
+"Nothing in this project renders PNG", in the same edit that kept a reference to PNG files "beside"
+the SVGs. Both were corrected on 2026-09-14.
+
+**A related fact with no record.** The four `*.SUPERSEDED-2026-08-28.png` files that WORKLOG
+2026-09-09 records renaming are no longer in the documents folder. Nothing says when they were
+removed or by whom. The only PNG left there is `T1_Activity_Diagram_Swimlane.png`, the original
+submitted diagram.
+
+**Cost if wrong:** none. No result depends on it.
+
 ## 2026-09-14 - The accepted baseline is promoted when a finding closes either way: FIXED or ACCEPTED
 
 **Decision:** when a finding closes, the current profile becomes the accepted baseline that later runs

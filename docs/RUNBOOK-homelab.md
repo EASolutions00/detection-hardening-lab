@@ -708,7 +708,8 @@ what your reproducibility claim needs. Sixteen branching snapshot chains would a
 ## Phase 6. The capture harness
 
 Write this in Python on the host, in `src/`. It runs on the **Windows host, not in a VM**,
-because `vmrun.exe` is local and the Wazuh API is reachable over vmnet2.
+because `vmrun.exe` is local and SIEM-01 is reachable over vmnet2 for the archive export in
+step 10.
 
 One capture window, in order:
 
@@ -716,9 +717,16 @@ One capture window, in order:
 2. `vmrun -T ws start <vmx> nogui`
 3. Wait for VMware Tools, then **settle 180 seconds**. Boot produces an event storm.
    Do not count it.
-4. Fire the **start fence**.
-5. If this is a post-change run: apply the hardening change by script, reboot if needed,
-   settle again.
+4. **If this is a post-change run:** apply the hardening change by script, reboot if needed,
+   and **settle 180 seconds again**. Pre-change and control runs skip this step.
+5. Fire the **start fence**.
+
+   **Why the change comes before the fence, changed 2026-09-14 (D2 in `DECISIONS.md`).** This
+   list used to fire the fence first and apply the change second. That put the change, its
+   reboot and the boot event storm **inside post-change windows only**: a second difference
+   between the phases besides the change being measured. Whether the second settle fully
+   absorbs the extra reboot is **unmeasured**. Phase 7 checks it by comparing a control run
+   with an extra reboot against one without.
 6. Run the Atomic Red Team suite over the pinned technique list.
 7. Fire the **end fence**.
 8. **Drain 120 seconds.** The agent buffers and the manager writes to disk. Cutting the
@@ -733,7 +741,21 @@ One capture window, in order:
     It prints the `.gz` path, then `bytes_gz`, `sha256_gz` and `lines`. Copy the file to
     `data/runs/<run_id>/` and **verify it against those three values**. If the window
     crossed midnight, export **both** dates.
-11. Write `data/runs/<run_id>/run_manifest.json` with every field listed in Phase 4.
+11. Write `data/runs/<run_id>/run_manifest.json` in **two parts** (D2, `DECISIONS.md`
+    2026-09-14):
+
+    - **`parameters`, hashed.** Configuration snapshot ID, Atomic test IDs and versions, window
+      length, repetitions, rule set version, thresholds, Sysmon config hash, agent version,
+      harness commit, and every other value listed in Phase 4. **Two runs are compared only
+      when this hash matches.** Nothing in it may change from run to run, and the hardening
+      change is deliberately not in it, so pre-change and post-change runs can match.
+    - **`record`, not hashed.** Run ID, phase, change ID and change script hash, fence
+      timestamps, host load, and each Atomic test's exit status and duration (OPEN-QUESTIONS
+      22).
+
+    Serialise `parameters` with sorted keys before hashing. An unsorted dictionary or a
+    timestamp inside it makes every hash different, and the comparison would then refuse
+    every pair while appearing to work.
 
 ### Why step 10 does not truncate
 

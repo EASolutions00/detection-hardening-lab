@@ -161,11 +161,13 @@ Each capture window, driven by the host harness:
 2. `vmrun start <vmx> nogui`
 3. Poll for VMware Tools ready, then **settle 180 s** (let boot-time event storm
    drain and stop counting it)
-4. Emit **start fence**: run a uniquely-named binary/command that produces a
+4. If post-change phase: `vmrun runScriptInGuest` → apply the hardening change,
+   reboot if required, settle again. **This comes before the start fence**, changed
+   2026-09-14 (D2, `docs/DECISIONS.md`): with the fence first, the change and its
+   reboot fell inside post-change windows only, a second difference between phases.
+5. Emit **start fence**: run a uniquely-named binary/command that produces a
    distinctive Sysmon EventID 1. This timestamps the window from *inside the
    telemetry*, which is more reliable than host wall-clock.
-5. If post-change phase: `vmrun runScriptInGuest` → apply the hardening change,
-   reboot if required, settle again
 6. `vmrun runScriptInGuest` → `Invoke-AtomicTest` over the pinned technique list
 7. Emit **end fence** (second distinctive event)
 8. **Drain 120 s.** Agent buffering and manager write to `archives.json` are not
@@ -175,8 +177,13 @@ Each capture window, driven by the host harness:
     `sudo -n /usr/local/sbin/telos-archive export YYYY-MM-DD`, pull the `.gz` to
     `E:\runs\<run_id>\`, and **verify** it against the `sha256_gz` and `lines`
     the export command printed. **Do not truncate anything.**
-11. Write `run_manifest.json`: run_id, phase, change_id, git commit of harness,
-    Sysmon config hash, ART commit, Wazuh version, fence timestamps, host load
+11. Write `run_manifest.json` in two parts (D2, `docs/DECISIONS.md` 2026-09-14).
+    **Hashed parameters**, which must match between compared runs: configuration
+    snapshot ID, ART commit and test IDs, window, repetitions, rule set version,
+    thresholds, Sysmon config hash, Wazuh version, git commit of harness. **Recorded,
+    not hashed**: run_id, phase, change_id and change script hash, fence timestamps,
+    host load, per-atomic exit status and duration (OPEN-QUESTIONS 22). The earlier
+    single list mixed both, so its hash could never have matched between two runs.
 
 ### Why step 10 no longer truncates (changed 2026-09-03)
 
