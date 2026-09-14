@@ -34,6 +34,12 @@ What was wrong with the 2026-08-28 version, checked against src/telos/ on
 Caption 2 is new. The old figure showed the noise band alone, which invited the
 reader to think the band is the whole decision rule. It is one of three
 conditions (differential.py:231).
+
+Changed on 2026-09-14, after an outside review: caption 2 said "a drop is
+reported only when all three hold". That is the rule for REDUCED. LOST, which is
+this figure's own middle row, needs zero events after the change and a corrected
+q at or below 0.05, and is never tested against the ratio or the band. The
+caption now states both.
 """
 
 from pathlib import Path
@@ -121,9 +127,13 @@ def build() -> str:
     body.append(text(600, 356, "shaded band = 3 × the run-to-run variation "
                                "measured from the 5 control runs, where "
                                "nothing was changed", size=11.5, fill=MUTED))
-    body.append(text(600, 374, "a drop is reported only when all three hold:  "
-                               "q ≤ 0.05,   ratio ≤ 0.5,   and the drop "
-                               "exceeds the band", size=11.5, fill=MUTED))
+    # CHANGED 2026-09-14: "a drop is reported only when all three hold" applied
+    # to every class. In classify() it is the rule for REDUCED. LOST needs zero
+    # after and a corrected q at or below 0.05, which is this figure's own
+    # middle row.
+    body.append(text(600, 374, "REDUCED needs all three:  q ≤ 0.05,  ratio ≤ 0.5,  "
+                               "drop exceeds the band   ·   LOST needs zero after "
+                               "and q ≤ 0.05", size=11.5, fill=MUTED))
 
     aria = ("Three event keys compared against their measured noise band. One "
             "drop falls inside the band and is not a finding. One is zero after "

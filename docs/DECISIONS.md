@@ -8,6 +8,28 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-09-14 - The accepted baseline is promoted when a finding closes either way: FIXED or ACCEPTED
+
+**Decision:** when a finding closes, the current profile becomes the accepted baseline that later runs
+are compared against. That happens after a passing re-validation (closed as FIXED) **and** after a
+documented risk acceptance (closed as ACCEPTED).
+
+**Why.** The two documents disagreed. The activity diagram promoted the baseline only after FIXED.
+`T1-PANEL-RESPONSE.md:528` promoted it "once a change is accepted". After a risk acceptance the changed
+machine **is** the machine the organization runs. Comparing every later run against the pre-change
+profile would report the accepted loss again on every run, and a finding that reappears each time
+teaches the reader to ignore findings.
+
+**Which profile.** "The current profile" means the latest capture: the post-change profile after an
+acceptance or a rule fix, which does not change what the host emits, and the re-validation capture
+after a telemetry fix, which does.
+
+**What must follow:** the diagram's closing box reads "Close the finding as FIXED or ACCEPTED; promote
+the current profile to the accepted baseline", and both paths enter it.
+
+**Cost if wrong:** low. Nothing is built. If a reviewer wants acceptance to leave the old baseline in
+place, it is one arrow in the figure and one sentence in the panel response.
+
 ## 2026-09-14 - A capture that recorded nothing is NOT_TESTABLE, never a finding (closes OPEN-QUESTIONS 16)
 
 **Decision:** a run has one of three profile outcomes, **CHANGED, UNCHANGED or NOT_TESTABLE**. Any

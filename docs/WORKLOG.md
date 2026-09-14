@@ -17,6 +17,98 @@ Next:
 
 ---
 
+## 2026-09-14 (second) - Step 3. All four figures regenerated for D1, D2, D3 and the new gate, and looked at.
+
+**Did:** rewrote `make_activity_diagram.py`, edited the pipeline and noise floor generators, regenerated
+all four SVGs, rendered each one, fixed what the renders showed, and installed them in the documents
+folder. Commit `cce484a` carried Step 2 before this began.
+
+### How the figures were looked at, and a correction that follows from it
+
+Each SVG was rendered to a PNG in the session scratchpad with Microsoft Edge in headless mode:
+
+```
+msedge.exe --headless=new --disable-gpu --hide-scrollbars --user-data-dir=<scratch>
+           --screenshot=<scratch>\<name>.png --window-size=1800,2258 file:///<path>.svg
+exit=0
+```
+
+The PNGs are scratch files and are not committed. **This is a second piece of evidence that
+`DECISIONS.md` 2026-09-09, "No renderer is installed", is wrong.** Edge renders SVG, and PowerPoint
+already rendered PNG on 2026-08-20. The correction entry belongs to Step 4.
+
+### Activity diagram, both sheets
+
+| Change | Why |
+|---|---|
+| The tint means the system performs the step. Four boxes outside the system lane went white; the rate-ratio test, both profile builders, align, traverse, impact score and the re-run boxes went tinted | D3 |
+| `Sheet.step()` refuses a tinted box outside the Proposed System lane, a white box inside it, and any box across a lane boundary | D3, so the meaning cannot drift again. Checked by trying all three: each raised `ValueError` |
+| New decision "Did every repetition in both phases record any events?" with its own end, "Run is NOT TESTABLE: investigate the capture, then re-run" | `capture_problem()`, Step 2 |
+| "Record no significant change" in the Monitored Environment lane became "Record no blind spot found and the profile outcome", in the system lane | The system does it, and untestable runs no longer arrive there. The wrong lane dated from the 2026-08-15 original |
+| The gate names alpha and says a single key skips chi-square | `global_gate()` |
+| The classify box states LOST's rule separately from REDUCED's "all three" | `classify()` |
+| Remediation ends in "ranked discriminating fields" | D1 |
+| No post-change snapshot. Phase 2 is the engineer supplying the change script; the system records its ID and hash outside the hashed parameters; each post-change run restores the configuration snapshot, applies the change, reboots if needed and settles **before** the window opens | D2 |
+| "Pull via the SIEM API" became "Export the archived events" | The lab reads `archives.json`, not the indexer |
+| Arrows computed from box positions instead of typed as coordinate strings | Every arrow had to move. By hand this is where errors come from |
+| Lanes widened, sheet width 1690 to 1800 | The system lane needed a second column for the two outcome boxes. **Text prints about 6 percent smaller when fitted to a page** |
+
+**Three defects found only by rendering, none listed in the review:**
+
+1. **"Close the finding as FIXED" had no arrow to its end node.** Visible in the render of the
+   committed 2026-09-09 sheet before anything was changed.
+2. **The path out of "Restore telemetry" ran straight through connector B**, so a control-flow arrow
+   and a data connector shared one line.
+3. **An arrow ran through the phase band label text** on both sheets. Fixed on Sheet 2 by turning the
+   arrow above the band, and on Sheet 1 by shortening the Phase 3 label.
+
+### Pipeline and noise floor figures
+
+- **Pipeline:** the gate box now starts with the capture check, names UNCHANGED and NOT TESTABLE, alpha,
+  and the single-key case. The decision rule says REDUCED needs all three and LOST needs zero after and
+  q at or below alpha. The post-change stream says "change applied by script". Everything below the gate
+  moved down 18.
+- **Noise floor:** the caption said "a drop is reported only when all three hold", while the figure's own
+  LOST row is reported under a different rule. It now states both rules.
+
+### Installed and verified
+
+All four SVGs copied to `New folder (5)` and its `Activity Diagram` subfolder. SHA-256, first 12
+characters, identical in all three places:
+
+```
+68ea5ad35589  T1_Activity_Diagram_Revised_Sheet1.svg
+0f97fea35eb8  T1_Activity_Diagram_Revised_Sheet2.svg
+4b51ba62ba8a  T1_Figure_Analysis_Pipeline.svg
+1e76dc7d190c  T1_Figure_Noise_Floor.svg
+```
+
+`55 passed`. LIVE document hits unchanged at 21.
+
+### Baseline promotion, decided and drawn the same day
+
+The student decided the accepted baseline is promoted when a finding closes **either** way, FIXED or
+ACCEPTED (`DECISIONS.md` 2026-09-14). Sheet 2 now routes "Document and accept the residual visibility
+risk" into a single closing box, "Close the finding as FIXED or ACCEPTED; promote the current profile to
+the accepted baseline", along a path that runs right of the re-review loop so the two never cross.
+
+**Rendering caught a contradiction the decision itself created.** The Phase 5 band still read "a finding
+closes only after a passing re-run", and an accepted finding now closes without one. It reads "a fix
+closes only after a passing re-run". Sheet 2's hash above is the version after both changes.
+
+**Broke / stuck on:** nothing failed. The one real risk was the rewrite itself, which is why every
+sheet was rendered and read after generating, not before.
+
+**The figures are now ahead of the documents.** Until Step 4, these disagree with the new figures:
+`ACTIVITY-DIAGRAM-EXPLAINED.md`, which numbers and quotes the old boxes; the legend at
+`T1-PANEL-RESPONSE.md:113-115`; and the Phase 2 and 3 descriptions in `proposal-form-FINAL.md`.
+This order is deliberate: code first, figures second, documents third.
+
+**Not drawn, recorded in the generator's docstring:** a single-key profile too rare to test, and the
+undecided question of promoting the baseline after risk acceptance.
+
+**Next:** Step 4, the documents.
+
 ## 2026-09-14 - An outside review verified, D1 to D3 decided, and the gate fixed. A dead agent is no longer reported as blind spots.
 
 **Did:** verified a pasted outside review of the diagram, explainer and proposal against the files, the
