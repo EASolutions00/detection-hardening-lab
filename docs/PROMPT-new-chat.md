@@ -59,8 +59,8 @@ Read these four, in order. Expand `REPO` first.
    **Treat it as a map, not as truth.**
 
 2. `REPO\docs\OPEN-QUESTIONS.md`
-   Items **0, 1, 15, 17, 18, and 20 to 23** are the live ones. All are summarised in section 5.
-   Items 16 and 19 are answered. The file is ranked by damage, so read from the top.
+   Items **1, 15, 18, and 20 to 23** are the live ones. All are summarised in section 5.
+   Items 0, 16, 17 and 19 are answered. The file is ranked by damage, so read from the top.
 
 3. `REPO\docs\DECISIONS.md`
    The newest five entries.
@@ -245,10 +245,6 @@ Item 20 — blocks two headline claims
     events, so the canonical event key example does not exist on this endpoint. Sysmon Event 1
     is carrying process creation instead.
 
-Item 17 — blocks on the adviser
-    Three live documents state the system is a server-side web application. It is in no decision
-    record and was never confirmed.
-
 Item 15 — blocks submission
     Which documents still carry the superseded event key. The `.docx` still embeds the
     2026-08-15 diagram, not either revised sheet.
@@ -256,8 +252,10 @@ Item 15 — blocks submission
 Item 1 — blocks data collection
     The 16-change catalogue. Three control IDs verified, several still `(unverified)`.
 
-Item 0 — blocks on the adviser
-    Exact approved title wording, whether the article "a" is added.
+Settled 2026-09-14, so do not reopen these
+    The title is the panel's proposed wording, verbatim, with no article added (item 0). The system
+    is a Python application with a graphical interface beside the SIEM, not a web application
+    (item 17). The interface toolkit is not decided. Both in `REPO\docs\DECISIONS.md`.
 
 Not an item yet — blocks the revisions list
     The REVISED-to-FINAL diff has never been run. Measured 2026-09-10: FINAL is 6,395 words

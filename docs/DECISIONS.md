@@ -8,6 +8,78 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-09-14 - The system is a Python application with a graphical interface beside the SIEM, not a web application (closes OPEN-QUESTIONS 17)
+
+**Decision, by the student:** no web application. The system is a Python application with a clean
+graphical interface, running on a machine beside the SIEM. It is not inside the SIEM and not on the
+monitored endpoints.
+
+**The student's reason:** the system works beside the SIEM, so a web application is not needed.
+
+**Why that reason holds.** A server-side web application brings a server to host, user sessions,
+access control, and a deployment of its own. Those serve many people reaching one shared instance
+from their browsers. Nothing in the method needs that. What the method needs is one operator who
+defines a run, watches it, and reads the result, on a machine that can reach the SIEM's event
+archive and the hypervisor. A graphical interface over the existing Python package does that.
+
+**What it closes.** OPEN-QUESTIONS 17: "server-side web application ... distributed as a set of
+containers" was marked ASSUMPTION four times in a draft, never confirmed, and then written as fact
+into `proposal-form-FINAL.md`, `T1-PANEL-RESPONSE.md` and `T1-REVISIONS-LIST.md`. Those were the
+last three real defects the document checker reported.
+
+**What stays exactly as it was:**
+- The analytical core is the Python package in `src/telos/`. The interface calls it.
+- The command line still runs the experiments reported in the study, so every measurement comes from
+  the same code the interface uses.
+- **No new agent on the endpoints.** The endpoints keep the SIEM agent, which only collects.
+
+**One correction made in the same paragraph, backed by an existing decision.** The documents said the
+system "drives the experiment from the server side through that existing channel", meaning the SIEM
+agent. The Wazuh feature that lets the manager run commands on an endpoint, active response, was
+**disabled** on 2026-09-03, with the reason that the measuring instrument must not be able to change
+the machine under test. So the documents now say the attack tests reach the endpoint through an
+execution channel the operator controls, the hypervisor's guest operations in the laboratory, and that
+the SIEM agent executes nothing.
+
+**Cost if wrong:** an organization that wants several analysts sharing one instance from their
+browsers would need a web front end later. Because the core is a package and the interface only calls
+it, that front end could be added without changing any measurement or any stored run.
+
+**Not decided here:** which toolkit builds the graphical interface. That is a separate choice with its
+own schedule cost, and nothing in the documents names one.
+
+## 2026-09-14 - The title is the panel's proposed wording, verbatim, with no grammar correction (closes OPEN-QUESTIONS 0)
+
+**Decision, by the student:** the title is exactly what the panel proposed:
+
+> Detecting Security Blind Spots Through Pre- and Post-Hardening Events Using Differential Analysis
+> Algorithm
+
+No article is added. No other word changes.
+
+**Why.** It is the wording the panel approved. Any change, even one word, produces a title the panel
+did not see. OPEN-QUESTIONS 0 already recorded that keeping the panel's wording costs nothing: "use it
+everywhere and stop revisiting it."
+
+**What changes in the documents.** `proposal-form-FINAL.md` and `T1-REVISIONS-LIST.md` carried "Using
+**a** Differential Analysis Algorithm". Both now carry the panel's wording. `T1-REVISIONS-LIST.md` also
+said the article was "raised as a wording question to the adviser". No record shows that question was
+ever asked, so that sentence was removed rather than left as a claim. The public `README.md` already used
+the panel's exact wording and needed nothing.
+
+**The obligation this creates, and it is not optional.** The title names a category, "Differential
+Analysis Algorithm", not a specific method. **Chapter 3 must name the specific algorithm and define it
+once**, as the composite of profile alignment, the capture check and global gate, dispersion-aware rate
+testing, Benjamini-Hochberg correction, and classification. `T1-PANEL-RESPONSE.md`'s title section
+already warns that a panel should not accept "Algorithm" attached to a category with nothing behind it.
+
+**Cost if wrong:** low. A reader may notice the missing article. The answer is one sentence: it is the
+panel's approved title, used verbatim.
+
+**Not changed:** the filename `Detecting Security Blind Spots Through Pre- and Post-Hardening Events
+Using a Differential.docx` still contains "a". It is a filename, not the title, and renaming the
+student's file was not asked for.
+
 ## 2026-09-14 - Correction to 2026-09-09: PNG can be rendered on this host, and the renamed PNGs are gone
 
 **This supersedes one sentence of the 2026-09-09 entry "Figures are generated from a script, not

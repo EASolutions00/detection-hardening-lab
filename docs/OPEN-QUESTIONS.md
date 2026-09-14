@@ -7,9 +7,15 @@ Ranked by how much damage the wrong answer does.
 
 ---
 
-## 0. What is the exact approved title wording?
+## 0. What is the exact approved title wording? (ANSWERED 2026-09-14)
 
-**Status:** Open. Cheap to close. Raised 2026-09-02.
+**Status:** **Answered 2026-09-14, by the student's decision. The panel's proposed title, verbatim,
+with no grammar correction.** Recorded in `DECISIONS.md` 2026-09-14. The adviser was never asked, and
+did not need to be: the text below already said that keeping the panel's wording means "nothing bad".
+`proposal-form-FINAL.md` and `T1-REVISIONS-LIST.md` carried the article "a" and were changed back.
+The Chapter 3 note at the end of this item still applies and is now an obligation. Raised 2026-09-02.
+
+The text below is kept as it was written.
 
 **Why it matters:** the title now appears in the public README, on every document from here,
 and eventually on the cover page and the library record. It should be settled once, not drifted.
@@ -491,11 +497,16 @@ commands were issued", which is not the same claim.
 
 ---
 
-## 17. Is the system a server-side web application? Nobody ever decided.
+## 17. Is the system a server-side web application? Nobody ever decided. (ANSWERED 2026-09-14)
 
-**Status:** Open. Raised 2026-09-09 by an automated scan of every thesis document. Ranked at the
-top because **it is already written as settled fact in the document that will be submitted**, and
-it is the only item here where the record was never made at all.
+**Status:** **Answered 2026-09-14, by the student's decision. No. It is a Python application with a
+clean graphical interface, running beside the SIEM.** The student's reason: it works beside the SIEM,
+so a web application is not needed. Recorded in `DECISIONS.md` 2026-09-14. All three documents below
+were rewritten the same day, and the document checker's rule now treats any remaining web-application
+claim as a defect against that decision. **Still not decided: which toolkit builds the interface.**
+Raised 2026-09-09.
+
+The text below is kept as it was written.
 
 **What three live documents assert:**
 
@@ -1631,6 +1642,33 @@ data was never collected.
 ---
 
 ## Answered
+
+### Is the system a server-side web application? (answered 2026-09-14, item 17)
+
+**Answer: no, by the student's decision.** A Python application with a clean graphical interface,
+running beside the SIEM. Reason given: the system works beside the SIEM, so a web application is not
+needed. Full entry, including the one-operator reasoning, the cost if wrong, and the correction to the
+"drives the experiment through the SIEM agent" sentence, in `DECISIONS.md` 2026-09-14.
+
+**Evidence it is applied:** `proposal-form-FINAL.md` System Type and Deployment and the Gantt chart,
+`T1-REVISIONS-LIST.md` Revision 8 and the schedule revision, and `T1-PANEL-RESPONSE.md` Q1 and Q8 were
+rewritten on 2026-09-14. The checker's `web-app` rule now reports any remaining claim as a defect.
+
+**Left open:** the toolkit for the interface.
+
+### What is the exact approved title wording? (answered 2026-09-14, item 0)
+
+**Answer: the panel's proposed title, verbatim, with no grammar correction**, by the student's
+decision. "Detecting Security Blind Spots Through Pre- and Post-Hardening Events Using Differential
+Analysis Algorithm". Full entry in `DECISIONS.md` 2026-09-14.
+
+**Evidence it is applied:** `proposal-form-FINAL.md` Proposed Title and `T1-REVISIONS-LIST.md`
+Revision 1 no longer carry the article; the public `README.md` already matched. A sentence in the
+revisions list claiming the article was "raised as a wording question to the adviser" was removed,
+because no record shows that question was ever asked.
+
+**The obligation it leaves:** Chapter 3 must name and define the specific algorithm, because the title
+names only a category.
 
 ### Should `global_gate()` distinguish "no change" from "could not test"? (answered 2026-09-14, item 16)
 

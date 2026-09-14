@@ -17,6 +17,95 @@ Next:
 
 ---
 
+## 2026-09-14 (fourth) - Two decisions by the student: the panel's title verbatim, and a graphical application instead of a web application. Items 0 and 17 closed.
+
+**Decided, in the student's words:** "we are not gonna change the panels proposed title with minor
+grammar correction" and "if the system will work beside SIEM, no need for the web application. I just
+need a clean GUI for the system."
+
+Commit `23e814f` carried Step 4 before this began.
+
+### Recorded
+
+Two entries in `DECISIONS.md`, both 2026-09-14. OPEN-QUESTIONS 0 and 17 marked answered where they
+stand and added to the Answered section. `CLAUDE.md` and `PROMPT-new-chat.md` updated so neither lists
+them as live.
+
+### The title
+
+`proposal-form-FINAL.md` Proposed Title and `T1-REVISIONS-LIST.md` Revision 1 carried "Using **a**
+Differential Analysis Algorithm". Both now carry the panel's wording exactly. The public `README.md`
+already did.
+
+**A false claim removed on the way.** Revision 1 said the article was "raised as a wording question to
+the adviser". No record shows that question was ever asked. It was deleted rather than left standing.
+
+`T1-PANEL-RESPONSE.md` had recommended a different title in August. Its four-decisions summary now
+states the decision, and its title section opens with it. The August critique is kept, because it names
+the two points a panelist may still raise, and each now has an answer quoting the proposal's own text:
+Problem 1's "the telemetry that detection rules depend on", and Scope item 4's "measures whether the
+evidence a detection depends on still exists". **That second quotation was checked against FINAL before
+being written in.** My first draft of that answer said the proposal "restricts" the term, which was
+looser than the text.
+
+**The obligation the title creates:** Chapter 3 must name and define the specific algorithm.
+
+**Not changed:** the `.docx` filename still contains "Using a Differential". A filename, not the title.
+
+### The system type
+
+- **FINAL, System Type and Deployment:** "server-side web application ... distributed as a set of
+  containers" became "a Python application with a graphical interface, running on a machine beside the
+  SIEM", with why a web application is not needed. The Gantt row and build-order note say graphical
+  interface.
+- **FINAL, same paragraph, a correction backed by `DECISIONS.md` 2026-09-03:** "the system drives the
+  experiment from the server side through that existing channel", meaning the SIEM agent, is gone. The
+  attack tests reach endpoints through a channel the operator controls, the hypervisor's guest operations
+  in the lab, and the SIEM agent executes nothing. Active response was disabled on 2026-09-03 for exactly
+  that reason.
+- **Revisions list** Revision 8 and the schedule revision: the same, with a dated note saying what
+  changed.
+- **Panel response Q1 and Q8:** the short answer, the layer table (FastAPI, PostgreSQL and "server"
+  replaced by a graphical interface and local storage on one machine beside the SIEM), and the
+  trade-off. What a company gives up is stated: several analysts cannot share one instance from their
+  browsers. The AI-agent paragraph no longer imagines a language model drafting rule text, which
+  contradicted D1.
+- `README.md` component table: "Web interface" became "Graphical interface (not a web application)".
+
+### The checker
+
+- `web-app` rule: now a defect against a recorded decision, and also matches "set of containers" and
+  "Docker containers".
+- `title-old` rule: **it used to flag the panel's exact wording as the old title.** That is now the
+  current title, so the rule flags the article version instead. The article version is matched in title
+  case only, because FINAL's General Objective correctly says "using a differential analysis algorithm"
+  in lower case as ordinary English. Checked: title-case article form `True`, the objective sentence
+  `False`, the panel's title `False`.
+
+### Verified
+
+```
+55 passed
+LIVE (13 hits)   all four live documents: "all expected steps mentioned"
+```
+
+LIVE went 18, then 14 after the edits, then 13 after tightening the title rule. **The three
+web-application defects are gone.** On reading each of the 13: four are sentences explaining why
+chi-square is not per event type, six describe title wording that was replaced or not adopted, one
+states network IDS is out of scope, one correctly says the drop must exceed the noise band, and one is my
+own dated note saying the web application was replaced. None states something false.
+
+**Not decided:** which toolkit builds the graphical interface.
+
+**Public `README.md` brought up to date the same session, at the student's request.** It still said
+"20 tests passing" twice, "Lab Phase 2: In progress" and "Lab Phases 3 to 7: Not started", and showed
+the 2026-08-31 demo numbers (2 true positives, 8 false alarms, F1 0.333). Now: 55 tests; Phases 2 and 3
+done on 2026-09-02 per the WORKLOG entries of that date; Phase 4 partly done, 4 of 5 pins recorded in
+`DECISIONS.md` with the harness commit waiting for the harness; the current demo numbers (3 true
+positives, 7 false alarms, F1 0.462, matching `docs/demo-output.txt`); "event key" where it said
+"event type"; the capture check in the method list; the full LOST rule; and a short note on the dead
+agent defect found and fixed that day.
+
 ## 2026-09-14 (third) - Step 4. The documents now agree with the code, the figures and today's decisions.
 
 **Did:** edited two repository documents and four thesis documents so they match the gate fix, D1, D2,

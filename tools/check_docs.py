@@ -131,17 +131,27 @@ CHECKS = [
      "differential.py:229 requires drop > band, that is 1 - RR > 3 x CoV. "
      "Reporting needs the drop to EXCEED the band."),
 
+    # Settled 2026-09-14: not a web application. Any remaining claim that it is
+    # one is now a defect against a recorded decision, not an open question.
     ("web-app",
-     r"server-side web application|web-based application|is a web application",
-     "Deployment stated as settled.",
-     "Not in DECISIONS.md and not in OPEN-QUESTIONS.md. It was marked "
-     "ASSUMPTION in a draft and never confirmed."),
+     r"server-side web application|web-based application|is a web application|"
+     r"Docker containers|set of containers",
+     "Describes the system as a web application or container deployment.",
+     "DECISIONS.md 2026-09-14: a Python application with a graphical "
+     "interface beside the SIEM, not a web application."),
 
+    # Settled 2026-09-14: the panel's title verbatim, WITHOUT the article. The
+    # panel's wording used to be flagged here as old; it is now the current one,
+    # and the version with "a" is the one that was not adopted.
     ("title-old",
+     # The article form is matched case-sensitively, in title case only. The
+     # General Objective correctly says "using a differential analysis
+     # algorithm" in lower case as ordinary English, and that is not the title.
      r"Identifying Hardening-Induced|Differential Sequence Alignment|"
-     r"Using Differential Analysis Algorithm(?!\w)",
-     "An older title wording.",
-     "Current wording is in proposal-form-FINAL.md:16, with the article 'a'."),
+     r"(?-i:Using a Differential Analysis Algorithm)|Using \*\*a\*\* Differential",
+     "A title wording that was not adopted.",
+     "DECISIONS.md 2026-09-14: the panel's proposed title verbatim, with no "
+     "article added. proposal-form-FINAL.md, Proposed Title."),
 
     ("figure-png",
      r"T1_(Activity_Diagram_Revised_Sheet[12]|Figure_[A-Za-z_]+)\.png",

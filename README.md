@@ -26,22 +26,26 @@ Nothing errors. Nothing alerts. Teams usually find out during an incident, month
 
 ## It works
 
-This is real output from `src/demo.py`. I simulated one hardening change: one event type
-removed outright, one genuinely cut to 30 percent, and one noisy type that drifted down 1.4
-percent on its own.
+This is real output from `src/demo.py`. I simulated one hardening change: one event key removed
+outright, one that lost a field while the event kept firing, one genuinely cut to 29 percent, and
+seven quiet keys that drifted on their own.
 
 ```
   method                       TP   FP   FN  precision   recall      F1
   -------------------------- ---- ---- ---- ---------- -------- -------
-  naive differencing            2    8    0     20.0%  100.0%   0.333
-  proposed system               2    0    0    100.0%  100.0%   1.000
+  naive differencing            3    7    0     30.0%  100.0%   0.462
+  proposed system               3    0    0    100.0%  100.0%   1.000
 ```
 
-Both methods found both real losses. The difference is the eight false alarms.
+Both methods found all three real losses. The difference is the seven false alarms.
 
-Each false alarm is an event type that moved on its own, by less than the amount it was already
+Each false alarm is an event key that moved on its own, by less than the amount it was already
 measured to move. An engineer comparing raw counts would investigate every one of them. TeLoS
-measures each event type's natural variation first, then only reports a drop that exceeds it.
+measures each event key's natural variation first, then only reports a drop that exceeds it.
+
+An **event key** is the event type plus which of its tracked fields actually carried a value, for
+example `Security-4688[CommandLine,NewProcessName]`. That is how a change that empties one field,
+while the event keeps firing at its usual rate, becomes visible at all.
 
 **These numbers are synthetic.** They demonstrate that the code is correct. They are not
 measurements, and they are not a result of the study. Full output:
@@ -75,16 +79,18 @@ Honest state of the work, not a plan.
 
 | Component | Status |
 |---|---|
-| Analysis core (variance model, differential analysis, classification) | **Built.** 20 tests passing. |
+| Analysis core (event keys, variance model, capture check, differential analysis, classification) | **Built.** 55 tests passing. |
 | Naive baseline, for comparison | **Built** |
 | Reporting | Text output only |
-| Acquisition from live VMs | Not built. Needs the lab. |
+| Capture harness (acquisition from the lab) | Not built. The next major piece. |
 | Impact scoring (lost event to affected rules to ATT&CK techniques) | Not built |
-| Web interface | Not built |
+| Graphical interface (not a web application; decided 2026-09-14) | Not built |
 | Lab Phase 0, host readiness | **Done** |
 | Lab Phase 1, virtual networks | **Done** |
-| Lab Phase 2, SIEM build | In progress |
-| Lab Phases 3 to 7 | Not started |
+| Lab Phase 2, SIEM build (Wazuh 4.14.7) | **Done** 2026-09-02 |
+| Lab Phase 3, Windows endpoint build | **Done** 2026-09-02 |
+| Lab Phase 4, pin and record versions | Partly done. 4 of 5 pins recorded; the harness commit waits for the harness |
+| Lab Phases 5 to 7, golden snapshot, harness, feasibility spike | Not started |
 
 ---
 
@@ -92,17 +98,20 @@ Honest state of the work, not a plan.
 
 1. **Measure the noise floor.** Run the identical stimulus 5 times against the same restored
    snapshot with nothing changed. Whatever varies is the laboratory's own noise. Recorded per
-   event type as a coefficient of variation and a dispersion parameter.
-2. **Global gate.** One chi-square test of homogeneity across the whole profile. Did anything
-   change at all? Applied once, not once per event type.
-3. **Per-type rate ratio.** Dispersion-aware, using the variance measured in step 1 rather than
+   event key as a coefficient of variation and a dispersion parameter.
+2. **Check the capture, then the global gate.** A run in which any repetition recorded no events
+   at all is reported as not testable, because a dead agent and a real loss both look like zeros.
+   Otherwise, one chi-square test of homogeneity across the whole profile: did anything change at
+   all? Applied once, not once per key.
+3. **Per-key rate ratio.** Dispersion-aware, using the variance measured in step 1 rather than
    assuming Poisson equidispersion.
-4. **Correction.** Benjamini-Hochberg across every event type tested, because testing several
-   hundred at once will otherwise produce findings by chance alone.
+4. **Correction.** Benjamini-Hochberg across every key tested, because testing several hundred
+   at once will otherwise produce findings by chance alone.
 5. **Classification.** LOST, REDUCED, UNCHANGED, NEW, or INCONCLUSIVE.
 
-An event type is only reported as REDUCED when three conditions hold together: the corrected q
-value, the effect size, and the measured noise floor. Any one alone is not enough.
+A key is only reported as REDUCED when three conditions hold together: the corrected q value,
+the effect size, and the measured noise floor. Any one alone is not enough. A key is LOST when it
+was seen at least 30 times before, never after, and still survives the correction.
 
 ---
 
@@ -111,7 +120,7 @@ value, the effect size, and the measured noise floor. Any one alone is not enoug
 ```
 docs/     runbook, decision log, work log, open questions, command reference
 src/      TeLoS analyser (Python)
-tests/    20 tests for the analysis core
+tests/    55 tests for the analysis core
 thesis/   the proposal, and the two alternatives that were not chosen
 lab/      homelab blueprint, pinned configs, hardening scripts
 data/     runs/ is local only, summaries/ is committed
@@ -143,10 +152,17 @@ statistical layer is only justified if the laboratory's run-to-run variance is n
 turns out to be negligible, I report that plainly and restrict the claim to production
 deployment, where the variance floor is not controlled by snapshot restoration.
 
-**Untestable is reported, not assumed safe.** An event type seen too few times before a change
+**Untestable is reported, not assumed safe.** An event key seen too few times before a change
 cannot be tested with any power. TeLoS reports these as INCONCLUSIVE rather than folding them
 into UNCHANGED. Calling them unchanged would claim they survived, which the data does not
 support, and would inflate the reported recall.
+
+**A failed capture is not a result.** The same rule applies to a whole run. Before 14 September
+2026, a run whose agent had sent nothing after the change was reported as a list of lost event
+keys. In a three-key test, two came back LOST: the analyser made the exact mistake this thesis
+is about. It now reports that run as not
+testable, and the tests that prove it were first run against the old code to show they catch the
+defect.
 
 Claims that are engineering judgment rather than sourced fact are labeled `(unverified)`
 inline throughout.
