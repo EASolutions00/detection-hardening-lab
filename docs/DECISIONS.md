@@ -48,6 +48,15 @@ it, that front end could be added without changing any measurement or any stored
 **Not decided here:** which toolkit builds the graphical interface. That is a separate choice with its
 own schedule cost, and nothing in the documents names one.
 
+**Recommendation given the same day, not accepted or rejected yet.** A **desktop** toolkit, not a
+browser-based one. Python tools that draw their interface in a browser, Streamlit for example, run a
+small web server on the operator's machine, and a panelist can then say the system is a web
+application after all, reopening the question this entry closes. Between desktop options:
+**CustomTkinter**, built on Python's standard Tkinter, simpler and easier to explain line by line at a
+defense; or **PySide6** (Qt), more polished with more to learn. The lean was CustomTkinter,
+`(unverified: a short prototype should come before committing)`. The schedule puts the interface in
+November, after the harness and the spike, so this is not urgent.
+
 ## 2026-09-14 - The title is the panel's proposed wording, verbatim, with no grammar correction (closes OPEN-QUESTIONS 0)
 
 **Decision, by the student:** the title is exactly what the panel proposed:

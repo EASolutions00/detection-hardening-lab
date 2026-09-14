@@ -780,6 +780,36 @@ Guard the harness: check free space before each run with `telos-archive disk` an
 abort cleanly if low. Running out of disk halfway through a 67 hour batch is the failure that
 hurts most, and it matters more now that nothing is ever truncated.
 
+### Harness requirements collected 2026-09-12 to 2026-09-14
+
+Found while reviewing the analyser and its documents. None is built. Each has a reason, and
+breaking any of them fails silently.
+
+1. **Count the fence events in the profile the analyser receives.** `capture_problem()` treats a
+   repetition with zero events as a failed capture, and that is only safe because every real
+   window contains the two fence events. **If the harness strips fence events from the counts,
+   that guarantee is gone**, and fence presence must be checked explicitly instead.
+2. **Confirm the end fence arrived before the run is recorded.** The analyser catches a capture
+   that recorded nothing, not one that died partway through a window.
+3. **Record each Atomic test's exit status and duration**, plus a stimulus fingerprint such as the
+   count of Sysmon Event 1 records carrying the run id. Void a run whose fingerprint moves more
+   than the control runs' own spread. OPEN-QUESTIONS 22.
+4. **Hash only the `parameters` part of the manifest, serialised with sorted keys.** Step 11.
+5. **One reset function, `reset_to_known_state()`, with a `vmrun` implementation now.** The
+   2026-09-11 decision accepts a snapshot, a write filter or a disk image as the way to return a
+   host to a known state. Writing the reset behind one function costs minutes now. Retrofitting it
+   after 101 runs would be a rewrite. Only the `vmrun` path is needed for this study.
+6. **If a run ever uses the Unified Write Filter:** read `uwfmgr overlay get-consumption` at both
+   ends of the window, check `Microsoft-Windows-UnifiedWriteFilter/Operational` and `/Admin` for
+   Event ID 2, and confirm the end fence reached the SIEM **before** the reboot, because the whole
+   local event log is discarded at reboot. DECISIONS 2026-09-11.
+7. **Take every snapshot used by the protocol cold.** A snapshot with memory resumes with a stale
+   clock, measured at 5 h 4 min behind on 2026-09-10, and `vmrun list` showing a VM as not running
+   does not prove it is powered off. WORKLOG 2026-09-11.
+8. **Copy each finished run folder to a second physical drive as soon as it completes**, not at the
+   end of the campaign. `data/runs/` is gitignored and lives on E: only, and this host has already
+   lost power once mid-session (OPEN-QUESTIONS, Answered, item 11).
+
 ### Three rules for the campaign, each from something measured
 
 - **SIEM-01 must not be rebooted during a capture campaign.** Only WIN-EP-01 is reverted and

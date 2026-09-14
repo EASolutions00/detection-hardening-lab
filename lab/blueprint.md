@@ -310,7 +310,7 @@ authentication control: authentication survives the change, it just proceeds dif
 | # | Change | Control ID | Setting | Expected telemetry effect | Why the attack survives |
 |---|---|---|---|---|---|
 | C1 | Disable WDigest | **DISA V-253358** (Win11)<br>V-220800 (Win10) | `HKLM\SYSTEM\CurrentControlSet\Control\SecurityProviders\Wdigest\UseLogonCredential = 0` | 4624 logon-type distribution shifts | Credential theft is still attempted; the attacker gets hashes instead of plaintext |
-| C2 | LAN Manager auth level, NTLMv2 only | **DISA V-253462** (Win11)<br>V-220938 (Win10)<br>**CIS 2.3.11.7** | `HKLM\SYSTEM\CurrentControlSet\Control\Lsa\LmCompatibilityLevel = 5` | 4776 package name changes | Authentication continues at a higher level |
+| C2 | LAN Manager auth level, NTLMv2 only | **DISA V-253462** (Win11)<br>V-220938 (Win10)<br>**CIS 2.3.11.7** | `HKLM\SYSTEM\CurrentControlSet\Control\Lsa\LmCompatibilityLevel = 5` | 4624 `LmPackageName` shifts toward `NTLM V2` **(corrected 2026-09-14: was "4776 package name changes", which cannot happen, see note below)** | Authentication continues at a higher level |
 | C3 | LSA Protection (LSASS as protected process) | **CIS Win11 18.9.27.2**, Level 1 | `HKLM\System\CurrentControlSet\Control\Lsa\RunAsPPL = 1` | Sysmon Event 10 access to `lsass.exe` changes from granted to denied | LSASS access is still attempted; documented bypasses exist |
 | C4 | Restrict NTLM, outgoing traffic to remote servers | **CIS 2.3.11.13**<br>DISA Win11 V-ID `(unverified)` | `HKLM\System\CurrentControlSet\Control\Lsa\MSV1_0\RestrictSendingNTLMTraffic` | 4776 reduced or removed | Authentication continues via Kerberos |
 | C5 | Enforce RDP Network Level Authentication | `(unverified)` | `UserAuthentication = 1` | 4624 / 4625 distribution shifts | RDP is still used; authentication happens earlier |
@@ -321,6 +321,20 @@ authentication control: authentication survives the change, it just proceeds dif
 **Verified 2026-09-08:** C1, C2 and C3 have confirmed control IDs. C4 has a confirmed CIS
 number and registry path; its Windows 11 DISA V-ID is not confirmed. C5 to C8 have correct
 settings but **unverified IDs**.
+
+**Corrected 2026-09-14: C2's stated telemetry effect was impossible.** The row said "4776 package
+name changes". Microsoft's reference page for event 4776 states that its Authentication Package
+field is always `MICROSOFT_AUTHENTICATION_PACKAGE_V1_0`, so it cannot change. The NTLM version is
+recorded elsewhere: event 4624's "Package Name (NTLM only)" field, `LmPackageName`, takes the
+values `NTLM V1`, `NTLM V2` or `LM`, and is filled only when the logon used NTLM. Source:
+learn.microsoft.com, Windows 10 security auditing, events 4776 and 4624. Two consequences:
+
+- C2 is still a **value** change, as OPEN-QUESTIONS 18 says, but in 4624 `LmPackageName`, not in
+  4776. `DEFAULT_TRACKED_FIELDS` in `src/telos/eventkey.py` tracks 4776 `PackageName`, a field
+  that never changes, and does not track 4624 `LmPackageName` at all. Not changed in code yet.
+- The same page says 4776 is written only on the computer that holds the account: the domain
+  controller for domain accounts, the local machine for local accounts. That supports
+  OPEN-QUESTIONS 21: without a domain controller, domain NTLM validation is never logged here.
 
 **C8 is blocked** on nested virtualisation (Virtualize AMD-V/RVI in VM settings), still untested
 on Zen 4 with Workstation 17.5.1. See OPEN-QUESTIONS item 2. Do not count on it.

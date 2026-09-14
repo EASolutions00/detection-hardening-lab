@@ -125,6 +125,9 @@ contained. Only C4 and C6 are rate changes, and item 21 shows both of those need
 domain. Value keying cannot rescue an event that never fires. One lab capture settles item 18:
 set `RunAsPPL = 1` and read what `GrantedAccess` actually holds afterwards.
 
+**Check this date: 2026-09-22.** OPEN-QUESTIONS 25 recommends that if one full unattended capture
+window has not completed by then, scope is cut. A recommendation, not yet a decision.
+
 Item 1, the catalogue, was rebuilt on 2026-09-08 and is no longer the blocker. **Settled
 2026-09-14:** the title is the panel's wording verbatim (item 0), and the system is a Python
 application with a graphical interface beside the SIEM, not a web application (item 17).

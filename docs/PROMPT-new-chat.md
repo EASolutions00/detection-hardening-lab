@@ -59,7 +59,7 @@ Read these four, in order. Expand `REPO` first.
    **Treat it as a map, not as truth.**
 
 2. `REPO\docs\OPEN-QUESTIONS.md`
-   Items **1, 15, 18, and 20 to 23** are the live ones. All are summarised in section 5.
+   Items **1, 15, 18, and 20 to 25** are the live ones. All are summarised in section 5.
    Items 0, 16, 17 and 19 are answered. The file is ranked by damage, so read from the top.
 
 3. `REPO\docs\DECISIONS.md`
@@ -234,6 +234,17 @@ Item 22 — blocks the harness design
     change that makes an atomic test fail produces a rate drop the analyser reports as LOST.
     Per-atomic exit status and a stimulus fingerprint must go in the run manifest, because they
     cannot be reconstructed after the run.
+
+Item 25 — the schedule, with a date on it
+    The harness does not exist, the spike has never run, and 101 windows need about 67 hours
+    unattended. Recommended tripwire, not yet accepted: if one full unattended capture window has
+    not completed by **2026-09-22**, cut scope, for example to 8 changes, 53 windows, about 35
+    hours. Also: 30 pre-change events over 3 runs is about 10 per run, so many keys may be
+    untestable. The spike measures both.
+
+Item 24 — blocks trusting any UNCHANGED result
+    `VarianceModel.from_control()` accepts a control run that recorded nothing. That inflates
+    every noise band and pushes real losses toward UNCHANGED. Found 2026-09-14, not fixed.
 
 Item 23 — half fixed, half blocks a reported result
     The alpha half is fixed: `global_gate()` now takes the alpha passed to `analyse()`. Still

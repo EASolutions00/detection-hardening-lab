@@ -159,7 +159,7 @@ this lab can produce authentication telemetry at all.**
 | C4 Restrict outgoing NTLM | "4776 reduced or removed" | Outgoing NTLM to a remote server | The only other machine is Ubuntu and shares nothing. Baseline already zero |
 | C6 Cached credentials to 0 | "cached and offline logon events reduced" | Domain cached credentials. Its own note at `blueprint.md:310` reads "against the domain instead" | No domain, so nothing to reduce |
 | C7 Disable RC4 for Kerberos | "4768 / 4769 fields change" | A key distribution centre | Those events cannot appear on a standalone machine |
-| C2 NTLMv2 only | "4776 package name changes" | NTLM validation traffic | Local SAM validation only, rate unmeasured |
+| C2 NTLMv2 only | "4776 package name changes", **corrected 2026-09-14**: really 4624 `LmPackageName` | NTLM logons to observe | 4776 is written only on the machine holding the account: the domain controller for domain accounts, the local machine for local ones (Microsoft event 4776 reference). Local accounts only here, rate unmeasured |
 
 Item 18 leaves **C4 and C6** as the only two rate changes the analyser can see. Both are in the
 table above. So the measurable class C set is currently **zero**, and the experiment would report
@@ -213,6 +213,49 @@ available outcome, because it is a confident result with a cause nobody recorded
 
 **Blocks:** the size of the catalogue, the golden snapshot, and therefore the start of data
 collection.
+
+---
+
+## 25. Can the capture campaign finish by the deadline, and will enough keys be testable?
+
+**Status:** Open. Raised 2026-09-13 in a "will this thesis survive" assessment and recorded 2026-09-14
+before a session was compacted. **Nothing below is decided.** These are recommendations, and the
+student has not accepted or rejected them.
+
+**Why it matters.** Data collection must start by end of September 2026 (`CLAUDE.md`). On 2026-09-14:
+
+- The capture harness, runbook Phase 6, **does not exist**.
+- The feasibility spike, Phase 7, the approved go/no-go gate for T1, **has never run**.
+- `lab/blueprint.md` budgets 101 capture windows at about 40 minutes each, **about 67 hours** of
+  unattended wall clock. The 40 minutes is itself `(unverified)` until the spike measures it.
+- Item 21 may add a domain controller build and a re-taken golden snapshot inside the same window.
+
+### Recommendation 1: a tripwire date
+
+**If the harness has not completed one full unattended capture window by 2026-09-22**, the 101-run
+campaign cannot finish in time, and a scope cut stops being optional. `DECISIONS.md` already says that
+if the spike fails the fallback is T2, not T3. This is a date to check, not a prediction.
+
+### Recommendation 2: cut scope in writing, before the panel finds it
+
+- **8 hardening changes instead of 16.** 8 × (3 + 3) + 5 = **53 windows, about 35 hours**, against 67.
+  This also needs the proposal's "16 changes" text changed, so it is a decision for the student and
+  possibly the adviser.
+- Impact scoring stated as designed, with a minimal dependency index, if it does not fit.
+
+### A second problem inside the same numbers: statistical power
+
+`MIN_PRE_COUNT = 30` (`differential.py`) over **3** pre-change runs means a key needs about **10
+events per run** before it is tested at all. Service installs, script block events and many
+authentication events may be rarer than that inside one window. If most keys land in INCONCLUSIVE,
+recall is computed over a handful of keys and means little.
+
+**How to answer:** in the spike, count how many keys clear 30 pre-change events. If it is a small
+share, raise repetitions from 3 to 5 **for the pre-change phase only**, which costs runs but no new
+infrastructure. Record the measured share either way.
+
+**What a bad answer means:** the study runs out of time mid-campaign, or finishes with an evaluation
+too thin to support its precision and recall claims. Both are recoverable only if decided early.
 
 ---
 
@@ -390,13 +433,23 @@ each item's own stated telemetry effect from `blueprint.md:305-312`:
 | # | Change | Stated telemetry effect | Shape | Analyser sees it? |
 |---|---|---|---|---|
 | C1 | Disable WDigest | "4624 logon-type distribution **shifts**" | `LogonType` value changes, field stays populated | **No** |
-| C2 | NTLMv2 only | "4776 package name **changes**" | `PackageName` value changes | **No** |
+| C2 | NTLMv2 only | "4776 package name **changes**" **(impossible, corrected below)** | Really 4624 `LmPackageName` value changes | **No** |
 | C3 | LSA Protection | "Sysmon 10 access **changes from granted to denied**" | `GrantedAccess` value changes | **No** |
 | C4 | Restrict NTLM outgoing | "4776 **reduced or removed**" | Rate change | **Yes** |
 | C5 | RDP NLA | "4624 / 4625 distribution **shifts**" | `LogonType` value changes | **No** |
 | C6 | Cached credentials to 0 | "cached and offline logon events **reduced**" | Rate change | **Yes** |
 | C7 | Disable RC4 for Kerberos | "4768 / 4769 ticket encryption **fields change**" | Value change, **and 4768/4769 are absent from `DEFAULT_TRACKED_FIELDS` entirely** | **No** |
 | C8 | Credential Guard | "Sysmon 10 to lsass **changes**" | Value change. Also blocked on nested virtualisation, item 2 | **No** |
+
+**Correction to the C2 row, verified 2026-09-14 against Microsoft's event reference.** Event 4776's
+Authentication Package field is always `MICROSOFT_AUTHENTICATION_PACKAGE_V1_0`, so "4776 package name
+changes" cannot happen. The NTLM version lives in event **4624**, field `LmPackageName` ("Package Name
+(NTLM only)"), with values `NTLM V1`, `NTLM V2` or `LM`, filled only for NTLM logons. **The row's
+conclusion stands**: it is a value change and presence keying cannot see it. But the field was wrong,
+and `DEFAULT_TRACKED_FIELDS` has the same error: it tracks 4776 `PackageName`, which never varies, and
+does not track 4624 `LmPackageName`. **If option 1 below is chosen, `LmPackageName` is the field to key
+by value for C2, not `PackageName`.** Code not changed yet. Source: learn.microsoft.com, Windows 10
+security auditing, event-4776 and event-4624.
 
 **Why the analyser cannot see a value change.** `eventkey.py:121` records which tracked fields were
 *populated*. `is_populated()` returns true for any non-empty value, and `DECISIONS.md:48` states
@@ -708,6 +761,32 @@ for Q1.
 is presented as a safeguard that does no filtering. A panelist who knows how chi-square behaves at
 large N will ask, and "we did not test it" is a bad answer when the control data needed to test it
 was collected anyway.
+
+---
+
+## 24. `VarianceModel.from_control()` accepts a control run that recorded nothing
+
+**Status:** Open. Found 2026-09-14 while fixing item 16, and deliberately not fixed then because it
+is a different function. Recorded as an item before a session was compacted. **The student has not
+yet chosen between fixing it in code and leaving it as a stated limit.**
+
+**The defect.** `capture_problem()` in `differential.py` now rejects a pre-change or post-change
+repetition whose counts sum to zero. **The control phase is never checked.** `from_control()` refuses
+fewer than 3 runs, and nothing else.
+
+**Why it is dangerous, and in which direction.** An empty control repetition makes every key's
+coefficient of variation and dispersion much larger than the laboratory's real noise. That widens every
+noise band and every confidence interval, so real losses fail the "drop exceeds the band" condition and
+are reported **UNCHANGED**. This is the opposite direction from the dead-agent defect fixed in item 16,
+and the worse one: a false UNCHANGED reads as "this hardening change was safe".
+
+**How to answer, if fixing:** in `from_control()`, raise `ValueError` when any control repetition's
+counts sum to zero, naming the repetition, the same way `capture_problem()` names it. Add a test that
+feeds four normal control runs and one empty one and expects the error. Run that test's input against
+the current code first, as was done for item 16, to show it catches the defect.
+
+**What a bad answer means:** one dead control run silently hides blind spots across every change
+compared against that noise model, and no output would show it.
 
 ---
 

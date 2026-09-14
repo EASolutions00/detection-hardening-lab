@@ -17,6 +17,126 @@ Next:
 
 ---
 
+## 2026-09-14 (fifth) - Audit before compaction. 14 of 15 topics from this session were in no document, and two of my own claims were wrong.
+
+**Did:** listed every topic discussed since the last compaction (2026-09-12 to 2026-09-14) and searched
+the repository for each. 14 of 15 returned nothing. Everything below was recorded, or moved into the
+document where it will be read.
+
+### Recorded elsewhere today, with pointers
+
+| What | Now in |
+|---|---|
+| Event 4776's package field never changes, so C2's stated effect was impossible | `lab/blueprint.md` C2 row and note; OPEN-QUESTIONS 18 and 21 |
+| Schedule, a tripwire date of 2026-09-22, the 8-change scope option, and statistical power | **New OPEN-QUESTIONS 25**; `CLAUDE.md`; `PROMPT-new-chat.md` |
+| An empty control run inflates every noise band | **New OPEN-QUESTIONS 24**; `PROMPT-new-chat.md` |
+| Eight harness requirements found while reviewing | `docs/RUNBOOK-homelab.md` Phase 6 |
+| The GUI toolkit recommendation | `DECISIONS.md`, the system-type entry |
+
+### Verification results that were never reported, and two corrections to my own claims
+
+On 2026-09-14 I was verifying my answer about running TeLoS on a physical endpoint. Three Microsoft
+Learn pages were fetched: the security auditing references for events 4776 and 4624, and "Common write
+filter exclusions" for UWF. The student then interrupted the fourth fetch, on UWF servicing mode, and
+pasted an outside review, so these results were never reported. They are here.
+
+**Verified:**
+- Event 4776's Authentication Package field is always `MICROSOFT_AUTHENTICATION_PACKAGE_V1_0`.
+- 4776 is written only on the computer holding the account: the domain controller for domain accounts,
+  the local machine for local accounts.
+- Event 4624's `LmPackageName` holds `NTLM V1`, `NTLM V2` or `LM`, and only for NTLM logons.
+- 4624 logon type 3 is a network logon, from another computer.
+- The UWF exclusions page tells antivirus users to consult their vendor, and says a UWF exclusion for the
+  signature or update folder may be needed. That supports the point that Defender updates are discarded
+  at each reset.
+
+**Correction 1.** I said that during a physical-endpoint run, a WinRM logon by the harness "writes 4776"
+on the endpoint, making C2 change how the harness itself is recorded. **That is true only for a local
+account.** For a domain account, 4776 is written on the domain controller, not the endpoint. The wider
+point, that a network logon inside the window is authentication telemetry in the category being measured,
+still stands through 4624.
+
+**Correction 2, and it reverses a claim.** I said "Microsoft's UWF documentation describes a registry
+exclusion" for the domain machine account password, which UWF would otherwise discard at every reboot.
+**The page says the opposite.** It lists `HKLM\SECURITY\Policy\Secrets\$MACHINE.ACC` under exclusions
+**not** to add. The risk is still real: a domain-joined machine under UWF can lose its trust with the
+domain when its password change is thrown away. **The correct mitigation is unknown** `(unverified)`.
+
+**Still not verified, because the fetch was interrupted:**
+- That Credential Guard's "UEFI lock" mode stores its setting in firmware, where no disk reset can undo it.
+- What UWF servicing mode is for, and whether it is the documented route for changes such as `auditpol`
+  or Group Policy, or whether that route is disabling the filter and rebooting.
+
+### The physical endpoint analysis, 2026-09-14, recorded because no document holds it
+
+**Question asked:** can TeLoS run on a real endpoint instead of a VM, with UWF for rollback?
+
+**Answer given: yes, but the UWF test covered less than a real endpoint needs.** The test machine was a
+VM, standalone, not domain-joined, under a synthetic load that deleted its own files.
+
+What replaces each thing a VM gives for free:
+
+| Need | On a physical endpoint |
+|---|---|
+| Reset | UWF works for the protected disk only. Firmware and TPM are untouched. Anything that left the machine, such as a domain password change, is not reset. **UWF resets the run, not a committed change**, so a leftover commit would put one change on top of another |
+| Run the tests | No `vmrun`. Every remote channel adds its own logon events inside the window. Proposed: a scheduled task, staged once, that runs at boot as SYSTEM, fires the fences, runs the tests, drains, and reboots, so no network logon falls inside a window |
+| Send events | Same Wazuh agent. Under UWF the whole local event log dies at reboot, so arrival at the SIEM must be confirmed first. `logall_json` is set in the manager's own `ossec.conf`, so on a production SIEM it would archive every agent's events; use a small dedicated manager |
+| Stable background | Noisier: Group Policy refresh, Defender updates discarded at each boot. Use a test OU with frozen policy |
+| Safety | A physical machine can reach the network. Isolated segment, reviewed test list, SOC told, written authorization |
+
+**Proposed plan: UWF between runs, a full disk reimage between hardening changes.** The reimage wipes
+committed changes, so changes cannot stack, and it also covers changes that UWF commit cannot apply.
+Reimage time is unmeasured.
+
+**Steelman recorded:** a domain-joined physical host would remove item 21 and could make C8, Credential
+Guard, testable. **Recommendation given: do not move the thesis experiment.** DC-01 in the existing lab
+solves item 21 more cheaply and keeps `vmrun`. Use the physical-endpoint analysis only to support the
+deployment claim, with its limits stated.
+
+### Other conclusions from this session with no document home until now
+
+**Deployability and usability scan, 2026-09-12.** Thirteen candidate improvements, stress-tested. The
+deployability boundary is the capture harness, since the analyser cannot read a real event. The
+command-line interface, config file, exports, packaging and containers were judged premature before data
+collection. The two with a silent failure mode, the manifest hash and the reset function, are now harness
+requirements 4 and 5.
+
+**How TeLoS works beside the SIEM, 2026-09-14.** Explained from the lab: TeLoS on the host resets and
+starts the VM through `vmrun`, runs the tests through VMware Tools, the Wazuh agent forwards events, and
+`telos-archive export` copies the archive back over SSH. Two differences from the proposal were found:
+retrieval through the indexer API instead of the archive, and running tests "through the SIEM agent"
+although active response is disabled. **Both are now corrected in the documents.** One check was offered
+and **never run**, on SIEM-01, as the student, with `sudo`:
+
+```bash
+sudo grep -A1 "archives:" /etc/filebeat/filebeat.yml
+```
+
+Expected if archive events do not reach the indexer, which is Wazuh's default `(unverified here)`:
+
+```
+    archives:
+      enabled: false
+```
+
+It no longer blocks anything, because the method reads the archive file, not the indexer.
+
+**"Will this thesis survive", 2026-09-13.** Assessed as defensible and at real risk of not finishing on
+time. The sentence that matters most was: **a pre-declared null result defends, an artifact null does
+not.** "The variance floor was negligible" is a result the design committed to reporting. "Every change
+came back UNCHANGED because the events never fired" is a broken experiment. Recommended order was: run the
+4768/4769/4776 count (item 21), run the C3 capture (item 18), cut scope in writing, build the harness with
+its manifest and stimulus checks, then run the spike.
+
+### Waiting on the student
+
+- The VM precondition wording, `DECISIONS.md` 2026-09-11.
+- Item 24: fix in code, or state as a limit.
+- The GUI toolkit.
+- Item 25's tripwire and scope cut: accept, change or reject.
+- Whether the student deleted the renamed PNGs, and what the 2026-09-07 `.docx` is.
+- A backup of `New folder (5)`, which is outside git and was edited heavily today.
+
 ## 2026-09-14 (fourth) - Two decisions by the student: the panel's title verbatim, and a graphical application instead of a web application. Items 0 and 17 closed.
 
 **Decided, in the student's words:** "we are not gonna change the panels proposed title with minor
