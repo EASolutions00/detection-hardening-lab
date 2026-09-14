@@ -7,7 +7,7 @@ Stage 1 (acquisition from live VMs) is not implemented. It needs the lab.
 Stages 2 to 5 are implemented and run on any counts, real or synthetic.
 """
 
-from .model import AnalysisResult, Classification, Finding, Phase
+from .model import AnalysisResult, Classification, Finding, Phase, ProfileOutcome
 from .variance import VarianceModel
 from .differential import analyse
 from .baseline import naive_differencing
@@ -16,6 +16,7 @@ __all__ = [
     "Phase",
     "Finding",
     "Classification",
+    "ProfileOutcome",
     "AnalysisResult",
     "VarianceModel",
     "analyse",

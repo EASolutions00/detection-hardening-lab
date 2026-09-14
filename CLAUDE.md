@@ -33,7 +33,7 @@ later than end of September 2026.
 | [lab/blueprint.md](lab/blueprint.md) | Lab design, resource budget, go/no-go analysis. |
 | [lab/configs/](lab/configs/README.md) | Pinned Sysmon and Wazuh configs. Hash them. |
 | [lab/scripts/](lab/scripts/README.md) | One script per hardening change. Not snapshots. |
-| [src/](src/README.md) | Python package `telos`. Analysis core built: 8 modules, 49 tests passing. |
+| [src/](src/README.md) | Python package `telos`. Analysis core built: 8 modules, 55 tests passing. |
 | `data/runs/` | Raw archives. Gitignored, too big for GitHub. One disk only, so back up elsewhere. |
 | `data/summaries/` | Small derived CSVs. Committed. |
 
@@ -79,7 +79,7 @@ only inside a document nobody rereads will be forgotten and then asserted as fac
 
 ```bash
 .venv/Scripts/python.exe src/demo.py          # end to end on synthetic data
-.venv/Scripts/python.exe -m pytest tests -q   # expect: 49 passed
+.venv/Scripts/python.exe -m pytest tests -q   # expect: 55 passed
 ```
 
 Stack pinned in `requirements.txt`: numpy 2.5.2, scipy 1.18.1, pandas 3.0.5, PyYAML 6.0.3,

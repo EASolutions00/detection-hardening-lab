@@ -1,17 +1,19 @@
-"""Differential analysis: decide which event types the change actually removed.
+"""Differential analysis: decide which event keys the change actually removed.
 
 Runs in four ordered stages.
 
 1. Align
-   Take the union of event-type keys across both phases and insert explicit
-   zeros where a key appears in only one. A key that vanished entirely must
-   survive into the comparison, so it cannot simply be dropped.
+   Take the union of event keys across both phases and insert explicit zeros
+   where a key appears in only one. A key that vanished entirely must survive
+   into the comparison, so it cannot simply be dropped.
 
 2. Global gate
-   One chi-square test of homogeneity on the whole 2-by-K profile. It answers a
-   single question nothing else answers: did the emitted profile change at all?
+   First, check the capture itself. A repetition that recorded no events at all
+   is a failed capture, and the run is NOT_TESTABLE. Then one chi-square test of
+   homogeneity on the whole 2-by-K profile. It answers a single question nothing
+   else answers: did the emitted profile change at all?
 
-   The test is applied once, to the whole profile, not once per event type.
+   The test is applied once, to the whole profile, not once per key.
    Applied per key it fails twice. Expected counts for rare security events fall
    below the value at which the chi-square approximation stays valid, and the
    resulting p value merely duplicates what the rate-ratio test already gives
@@ -34,11 +36,12 @@ is not enough.
 from __future__ import annotations
 
 import math
+from dataclasses import dataclass
 
 import numpy as np
 from scipy import stats
 
-from .model import AnalysisResult, Classification, Finding, Phase
+from .model import AnalysisResult, Classification, Finding, Phase, ProfileOutcome
 from .variance import VarianceModel
 
 # Defaults. All are configurable parameters of the method, not constants of it.
@@ -53,47 +56,96 @@ def align(pre: Phase, post: Phase) -> list[str]:
     return sorted(pre.keys() | post.keys())
 
 
-def global_gate(pre: Phase, post: Phase, keys: list[str]) -> tuple[bool, float, float]:
-    """One chi-square test of homogeneity over the whole profile.
+@dataclass(frozen=True)
+class GateResult:
+    """What the global gate concluded.
 
-    Returns (passed, p_value, statistic). Columns where both phases are zero
-    carry no information and are dropped, because a zero column makes the
-    expected-count calculation undefined.
-
-    Degenerate tables are handled before the test rather than allowed to raise.
-    A phase that emitted nothing at all is a real outcome: the agent may have
-    died, or logging may have stopped completely. That is not a chi-square
-    question, and it must not crash the run.
+    outcome is None only when the gate does not apply: exactly one event key
+    carries events, so there is no profile shape to test. analyse() then tests
+    that key directly instead of declaring "no change".
     """
+
+    outcome: ProfileOutcome | None
+    p_value: float | None
+    statistic: float | None
+    reason: str
+
+
+def capture_problem(pre: Phase, post: Phase) -> str | None:
+    """Why this pair of phases cannot be tested, or None if it can.
+
+    A repetition that recorded no events at all is a failed capture. A real
+    capture window always contains events, if only the two fence markers the
+    harness fires to open and close it. So an all-zero repetition means the
+    agent died, the pipeline stopped, or the export failed.
+
+    That must not reach the statistics. Before 2026-09-14 an all-zero
+    post-change phase passed the gate with p = 0 and every key with enough
+    events before was reported LOST: a dead agent became a list of blind spots.
+    An all-zero pre-change phase made every key NEW.
+
+    This catches a repetition that recorded nothing. It does not catch a
+    capture that died partway through a window. That needs the harness to
+    confirm the end fence arrived, which is recorded against OPEN-QUESTIONS 22.
+    """
+    for phase in (pre, post):
+        for i, total in enumerate(phase.run_totals(), start=1):
+            if total == 0:
+                return (
+                    f"{phase.name} repetition {i} of {phase.n_runs} recorded no events "
+                    f"at all. A capture that recorded nothing cannot be told apart "
+                    f"from a dead agent or a stopped pipeline"
+                )
+    return None
+
+
+def global_gate(pre: Phase, post: Phase, keys: list[str],
+                alpha: float = ALPHA) -> GateResult:
+    """Check the capture, then one chi-square test of homogeneity over the profile.
+
+    Keys where both phases are zero carry no information and are dropped,
+    because a zero column makes the expected-count calculation undefined.
+
+    alpha is the threshold the gate compares against. Before 2026-09-14 the gate
+    took no alpha and always used the module default, so analyse(alpha=0.01)
+    moved every per-key test and silently left the gate at 0.05. See
+    OPEN-QUESTIONS 23.
+    """
+    problem = capture_problem(pre, post)
+    if problem:
+        return GateResult(ProfileOutcome.NOT_TESTABLE, None, None, problem)
+
     rows = []
     for k in keys:
         a, b = pre.total(k), post.total(k)
         if a + b > 0:
             rows.append((a, b))
 
+    # capture_problem() guarantees both phases carry events, so at least one key
+    # does. Exactly one means there is no profile shape to compare, and a 2-by-1
+    # table has zero degrees of freedom. That is not "no change". The key is
+    # tested directly instead. Before 2026-09-14 this returned "not passed", so
+    # a profile whose only key fell from 1,000 to 400 was reported as
+    # "no significant change".
     if len(rows) < 2:
-        # Fewer than two informative event types. Nothing to compare.
-        return False, 1.0, 0.0
+        return GateResult(
+            None, None, None,
+            "only one event key carries events, so the profile-level test does "
+            "not apply and the key was tested directly",
+        )
 
+    # Every row total and every column total is now above zero, so every
+    # expected frequency is above zero, and chi2_contingency cannot raise on a
+    # zero expected count. An earlier try/except for that case was unreachable
+    # and was removed on 2026-09-14 rather than left to suggest otherwise.
     table = np.array(rows, dtype=float).T  # shape (2, K)
-    pre_total, post_total = float(table[0].sum()), float(table[1].sum())
+    chi2, p, _dof, _expected = stats.chi2_contingency(table)
 
-    # One phase emitted nothing. The profile certainly changed, but a chi-square
-    # cannot express it, because an all-zero row makes every expected frequency
-    # in that row zero.
-    if pre_total == 0 and post_total == 0:
-        return False, 1.0, 0.0
-    if pre_total == 0 or post_total == 0:
-        return True, 0.0, float("inf")
-
-    try:
-        chi2, p, _dof, _expected = stats.chi2_contingency(table)
-    except ValueError:
-        # A zero expected frequency survived the checks above. Rather than
-        # guessing, decline the gate and let the run be recorded as
-        # inconclusive at the profile level.
-        return False, 1.0, 0.0
-    return bool(p < ALPHA), float(p), float(chi2)
+    if p < alpha:
+        return GateResult(ProfileOutcome.CHANGED, float(p), float(chi2),
+                          f"chi-square p = {p:.3g} is below alpha = {alpha}")
+    return GateResult(ProfileOutcome.UNCHANGED, float(p), float(chi2),
+                      f"chi-square p = {p:.3g} is not below alpha = {alpha}")
 
 
 def _test_key(
@@ -270,19 +322,36 @@ def analyse(
         )
 
     keys = align(pre, post)
-    passed, gate_p, gate_stat = global_gate(pre, post, keys)
+    gate = global_gate(pre, post, keys, alpha)
 
-    result = AnalysisResult(
-        gate_passed=passed, gate_p_value=gate_p, gate_statistic=gate_stat, alpha=alpha
-    )
-
-    if not passed:
-        # Recorded, not discarded. Evidence that a change was safe is useful.
-        return result
+    if gate.outcome in (ProfileOutcome.NOT_TESTABLE, ProfileOutcome.UNCHANGED):
+        # Recorded, not discarded. NOT_TESTABLE says the capture must be
+        # investigated. UNCHANGED says no change was detected, which is a
+        # narrower claim than "the change was safe": it rests on the stimulus
+        # having run the same way in both phases, which OPEN-QUESTIONS 22 says
+        # is not yet verified.
+        return AnalysisResult(
+            outcome=gate.outcome, outcome_reason=gate.reason,
+            gate_p_value=gate.p_value, gate_statistic=gate.statistic, alpha=alpha,
+        )
 
     findings = [_test_key(k, pre, post, vm, min_pre_count) for k in keys]
     classify(findings, alpha, max_ratio, noise_sigmas)
+    n_tested = sum(1 for f in findings if f.p_value is not None)
 
-    result.findings = findings
-    result.n_tested = sum(1 for f in findings if f.p_value is not None)
-    return result
+    if gate.outcome is ProfileOutcome.CHANGED:
+        outcome, reason = ProfileOutcome.CHANGED, gate.reason
+    # The gate did not apply: one key only. Decide from that key's own test.
+    elif any(f.is_finding for f in findings):
+        outcome, reason = ProfileOutcome.CHANGED, gate.reason
+    elif n_tested == 0:
+        outcome = ProfileOutcome.NOT_TESTABLE
+        reason = gate.reason + ", but it had too few events to test"
+    else:
+        outcome, reason = ProfileOutcome.UNCHANGED, gate.reason
+
+    return AnalysisResult(
+        outcome=outcome, outcome_reason=reason,
+        gate_p_value=gate.p_value, gate_statistic=gate.statistic,
+        findings=findings, n_tested=n_tested, alpha=alpha,
+    )

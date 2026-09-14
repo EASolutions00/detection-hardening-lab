@@ -17,6 +17,85 @@ Next:
 
 ---
 
+## 2026-09-14 - An outside review verified, D1 to D3 decided, and the gate fixed. A dead agent is no longer reported as blind spots.
+
+**Did:** verified a pasted outside review of the diagram, explainer and proposal against the files, the
+code and the original 2026-08-15 image. Recorded three design decisions. Rewrote the global gate.
+
+### The review: all findings true, four overstated, two errors of mine it missed
+
+All 13 main findings and 9 small ones held. Four were slightly overstated:
+
+- **Finding 3.** `proposal-form-FINAL.md:343` and `T1-PANEL-RESPONSE.md:510` do not agree with the
+  blueprint about the post-change snapshot. They do not say which snapshot at all.
+- **Finding 4.** There are two manifests, not one. FINAL's lists parameters only and would hash equal
+  under the blueprint method. The blueprint's includes `run_id` and timestamps and never could.
+- **Finding 6.** `tests/test_differential.py:167-168` already said "the agent may have died". What no
+  record said was the consequence.
+- **Finding 7.** The explainer's stated test order at `:781` covers the 30-event minimum for LOST. The q
+  condition is missing from all three documents.
+
+**Two errors of mine from 2026-09-12 that the review did not catch.** `T1-PANEL-RESPONSE.md` still says
+"not the `.png` files beside them"; there are no PNG files beside them. And the line I added, "Nothing in
+this project renders PNG. No renderer is installed", is false: this log's 2026-08-20 entry records
+rendering to PNG "through the installed PowerPoint COM object". `DECISIONS.md` 2026-09-09 carries the
+same overstatement. **Neither is fixed yet.** Both belong to Step 4.
+
+**Also verified:** in the 2026-08-15 image only the rule path loops back and risk acceptance ends, so
+explainer `:752-754` is wrong. The REVISED `.docx` embeds the 326,941-byte original plus a 52,010-byte
+image that is the template's own. The 2026-09-07 `.docx` holds 2,943 characters and only that template
+image. The renamed `*.SUPERSEDED-2026-08-28.png` files are gone, and no record says they were deleted.
+
+### D1, D2, D3
+
+Recorded in `DECISIONS.md`, 2026-09-14.
+
+- **D1.** The system ranks discriminating fields. It does not draft rules.
+- **D2.** A post-change run restores the configuration snapshot and applies the change by script,
+  **before** the start fence. The blueprint and runbook had the change and its reboot inside post-change
+  windows only, which is a confound. The manifest is split into a hashed part and a recorded part.
+- **D3.** A tinted box means the system performs that step, and the generator will enforce it.
+
+### Step 2: the gate
+
+**Before, measured by running the previous code:**
+
+```
+dead agent, post all zero        gate_passed=True   big=LOST  mid=LOST
+one key 1000 -> 0                gate_passed=False  no findings
+one empty repetition [100,0,0]   gate_passed=False  no findings
+empty pre-change phase           gate_passed=True   a=NEW  b=NEW
+single key 1000 -> 300           gate_passed=False  no findings
+alpha=0.01, gate p ~ 0.025       gate_passed=True
+```
+
+**After:** the first four are NOT_TESTABLE with a reason naming the empty repetition. The single key is
+tested directly and reported REDUCED. The alpha case is UNCHANGED.
+
+**Result:** `55 passed`, up from 49. 26 in `test_differential.py`, 29 in `test_eventkey.py`.
+
+**Broke / stuck on:** one of my own test docstrings was wrong. It claimed an empty repetition produced
+REDUCED findings on the old code. Running the old code showed "no significant change": every key fell by
+the same share, so the profile shape did not move. Corrected before committing. **This is why each new
+input was run against the previous code first.**
+
+**Updated so the counts are not stale:** `CLAUDE.md` twice, `PROMPT-new-chat.md` twice plus its
+settled-numbers and open-items sections, `src/README.md`. `check_docs.py` now also matches
+`per-event-type`, and its reference to `global_gate()` points at the new line 102.
+
+**Demo:** regenerated. Every number identical. Only the four STAGE B header lines changed.
+
+**Next, in order:**
+
+1. **Step 3.** Regenerate the figures for D1, D2 and D3, the new gate outcomes with an end node for
+   NOT_TESTABLE, "REDUCED needs all three" on REDUCED only, and "Export the archived events" in place of
+   "Pull via the SIEM API". The diagram docstring at `:33-40` and comment at `:279-281` now describe
+   code that no longer exists.
+2. **Step 4.** The documents, including my two PNG errors.
+3. **Not yet an item:** `VarianceModel.from_control()` accepts an empty control repetition, which would
+   inflate every noise band and push real losses toward UNCHANGED. Same defect class, opposite
+   direction, separate function.
+
 ## 2026-09-12 - Documentation sweep. Eleven panel answers re-checked, five defects fixed, and three findings that are not yet OPEN-QUESTIONS items.
 
 **Did:** scanned 31 files in 3 folders with `tools/check_docs.py`, then read `T1-PANEL-RESPONSE.md`

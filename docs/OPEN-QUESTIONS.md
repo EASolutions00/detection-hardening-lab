@@ -579,16 +579,18 @@ a panelist during the defense costs the credibility of every other figure in the
 
 ---
 
-## 16. Should `global_gate()` distinguish "no change" from "could not test"?
+## 16. Should `global_gate()` distinguish "no change" from "could not test"? (ANSWERED, see the Answered section)
 
-**Status:** Open. Raised 2026-09-09. Lower damage than the items above, but it changes a reported
-result, so it is a real decision and not a cleanup.
+**Status:** **Answered 2026-09-14. Yes, and the code now does.** Evidence in the Answered section at
+the bottom of this file and in DECISIONS 2026-09-14. Raised 2026-09-09.
 
-**Read with item 23**, which is the other half of the same function: this item is about the gate's
-failure modes being conflated, item 23 is about its success being unearned. Fix them together, in
-one change to `global_gate()`, rather than touching that function twice.
+**The text below is kept as written, and part of it was wrong.** The table lists three "could not
+test" cases. An outside review on 2026-09-14 found that only the first could ever happen: line 84 was
+unreachable because line 74 returned first, and line 91 could not fire because every expected count
+was already above zero. The item also missed the worse defect in the same function, the opposite
+direction: a dead agent **passed** the gate. Both are in the Answered section.
 
-**The problem.** `global_gate()` returns not-passed for three different situations:
+**The problem, as originally written.** `global_gate()` returns not-passed for three different situations:
 
 | Line | Situation | What it means |
 |---|---|---|
@@ -623,10 +625,13 @@ sentence to defend than the fix is to write.
 
 ## 23. `global_gate()` ignores the alpha it is given, and is the only stage with no noise model
 
-**Status:** Open. Raised 2026-09-12. Two defects in one function. The first is a plain bug, the
-second is a design question. Ranked here with item 16, which is about the same function.
+**Status:** **Half answered.** Defect one, the alpha, was **fixed 2026-09-14**: `global_gate()` now
+takes `alpha`, `analyse()` passes it, and `test_gate_uses_the_alpha_it_is_given` protects it,
+verified against the previous code, which passed the gate at `alpha=0.01` on a p of about 0.025.
+**Defect two, the missing noise model, is still open** and still waits on the Phase 7 control runs.
+Raised 2026-09-12. The line numbers below describe the code before the fix.
 
-### Defect one: the alpha parameter does not reach the gate
+### Defect one: the alpha parameter does not reach the gate (fixed 2026-09-14)
 
 `analyse()` takes `alpha` at `differential.py:253` and passes it to `classify()` at line 284. But
 line 273 calls the gate with no alpha:
@@ -1619,6 +1624,87 @@ data was never collected.
 ---
 
 ## Answered
+
+### Should `global_gate()` distinguish "no change" from "could not test"? (answered 2026-09-14, item 16)
+
+**Answer: yes. A run now has one of three profile outcomes, CHANGED, UNCHANGED or NOT_TESTABLE, and the
+item as written had the problem only half right.**
+
+**What the item said.** Three situations returned "not passed" and were all reported as "no
+significant change": fewer than two informative keys, both phases empty, and chi-square failing to
+compute.
+
+**What was actually true, found by an outside review and confirmed by running the code.** Two of those
+three could never happen. Line 84 was unreachable, because two empty phases leave no informative row
+and line 74 returned first. Line 91 could not fire, because by then every row and column total was
+above zero, so no expected count could be zero. **The same wrong count of three was repeated in the
+activity diagram's docstring and in `ACTIVITY-DIAGRAM-EXPLAINED.md` section 10.**
+
+**The worse defect was the opposite direction, and the item missed it.** An empty post-change phase
+did not fail the gate. It **passed** it with `p = 0`. Run on the previous code on 2026-09-14:
+
+```
+CASE 1  dead agent: every post-change count is zero
+  gate_passed=True  p=0.0
+  big   LOST          present before (300 occurrences), absent after
+  mid   LOST          present before (180 occurrences), absent after
+  rare  INCONCLUSIVE  only 6 occurrences before the change ...
+
+CASE 2  only one key exists, and it falls 1000 -> 0
+  gate_passed=False  findings=0
+```
+
+**A dead agent was reported as two blind spots.** An existing test,
+`test_phase_that_emitted_nothing_does_not_crash`, asserted `passed` and `p == 0.0`, so the suite was
+protecting the defect.
+
+Three more inputs, also run against the previous code:
+
+```
+ONE EMPTY REPETITION  post a,b = [100,0,0]    gate_passed=False            no findings
+EMPTY PRE-CHANGE PHASE                         gate_passed=True             a=NEW, b=NEW
+SINGLE KEY 1000 -> 300                         gate_passed=False            no findings
+```
+
+So a run where two of three post-change captures recorded nothing was recorded as "no significant
+change", because every key fell by the same share and the profile shape did not move.
+
+### What changed in the code
+
+| Where | Change |
+|---|---|
+| `model.py` | New `ProfileOutcome` enum. `AnalysisResult.gate_passed` replaced by `outcome` and `outcome_reason`. The p value and statistic are `None` when the chi-square did not run |
+| `model.py` | New `Phase.run_totals()` |
+| `differential.py` | New `capture_problem()`. **Any repetition in either phase that recorded zero events in total makes the run NOT_TESTABLE.** A real capture always contains at least the two fence events, so an empty repetition means a dead agent, a stopped pipeline, or a failed export |
+| `differential.py` | `global_gate()` returns a `GateResult` and takes `alpha`. With exactly one informative key the gate does not apply, and `analyse()` tests that key directly: CHANGED if it is a finding, NOT_TESTABLE if it had too few events, UNCHANGED otherwise |
+| `differential.py` | The unreachable empty-phase branches and the unreachable `try/except` were removed, with a comment saying why rather than leaving code that implies otherwise |
+| `report.py` | Prints the profile outcome and its reason. NOT_TESTABLE prints "THIS RUN COULD NOT BE TESTED. It is not evidence that coverage survived the change, and it is not evidence of a blind spot" |
+
+### Tests
+
+**55 passed**, up from 49. Four existing tests rewritten because they asserted the old behaviour, each
+with a comment saying why. Six added: dead agent, one empty repetition, empty pre-change phase, single
+key tested directly, single key too rare, and the alpha test from item 23.
+
+**The new inputs were run against the previous code before being trusted**, so each test is known to
+protect a real defect rather than to agree with the new code. One test description was wrong on that
+check and was corrected: it had claimed the empty-repetition case produced REDUCED findings, and the
+old code actually produced "no significant change".
+
+**The demo is unaffected apart from its report header.** Every chi-square, rate ratio, q value and
+finding in `docs/demo-output.txt` is identical. Only the four STAGE B lines changed.
+
+### Limits, stated so they are not forgotten
+
+1. **A capture that died partway through a window is not caught.** A repetition with some events and
+   far too few passes the check. That needs the harness to confirm the end fence arrived, which belongs
+   with OPEN-QUESTIONS 22.
+2. **The control phase is not checked.** `VarianceModel.from_control()` accepts an empty control
+   repetition. That inflates every key's coefficient of variation, which widens every noise band and
+   pushes real losses toward UNCHANGED, the dangerous direction. Not fixed here, because it is a
+   separate function and was not part of this item.
+3. **The activity diagram still shows the old gate.** Its docstring and the comment at
+   `make_activity_diagram.py:279-281` describe code that no longer exists. Step 3 regenerates it.
 
 ### Can the Unified Write Filter replace snapshot restore on a physical endpoint? (answered 2026-09-11, item 19)
 

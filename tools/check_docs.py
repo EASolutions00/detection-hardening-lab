@@ -81,8 +81,10 @@ CHECKS = [
      "MIN_PRE_COUNT=30 is never met."),
 
     ("key-eventtype",
+     # per-event-type added 2026-09-14. The unhyphenated pattern missed it, so
+     # T1-PANEL-RESPONSE.md:61 and :90 passed clean.
      r"event-type key|event type key|keyed by event type(?! \+)|"
-     r"union of event-type keys|per event type\b",
+     r"union of event-type keys|per event type\b|per-event-type\b",
      "Says 'event type' where the unit is the event key.",
      "DECISIONS.md 2026-09-04. eventkey.py:3."),
 
@@ -163,7 +165,7 @@ EXPECTED = [
      r"pair\w*[^.]{0,80}(lost|LOST)|field-l(evel|oss)|LOST and NEW",
      "field_loss_pairs(), eventkey.py:159"),
     ("global-gate", r"global gate|chi-square|chi square|χ²",
-     "global_gate(), differential.py:56"),
+     "global_gate(), differential.py:102"),
 ]
 
 SUFFIXES = {".md", ".txt"}

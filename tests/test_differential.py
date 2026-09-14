@@ -15,7 +15,8 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from telos import Classification, Phase, VarianceModel, analyse, naive_differencing
+from telos import (Classification, Phase, ProfileOutcome, VarianceModel, analyse,
+                   naive_differencing)
 from telos.differential import global_gate
 
 
@@ -86,9 +87,13 @@ def test_rare_key_is_inconclusive_not_unchanged():
     would claim it survived, which the data does not support, and would inflate
     the reported recall.
     """
-    vm = make_control({"rare": [2, 2, 2, 2, 2], "big": STABLE})
-    pre = Phase("pre", {"rare": [2, 2, 2], "big": [100, 100, 100]})
-    post = Phase("post", {"rare": [0, 0, 0], "big": [0, 0, 0]})
+    vm = make_control({"rare": [2, 2, 2, 2, 2], "big": STABLE, "gone": STABLE})
+    pre = Phase("pre", {"rare": [2, 2, 2], "big": [100, 100, 100], "gone": [100, 100, 100]})
+    # Changed 2026-09-14. This test used to empty every key in the post-change
+    # phase, which is now correctly a failed capture and never reaches the
+    # classifier. "big" stays alive so the capture is real, and "gone" is lost
+    # so the gate passes and "rare" is actually classified.
+    post = Phase("post", {"rare": [0, 0, 0], "big": [100, 100, 100], "gone": [0, 0, 0]})
     res = analyse(pre, post, vm)
     got = {f.key: f.classification for f in res.findings}
     assert got["rare"] is Classification.INCONCLUSIVE
@@ -155,41 +160,145 @@ def test_small_drop_fails_the_effect_size_guard():
 def test_gate_does_not_pass_when_nothing_changed():
     pre = Phase("pre", {"a": [100, 100, 100], "b": [200, 200, 200]})
     post = Phase("post", {"a": [100, 100, 100], "b": [200, 200, 200]})
-    passed, p, _ = global_gate(pre, post, ["a", "b"])
-    assert not passed
-    assert p > 0.05
+    gate = global_gate(pre, post, ["a", "b"])
+    assert gate.outcome is ProfileOutcome.UNCHANGED
+    assert gate.p_value > 0.05
 
 
-def test_phase_that_emitted_nothing_does_not_crash():
-    """Regression. A post-change phase with zero events everywhere used to raise
-    ValueError from chi2_contingency, because an all-zero row makes every
-    expected frequency in that row zero.
+def test_phase_that_emitted_nothing_is_not_testable():
+    """Regression, twice over.
 
-    This is a real outcome, not a bad input. The agent may have died, or logging
-    may have stopped completely. It must be reported, not crash the run.
+    First bug: a post-change phase with zero events everywhere used to raise
+    ValueError from chi2_contingency. Fixed by handling it before the test.
+
+    Second bug, found 2026-09-14: that fix made the gate PASS with p = 0, so
+    every key with enough events before was then reported LOST. This test used
+    to assert exactly that. A dead agent was being reported as blind spots. An
+    empty capture is now NOT_TESTABLE, and it still must not crash.
     """
     pre = Phase("pre", {"a": [100, 100, 100], "b": [200, 200, 200]})
     post = Phase("post", {"a": [0, 0, 0], "b": [0, 0, 0]})
-    passed, p, _ = global_gate(pre, post, ["a", "b"])
-    assert passed
-    assert p == 0.0
+    gate = global_gate(pre, post, ["a", "b"])
+    assert gate.outcome is ProfileOutcome.NOT_TESTABLE
+    assert gate.p_value is None
 
 
-def test_two_empty_phases_do_not_crash():
+def test_two_empty_phases_are_not_testable():
     pre = Phase("pre", {"a": [0, 0, 0], "b": [0, 0, 0]})
     post = Phase("post", {"a": [0, 0, 0], "b": [0, 0, 0]})
-    passed, p, _ = global_gate(pre, post, ["a", "b"])
-    assert not passed
-    assert p == 1.0
+    gate = global_gate(pre, post, ["a", "b"])
+    assert gate.outcome is ProfileOutcome.NOT_TESTABLE
 
 
-def test_no_findings_produced_when_gate_does_not_pass():
+def test_no_findings_produced_when_nothing_changed():
     vm = make_control({"a": STABLE, "b": STABLE})
     pre = Phase("pre", {"a": [100, 100, 100], "b": [200, 200, 200]})
     post = Phase("post", {"a": [100, 100, 100], "b": [200, 200, 200]})
     res = analyse(pre, post, vm)
-    assert not res.gate_passed
+    assert res.outcome is ProfileOutcome.UNCHANGED
     assert res.findings == []
+
+
+# --------------------------------------------------------------------------
+# A failed capture is not a result. Added 2026-09-14, OPEN-QUESTIONS 16.
+# --------------------------------------------------------------------------
+
+def test_dead_agent_is_not_reported_as_blind_spots():
+    """The failure this whole thesis is about, inside the analyser itself.
+
+    Before the fix this exact input produced gate_passed=True and two LOST
+    findings, verified by running it on 2026-09-14. An agent that stopped
+    sending events looked like a hardening change that blinded two detections.
+    """
+    vm = make_control({"big": STABLE, "mid": [60, 61, 59, 60, 60], "rare": [2, 2, 2, 2, 2]})
+    pre = Phase("pre", {"big": [100, 100, 100], "mid": [60, 60, 60], "rare": [2, 2, 2]})
+    post = Phase("post", {"big": [0, 0, 0], "mid": [0, 0, 0], "rare": [0, 0, 0]})
+    res = analyse(pre, post, vm)
+    assert res.outcome is ProfileOutcome.NOT_TESTABLE
+    assert res.reported() == []
+    assert res.findings == []
+
+
+def test_one_empty_repetition_makes_the_run_not_testable():
+    """An agent that died for part of a phase is the same failure, smaller.
+
+    Before the fix this exact input was reported as "no significant change",
+    verified by running it against the previous code on 2026-09-14. Two of the
+    three post-change runs recorded nothing, but every key fell by the same
+    share, so the profile shape did not move and the gate did not pass. A run
+    that was mostly dead was recorded as evidence the change was safe.
+    """
+    vm = make_control({"a": STABLE, "b": STABLE})
+    pre = Phase("pre", {"a": [100, 100, 100], "b": [100, 100, 100]})
+    post = Phase("post", {"a": [100, 0, 0], "b": [100, 0, 0]})
+    res = analyse(pre, post, vm)
+    assert res.outcome is ProfileOutcome.NOT_TESTABLE
+    assert "repetition 2 of 3" in res.outcome_reason
+
+
+def test_empty_pre_change_phase_is_not_testable():
+    """Before the fix this passed the gate and reported every key NEW."""
+    vm = make_control({"a": STABLE, "b": STABLE})
+    pre = Phase("pre", {"a": [0, 0, 0], "b": [0, 0, 0]})
+    post = Phase("post", {"a": [100, 100, 100], "b": [100, 100, 100]})
+    res = analyse(pre, post, vm)
+    assert res.outcome is ProfileOutcome.NOT_TESTABLE
+    assert res.findings == []
+
+
+# --------------------------------------------------------------------------
+# A profile with one key is tested, not waved through. Added 2026-09-14.
+# --------------------------------------------------------------------------
+
+def test_single_key_profile_is_tested_directly():
+    """Before the fix, fewer than two keys returned "not passed", so this real
+    70 percent drop was reported as "no significant change". A 2-by-1 table has
+    no profile shape to test, so the key is tested on its own.
+    """
+    vm = make_control({"only": [1000, 1001, 999, 1000, 1000]})
+    pre = Phase("pre", {"only": [1000, 1000, 1000]})
+    post = Phase("post", {"only": [300, 300, 300]})
+    res = analyse(pre, post, vm)
+    assert res.outcome is ProfileOutcome.CHANGED
+    assert res.gate_p_value is None
+    assert {f.key: f.classification for f in res.findings} == {"only": Classification.REDUCED}
+
+
+def test_single_key_too_rare_to_test_is_not_testable():
+    """One key, and it has fewer than 30 events. Nothing was tested, so nothing
+    may be claimed, including "unchanged"."""
+    vm = make_control({"only": [5, 5, 5, 5, 5]})
+    pre = Phase("pre", {"only": [5, 5, 5]})
+    post = Phase("post", {"only": [4, 5, 5]})
+    res = analyse(pre, post, vm)
+    assert res.outcome is ProfileOutcome.NOT_TESTABLE
+    assert "too few events" in res.outcome_reason
+
+
+# --------------------------------------------------------------------------
+# The gate uses the alpha it is given. Added 2026-09-14, OPEN-QUESTIONS 23.
+# --------------------------------------------------------------------------
+
+def test_gate_uses_the_alpha_it_is_given():
+    """This profile gives a gate p of about 0.025.
+
+    Before the fix, analyse(alpha=0.01) still gated at the module default of
+    0.05, so the gate passed under a threshold this p value does not meet,
+    verified against the previous code on 2026-09-14. A sensitivity sweep on
+    alpha would have shown the gate never moving.
+    """
+    vm = make_control({"a": STABLE, "b": STABLE})
+    pre = Phase("pre", {"a": [1000, 1000, 1000], "b": [1000, 1000, 1000]})
+    post = Phase("post", {"a": [920, 920, 920], "b": [1000, 1000, 1000]})
+
+    loose = global_gate(pre, post, ["a", "b"], alpha=0.05)
+    strict = global_gate(pre, post, ["a", "b"], alpha=0.01)
+    assert 0.01 < loose.p_value < 0.05
+    assert loose.outcome is ProfileOutcome.CHANGED
+    assert strict.outcome is ProfileOutcome.UNCHANGED
+
+    # End to end, through the path that actually carried the bug.
+    assert analyse(pre, post, vm, alpha=0.01).outcome is ProfileOutcome.UNCHANGED
 
 
 # --------------------------------------------------------------------------

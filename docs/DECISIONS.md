@@ -8,6 +8,169 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-09-14 - A capture that recorded nothing is NOT_TESTABLE, never a finding (closes OPEN-QUESTIONS 16)
+
+**Decision:** a run has one of three profile outcomes, **CHANGED, UNCHANGED or NOT_TESTABLE**. Any
+repetition, in either phase, whose counts sum to zero across every key makes the run NOT_TESTABLE.
+It never reaches the classifier and produces no findings.
+
+**Why.** Measured against the previous code on 2026-09-14: an all-zero post-change phase passed the
+gate with `p = 0` and every key with 30 or more events before was reported LOST. **A dead agent was
+reported as blind spots.** An all-zero pre-change phase reported every key NEW. And a run where two of
+three post-change captures recorded nothing was reported as "no significant change". Full evidence in
+OPEN-QUESTIONS, Answered, item 16.
+
+**Why zero is the right line.** Every real capture window contains at least the two fence events the
+harness fires, each a Sysmon Event 1 from `telos-fence.exe`, verified in Phase 3. A hardening change
+cannot remove the harness's own marker process. So a repetition with zero events is not a possible
+result of any change in the catalogue. It can only be a broken capture.
+
+**Why not report it and let a person decide.** Because the report would already have classified the
+keys. A list of LOST findings with a footnote is still a list of LOST findings, and it is the first
+thing a reader sees.
+
+**Also decided in the same change:** a profile with exactly one informative key skips the chi-square,
+because a 2-by-1 table has nothing to compare, and tests the key directly. Before, it was reported as
+"no significant change" regardless of what happened to that key. And the gate now uses the alpha it is
+given, closing defect one of OPEN-QUESTIONS 23.
+
+**Cost if wrong:** low. A NOT_TESTABLE run is re-run. The only way this rule loses real data is a
+hardening change that silences every event including the fences, which would itself be a finding worth
+investigating by hand.
+
+**What it does not catch, recorded so it is not assumed:** a capture that died partway through a window,
+and an empty control repetition inflating the noise model. Both are listed under item 16's answer.
+
+**Verification:** `55 passed`. Each new test's input was run against the previous code first, so each
+is known to protect a real defect.
+
+## 2026-09-14 - D3. In the activity diagram, a tinted box means "the proposed system performs this step", and the generator must enforce it
+
+**Decision:** a tinted box, `system_box()` in `thesis/T1/figures/svgkit.py`, is used for every step the
+proposed system performs and for nothing else. Every tinted box sits in the Proposed System lane. The
+generator checks this and refuses to write a sheet that breaks it.
+
+**Why.** On 2026-09-14 an outside review found the tint had three meanings at once, and none was true:
+
+| Source | What it said the tint meant |
+|---|---|
+| `svgkit.py:121` docstring | "A step the proposed system performs" |
+| `ACTIVITY-DIAGRAM-EXPLAINED.md:237`, `:246-248` | The same, and "point at the tinted boxes" when asked what the system does |
+| `T1-PANEL-RESPONSE.md:113-115` legend | "New or corrected in this revision" |
+| **What the script actually did** | New since the 2026-08-15 diagram. Verified against the original image: every tinted box is new, every white box is carried over or split from an original box |
+
+Under the explainer's reading, four tinted boxes are not system steps. By x-coordinate, "Register the
+environment" and "Restore telemetry" are in the engineer lane, "Configuration state changes" and
+"Restore snapshot, run the stimulus" are in the environment lane. And the core of the method is white:
+the per-key rate-ratio test and the box that builds the event-key profile.
+
+**The defense instruction pointed at the wrong boxes.** A student told to point at the tint would have
+pointed at four steps the system does not perform and missed the statistical test.
+
+**Why this meaning and not "new since August".** "What does your system do" is a question a panel
+asks. "Which boxes are new since your first draft" is not. The tint should answer the question that
+will be asked.
+
+**What must follow, in Step 3:** the four outside-lane boxes become white; the rate-ratio test, both
+profile-building boxes, align, traverse, impact score and every other system step become tinted;
+"Record no significant change" moves from the environment lane into the system lane, where it was
+misplaced in the 2026-08-15 original; the panel legend at `:113-115` is rewritten; and the generator
+asserts that every `system_box` x-coordinate lies inside the Proposed System lane, so the meaning
+cannot drift a second time.
+
+**Cost if wrong:** low. Presentational only. No measurement depends on it.
+
+## 2026-09-14 - D2. A post-change run restores the configuration snapshot and applies the change by script, before the start fence
+
+**Decision:** there is no post-change snapshot. Every post-change capture restores the same
+configuration snapshot as the pre-change captures, applies the hardening change by script, reboots
+if the change needs it, settles, and **only then** fires the start fence.
+
+**Why the method.** `lab/blueprint.md:149` already says "Do not create 16 post-change snapshots", for
+two reasons that still hold: the change stays version-controlled and auditable as a script, and F:
+avoids 16 branching delta chains. The activity diagram (`make_activity_diagram.py:190-191`) and the
+explainer (`:505`) said the opposite, "Re-run the identical manifest from the post-change snapshot".
+`proposal-form-FINAL.md:343` and `T1-PANEL-RESPONSE.md:510` do not say which snapshot. This entry
+settles it in favour of the blueprint.
+
+**A third reason, found while deciding.** With one configuration snapshot for both phases, the
+snapshot identifier is the same before and after the change. That is what allows a hash of the run
+parameters to match between the phases at all. Under a post-change snapshot it never could.
+
+**Why the order changes.** Blueprint run protocol steps 4 and 5, and runbook Phase 6 steps 4 and 5,
+fire the start fence **first** and apply the change **second**, including "reboot if required". So the
+change, its reboot and the boot event storm fall **inside post-change capture windows only**. A
+confound is a second difference between the two phases besides the change being measured, and this
+is one. New order:
+
+```
+1  revert to the configuration snapshot
+2  start the VM
+3  settle 180 s
+4  post-change only: apply the change by script, reboot if required, settle 180 s again
+5  start fence
+6  Atomic Red Team suite
+7  end fence
+8  drain 120 s
+```
+
+**What it does not remove, stated honestly.** A post-change run still has one extra reboot before its
+fence that a pre-change run does not. The second settle is meant to absorb it, and **that has never
+been measured.** Phase 7 can check it with the control runs it already needs: a control run with an
+extra reboot before the fence against one without.
+
+**The manifest follows from this, and it was never defined.** Two documents define two different
+manifests. `proposal-form-FINAL.md:127-130` lists parameters only. `lab/blueprint.md:178` lists
+`run_id`, `phase` and fence timestamps, which change every run and could never hash equal. The manifest
+therefore has two parts:
+
+- **Hashed, must match between compared runs:** configuration snapshot ID, Atomic test IDs and
+  versions, window length, repetitions, rule set version, thresholds, Sysmon config hash, agent version,
+  harness commit.
+- **Recorded, not hashed:** run ID, phase, change ID and change script hash, fence timestamps, host
+  load, and the per-atomic exit statuses OPEN-QUESTIONS 22 requires.
+
+**What must follow, in Steps 3 and 4:** the diagram's Phase 2 becomes the engineer supplying the change
+script and its benchmark ID, and the application moves into the system's post-change loop; blueprint
+steps 4 and 5 and runbook Phase 6 are reordered; explainer `:505` and the manifest wording are
+corrected everywhere.
+
+**Cost if wrong:** a change that cannot be applied by a script, for example one that needs Group Policy
+or a firmware setting, would need a post-change snapshot for that change alone. Its snapshot ID would
+then differ, and the hash rule would have to exclude it for that change and say so. None of the current
+catalogue needs this `(unverified for C8, Credential Guard)`.
+
+## 2026-09-14 - D1. The system ranks discriminating fields. It does not draft detection rules.
+
+**Decision:** the third level of remediation candidates is a **ranked list of the event fields that
+still separate adversary activity from control activity after the change**. The system does not
+generate a Sigma rule, a skeleton rule, or any other detection content.
+
+**Why.** The documents disagreed and nothing settled it:
+
+| Says the system drafts a rule | Says it does not |
+|---|---|
+| Diagram box, `make_activity_diagram.py:296-297`: "draft Sigma rule" | `proposal-form-FINAL.md:407`: "It does not author rules." |
+| `T1-PANEL-RESPONSE.md:477`: "A skeleton Sigma rule" | `T1-REVISIONS-LIST.md:220`: the same sentence |
+
+`ACTIVITY-DIAGRAM-EXPLAINED.md` did both: it quotes the box at `:675` and then describes ranked fields
+at `:684-686`.
+
+The submitted proposal is the authority after the code, and it says no. It is also the smaller and more
+defensible claim. A ranked field list is a measurement the study can check. A generated rule invites
+the question "how good are your rules", which Scope and Limitations item 7 already puts out of scope.
+And rule induction is unbuilt work the schedule does not have.
+
+**The answer to panel question Q5 does not change.** Can it suggest a fix? Yes, at three levels:
+surviving sources, known compensating controls, and ranked discriminating fields.
+
+**What must follow, in Steps 3 and 4:** the diagram box reads "surviving sources, known compensating
+controls, ranked discriminating fields"; tier 3 at `T1-PANEL-RESPONSE.md:477` is rewritten; the
+explainer's quotation of the box is updated.
+
+**Cost if wrong:** low. If the adviser or panel wants rule drafting, it can be added later as an
+extension that changes no measurement and no stored run.
+
 ## 2026-09-11 - A write filter is an accepted way to return a host to a known state (closes OPEN-QUESTIONS 19)
 
 **Decision:** the requirement on a target host is **the ability to return it to a known state**, and

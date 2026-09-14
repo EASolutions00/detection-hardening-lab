@@ -29,8 +29,10 @@ NOISE FLOOR  (measured from the control runs)
 DIFFERENTIAL ANALYSIS
 ==============================================================================
 
-STAGE B  global gate (one chi-square over the whole profile)
-  chi-square = 9,092.5   p = 0   PASSED
+STAGE B  capture check, then global gate (one chi-square over the whole profile)
+  chi-square = 9,092.5   p = 0   alpha = 0.05
+  profile outcome   CHANGED
+  why               chi-square p = 0 is below alpha = 0.05
   event keys carried into per-key testing: 14
 
 STAGE C  classification

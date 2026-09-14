@@ -67,16 +67,25 @@ because the analyser consumes event counts and does not care where they came fro
 
 ## The method, in the order it runs
 
-1. **Noise floor** (`variance.py`). From the control runs, measure each event type's
+1. **Noise floor** (`variance.py`). From the control runs, measure each event key's
    coefficient of variation and dispersion. Once per environment.
-2. **Global gate** (`differential.global_gate`). One chi-square over the whole profile.
-   Did anything change at all? Applied once, not per event type.
-3. **Per-type rate ratio** (`differential._test_key`). Quasi-Poisson, using the measured
+2. **Capture check, then global gate** (`differential.capture_problem`,
+   `differential.global_gate`). A repetition that recorded no events at all makes the run
+   NOT_TESTABLE. Otherwise one chi-square over the whole profile: did anything change at
+   all? The profile outcome is CHANGED, UNCHANGED or NOT_TESTABLE. A profile with a single
+   key skips the chi-square and tests that key directly.
+3. **Per-key rate ratio** (`differential._test_key`). Quasi-Poisson, using the measured
    dispersion rather than assuming variance equals mean.
-4. **Correction** (`differential.classify`). Benjamini-Hochberg across all tested types.
+4. **Correction** (`differential.classify`). Benjamini-Hochberg across all tested keys.
 5. **Classification.** LOST, REDUCED, UNCHANGED, NEW, or INCONCLUSIVE.
 
-## Three design choices worth defending
+## Design choices worth defending
+
+**A failed capture is NOT_TESTABLE, never a finding.** Until 2026-09-14 an agent that sent
+nothing after the change passed the gate, and every key with enough events before was
+reported LOST. A dead agent looked like a hardening change that blinded detections, which
+is the exact error this thesis exists to catch. "This change was safe" and "this run could
+not be tested" are opposite claims, so they are now separate outcomes.
 
 **Chi-square runs once, globally.** Per event type it fails twice: expected counts for
 rare events break the approximation, and the p value duplicates what the rate ratio
@@ -100,7 +109,7 @@ does not support, and would inflate the reported recall.
 
 ## Tests
 
-**49 tests**, 20 in `tests/test_differential.py` and 29 in `tests/test_eventkey.py`.
+**55 tests**, 26 in `tests/test_differential.py` and 29 in `tests/test_eventkey.py`.
 The three that matter most:
 
 - `test_drop_inside_the_noise_band_is_not_reported`

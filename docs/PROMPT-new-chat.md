@@ -59,8 +59,8 @@ Read these four, in order. Expand `REPO` first.
    **Treat it as a map, not as truth.**
 
 2. `REPO\docs\OPEN-QUESTIONS.md`
-   Items **0, 1, 15 to 18, and 20 to 23** are the live ones. All are summarised in section 5.
-   Item 19 is answered. The file is ranked by damage, so read from the top.
+   Items **0, 1, 15, 17, 18, and 20 to 23** are the live ones. All are summarised in section 5.
+   Items 16 and 19 are answered. The file is ranked by damage, so read from the top.
 
 3. `REPO\docs\DECISIONS.md`
    The newest five entries.
@@ -169,6 +169,11 @@ in `REPO\src\telos\` unless stated otherwise.
 - Chi-square runs **once** over the whole 2 by K profile, never per key.
   `differential.py`, `global_gate()`
 
+- A run has one of three profile outcomes: **CHANGED, UNCHANGED, NOT_TESTABLE**. Any
+  repetition that recorded zero events in total makes the run NOT_TESTABLE, never LOST. A
+  profile with only one key skips the chi-square and tests that key directly. Since 2026-09-14.
+  `model.py`, `ProfileOutcome`; `differential.py`, `capture_problem()`
+
 - Classification order is **NEW, then INCONCLUSIVE, then LOST**.
   `differential.py`, `_test_key()`
 
@@ -230,10 +235,10 @@ Item 22 — blocks the harness design
     Per-atomic exit status and a stimulus fingerprint must go in the run manifest, because they
     cannot be reconstructed after the run.
 
-Item 23 — blocks a reported result
-    `global_gate()` ignores the alpha passed to `analyse()`, and it is the only stage with no
-    noise model, so it may pass on run-to-run variation alone. Ten control pairs from the Phase
-    7 spike settle the second half. Fix with item 16, same function.
+Item 23 — half fixed, half blocks a reported result
+    The alpha half is fixed: `global_gate()` now takes the alpha passed to `analyse()`. Still
+    open: the gate is the only stage with no noise model, so it may pass on run-to-run variation
+    alone. Ten control pairs from the Phase 7 spike settle it.
 
 Item 20 — blocks two headline claims
     WIN-EP-01 does not audit process creation. 200 process spawns produced zero `Security-4688`
@@ -243,10 +248,6 @@ Item 20 — blocks two headline claims
 Item 17 — blocks on the adviser
     Three live documents state the system is a server-side web application. It is in no decision
     record and was never confirmed.
-
-Item 16 — blocks a result-model change
-    `global_gate()` returns not-passed for "no change" and for "could not test" alike, and both
-    are reported as "no significant change".
 
 Item 15 — blocks submission
     Which documents still carry the superseded event key. The `.docx` still embeds the
@@ -269,7 +270,7 @@ Not an item yet — blocks the revisions list
 
 Built and tested, in `REPO\src\telos\`:
     `eventkey.py`, `variance.py`, `differential.py`, `baseline.py`, `report.py`, `model.py`,
-    `synth.py`. Two test files in `REPO\tests\`, 49 tests passing.
+    `synth.py`. Two test files in `REPO\tests\`, 55 tests passing.
 
 Designed only, no code exists:
     the event-key to rule to ATT&CK dependency index, impact scoring, remediation candidate
@@ -298,7 +299,7 @@ git -C "E:\Claude general" log --oneline -8
 In PowerShell a quoted executable needs the call operator, so write
 `& "E:\Claude general\.venv\Scripts\python.exe" ...`. In cmd or bash the quotes alone are enough.
 
-`pytest` should print `49 passed`. If it prints anything else, stop and tell me, because the
+`pytest` should print `55 passed`. If it prints anything else, stop and tell me, because the
 record is stale.
 
 `check_docs.py` flags statements in any document that contradict the code. **It flags, it does
