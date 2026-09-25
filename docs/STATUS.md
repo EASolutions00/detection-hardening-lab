@@ -1,7 +1,7 @@
 # STATUS
 
 Current blockers and dates. This file changes often. CLAUDE.md does not.
-Last updated: 2026-09-26, second update of the day (from git log)
+Last updated: 2026-09-26, third update of the day (from git log)
 
 Every item here must also exist in OPEN-QUESTIONS.md or DECISIONS.md. This file only
 says which ones matter right now.
@@ -16,7 +16,7 @@ Data collection must start no later than end of September 2026.
 
 The 2026-09-22 date check has passed, and its condition is met: **no capture window has run.**
 The capture harness (runbook Phase 6) does not exist, `data/runs/` is empty, and the lab VMs
-have not been powered on since 2026-09-11. Evidence in WORKLOG 2026-09-26.
+were not powered on between 2026-09-11 and 2026-09-26. Evidence in WORKLOG 2026-09-26.
 Item 25 recommends a scope cut in this case. **Scope is not cut. No decision is in
 DECISIONS.md.** It is the student's decision. With no fallback topic, scope is the only lever
 left.
@@ -37,14 +37,21 @@ date, and the lab has **never made a network logon** (0 of 2,892 logons). C2, C4
 have nothing to act on. **Now a decision for the student** among item 21's four ways out.
 Building DC-01 alone is not enough: the test suite must also make network logons.
 
+**As configured on 2026-09-26, no class C change is measurable on this lab.** Item 21 removes
+C2, C4, C6 and C7; the Sysmon finding below removes C3 and C8; C1 and C5 need logons that are
+rare or absent.
+
 ## Second: OPEN-QUESTIONS item 18
 
 Six of the eight class C changes state a telemetry effect that is a *value change*, and the
 analyser records which fields were **populated**, not what they contained. Only C4 and C6
 are rate changes, and item 21 shows both of those need the missing domain. Value keying
 cannot rescue an event that never fires.
-One lab capture settles item 18: set `RunAsPPL = 1` and read what `GrantedAccess` actually
-holds afterwards.
+The planned capture (`RunAsPPL`, then read `GrantedAccess`) **cannot run as written**, found
+2026-09-26 before WIN-EP-01 was touched: the pinned Sysmon config records **no Event 10 at all**
+(0 of 14,102 Sysmon events), and `RunAsPPL = 1` writes a UEFI firmware variable the registry
+cannot undo. Two decisions first: add an `lsass.exe` rule to the Sysmon config or drop C3 and
+C8, and use `RunAsPPL = 2` in the lab.
 
 ## Also open
 
@@ -54,6 +61,8 @@ holds afterwards.
   logon each, inside every capture window: 1,641 of them on 2026-09-02. Count and record them.
 - Item 27, new 2026-09-26. The host's VMware network adapters broke twice with no known
   cause. Repaired, but the harness must check the path to SIEM-01 before each run.
+- Item 28, new 2026-09-26. Events written before the Wazuh agent starts never reach the
+  archive, so boot-time checks such as Wininit event 12 must be made inside the guest.
 
 ## Lab state
 

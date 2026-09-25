@@ -789,8 +789,8 @@ hurts most, and it matters more now that nothing is ever truncated.
 
 ### Harness requirements collected 2026-09-12 to 2026-09-26
 
-Found while reviewing the analyser and its documents, and 9 and 10 while running the item 21
-check. None is built. Each has a reason, and breaking any of them fails silently.
+Found while reviewing the analyser and its documents, 9 and 10 while running the item 21 check,
+and 11 while preparing the item 18 capture. None is built. Each has a reason, and breaking any of them fails silently.
 
 1. **Count the fence events in the profile the analyser receives.** `capture_problem()` treats a
    repetition with zero events as a failed capture, and that is only safe because every real
@@ -822,6 +822,9 @@ check. None is built. Each has a reason, and breaking any of them fails silently
 10. **Count the `vmrun` guest calls in each run and record the number** in the manifest `record`
     part. Each call most likely writes a batch logon (4624 type 4) inside the window, so a run whose
     call count differs from the control runs is voided like a fingerprint mismatch. OPEN-QUESTIONS 26.
+11. **Confirm a hardening change took effect inside the guest, not from the SIEM**, and write the
+    result into the manifest `record` part. Boot-time events such as Wininit event 12 (LSA protection
+    started) never reach the archive. OPEN-QUESTIONS 28.
 
 ### Three rules for the campaign, each from something measured
 

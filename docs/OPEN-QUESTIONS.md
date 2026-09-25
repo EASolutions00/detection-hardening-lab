@@ -245,6 +245,12 @@ zero with `Kerberos` as the package, and `lmPackageName` is empty on every one.*
 
 **Before the count could run, the host's lab network had to be repaired.** New item 27.
 
+**Later the same day, option 3 lost C3 too.** C3's stated effect is Sysmon Event 10, and the pinned
+Sysmon config records no Event 10 at all (item 18, "Checked before the capture"). **So on this lab, as
+configured on 2026-09-26, no class C change is measurable:** C2, C4, C6 and C7 need network or domain
+logons (0 of 2,892); C3 and C8 need Event 10 (0 of 14,102 Sysmon events); C1 and C5 need logons that
+occur 4 to 14 times a day (type 2) or never (type 10).
+
 ### Four ways out, not equal
 
 1. **Build DC-01.** Tier B already specifies 2 vCPU, 6 GB, 60 GB, and F: has room. Restores C2,
@@ -489,7 +495,10 @@ a real restriction that the limitations section does not currently state.
 **Status:** Open. Raised 2026-09-10. It is not a documentation problem. If the answer is bad, the
 experiment produces UNCHANGED for most of the catalogue and the study reports that hardening does
 not create blind spots, which would be an artifact of the key design and not a fact about the
-world.
+world. **2026-09-26: the capture below was stopped before it started, because it cannot work as
+written.** The pinned Sysmon config never records Event 10, and `RunAsPPL = 1` locks itself into the
+endpoint's firmware. See "Checked before the capture, 2026-09-26" at the end of this item. Two
+decisions come first.
 
 **Answer item 21 first.** This item was the most serious in the file until 2026-09-12, when item 21
 found that the two changes it leaves measurable, C4 and C6, both need a domain controller that does
@@ -558,12 +567,66 @@ cases, and because the field-value information is already in the archived events
 six verified control IDs to protect a design decision.
 
 **How to answer:** run C3 in the lab, capture Sysmon Event 10 before and after `RunAsPPL = 1`, and
-read what `GrantedAccess` actually contains afterwards. If the field is empty or the event stops,
+read what `GrantedAccess` actually contains afterwards. **(2026-09-26: not possible as written, and
+use `2`, not `1`. See the end of this item.)** If the field is empty or the event stops,
 presence keying already works and this item closes. If it carries a different number, option 1 is
 required. **This is one capture and it settles the whole item.**
 
 **Blocks:** the REVISED-to-FINAL diff, the proposal's Module 2 text, and the start of data
 collection.
+
+### Checked before the capture, 2026-09-26: it cannot run as written
+
+Three read-only checks, run before anything on WIN-EP-01 was touched. WIN-EP-01 was not booted.
+
+**1. The pinned Sysmon config records no Event 10 at all.** `lab/configs/sysmonconfig.xml:472` is an
+empty include list, and its own comment on the next line reads "Using "include" with no rules means
+nothing in this section will be logged". The file's header comment on the section says process access
+"Can cause high system load, disabled by default". The archive agrees:
+
+| Archive date | Sysmon events | Events with ID 10, any provider |
+|---|---|---|
+| 2026-09-02 | 1,253 | 0 |
+| 2026-09-03 | 1,023 | 0 |
+| 2026-09-10 | 11,826 | 0 |
+
+So the capture above would read `GrantedAccess` from an event that never fires: zero before, zero
+after, and nothing learned. **C3 and C8 both state their effect as Sysmon Event 10**, so neither is
+measurable with the pinned config. The config's SHA256 is pinned in `DECISIONS.md` and Sysmon reports
+the same hash, so the running sensor is this file.
+
+**2. `RunAsPPL = 1` stores LSA protection in a UEFI firmware variable.** Microsoft's "Configure added
+LSA protection" page (learn.microsoft.com, windows-server, updated 2026-02-16): value `1` configures
+the feature "with a UEFI variable", value `2` "without a UEFI variable", and `2` "is only enforced on
+Windows 11 build 22H2 and later". Once stored in firmware, the page says, the variable "can't be
+deleted or changed ... by modifying the registry or by policy"; removing it needs the LSA Protected
+Process Opt-out tool (`LsaPplConfig.efi`) or turning Secure Boot off. A restart is needed either way.
+**WIN-EP-01 has Secure Boot on** (item 2) and runs 24H2 (`DECISIONS.md` pinned table), so `2` is
+available there. `lab/blueprint.md:314` specifies `RunAsPPL = 1` for C3.
+
+**Why that matters beyond this capture:** nobody has checked whether a VMware snapshot revert resets
+that firmware variable. If it does not, the first C3 post-change run leaves LSA protection on for
+every run after it, pre-change and control runs included, and nothing errors. **This can only be
+tested on a throwaway VM, never on WIN-EP-01.**
+
+**3. The SIEM cannot confirm that LSA protection started.** Microsoft's check is System log event 12
+from Wininit, "LSASS.exe was started as a protected process", written at boot. The archive holds 29,
+37 and 377 System channel events on the three dates, but **zero Wininit events and zero 6005 boot
+events**, although WORKLOG 2026-09-11 records WIN-EP-01 writing a 6005 at 2026-09-10 20:38:42Z while
+SIEM-01 was running. Boot-time events do not reach the archive. New item 28.
+
+**Two decisions before this item can be answered.**
+
+1. **Add an `lsass.exe` rule to the Sysmon `ProcessAccess` section, or drop C3 and C8.** Adding it
+   changes the pinned config hash, so it goes in `DECISIONS.md` and happens before the golden
+   snapshot. The extra event volume is unmeasured, and the config's own comment warns about load.
+2. **Use `RunAsPPL = 2` in the lab.** Check first what CIS 18.9.27.2 asks for exactly, with or
+   without UEFI lock. Not checked. If it requires the lock, the lab uses `2` and states the difference
+   as a limitation.
+
+**The capture after both decisions:** add the rule, set `RunAsPPL = 2`, reboot, confirm Wininit event
+12 **inside the guest**, open `lsass` once, read `GrantedAccess`, then undo both and reboot. The guest
+steps need the guest password, so the student runs them; the archive is read over SSH.
 
 ---
 
@@ -715,6 +778,44 @@ export. The guest side keeps running, so the failure shows up only at the end of
 
 **What a bad answer means:** a campaign that stops exporting partway through, found only when the run
 folders are checked.
+
+---
+
+## 28. Events written before the Wazuh agent starts never reach the archive
+
+**Status:** Open. Found 2026-09-26 while preparing the item 18 capture. Measured, cause unverified.
+
+**What was measured.** The System channel is collected: the archive holds 29, 37 and 377 System
+events on 2026-09-02, 09-03 and 09-10. But on all three dates it holds **zero 6005 events** ("The Event
+log service was started", written at every boot) and **zero events from Wininit**. WIN-EP-01 booted
+on each of those days. WORKLOG 2026-09-11 records one of those boots directly: `System log: id 6005 at
+20:38:42Z` on 2026-09-10, and SIEM-01 was still running then (its `vmware.log` was last written
+2026-09-10 20:43 UTC).
+
+**Likely cause `(unverified)`.** Wazuh's `localfile` reference documents `only-future-events`, default
+`yes`: "By default, when `wazuh-logcollector` is started it reads the logs generated since that
+moment." The page does not say clearly whether this applies to Windows event channels. The pinned
+agent config (`lab/configs/wazuh-agent-ossec.conf`) does not set it.
+
+**Why it matters.**
+- **A boot-time confirmation cannot be read from the SIEM.** Wininit event 12, Microsoft's check that
+  LSA protection started, is written at boot. For C3, and for any change whose proof is a boot event,
+  the check must be made inside the guest and written into the manifest `record` part.
+- **Any gap in the agent is a silent loss.** If the agent stops and starts during a capture window,
+  events written in between are probably never collected, and the loss looks like a hardening
+  effect. The end fence check (harness requirement 2) catches a capture that died, not one with a gap.
+- The capture window itself is not affected while the agent runs throughout: under D2 the window
+  opens after the boot, the second settle and the start fence.
+
+**How to answer.**
+1. Reboot WIN-EP-01 once. Compare the guest's own System log 6005 time with the archive for that
+   date. Absent from the archive confirms the measurement for a fresh boot.
+2. Then either set `<only-future-events>no</only-future-events>` on the System channel, which changes
+   the pinned agent config and must be recorded, or keep the default and do boot-time checks in the
+   guest. Decide before the golden snapshot.
+
+**What a bad answer means:** a change recorded as "applied" with no evidence it took effect, or an
+agent restart mid-window read as telemetry loss.
 
 ---
 
@@ -1118,6 +1219,11 @@ still worth running.
 **The test is now a two-step change, not one.** Set `vhv.enable = "TRUE"` with the VM powered
 off, boot, and **first check whether Windows has switched VBS on by itself**. If it has, the
 golden snapshot has to be re-examined, because the baseline would no longer be "VBS off".
+
+**Added 2026-09-26: even if nested virtualization works, C8 is not measurable yet.** Its stated
+effect is Sysmon Event 10 access to `lsass.exe`, and the pinned Sysmon config records no Event 10
+(item 18, "Checked before the capture"). Credential Guard also has a UEFI lock option of its own,
+which may raise the same snapshot revert question as `RunAsPPL = 1` `(unverified)`.
 
 ---
 

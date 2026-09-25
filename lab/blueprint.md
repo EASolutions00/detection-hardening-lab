@@ -311,7 +311,7 @@ authentication control: authentication survives the change, it just proceeds dif
 |---|---|---|---|---|---|
 | C1 | Disable WDigest | **DISA V-253358** (Win11)<br>V-220800 (Win10) | `HKLM\SYSTEM\CurrentControlSet\Control\SecurityProviders\Wdigest\UseLogonCredential = 0` | 4624 logon-type distribution shifts | Credential theft is still attempted; the attacker gets hashes instead of plaintext |
 | C2 | LAN Manager auth level, NTLMv2 only | **DISA V-253462** (Win11)<br>V-220938 (Win10)<br>**CIS 2.3.11.7** | `HKLM\SYSTEM\CurrentControlSet\Control\Lsa\LmCompatibilityLevel = 5` | 4624 `LmPackageName` shifts toward `NTLM V2` **(corrected 2026-09-14: was "4776 package name changes", which cannot happen, see note below)** | Authentication continues at a higher level |
-| C3 | LSA Protection (LSASS as protected process) | **CIS Win11 18.9.27.2**, Level 1 | `HKLM\System\CurrentControlSet\Control\Lsa\RunAsPPL = 1` | Sysmon Event 10 access to `lsass.exe` changes from granted to denied | LSASS access is still attempted; documented bypasses exist |
+| C3 | LSA Protection (LSASS as protected process) | **CIS Win11 18.9.27.2**, Level 1 | `HKLM\System\CurrentControlSet\Control\Lsa\RunAsPPL = 1` **(2026-09-26: `1` writes a UEFI firmware variable; use `2` in the lab, see note below)** | Sysmon Event 10 access to `lsass.exe` changes from granted to denied **(2026-09-26: the pinned Sysmon config records no Event 10, see note below)** | LSASS access is still attempted; documented bypasses exist |
 | C4 | Restrict NTLM, outgoing traffic to remote servers | **CIS 2.3.11.13**<br>DISA Win11 V-ID `(unverified)` | `HKLM\System\CurrentControlSet\Control\Lsa\MSV1_0\RestrictSendingNTLMTraffic` | 4776 reduced or removed | Authentication continues via Kerberos |
 | C5 | Enforce RDP Network Level Authentication | `(unverified)` | `UserAuthentication = 1` | 4624 / 4625 distribution shifts | RDP is still used; authentication happens earlier |
 | C6 | Reduce cached credentials to 0 | `(unverified)` | `CachedLogonsCount = 0` | Cached and offline logon events reduced | Logon still occurs, against the domain instead |
@@ -335,6 +335,20 @@ learn.microsoft.com, Windows 10 security auditing, events 4776 and 4624. Two con
 - The same page says 4776 is written only on the computer that holds the account: the domain
   controller for domain accounts, the local machine for local accounts. That supports
   OPEN-QUESTIONS 21: without a domain controller, domain NTLM validation is never logged here.
+
+**Found 2026-09-26: C3 and C8 cannot be measured with the pinned Sysmon config, and C3's value
+would lock the endpoint's firmware.** Details and sources in OPEN-QUESTIONS 18, "Checked before the
+capture".
+
+- `lab/configs/sysmonconfig.xml:472` has an empty `ProcessAccess` include list, so Sysmon records no
+  Event 10 at all: 0 of 14,102 Sysmon events in the archive. Both C3 and C8 state their effect as
+  Event 10. Adding an `lsass.exe` rule changes the pinned config hash. Not decided.
+- Microsoft's LSA protection page: `RunAsPPL = 1` stores the setting in a UEFI variable on Secure
+  Boot machines, and the registry can no longer turn it off. `RunAsPPL = 2` gives the same protection
+  without the variable, enforced on Windows 11 22H2 and later. WIN-EP-01 has Secure Boot on and runs
+  24H2. Whether a snapshot revert resets the variable is unknown, so **the lab should use `2`**, a
+  recommendation not yet decided. What CIS 18.9.27.2 requires exactly, with or without the lock, is
+  not checked.
 
 **C8 is blocked** on nested virtualisation (Virtualize AMD-V/RVI in VM settings), still untested
 on Zen 4 with Workstation 17.5.1. See OPEN-QUESTIONS item 2. Do not count on it.

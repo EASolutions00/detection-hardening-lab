@@ -17,6 +17,44 @@ Next:
 
 ---
 
+## 2026-09-26 (third) - Item 18 capture stopped before it started: Sysmon records no Event 10, and `RunAsPPL = 1` would lock the firmware.
+
+Chat 27d2595d, continued after `8c08b1d`.
+
+**Did:** the student asked to run the item 18 capture next. Before booting WIN-EP-01, three things were
+checked, all read only: the pinned Sysmon config, Microsoft's LSA protection page, and the archive on
+SIEM-01. WIN-EP-01 was never booted, so nothing on it changed.
+
+**Result: the capture cannot run as written.** Details in OPEN-QUESTIONS 18, "Checked before the
+capture".
+- **Sysmon records no Event 10.** `sysmonconfig.xml:472` is an empty include list. Archive: 1,253,
+  1,023 and 11,826 Sysmon events on 2026-09-02, 09-03 and 09-10, and **zero** with ID 10. C3 and C8 both
+  depend on Event 10.
+- **`RunAsPPL = 1` writes a UEFI firmware variable** on a Secure Boot machine, and the registry cannot
+  undo it. `2` does the same without the variable, on Windows 11 22H2 and later. The blueprint's C3 row
+  used `1`. Whether a snapshot revert resets the variable is unknown.
+- **Boot-time events never reach the archive**: zero 6005 and zero Wininit events on every date,
+  although the System channel is collected. So Microsoft's check that LSA protection started, Wininit
+  event 12, cannot be read from the SIEM. **New item 28.** The likely cause, Wazuh's
+  `only-future-events` default, is documented for `wazuh-logcollector` but not clearly for event
+  channels.
+- Together with item 21: **no class C change is measurable on this lab as configured today.** Recorded
+  in item 21.
+
+**Broke / stuck on:**
+- A remote loop passed inline from PowerShell to `ssh` lost its quotes and spaces, and the counts ran
+  together: `sysmon=%sid10=%sn2026-09-0212530`. Unreadable, so not used. Rerun with the loop in a script
+  file, copied over with `scp` and run with `bash`. Noted in `COMMANDS.md` 3.7.
+- The Wazuh documentation page was read through a summarising fetch. The quote about
+  `only-future-events` is from that page; the summary's remark that it "appears applicable to
+  file-based formats" is the fetch tool's reading, not Wazuh's words, so the cause stays unverified.
+
+**Decisions waiting on the student:** add an `lsass.exe` rule to the Sysmon config or drop C3 and C8;
+use `RunAsPPL = 2` in the lab; and first read what CIS 18.9.27.2 asks for exactly.
+
+**State left behind:** SIEM-01 still running. More pattern files and two small scripts in
+`/home/eli/item21` on SIEM-01.
+
 ## 2026-09-26 (second) - Item 21 check run: zero, and the lab has never made a network logon. The lab network had to be repaired first.
 
 Chat 27d2595d, continued after the entry below was committed.

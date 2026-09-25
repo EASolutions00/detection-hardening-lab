@@ -868,7 +868,7 @@ ssh -i $key eli@10.20.10.10 "sudo -n /usr/local/sbin/telos-archive show /home/el
 | **What** | Lists the dated archives, counts lines matching one event ID on one date, and downloads matching events for grouping on the host. |
 | **Why** | `count` with a multi-line pattern file returns **one total** for all patterns. One file per ID gives one number per ID. |
 | **Correct result** | A number per date. On 2026-09-26: 4768, 4769 and 4776 were `0` on every date; 4624 was `1764`, `140` and `988` on 09-02, 09-03 and 09-10. |
-| **Traps** | A pattern file with Windows line endings matches nothing, because the `\r` becomes part of the pattern. Check with `od -c`. `dated-list` exits `1` even when it works, from its last test line. SIEM-01's dates are UTC, so a morning run in the Philippines lands on the previous date. |
+| **Traps** | A pattern file with Windows line endings matches nothing, because the `\r` becomes part of the pattern. Check with `od -c`. `dated-list` exits `1` even when it works, from its last test line. SIEM-01's dates are UTC, so a morning run in the Philippines lands on the previous date. **A loop passed inline from PowerShell to `ssh` loses its quotes and spaces** and the output runs together. Put the loop in a `.sh` file with Unix line endings, `scp` it, and run `ssh ... "bash /home/eli/item21/count.sh"`. |
 | **Safe to re-run** | Yes. Read only. |
 
 ---

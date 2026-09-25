@@ -227,8 +227,11 @@ Item 21 — blocks the catalogue, the golden snapshot, and data collection
 Item 18 — blocks data collection
     The key sees field presence, not value. Six of the eight class C hardening changes state a
     telemetry effect that is a value change, which the analyser cannot see. Only C4 and C6 are
-    rate changes, and item 21 shows both of those need the missing domain. One lab capture
-    settles it: set `RunAsPPL = 1`, then read what `GrantedAccess` actually contains.
+    rate changes, and item 21 shows both of those need the missing domain. The planned capture
+    (`RunAsPPL`, then read `GrantedAccess`) **cannot run as written**, found 2026-09-26: the
+    pinned Sysmon config records no Event 10 at all, and `RunAsPPL = 1` writes a UEFI firmware
+    variable. Decide first: an `lsass.exe` Sysmon rule or drop C3 and C8; and `RunAsPPL = 2`.
+    As configured today, **no class C change is measurable on this lab.**
 
 Item 22 — blocks the harness design
     The stimulus is asserted identical across the two phases and never verified. A hardening
@@ -245,6 +248,11 @@ Item 27 — the lab network, cause unknown
     The host's VMware adapters broke on their own twice, 2026-08-31 and before 2026-09-26.
     Repaired by hand. The pre-flight check and the harness must confirm VMnet2 holds
     `10.20.10.1` before any run.
+
+Item 28 — boot-time evidence
+    Events written before the Wazuh agent starts never reach the archive: zero 6005 and zero
+    Wininit events on every date. Boot-time checks, such as Wininit event 12 for LSA
+    protection, must be made inside the guest. Cause unverified.
 
 Item 25 — the schedule, with a date on it
     The harness does not exist, the spike has never run, and 101 windows need about 67 hours
