@@ -222,6 +222,12 @@ collection.
 before a session was compacted. **Nothing below is decided.** These are recommendations, and the
 student has not accepted or rejected them.
 
+**Tripwire checked 2026-09-26: the condition is met, and scope is still not cut.** No capture window
+has run. Evidence on this machine: no commit after 2026-09-14; `data/runs/` holds only `.gitkeep`;
+`lab/scripts/` has no harness; the lab VMs' `vmware.log` files on F: were last written 2026-09-11.
+Nothing here rules out a run on another machine. No scope decision is in `DECISIONS.md`. See
+WORKLOG 2026-09-26.
+
 **Why it matters.** Data collection must start by end of September 2026 (`CLAUDE.md`). On 2026-09-14:
 
 - The capture harness, runbook Phase 6, **does not exist**.
@@ -235,6 +241,10 @@ student has not accepted or rejected them.
 **If the harness has not completed one full unattended capture window by 2026-09-22**, the 101-run
 campaign cannot finish in time, and a scope cut stops being optional. `DECISIONS.md` already says that
 if the spike fails the fallback is T2, not T3. This is a date to check, not a prediction.
+
+**Correction 2026-09-26.** The sentence above about `DECISIONS.md` is wrong. Its 2026-08-19 entry left
+the fallback undecided and never chose T2. Since 2026-09-26 there is no fallback at all (`DECISIONS.md`
+2026-09-26), so missing this tripwire leads to a scope decision, not a topic switch.
 
 ### Recommendation 2: cut scope in writing, before the panel finds it
 

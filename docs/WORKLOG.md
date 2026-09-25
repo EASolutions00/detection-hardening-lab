@@ -17,6 +17,96 @@ Next:
 
 ---
 
+## 2026-09-26 - Claude Code setup v2 installed, the 2026-09-22 tripwire checked, T1 made final, and two unlogged chats recorded
+
+Chat 4a84fe5f.
+
+**Did:** installed a new Claude Code setup from `claude-setup-v2.zip`. The old files were backed up
+first to `C:\Users\Elijah\claude-backups\2026-09-26\`, outside the repo.
+- Private, outside the repo: new global reply rules, two global skills (`defense-brief`,
+  `review-order`), a reply-check hook, a thesis chat-log hook, and permission rules that stop Claude
+  from deleting any VM snapshot or VM, or editing snapshot and disk files under `F:\TeLoS Homelab`.
+- In the repo: `CLAUDE.md` replaced by a shorter index; new `docs/STATUS.md`; new project skill
+  `phase-closeout`; new `.claude/settings.json` that denies edits to `data/runs/`, force pushes and
+  `git reset --hard`, and asks before `rm`, `Remove-Item` and `git clean`. `git clean -fdx` would wipe
+  `data/runs/`, which is gitignored and on one disk only.
+- Before installing, checked the new files against the repo, not against other documents. Two claims
+  failed. (1) "T2 is the fallback": `DECISIONS.md` 2026-08-19 left the fallback undecided and no later
+  entry chose T2. (2) The new STATUS listed item 1 as settled; OPEN-QUESTIONS 1 is still open at 14 of
+  16 changes. Both corrected. Also corrected: "8 phases" (the runbook has Phases 0 to 8), and
+  `COMMANDS.md` Parts 4 and 5 still expected `20 passed`. `pytest` gives `55 passed`.
+
+**Decided by the student:** "No fallback this time. T1 is the final thesis title." Recorded in
+`DECISIONS.md` 2026-09-26. The files that said "go to T2" now say T1 is final: `CLAUDE.md`,
+`PROMPT-new-chat.md`, both T2 and T3 READMEs, runbook Phases 7 and 8, and OPEN-QUESTIONS 25 (a
+correction added under its wrong sentence, the old text kept).
+
+**The 2026-09-22 tripwire (OPEN-QUESTIONS 25): met. No capture window has run. Scope is not cut.**
+The student did not remember, so the machine was checked:
+- the last commit before today is `2b5322e`, 2026-09-14 19:22;
+- `data/runs/` holds only `.gitkeep`; `lab/scripts/` has no harness;
+- on F:, `vmware.log` for both VMs was last written 2026-09-11 04:43, so neither VM has been powered
+  on since. Both VM folders got new VMware lock files (`.vmx.lck`) on 2026-09-26 05:02, and no VM was
+  running afterwards (`vmrun list`: `Total running VMs: 0`). A lock file means VMware Workstation
+  opened the VM, not that it ran. Most likely this was the student opening Workstation to read its
+  version, 17.5.1 build-23298084 `(unverified)`.
+No scope decision is in `DECISIONS.md`. With no fallback topic, scope is the only lever left.
+
+**Two thesis chats that had no entry, recorded now.** Found by searching every chat transcript after
+the last commit.
+- **Chat 4e01d810, 2026-09-14 22:10 to 22:17, read-only.** A sweep of the activity diagram against the
+  code and the documents. It reported 4 serious, 5 medium and 5 small problems. **Reported by that
+  chat, not re-checked.** The full report is kept privately at
+  `C:\Users\Elijah\claude-backups\thesis-chats\2026-09-14_4e01d810_activity-diagram-sweep.md`.
+  The four serious ones:
+  1. The chi-square gate can say "no change" while one event key is completely lost. On made-up data
+     with 299 steady keys, one key dropping from 200 events to 0 gave gate p = 0.99 and no finding.
+     Tested alone, the same key came out LOST (q = 4.2e-85). OPEN-QUESTIONS 23 covers only the
+     opposite risk, the gate passing on noise.
+  2. The noise model is measured before the stimulus is defined, and the documents allow a different
+     stimulus per change. A key the control runs never saw gets a coefficient of variation (how much a
+     count moves between identical runs) of 0, so its noise band is 0.
+  3. Remediation level 3 ranks fields that separate attack activity from control activity, but every
+     capture, the control runs included, runs the attack suite. No data exists for "control activity".
+  4. D2 was not carried into Phase 5. "Restore telemetry" is a one-time manual step, but every capture
+     restores the configuration snapshot, which undoes it.
+- **Chat 27d2595d, 2026-09-26 04:55.** The student asked the tripwire question there first. That chat
+  found the same evidence as above. Its two edits, to OPEN-QUESTIONS 25 and to this file, were
+  rejected, because the student wanted answers only.
+
+**So that no chat goes unlogged again:** a private hook now runs at the start and end of every Claude
+Code chat. For chats in this repo, `E:\Elijah MASTER COPY DO NOT DELETE\Documents\New folder (5)` or
+`F:\TeLoS Homelab`, it copies the transcript to `C:\Users\Elijah\claude-backups\thesis-chats\` (Claude
+Code deletes transcripts after 30 days by default), adds an entry to a private `CHAT-LOG.md`, records
+files changed in the docs and VM folders since the last check, and tells each new chat which chats and
+changes this file does not cover yet. First run: 32 thesis chats archived since 2026-08-18, 265 files
+in the baseline, 1.8 seconds. Chats outside Claude Code are not seen; `PROMPT-new-chat.md` now asks
+them for a paste-ready entry.
+
+**Broke / stuck on:**
+- The zip's hook command used `python3`. On this machine that is the Microsoft Store stub, exit 49:
+  `Python was not found; run without arguments to install from the Microsoft Store, or disable this
+  shortcut from Settings > Apps > Advanced app settings > App execution aliases.` Changed to `python`
+  (3.13.14).
+- The zip's reply check read its input with Windows' default cp1252 code page, so a UTF-8 long dash
+  (U+2014) arrived as three other characters and was never caught. Fixed by reading the input as UTF-8
+  bytes. Four test inputs now give the expected result; before the fix, the dash test printed nothing.
+- My first test run of the chat-log hook failed on my own test input, not on the script:
+  `JSONDecodeError: Invalid \escape: line 1 column 63 (char 62)`, from shell quoting of backslashes.
+  It printed one line and exited 0, as designed. Rerun with the input in a file: worked.
+- Claude Code gives end-of-chat hooks 1.5 seconds by default (hooks reference, SessionEnd). Set to 30.
+  Not verified: whether the end-of-chat hook runs when the desktop app closes a chat. The start of the
+  next chat catches up either way.
+
+**Next:**
+1. Decide scope, OPEN-QUESTIONS 25, and record it in `DECISIONS.md`. Most urgent: data collection
+   must start by end of September.
+2. Check each serious finding from chat 4e01d810 against the code. Open an OPEN-QUESTIONS item for each
+   one that holds. Finding 1 first.
+3. Found, not changed: the boot sequence in `PROMPT-new-chat.md` does not read `docs/STATUS.md`, and
+   its item 25 summary still gives 2026-09-22 as a future date.
+4. In a new Claude Code chat, check `/context`, `/hooks` and `/permissions`.
+
 ## 2026-09-14 (fifth) - Audit before compaction. 14 of 15 topics from this session were in no document, and two of my own claims were wrong.
 
 **Did:** listed every topic discussed since the last compaction (2026-09-12 to 2026-09-14) and searched

@@ -831,7 +831,7 @@ naive at 20.0% precision and the proposed system at 100%.
 ```bash
 .venv/Scripts/python.exe -m pytest tests -v
 ```
-**Correct result.** `20 passed`.
+**Correct result.** `55 passed` (checked 2026-09-26).
 **If any test fails, stop.** A failing test means the analysis gives wrong answers. Fix it
 before writing more code.
 
@@ -886,7 +886,7 @@ Re-run the Part 1.1 command and restart.
 ```bash
 .venv/Scripts/python.exe -m pytest tests -q
 ```
-Expect `20 passed`
+Expect `55 passed` (checked 2026-09-26)
 
 ```bash
 git status --short

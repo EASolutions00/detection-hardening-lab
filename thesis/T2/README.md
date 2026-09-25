@@ -3,7 +3,8 @@
 **Full title:** Automated Detection of Severity Inversion in the Wazuh Default Ruleset Using
 Parent-Child Dependency-Graph Analysis and Topological Consistency Scoring
 
-**Status:** Not chosen. Second fallback, behind T3.
+**Status:** Not chosen, and not a fallback either. T1 is final and there is no fallback
+(`docs/DECISIONS.md` 2026-09-26). Kept as a record only. The text below was written earlier.
 
 ## The idea in one paragraph
 

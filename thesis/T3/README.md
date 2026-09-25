@@ -10,7 +10,8 @@ a Rule-Feature Dependency Model Based on the Summiting the Pyramid Methodology
 > SigmaHQ rules carry such an annotation** at commit `da9bb07`. An agreement statistic on six
 > rules means nothing.
 >
-> **If T1 fails its spike gate, go to T2.** Do not spend time reviving T3. Evidence is in
+> **T1 is final and there is no fallback** (`docs/DECISIONS.md` 2026-09-26). Do not spend time
+> reviving T3. Evidence is in
 > `docs/OPEN-QUESTIONS.md`, Answered section.
 >
 > Everything below was written before that check and describes T3 as a live option. It is

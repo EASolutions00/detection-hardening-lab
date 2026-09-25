@@ -832,6 +832,10 @@ copied archive matches the `sha256_gz` the export printed.
 
 ## Phase 7. The feasibility spike (the go/no-go gate)
 
+> **Since 2026-09-26 there is no fallback topic** (`docs/DECISIONS.md` 2026-09-26). The spike still
+> answers Q1 and Q2 below. A bad answer now means cutting scope (OPEN-QUESTIONS 25), not switching
+> topic.
+
 Do not build Tier B. Do not write the analysis engine yet. Answer two questions.
 
 **Q1. What is the run to run coefficient of variation?**
@@ -850,11 +854,15 @@ Time 5 unattended end to end runs. Multiply by 101. Save to `data/summaries/run_
 harness is fully unattended. Semi-automated, it does not finish before the defense.
 
 - [ ] Record both answers in `docs/DECISIONS.md`.
-- [ ] Make the T1 versus T3 call and write down the reason.
+- [ ] Decide scope from Q2 (OPEN-QUESTIONS 25). The topic is already settled: T1, no fallback
+      (`docs/DECISIONS.md` 2026-09-26).
 
 ---
 
 ## Phase 8. T2 and T3 environment (no lab needed)
+
+> **Not needed since 2026-09-26.** T1 is final and there is no fallback (`docs/DECISIONS.md`
+> 2026-09-26). Kept as a record.
 
 Both are offline static analysis. No SIEM, no log ingestion, no network during analysis.
 Under 10 GB total. Runs on a laptop.

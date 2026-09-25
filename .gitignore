@@ -33,6 +33,9 @@ venv/
 # Office temp files (thesis docs)
 ~$*
 
+# Claude Code personal settings ("don't ask again" choices). Not shared.
+.claude/settings.local.json
+
 # OS junk
 Thumbs.db
 desktop.ini

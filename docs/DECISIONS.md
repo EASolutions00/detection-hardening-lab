@@ -8,6 +8,27 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-09-26 - T1 is the final thesis. There is no fallback topic (supersedes the open choice in 2026-08-19)
+
+**Decision, by the student, in their words:** "No fallback this time. T1 is the final thesis title."
+
+**What it closes.** The 2026-08-19 entry "T3 loses its fallback status" listed two paths if T1
+failed its spike, fixing T3's validation or switching to T2, and said "Not yet decided: which of the
+two paths above." This entry decides: neither. T2 and T3 are not chosen and are kept as a record only.
+
+**A correction this makes necessary.** Before today, `CLAUDE.md`, `PROMPT-new-chat.md`, the T3 README
+and OPEN-QUESTIONS 25 all said T2 was the fallback, and OPEN-QUESTIONS 25 said this file already
+recorded it. **This file never did.** No entry chose T2. The claim passed from document to document
+with no decision behind it, the same failure as OPEN-QUESTIONS 17. Found 2026-09-26 by checking the
+documents against this file.
+
+**What changes.** The Phase 7 spike is no longer a choice between topics. It still measures run-to-run
+variance and real wall clock, and its result now decides scope only.
+
+**Cost if wrong:** if the spike shows T1 cannot finish before the deadline, there is no other topic
+ready to switch to. The only lever left is scope, meaning fewer hardening changes, as OPEN-QUESTIONS 25
+describes. That makes the item 25 scope decision more urgent, not less.
+
 ## 2026-09-14 - The system is a Python application with a graphical interface beside the SIEM, not a web application (closes OPEN-QUESTIONS 17)
 
 **Decision, by the student:** no web application. The system is a Python application with a clean
@@ -1308,4 +1329,4 @@ The go/no-go gate for T1. Both must be answered before committing.
 | Q1 CoV under Config N | not yet measured | |
 | Q2 real wall clock per run | not yet measured | |
 | Q2 projected total for 101 runs | not yet measured | |
-| **T1 or T3 decision** | **not yet made** | |
+| **Topic decision** | **T1 final, no fallback** (entry of the same date above) | 2026-09-26 |

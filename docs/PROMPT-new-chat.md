@@ -289,7 +289,8 @@ The lab:
     SIEM-01 and WIN-EP-01 exist. The runbook is partly executed. Read `REPO\docs\WORKLOG.md`
     for how far rather than assuming.
 
-T3 is dead, killed 2026-08-19. If T1 fails its spike, go to T2.
+T1 is final and there is no fallback (`REPO\docs\DECISIONS.md` 2026-09-26). T2 and T3 were not
+chosen. If the spike shows T1 cannot finish, the answer is a scope cut (item 25), not a new topic.
 
 
 ## 7. Read-only commands that work from any folder
@@ -342,3 +343,7 @@ type.
 
 Do the boot sequence in section 1. Then tell me, in five lines: what is decided, what is
 blocked, and what is next. Then stop and wait for my question.
+
+Before I close this chat, give me a WORKLOG entry for it, in the template at the top of
+`REPO\docs\WORKLOG.md`, inside one code block so I can paste it. Name what we found and what I
+decided, even if no file changed. Do not write it to the file yourself.
