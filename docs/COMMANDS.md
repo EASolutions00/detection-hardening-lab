@@ -9,7 +9,7 @@ Newest work is at the bottom of each section. If you add a command, add it here.
 
 ## Part 1: Commands I ran by hand
 
-Only two. Both were steps that could not be delegated.
+Steps that could not be delegated, because they need an admin shell or my own account.
 
 ### 1.1 Turn off the Windows hypervisor
 
@@ -46,6 +46,39 @@ gh auth login
 | **Answers** | GitHub.com, HTTPS, Yes, Login with a web browser. |
 | **Correct result** | `✓ Logged in to github.com account EASolutions00 (keyring)` with scopes `gist, read:org, repo, workflow`. |
 | **Safe to re-run** | Yes, it replaces the existing token. |
+
+### 1.3 Re-enable the VMware host adapters (2026-09-26)
+
+Device Manager, Network adapters, right-click each `VMware Virtual Ethernet Adapter for VMnetN`,
+Enable device. Or in an admin shell:
+
+```powershell
+Get-PnpDevice -FriendlyName "VMware Virtual Ethernet Adapter for VMnet2" | Enable-PnpDevice -Confirm:$false
+```
+
+| | |
+|---|---|
+| **What** | Turns a disabled VMware virtual adapter back on. |
+| **Why** | On 2026-09-26 all four were disabled (`CM_PROB_DISABLED`), cause unknown, so the host could not reach SIEM-01. See OPEN-QUESTIONS 27. |
+| **Where** | Admin rights. It is a host system setting. |
+| **Correct result** | `Get-PnpDevice -Class Net` shows the adapter as `OK`, `CM_PROB_NONE`. On 2026-09-26 all four were enabled. |
+| **Safe to re-run** | Yes. |
+
+### 1.4 Give VMnet2 its host address back (2026-09-26)
+
+```powershell
+New-NetIPAddress -InterfaceAlias "VMware Network Adapter VMnet2" -IPAddress 10.20.10.1 -PrefixLength 24
+```
+
+| | |
+|---|---|
+| **What** | Sets the host's lab address, with no gateway and no DNS. |
+| **Why** | After 1.3, VMnet2 came back with only a Windows fallback address, `169.254.5.96`. The harness and SSH need `10.20.10.1`. |
+| **Where** | Admin shell. |
+| **Correct result** | Two blocks print. The `ActiveStore` one says `Tentative`, then becomes `Preferred`. The `PersistentStore` one says `Invalid`, which is normal for the saved copy. Then `Test-Connection 10.20.10.10 -Count 2 -Quiet` gives `True`. |
+| **If it fails** | An error saying the address or object already exists means it is already set. Check with `Get-NetIPAddress -InterfaceAlias "VMware Network Adapter VMnet2"`. |
+| **Undo** | `Remove-NetIPAddress -InterfaceAlias "VMware Network Adapter VMnet2" -IPAddress 10.20.10.1` |
+| **Safe to re-run** | No, it errors if the address exists. Check first. |
 
 ---
 
@@ -814,6 +847,30 @@ enter copy mode, move with `PageUp` and the arrow keys, and press `q` to leave. 
 keep the output short in the first place with `| grep -E "..."` or `| head -30`. `apt policy`
 alone prints a hundred lines.
 
+### 3.7 Counting event IDs in the archive, from the host (added 2026-09-26)
+
+Used for the OPEN-QUESTIONS 21 check. One pattern file per event ID, written on the host with Unix
+line endings, copied to SIEM-01, then counted per date. Only file names appear on the `sudo` line.
+
+```bash
+printf '"eventID":"4776"\n' > p4776.txt        # Git Bash on the host. One ID per file.
+```
+```powershell
+$key = "$env:USERPROFILE\.telos\siem01_ed25519"
+scp -i $key p4776.txt eli@10.20.10.10:/home/eli/item21/
+ssh -i $key eli@10.20.10.10 "sudo -n /usr/local/sbin/telos-archive dated-list"
+ssh -i $key eli@10.20.10.10 "sudo -n /usr/local/sbin/telos-archive count /home/eli/item21/p4776.txt 2026-09-02"
+ssh -i $key eli@10.20.10.10 "sudo -n /usr/local/sbin/telos-archive show /home/eli/item21/p4624.txt 5000 2026-09-02" | Out-File -Encoding utf8 e4624.jsonl
+```
+
+| | |
+|---|---|
+| **What** | Lists the dated archives, counts lines matching one event ID on one date, and downloads matching events for grouping on the host. |
+| **Why** | `count` with a multi-line pattern file returns **one total** for all patterns. One file per ID gives one number per ID. |
+| **Correct result** | A number per date. On 2026-09-26: 4768, 4769 and 4776 were `0` on every date; 4624 was `1764`, `140` and `988` on 09-02, 09-03 and 09-10. |
+| **Traps** | A pattern file with Windows line endings matches nothing, because the `\r` becomes part of the pattern. Check with `od -c`. `dated-list` exits `1` even when it works, from its last test line. SIEM-01's dates are UTC, so a morning run in the Philippines lands on the previous date. |
+| **Safe to re-run** | Yes. Read only. |
+
 ---
 
 ## Part 4: The five commands used from now on
@@ -870,7 +927,7 @@ is better.
 
 ## Part 5: Pre-flight check
 
-Run all four before starting a runbook phase. All four must pass.
+Run all five before starting a runbook phase. All five must pass.
 
 ```bash
 "C:\Program Files (x86)\VMware\VMware Workstation\vmrun.exe" -T ws list
@@ -892,3 +949,9 @@ Expect `55 passed` (checked 2026-09-26)
 git status --short
 ```
 Expect blank
+
+```powershell
+(Get-NetIPAddress -AddressFamily IPv4 -InterfaceAlias "VMware Network Adapter VMnet2").IPAddress
+```
+Expect `10.20.10.1`. **Anything else, or an error, means the host has lost the lab network.** Fix
+it with Part 1.3 and 1.4 first. Added 2026-09-26, OPEN-QUESTIONS 27.

@@ -1,7 +1,7 @@
 # STATUS
 
 Current blockers and dates. This file changes often. CLAUDE.md does not.
-Last updated: 2026-09-26 (from git log)
+Last updated: 2026-09-26, second update of the day (from git log)
 
 Every item here must also exist in OPEN-QUESTIONS.md or DECISIONS.md. This file only
 says which ones matter right now.
@@ -31,8 +31,11 @@ scope (item 25), not a different topic.
 ## Live blocker: OPEN-QUESTIONS item 21
 
 Raised 2026-09-12. Every class C hardening change is an authentication control, and there
-is **no domain controller**. `DC-01` is Tier B and was never built. One archive count
-settles it, and it decides how many changes exist to measure.
+is **no domain controller**. `DC-01` is Tier B and was never built.
+**The archive count ran 2026-09-26 and confirmed it:** 4768, 4769 and 4776 are zero on every
+date, and the lab has **never made a network logon** (0 of 2,892 logons). C2, C4, C6 and C7
+have nothing to act on. **Now a decision for the student** among item 21's four ways out.
+Building DC-01 alone is not enough: the test suite must also make network logons.
 
 ## Second: OPEN-QUESTIONS item 18
 
@@ -47,6 +50,16 @@ holds afterwards.
 
 - Item 1, the catalogue. Rebuilt on 2026-09-08, but it holds 14 of the 16 changes and several
   control IDs are still `(unverified)`. It still blocks data collection.
+- Item 26, new 2026-09-26. The harness's own `vmrun` guest calls most likely write a batch
+  logon each, inside every capture window: 1,641 of them on 2026-09-02. Count and record them.
+- Item 27, new 2026-09-26. The host's VMware network adapters broke twice with no known
+  cause. Repaired, but the harness must check the path to SIEM-01 before each run.
+
+## Lab state
+
+- SIEM-01 was booted 2026-09-26 for the item 21 check and was still running when chat 27d2595d
+  ended. Check with `vmrun -T ws list` rather than trusting this line.
+- Host VMnet2 is at `10.20.10.1` again after a hand repair (item 27). Pre-flight now checks it.
 
 ## Recently settled (details in DECISIONS.md)
 

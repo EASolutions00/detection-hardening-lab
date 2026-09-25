@@ -58,6 +58,13 @@ Planned addresses:
 
 **Check:** `ipconfig` on the host shows a VMware adapter on 10.20.10.x.
 
+**If the host loses the lab network** (found 2026-09-26, OPEN-QUESTIONS 27): the VMware adapters can
+end up disabled, and after re-enabling them VMnet2 can come back with a `169.254.x.x` fallback address
+instead of `10.20.10.1`. Enable the adapter in Device Manager, then in an admin shell:
+`New-NetIPAddress -InterfaceAlias "VMware Network Adapter VMnet2" -IPAddress 10.20.10.1 -PrefixLength 24`.
+Since that repair, VMnet3's host adapter holds a fallback address, not the `10.20.20.1` above. Nothing
+uses VMnet3.
+
 ---
 
 ## Phase 2. Build SIEM-01 (Wazuh)
@@ -780,10 +787,10 @@ Guard the harness: check free space before each run with `telos-archive disk` an
 abort cleanly if low. Running out of disk halfway through a 67 hour batch is the failure that
 hurts most, and it matters more now that nothing is ever truncated.
 
-### Harness requirements collected 2026-09-12 to 2026-09-14
+### Harness requirements collected 2026-09-12 to 2026-09-26
 
-Found while reviewing the analyser and its documents. None is built. Each has a reason, and
-breaking any of them fails silently.
+Found while reviewing the analyser and its documents, and 9 and 10 while running the item 21
+check. None is built. Each has a reason, and breaking any of them fails silently.
 
 1. **Count the fence events in the profile the analyser receives.** `capture_problem()` treats a
    repetition with zero events as a failed capture, and that is only safe because every real
@@ -809,6 +816,12 @@ breaking any of them fails silently.
 8. **Copy each finished run folder to a second physical drive as soon as it completes**, not at the
    end of the campaign. `data/runs/` is gitignored and lives on E: only, and this host has already
    lost power once mid-session (OPEN-QUESTIONS, Answered, item 11).
+9. **Before each run, check the path to SIEM-01**: the host's VMnet2 adapter holds `10.20.10.1` and
+   SSH to `10.20.10.10` answers. Abort cleanly if not. The host's VMware adapters have broken twice
+   with no known cause, on 2026-08-31 and before 2026-09-26. OPEN-QUESTIONS 27.
+10. **Count the `vmrun` guest calls in each run and record the number** in the manifest `record`
+    part. Each call most likely writes a batch logon (4624 type 4) inside the window, so a run whose
+    call count differs from the control runs is voided like a fingerprint mismatch. OPEN-QUESTIONS 26.
 
 ### Three rules for the campaign, each from something measured
 

@@ -17,6 +17,64 @@ Next:
 
 ---
 
+## 2026-09-26 (second) - Item 21 check run: zero, and the lab has never made a network logon. The lab network had to be repaired first.
+
+Chat 27d2595d, continued after the entry below was committed.
+
+**Did, in order:**
+1. Answered the tripwire question and gave a full status report, both read only. The report repeated
+   a false claim, "DECISIONS.md sends T1 to T2 if the spike fails", before `9278b50` was read. That
+   commit had already corrected it: no entry ever chose T2, and T1 is now final with no fallback.
+   Corrected in the same chat.
+2. Ran the OPEN-QUESTIONS 21 check at the student's request. It needed SIEM-01 running, so SIEM-01
+   was booted with `vmrun start ... nogui`. WIN-EP-01 was not touched.
+3. Repaired the host's lab network, which had broken on its own (below).
+4. Counted 4768, 4769, 4776 and 4624 on every archive date, then downloaded all 2,892 logon events
+   and grouped them on the host.
+
+**Result.** Full tables in OPEN-QUESTIONS 21, "The check, run 2026-09-26".
+- 4768, 4769 and 4776: **0 on every date** (2026-09-01, 09-02, 09-03, 09-10).
+- The 2,892 logons are three groups only: 2,285 batch logons (type 4) by `eli` with
+  `MICROSOFT_AUTHENTICATION_PACKAGE_V1_0`, 583 service logons (type 5) by `SYSTEM`, and 24
+  interactive logons (type 2) by `eli`. **Zero network logons (type 3), zero Kerberos, and
+  `lmPackageName` empty on every one.**
+- So C2, C4, C6 and C7 have nothing to act on. Building DC-01 alone would not fix it: the stimulus
+  must also make network logons. Recorded in item 21.
+- Two new findings, both unverified: the zero 4776 probably also means the Credential Validation
+  audit subcategory is off (item 20, item 21), and the batch logons are most likely the harness's own
+  `vmrun` guest calls (**new item 26**).
+
+**Broke / stuck on:**
+- **SSH to SIEM-01 timed out** although SIEM-01 had booted and `vmrun checkToolsState` said `running`:
+  `ssh: connect to host 10.20.10.10 port 22: Connection timed out`. The wait loop gave up with exit
+  code 255. Cause: all four VMware host adapters were **disabled**, `CM_PROB_DISABLED`, `Not Present`.
+  The student enabled them. VMnet2 then came back with `169.254.5.96` instead of `10.20.10.1`, and the
+  student set the address with `New-NetIPAddress`. Verified: `Preferred`, ping `True`, SSH answered
+  `siem-01`. Cause of the disabling unknown. Second time after 2026-08-31. **New item 27.** Recorded in
+  `COMMANDS.md` Part 1.3 and 1.4, a fifth pre-flight check in Part 5, a repair note in runbook Phase 1,
+  and harness requirement 9 in Phase 6.
+- **A search pattern gave a false zero.** Counting 4624 with `"authenticationPackageName":"NTLM"`
+  returned 0 on every date, which looked like "no NTLM at all". The local package is named
+  `MICROSOFT_AUTHENTICATION_PACKAGE_V1_0`, not `NTLM`. Counting guessed logon types also missed type 4,
+  so the counts did not add up to the 4624 total. **Grouping the downloaded events found both.**
+  Lesson: when a count must add up to a total, check that it does.
+- A mistyped path in one of my read-only commands:
+  `The term 'F:\..\Program Files (x86)\VMware\VMware Workstation\vmrun.exe' is not recognized`. No effect.
+- `telos-archive dated-list` exits 1 even when it works, from its last test line. Harmless, now noted
+  in `COMMANDS.md` 3.7.
+
+**State left behind:** SIEM-01 is **still running**, left on for the item 18 capture. Pattern files
+remain in `/home/eli/item21` on SIEM-01, outside `/var/ossec`. The downloaded events are in this
+chat's scratchpad, not in the repo.
+
+**Next:**
+1. The student chooses among item 21's four ways out, knowing that DC-01 also needs a network logon
+   stimulus.
+2. Item 18: the `RunAsPPL` capture.
+3. Inside WIN-EP-01: `auditpol /get /subcategory:"Credential Validation"` (items 20 and 21).
+4. Confirm item 26's cause with one `vmrun` call and a before and after count.
+5. Look for item 27's cause in the host's System event log, 2026-09-11 to 2026-09-24.
+
 ## 2026-09-26 - Claude Code setup v2 installed, the 2026-09-22 tripwire checked, T1 made final, and two unlogged chats recorded
 
 Chat 4a84fe5f.

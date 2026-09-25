@@ -219,9 +219,10 @@ in `REPO\src\telos\` unless stated otherwise.
 
 Item 21 — blocks the catalogue, the golden snapshot, and data collection
     Every class C hardening change is an authentication control, and there is no domain
-    controller. `DC-01` is Tier B in `lab/blueprint.md` and was never built. Combined with item
-    18 the measurable class C set is currently zero. One count against the existing archive
-    settles it. **Answer this before item 18.**
+    controller. `DC-01` is Tier B in `lab/blueprint.md` and was never built. **The archive count
+    ran 2026-09-26: 4768, 4769 and 4776 are zero on every date, and 0 of 2,892 logons were
+    network logons.** What remains is the student's choice among the four ways out. DC-01 alone
+    is not enough; the stimulus must also make network logons. **Answer this before item 18.**
 
 Item 18 — blocks data collection
     The key sees field presence, not value. Six of the eight class C hardening changes state a
@@ -234,6 +235,16 @@ Item 22 — blocks the harness design
     change that makes an atomic test fail produces a rate drop the analyser reports as LOST.
     Per-atomic exit status and a stimulus fingerprint must go in the run manifest, because they
     cannot be reconstructed after the run.
+
+Item 26 — blocks the harness design
+    The harness's own `vmrun` guest calls most likely each write a batch logon (4624 type 4)
+    inside the window: 2,285 across the archive, 1,641 on 2026-09-02. Unverified cause. The
+    harness must count its calls and record the number.
+
+Item 27 — the lab network, cause unknown
+    The host's VMware adapters broke on their own twice, 2026-08-31 and before 2026-09-26.
+    Repaired by hand. The pre-flight check and the harness must confirm VMnet2 holds
+    `10.20.10.1` before any run.
 
 Item 25 — the schedule, with a date on it
     The harness does not exist, the spike has never run, and 101 windows need about 67 hours

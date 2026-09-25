@@ -134,7 +134,10 @@ labeled set.
 ## 21. Every class C change is an authentication control, and there is no domain controller
 
 **Status:** Open. Raised 2026-09-12 during a documentation sweep. **Ranked above item 18 because
-item 18's recommended fix does not reach this problem.**
+item 18's recommended fix does not reach this problem.** **The check ran 2026-09-26 and confirmed
+it: 4768, 4769 and 4776 are zero on every archive date, and the lab has never made a network
+logon.** Results in "The check, run 2026-09-26" below. What remains open is the choice among the
+four ways out, which is the student's.
 
 **What was verified.**
 
@@ -186,6 +189,61 @@ sudo -n /usr/local/sbin/telos-archive count /tmp/telos-ids.txt 2026-09-02
 
 **Zero, or low single digits:** confirmed. **Hundreds:** 4776 fires locally often enough to
 measure, and only C7 is dead.
+
+### The check, run 2026-09-26: confirmed, zero
+
+Run from the host over SSH, read only, with `telos-archive count` and `show`. **One pattern file
+per event ID**, not the combined file above, because `count` with a three-line file returns one
+total for all three. Every date in the archive was counted, not only 2026-09-02:
+
+| Archive date (UTC) | Lines from WIN-EP-01 | 4624 | 4768 | 4769 | 4776 |
+|---|---|---|---|---|---|
+| 2026-09-01 | 0 (no agent yet) | 0 | 0 | 0 | 0 |
+| 2026-09-02 | 13,185 | 1,764 | 0 | 0 | 0 |
+| 2026-09-03 | 1,886 | 140 | 0 | 0 | 0 |
+| 2026-09-10 | 17,893 | 988 | 0 | 0 | 0 |
+
+The field spelling was read from a real event first: `"eventID":"4624"` inside `data.win.system`.
+`dated-list` shows no other dates except today's, 2026-09-25 UTC, from the boot to run this check.
+
+**All 2,892 logon events (4624) were then downloaded and grouped** by logon type, authentication
+package, `lmPackageName` and target user:
+
+| Date | Type 4 (batch), `eli`, `MICROSOFT_AUTHENTICATION_PACKAGE_V1_0` | Type 5 (service), `SYSTEM`, `Negotiate` | Type 2 (interactive), `eli`, `Negotiate` |
+|---|---|---|---|
+| 2026-09-02 | 1,641 | 119 | 4 |
+| 2026-09-03 | 41 | 93 | 6 |
+| 2026-09-10 | 603 | 371 | 14 |
+
+No other combination occurs. **Zero type 3 (network) logons, zero type 10 (remote interactive),
+zero with `Kerberos` as the package, and `lmPackageName` is empty on every one.** The endpoint is a
+`WORKGROUP` machine, as the events themselves show.
+
+**What this settles.**
+
+- **C2, C4, C6 and C7 have nothing to act on in this lab.** All four change network or domain
+  authentication, and there is none. This is stronger than the zero 4776 count: even the 4624 field
+  C2 really changes, `LmPackageName`, is never filled, because it is filled only for NTLM network
+  logons.
+- **Building DC-01 alone would not fix it.** A domain controller makes 4768, 4769 and domain 4776
+  possible. Something must still make network logons during the capture window, or C2 and C4 see
+  zero before and zero after. **Option 1 below needs a stimulus that authenticates over the network,
+  and that is not yet designed.**
+- **Option 3 is thinner than it looked.** Type 2 logons, the ones C1 would act on, were 4 to 14 per
+  day, far below the 30 pre-change events the analyser needs before it tests a key
+  (`MIN_PRE_COUNT`, item 25). The stimulus would have to create them.
+
+**Two things found on the way, not settled.**
+
+1. **The zero 4776 count probably has a second cause: the audit setting.** The 2,285 type 4 logons
+   validated the local account `eli` with the local authentication package. Microsoft's 4776
+   reference says the machine holding the account writes 4776, and for a local account that is the
+   local machine. So 4776 should have appeared, and did not. The likely reason is that the **Credential
+   Validation** audit subcategory is off on WIN-EP-01, a second gap of the item 20 kind. **Inference,
+   not checked.** Check inside the guest: `auditpol /get /subcategory:"Credential Validation"`.
+2. **Those type 4 logons are most likely the harness's own `vmrun` guest operations.** New item 26.
+
+**Before the count could run, the host's lab network had to be repaired.** New item 27.
 
 ### Four ways out, not equal
 
@@ -319,6 +377,12 @@ configured.
 **What a bad answer means:** if this is left as it is and the documents are not changed, the
 proposal's worked example describes an event the experiment will never observe, and a panelist who
 asks to see one real 4688 event key from the data cannot be shown one.
+
+**Probably a second gap of the same kind, found 2026-09-26 (item 21).** 2,285 local credential
+checks produced zero 4776 events, which points to the **Credential Validation** audit subcategory
+being off. Not checked. Decide both subcategories together, before the golden snapshot. Note the
+cost of turning it on: every harness `vmrun` guest operation would then probably write a 4776 too
+`(unverified)`, item 26.
 
 ---
 
@@ -557,6 +621,100 @@ defense. A panelist asks "how do you know the attack still ran?" and the honest 
 commands were issued", which is not the same claim.
 
 **Blocks:** the Phase 6 harness design, and the manifest field list in runbook Phase 4.
+
+---
+
+## 26. The harness's own `vmrun` logons land in the data
+
+**Status:** Open. Found 2026-09-26 while running the item 21 check.
+
+**What was measured.** Grouping every 4624 logon event in the archive (item 21) found one large
+group nobody had described:
+
+| Date | Type 4 (batch) logons by `eli`, package `MICROSOFT_AUTHENTICATION_PACKAGE_V1_0` | All 4624 that day |
+|---|---|---|
+| 2026-09-02 | 1,641 | 1,764 |
+| 2026-09-03 | 41 | 140 |
+| 2026-09-10 | 603 | 988 |
+
+**Most likely cause `(unverified)`:** VMware Tools logs in as `eli` for each `vmrun` guest command
+(`runProgramInGuest`, `runScriptInGuest`, file copies), and each login is a batch logon. The dates
+fit: 2026-09-02 was the Phase 3 build and check, driven by many `vmrun` calls, and 2026-09-10 was the
+UWF test.
+
+**Why it matters.** The harness fires both fences and runs the test suite through `vmrun`. So **the
+measuring tool writes its own events into every capture window**: 4624, and probably 4672 and 4634
+alongside `(unverified)`.
+
+- **Harmless if every run makes exactly the same `vmrun` calls.** Then the logons are the same in the
+  pre-change and post-change phases and cancel out.
+- **A false finding if the count differs between phases.** A retry, an extra file copy, or a failed
+  call in one phase moves the 4624 rate, and the analyser cannot tell that from a hardening effect.
+- **It interacts with item 20.** If Credential Validation auditing is turned on, each of these logons
+  probably writes a 4776 as well, and the harness would then be the main source of 4776 in the lab.
+- D2 already keeps the change script outside the window, because the change is applied before the
+  start fence. That helps, but it does not cover the fences and the suite themselves.
+
+**How to answer.**
+1. Confirm the cause: count type 4 logons by `eli` in the archive, run one
+   `vmrun runProgramInGuest` call, drain 120 seconds, and count again. One more means one logon per
+   call.
+2. **Record the number of `vmrun` guest calls in each run's manifest `record` part.** It costs one
+   counter in the harness.
+3. Treat a run whose call count differs from the control runs like a stimulus fingerprint mismatch
+   (item 22): void it.
+
+**What a bad answer means:** a post-change run with one retried `vmrun` call reports a 4624 change
+that the tool caused itself.
+
+---
+
+## 27. The host's VMware network adapters broke twice, cause unknown
+
+**Status:** Open. Raised 2026-09-26. **Repaired for now. The cause is not known**, so it can happen
+again, and the harness depends on this network.
+
+**What happened on 2026-09-26.** SSH to SIEM-01 timed out after SIEM-01 had booted and its VMware
+Tools answered `running`:
+
+```
+ssh: connect to host 10.20.10.10 port 22: Connection timed out
+```
+
+On the host, all four VMware virtual adapters (VMnet1, VMnet2, VMnet3, VMnet8) were **disabled**:
+`Get-PnpDevice` showed `Error` with `CM_PROB_DISABLED`, and `Get-NetAdapter` showed `Not Present`.
+The VMware services (`VMnetDHCP`, `VMware NAT Service`, `VMAuthdService`) were all `Running`. The
+`VMnetAdapter` driver was `Stopped`. SSH last worked 2026-09-11. The host last booted 2026-09-24 11:30.
+Nothing in the records says the adapters were disabled on purpose.
+
+**The repair, done by the student in an admin shell:**
+1. Enabled the adapters. All four came back `OK`.
+2. VMnet2 then had only a Windows fallback address, `169.254.5.96`, with DHCP off and no static
+   address, while VMware's own settings still held the subnet `10.20.10.0/24`. So the student ran
+   `New-NetIPAddress -InterfaceAlias "VMware Network Adapter VMnet2" -IPAddress 10.20.10.1 -PrefixLength 24`.
+3. Verified: VMnet2 at `10.20.10.1/24`, `Preferred`; ping to `10.20.10.10` succeeded; SSH returned
+   `siem-01`.
+
+**VMnet3 was left at a fallback address**, `169.254.230.182`, not the `10.20.20.1` that
+`RUNBOOK-homelab.md` Phase 1 records. Nothing uses VMnet3 (item 7).
+
+**This is the second time.** On 2026-08-31 the same adapters showed `Error` and `Not Present` and had
+to be repaired by hand (WORKLOG 2026-08-31). That time the state was different: an error, not
+disabled.
+
+**Why it matters.** The harness reaches SIEM-01 over VMnet2 for every archive export (runbook Phase
+6, step 10). If the adapter breaks during a 67 hour campaign, every run after that point fails at
+export. The guest side keeps running, so the failure shows up only at the end of each window.
+
+**How to answer.**
+1. **Look for the cause** in the host's System event log between 2026-09-11 and 2026-09-24, for
+   device configuration events on the VMware adapters. Not yet checked.
+2. **Guard the harness either way:** before each run, check that VMnet2 holds `10.20.10.1` and that
+   SSH to SIEM-01 answers, and abort cleanly if not. Runbook Phase 6, harness requirement 9. The same
+   check is now in `COMMANDS.md` Part 5.
+
+**What a bad answer means:** a campaign that stops exporting partway through, found only when the run
+folders are checked.
 
 ---
 
