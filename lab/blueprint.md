@@ -311,7 +311,7 @@ authentication control: authentication survives the change, it just proceeds dif
 |---|---|---|---|---|---|
 | C1 | Disable WDigest | **DISA V-253358** (Win11)<br>V-220800 (Win10) | `HKLM\SYSTEM\CurrentControlSet\Control\SecurityProviders\Wdigest\UseLogonCredential = 0` | 4624 logon-type distribution shifts | Credential theft is still attempted; the attacker gets hashes instead of plaintext |
 | C2 | LAN Manager auth level, NTLMv2 only | **DISA V-253462** (Win11)<br>V-220938 (Win10)<br>**CIS 2.3.11.7** | `HKLM\SYSTEM\CurrentControlSet\Control\Lsa\LmCompatibilityLevel = 5` | 4624 `LmPackageName` shifts toward `NTLM V2` **(corrected 2026-09-14: was "4776 package name changes", which cannot happen, see note below)** | Authentication continues at a higher level |
-| C3 | LSA Protection (LSASS as protected process) | **CIS Win11 18.9.27.2**, Level 1 | `HKLM\System\CurrentControlSet\Control\Lsa\RunAsPPL = 1` **(2026-09-26: `1` writes a UEFI firmware variable; use `2` in the lab, see note below)** | Sysmon Event 10 access to `lsass.exe` changes from granted to denied **(2026-09-26: the pinned Sysmon config records no Event 10, see note below)** | LSASS access is still attempted; documented bypasses exist |
+| C3 | LSA Protection (LSASS as protected process) | **CIS Win11 18.9.27.2**, Level 1 (Windows 11 Enterprise **v5.1.0**; 18.9.25.2 in v2.0.0) | `HKLM\System\CurrentControlSet\Control\Lsa\RunAsPPL = 1` **(2026-09-26: `1` writes a UEFI firmware variable; use `2` in the lab, see note below)** | Sysmon Event 10 access to `lsass.exe` changes from granted to denied **(2026-09-26: the pinned Sysmon config records no Event 10, see note below)** | LSASS access is still attempted; documented bypasses exist |
 | C4 | Restrict NTLM, outgoing traffic to remote servers | **CIS 2.3.11.13**<br>DISA Win11 V-ID `(unverified)` | `HKLM\System\CurrentControlSet\Control\Lsa\MSV1_0\RestrictSendingNTLMTraffic` | 4776 reduced or removed | Authentication continues via Kerberos |
 | C5 | Enforce RDP Network Level Authentication | `(unverified)` | `UserAuthentication = 1` | 4624 / 4625 distribution shifts | RDP is still used; authentication happens earlier |
 | C6 | Reduce cached credentials to 0 | `(unverified)` | `CachedLogonsCount = 0` | Cached and offline logon events reduced | Logon still occurs, against the domain instead |
@@ -349,6 +349,11 @@ capture".
   24H2. Whether a snapshot revert resets the variable is unknown, so **the lab should use `2`**, a
   recommendation not yet decided. What CIS 18.9.27.2 requires exactly, with or without the lock, is
   not checked.
+- **Checked later on 2026-09-26: CIS requires the lock.** CIS Windows 11 Enterprise v5.1.0, 18.9.27.2:
+  "Enabled: Enabled with UEFI Lock", audited as `HKLM\SOFTWARE\Policies\Microsoft\Windows\System`,
+  `RunAsPPL = 1`, the 24H2 policy location. So `2` is a **stated deviation** from the benchmark, and
+  the key this row sets is not the key CIS audits. Read from third-party copies; details, sources and
+  the open questions in OPEN-QUESTIONS 18, "What CIS 18.9.27.2 requires".
 
 **C8 is blocked** on nested virtualisation (Virtualize AMD-V/RVI in VM settings), still untested
 on Zen 4 with Workstation 17.5.1. See OPEN-QUESTIONS item 2. Do not count on it.

@@ -17,6 +17,34 @@ Next:
 
 ---
 
+## 2026-09-26 (fourth) - CIS 18.9.27.2 requires the UEFI lock, so `RunAsPPL = 2` would be a stated deviation
+
+Chat 27d2595d, continued after `42dc97c`. Read only, web sources.
+
+**Did:** checked what CIS 18.9.27.2 requires, because the recommendation to use `RunAsPPL = 2` depended
+on it. The repository never recorded where the ID came from, or which benchmark version it belongs to.
+
+**Result.** Details in OPEN-QUESTIONS 18, "What CIS 18.9.27.2 requires".
+- **CIS Windows 11 Enterprise v5.1.0, 18.9.27.2, Level 1: "Enabled: Enabled with UEFI Lock"**, audited
+  as `HKLM\SOFTWARE\Policies\Microsoft\Windows\System`, `RunAsPPL = 1`, the location used from the 24H2
+  policy templates. Source: Syxsense's copy of the CIS text.
+- The same control is **18.9.25.2 in v2.0.0** (Tenable), with the same requirement. So the ID alone is
+  ambiguous; noted in items 1 and 4 and in the blueprint's C3 row.
+- Consequences: `2` is a deviation to state, not hide; the blueprint's C3 row sets Microsoft's direct
+  `Lsa` key, not the policy key CIS audits. Recommendation unchanged: `2`, with Microsoft's statement
+  that LSASS runs as a protected process with or without the lock as the reason.
+
+**Broke / stuck on:**
+- The CIS PDF needs a CIS login, so only third-party copies were read. Unverified until the PDF is read.
+- Tenable's audit lists are paginated and a `?page=6` parameter returned page 1, so the Windows 11
+  Stand-alone v5.0.0 item could not be listed. Its 18.9.27.2 is inferred from 18.9.27.1 being the
+  neighbouring "Custom SSPs" item.
+- One Tenable item page found by search, Windows Server 2022 v5.0.0 18.9.27.2, returned `HTTP 404 Not
+  Found` when fetched.
+
+**Next:** the student decides `1` or `2`; then check whether the policy key uses the same meanings for
+`1` and `2` before writing the C3 script.
+
 ## 2026-09-26 (third) - Item 18 capture stopped before it started: Sysmon records no Event 10, and `RunAsPPL = 1` would lock the firmware.
 
 Chat 27d2595d, continued after `8c08b1d`.

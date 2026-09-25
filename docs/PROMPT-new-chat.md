@@ -230,7 +230,8 @@ Item 18 — blocks data collection
     rate changes, and item 21 shows both of those need the missing domain. The planned capture
     (`RunAsPPL`, then read `GrantedAccess`) **cannot run as written**, found 2026-09-26: the
     pinned Sysmon config records no Event 10 at all, and `RunAsPPL = 1` writes a UEFI firmware
-    variable. Decide first: an `lsass.exe` Sysmon rule or drop C3 and C8; and `RunAsPPL = 2`.
+    variable. Decide first: an `lsass.exe` Sysmon rule or drop C3 and C8; and `RunAsPPL = 2`,
+    a stated deviation, because CIS 18.9.27.2 (Windows 11 Enterprise v5.1.0) requires the lock.
     As configured today, **no class C change is measurable on this lab.**
 
 Item 22 — blocks the harness design

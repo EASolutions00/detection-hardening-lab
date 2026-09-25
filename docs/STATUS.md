@@ -1,7 +1,7 @@
 # STATUS
 
 Current blockers and dates. This file changes often. CLAUDE.md does not.
-Last updated: 2026-09-26, third update of the day (from git log)
+Last updated: 2026-09-26, fourth update of the day (from git log)
 
 Every item here must also exist in OPEN-QUESTIONS.md or DECISIONS.md. This file only
 says which ones matter right now.
@@ -51,7 +51,8 @@ The planned capture (`RunAsPPL`, then read `GrantedAccess`) **cannot run as writ
 2026-09-26 before WIN-EP-01 was touched: the pinned Sysmon config records **no Event 10 at all**
 (0 of 14,102 Sysmon events), and `RunAsPPL = 1` writes a UEFI firmware variable the registry
 cannot undo. Two decisions first: add an `lsass.exe` rule to the Sysmon config or drop C3 and
-C8, and use `RunAsPPL = 2` in the lab.
+C8, and use `RunAsPPL = 2` in the lab. **CIS 18.9.27.2 (Windows 11 Enterprise v5.1.0) requires
+the lock, value `1`**, so `2` would be a stated deviation (item 18).
 
 ## Also open
 

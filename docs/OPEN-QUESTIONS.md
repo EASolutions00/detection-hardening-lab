@@ -67,7 +67,7 @@ whether the scorer can distinguish a lost capability from a lost detection.
 |---|---|
 | Disable WDigest | DISA **V-253358** (Win11), V-220800 (Win10) |
 | LAN Manager auth level, NTLMv2 only | DISA **V-253462** (Win11), V-220938 (Win10), CIS 2.3.11.7 |
-| LSA Protection, LSASS as protected process | CIS Win11 **18.9.27.2**, Level 1 |
+| LSA Protection, LSASS as protected process | CIS Win11 **18.9.27.2**, Level 1 (Enterprise v5.1.0; 18.9.25.2 in v2.0.0; requires the UEFI lock, see item 18) |
 
 Restrict NTLM outgoing has a confirmed CIS number (2.3.11.13) and registry path, but its
 Windows 11 DISA V-ID is not confirmed.
@@ -627,6 +627,49 @@ SIEM-01 was running. Boot-time events do not reach the archive. New item 28.
 **The capture after both decisions:** add the rule, set `RunAsPPL = 2`, reboot, confirm Wininit event
 12 **inside the guest**, open `lsass` once, read `GrantedAccess`, then undo both and reboot. The guest
 steps need the guest password, so the student runs them; the archive is read over SSH.
+
+### What CIS 18.9.27.2 requires, checked 2026-09-26
+
+**It requires the firmware lock.** Read from two third-party copies of the CIS text, because the CIS
+PDF needs a CIS login:
+
+| Source | Item | Benchmark | Required | Registry checked |
+|---|---|---|---|---|
+| Syxsense | **18.9.27.2**, Level 1 | CIS Microsoft Windows 11 **Enterprise v5.1.0** | "Enabled: Enabled with UEFI Lock" | `HKLM\SOFTWARE\Policies\Microsoft\Windows\System`, `RunAsPPL = 1` |
+| Tenable | **18.9.25.2**, L1 | CIS Microsoft Windows 11 **Enterprise v2.0.0** | "Enabled: Enabled with UEFI Lock" | not quoted |
+
+- CIS's rationale: enabling it with UEFI Lock "prevents the setting from being changed remotely."
+- CIS's impact note (Tenable copy): removing the policy "will not reverse the impact", and the UEFI
+  lock must be removed by Microsoft's documented steps.
+- Syxsense's copy notes that from the Windows 11 **24H2** Administrative Templates the setting has "a
+  new registry location of HKLM\Software\Policies\Microsoft\Windows\System". WIN-EP-01 runs 24H2.
+- In **CIS Windows 11 Stand-alone v5.0.0**, Tenable lists 18.9.27.1 as "Allow Custom SSPs and APs to be
+  loaded into LSASS", so the LSASS item is probably 18.9.27.2 there as well `(unverified)`.
+
+**Three consequences.**
+
+1. **The ID alone is ambiguous.** The same control is 18.9.25.2 in v2.0.0 and 18.9.27.2 in v5.1.0.
+   Every CIS ID in the catalogue needs its benchmark name and version beside it (item 4).
+2. **Using `RunAsPPL = 2` is a deviation from the benchmark**, and must be stated as one. The case for
+   it, from Microsoft's LSA protection page: with or without the lock, "LSASS runs as a protected
+   process". The lock changes where the setting is stored and whether it can be turned off, not what
+   LSASS does. So the effect C3 measures should be the same with either value. **Not measured here**, so
+   it is stated as a limitation.
+3. **The blueprint sets a different registry key from the one CIS audits.** The blueprint sets
+   Microsoft's direct key, `HKLM\SYSTEM\CurrentControlSet\Control\Lsa\RunAsPPL`. CIS v5.1.0 checks the
+   policy key under `SOFTWARE\Policies`. Whether the policy key uses the same meanings for `1` and `2`
+   is **not checked**. Settle it before the C3 script is written, from Microsoft's `LocalSecurityAuthority`
+   policy CSP page or by setting the policy in `gpedit` and reading the key.
+
+**Recommendation, not decided:** use `2` and state the deviation. The alternative is `1`, only after a
+throwaway VM shows that a snapshot revert clears the firmware variable.
+
+**Submission documents outside the repo that carry the old form, not changed:**
+- `T1-PANEL-RESPONSE.md:340`, the worked example: "After setting `RunAsPPL = 1`, read what Sysmon Event
+  10 actually records." Both halves are now known to fail on this lab: `1` locks the firmware, and the
+  pinned Sysmon config records no Event 10. The section already says not to show the example to the
+  panel until the capture exists, so it is not wrong, but its steps are.
+- `ACTIVITY-DIAGRAM-EXPLAINED.md:151`: "`CIS Windows 11 18.9.27.2`", with no benchmark version.
 
 ---
 
@@ -1298,6 +1341,11 @@ specific control ID to each. Anything you cannot pin gets replaced.
 
 **What a bad answer means:** Swap the unpinnable changes for pinnable ones. Do this before
 data collection starts, not after.
+
+**Added 2026-09-26: a CIS ID needs its benchmark name and version.** The LSASS protected-process
+control is 18.9.25.2 in CIS Windows 11 Enterprise v2.0.0 and 18.9.27.2 in v5.1.0 (item 18). An ID with
+no version can point an examiner at a different control. Record each as, for example, "CIS Microsoft
+Windows 11 Enterprise v5.1.0, 18.9.27.2".
 
 ---
 
