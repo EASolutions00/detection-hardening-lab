@@ -52,6 +52,10 @@ What changed on 2026-09-28:
  10. "fewer than 30 events before -> INCONCLUSIVE" also covered NEW keys, which
      have 0 before. _test_key() tests NEW first. The line now says "1 to 29
      before" and "0 before -> NEW".
+ 11. Later the same day (DECISIONS.md 2026-09-28): the gate box said "no change
+     -> UNCHANGED, no key tested". The chi-square is now reported as a summary
+     and never stops a key being tested. And a key the control runs never saw
+     is INCONCLUSIVE, because it has no noise measurement.
 """
 
 from pathlib import Path
@@ -109,11 +113,11 @@ def build() -> str:
     body.append(arrow("M840.0 282.0 V301.0 H630.0 V320.0"))
     # CHANGED 2026-09-14: the capture check, the three outcomes, alpha, and the
     # single-key case. Everything below this box moved down 18.
+    # CHANGED 2026-09-28: the chi-square is reported, not a filter.
     body += system_box(230, 322, 560, 80, [
         "Capture check:  any repetition with zero events  →  NOT TESTABLE, stop",
-        "Global gate:  one χ² test on the whole 2 × K profile, at α",
-        "no change  →  UNCHANGED, no key tested   ·   one key only  →  test it "
-        "directly"], size=12)
+        "Whole-profile χ²:  one test on the 2 × K profile, at α",
+        "reported as a summary, never a filter: every key is tested next"], size=12)
     body.append(arrow("M510.0 402.0 V430.0"))
 
     # The noise floor bypasses the gate: it is measured once and feeds the
@@ -145,7 +149,7 @@ def build() -> str:
         "INCONCLUSIVE",
         "REDUCED needs q, effect size and the noise floor together   ·   "
         "LOST needs zero after and q ≤ α",
-        "1 to 29 events before the change  →  INCONCLUSIVE, never tested   ·   "
+        "1 to 29 before, or never seen in the control runs  →  INCONCLUSIVE   ·   "
         "0 before  →  NEW"], size=13)
     body.append(arrow("M510.0 696.0 V724.0"))
 

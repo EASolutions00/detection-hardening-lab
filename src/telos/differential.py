@@ -7,11 +7,20 @@ Runs in four ordered stages.
    where a key appears in only one. A key that vanished entirely must survive
    into the comparison, so it cannot simply be dropped.
 
-2. Global gate
+2. Capture check, and a whole-profile summary
    First, check the capture itself. A repetition that recorded no events at all
    is a failed capture, and the run is NOT_TESTABLE. Then one chi-square test of
-   homogeneity on the whole 2-by-K profile. It answers a single question nothing
-   else answers: did the emitted profile change at all?
+   homogeneity on the whole 2-by-K profile. It answers a single question: did
+   the emitted profile change at all?
+
+   Since 2026-09-28 that chi-square is REPORTED, NOT A FILTER. Until then a
+   profile it called unchanged had no key tested. But one lost key among many
+   steady ones is a small part of a large table: 299 steady keys and one key
+   falling from 198 events to 0 gave p = 0.999 and "no change", while the same
+   key tested on its own was LOST with q = 3.1e-84. That is the usual shape of
+   a blind spot, so every key is now tested whatever the chi-square says.
+   Benjamini-Hochberg, stage 4, is what controls false findings across many
+   keys. DECISIONS.md 2026-09-28; OPEN-QUESTIONS 29.
 
    The test is applied once, to the whole profile, not once per key.
    Applied per key it fails twice. Expected counts for rare security events fall
@@ -143,9 +152,9 @@ def global_gate(pre: Phase, post: Phase, keys: list[str],
 
     if p < alpha:
         return GateResult(ProfileOutcome.CHANGED, float(p), float(chi2),
-                          f"chi-square p = {p:.3g} is below alpha = {alpha}")
+                          f"whole-profile chi-square p = {p:.3g} is below alpha = {alpha}")
     return GateResult(ProfileOutcome.UNCHANGED, float(p), float(chi2),
-                      f"chi-square p = {p:.3g} is not below alpha = {alpha}")
+                      f"whole-profile chi-square p = {p:.3g} is not below alpha = {alpha}")
 
 
 def _test_key(
@@ -192,6 +201,20 @@ def _test_key(
         f.reason = (
             f"only {a} occurrences before the change, below the minimum of "
             f"{min_pre_count} needed for the test to have power"
+        )
+        return f
+
+    # Never seen in the control runs, so there is no noise measurement for it.
+    # Before 2026-09-28 such a key was tested with a CoV of 0 and the Poisson
+    # dispersion, the least noise the model can express, so any drop could pass
+    # the noise condition. With one pinned attack-test list it should be rare,
+    # and when it happens the stimulus or the environment differed from the
+    # control runs. DECISIONS.md 2026-09-28; OPEN-QUESTIONS 29, finding 2.
+    if not vm.measured(key):
+        f.classification = Classification.INCONCLUSIVE
+        f.reason = (
+            "never seen in the control runs, so there is no noise measurement "
+            "for it and it was not tested"
         )
         return f
 
@@ -324,31 +347,33 @@ def analyse(
     keys = align(pre, post)
     gate = global_gate(pre, post, keys, alpha)
 
-    if gate.outcome in (ProfileOutcome.NOT_TESTABLE, ProfileOutcome.UNCHANGED):
-        # Recorded, not discarded. NOT_TESTABLE says the capture must be
-        # investigated. UNCHANGED says no change was detected, which is a
-        # narrower claim than "the change was safe": it rests on the stimulus
-        # having run the same way in both phases, which OPEN-QUESTIONS 22 says
-        # is not yet verified.
+    if gate.outcome is ProfileOutcome.NOT_TESTABLE:
+        # Recorded, not discarded. The capture must be investigated.
         return AnalysisResult(
             outcome=gate.outcome, outcome_reason=gate.reason,
             gate_p_value=gate.p_value, gate_statistic=gate.statistic, alpha=alpha,
         )
 
+    # CHANGED 2026-09-28: the whole-profile chi-square no longer stops the
+    # analysis. Every key is tested, whatever it said, and the outcome comes
+    # from the keys. See the module docstring, stage 2.
     findings = [_test_key(k, pre, post, vm, min_pre_count) for k in keys]
     classify(findings, alpha, max_ratio, noise_sigmas)
     n_tested = sum(1 for f in findings if f.p_value is not None)
+    n_found = sum(1 for f in findings if f.is_finding)
 
-    if gate.outcome is ProfileOutcome.CHANGED:
-        outcome, reason = ProfileOutcome.CHANGED, gate.reason
-    # The gate did not apply: one key only. Decide from that key's own test.
-    elif any(f.is_finding for f in findings):
-        outcome, reason = ProfileOutcome.CHANGED, gate.reason
+    if n_found:
+        outcome = ProfileOutcome.CHANGED
+        reason = f"{n_found} event key(s) classified LOST or REDUCED; {gate.reason}"
     elif n_tested == 0:
         outcome = ProfileOutcome.NOT_TESTABLE
-        reason = gate.reason + ", but it had too few events to test"
+        reason = f"every event key had too few events to test; {gate.reason}"
     else:
-        outcome, reason = ProfileOutcome.UNCHANGED, gate.reason
+        # A narrower claim than "the change was safe": it rests on the stimulus
+        # having run the same way in both phases, which OPEN-QUESTIONS 22 says is
+        # designed to be checked per run and is not built yet.
+        outcome = ProfileOutcome.UNCHANGED
+        reason = f"no event key classified LOST or REDUCED; {gate.reason}"
 
     return AnalysisResult(
         outcome=outcome, outcome_reason=reason,

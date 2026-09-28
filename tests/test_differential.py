@@ -191,12 +191,62 @@ def test_two_empty_phases_are_not_testable():
 
 
 def test_no_findings_produced_when_nothing_changed():
+    """Changed 2026-09-28: every key is now tested, so the list holds both keys,
+    each UNCHANGED. What must not appear is a reported finding."""
     vm = make_control({"a": STABLE, "b": STABLE})
     pre = Phase("pre", {"a": [100, 100, 100], "b": [200, 200, 200]})
     post = Phase("post", {"a": [100, 100, 100], "b": [200, 200, 200]})
     res = analyse(pre, post, vm)
     assert res.outcome is ProfileOutcome.UNCHANGED
-    assert res.findings == []
+    assert res.reported() == []
+    assert {f.key for f in res.findings} == {"a", "b"}
+
+
+def test_one_lost_key_among_many_steady_keys_is_found():
+    """The whole-profile chi-square used to hide this. Added 2026-09-28.
+
+    299 steady keys, and one key that falls from 198 events to 0. The chi-square
+    over the whole profile gives p above 0.9, because one key's loss is a small
+    part of a table with 300 columns. The previous code stopped at that p value
+    and returned UNCHANGED with no finding, verified against it on 2026-09-28.
+    Every key is now tested, and this one is LOST. OPEN-QUESTIONS 29, finding 1.
+    """
+    steady_pre = {f"k{i:03d}": [1000, 1010, 990] for i in range(299)}
+    steady_post = {k: [1005, 995, 1000] for k in steady_pre}
+    control = {k: [1000, 1010, 990, 1005, 995] for k in steady_pre}
+    control["lost"] = [66, 65, 67, 66, 66]
+    vm = make_control(control)
+    pre = Phase("pre", {**steady_pre, "lost": [66, 66, 66]})
+    post = Phase("post", {**steady_post, "lost": [0, 0, 0]})
+    res = analyse(pre, post, vm)
+    assert res.gate_p_value > 0.9
+    assert res.outcome is ProfileOutcome.CHANGED
+    assert [f.key for f in res.reported()] == ["lost"]
+    assert res.by_class(Classification.LOST)[0].key == "lost"
+
+
+@pytest.mark.parametrize("control", [
+    {"a": STABLE},                          # "x" absent from the control runs
+    {"a": STABLE, "x": [0, 0, 0, 0, 0]},    # "x" present, but never occurred
+])
+def test_key_never_seen_in_control_is_not_tested(control):
+    """No noise measurement, so no test. Added 2026-09-28.
+
+    Before the fix a key the control runs never saw was tested with a coefficient
+    of variation of 0 and the Poisson dispersion, the least noise the code
+    allows. The previous code reported "x" here as LOST, verified on 2026-09-28.
+    With one pinned attack-test list such a key means the stimulus or the
+    environment differed from the control runs, which is not evidence of a blind
+    spot. OPEN-QUESTIONS 29, finding 2.
+    """
+    vm = make_control(control)
+    pre = Phase("pre", {"a": [100, 100, 100], "x": [50, 50, 50]})
+    post = Phase("post", {"a": [100, 100, 100], "x": [0, 0, 0]})
+    res = analyse(pre, post, vm)
+    x = next(f for f in res.findings if f.key == "x")
+    assert x.classification is Classification.INCONCLUSIVE
+    assert "control runs" in x.reason
+    assert res.reported() == []
 
 
 # --------------------------------------------------------------------------
@@ -297,8 +347,11 @@ def test_gate_uses_the_alpha_it_is_given():
     assert loose.outcome is ProfileOutcome.CHANGED
     assert strict.outcome is ProfileOutcome.UNCHANGED
 
-    # End to end, through the path that actually carried the bug.
-    assert analyse(pre, post, vm, alpha=0.01).outcome is ProfileOutcome.UNCHANGED
+    # End to end, through the path that actually carried the bug. Since
+    # 2026-09-28 the chi-square is reported, not a filter, so what must reach
+    # the result is the alpha it was compared against.
+    res = analyse(pre, post, vm, alpha=0.01)
+    assert "not below alpha = 0.01" in res.outcome_reason
 
 
 # --------------------------------------------------------------------------

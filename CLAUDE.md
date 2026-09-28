@@ -76,7 +76,7 @@ Uncertainty goes in `OPEN-QUESTIONS.md`, not in a comment inside a draft.
 
 ```bash
 .venv/Scripts/python.exe src/demo.py          # end to end on synthetic data
-.venv/Scripts/python.exe -m pytest tests -q   # expect: 55 passed (update when tests are added)
+.venv/Scripts/python.exe -m pytest tests -q   # expect: 58 passed (update when tests are added)
 ```
 
 **Shell.** Commands for me to type are Windows PowerShell 5.1 in Windows Terminal (its default

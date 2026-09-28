@@ -82,6 +82,17 @@ class VarianceModel:
     def get(self, key: str) -> KeyVariance | None:
         return self._stats.get(key)
 
+    def measured(self, key: str) -> bool:
+        """True when the control runs actually saw this key occur.
+
+        A key absent from the control runs, or present with all-zero counts, has
+        no measured noise. cov() then returns 0 and dispersion() the Poisson
+        floor, the least noise the model can express. analyse() does not test
+        such a key (DECISIONS.md 2026-09-28).
+        """
+        s = self._stats.get(key)
+        return s is not None and s.mean > 0
+
     def cov(self, key: str) -> float:
         s = self._stats.get(key)
         return s.cov if s else 0.0

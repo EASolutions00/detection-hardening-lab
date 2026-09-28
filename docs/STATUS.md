@@ -1,7 +1,7 @@
 # STATUS
 
 Current blockers and dates. This file changes often. CLAUDE.md does not.
-Last updated: 2026-09-28 (from git log)
+Last updated: 2026-09-28, second update of the day (from git log)
 
 Every item here must also exist in OPEN-QUESTIONS.md or DECISIONS.md. This file only
 says which ones matter right now.
@@ -64,11 +64,9 @@ the lock, value `1`**, so `2` would be a stated deviation (item 18).
   cause. Repaired, but the harness must check the path to SIEM-01 before each run.
 - Item 28, new 2026-09-26. Events written before the Wazuh agent starts never reach the
   archive, so boot-time checks such as Wininit event 12 must be made inside the guest.
-- Item 29, new 2026-09-28. Four serious findings from chat 4e01d810, **re-checked the same day:
-  all four hold.** The worst is reproduced on today's code with made-up data: the chi-square
-  gate reported UNCHANGED while one key dropped from 198 events to 0 among 299 steady keys.
-  Skipping the gate, that key is LOST (q = 3.1e-84). FINAL's Objective 4 names the gate, so the
-  fix is a decision.
+- Item 23, reframed 2026-09-28. With the chi-square no longer a filter, only Benjamini-Hochberg
+  guards against false findings. The spike must run `analyse()` on control-versus-control pairs
+  and find none.
 - Documents outside the repo still conflict with the 2026-09-26 findings on points that wait
   on the student's decisions: "16 changes", the September Gantt rows, and the standalone-lab
   limitation. See WORKLOG 2026-09-28.
@@ -81,6 +79,9 @@ the lock, value `1`**, so `2` would be a stated deviation (item 18).
 
 ## Recently settled (details in DECISIONS.md)
 
+- 2026-09-28: four decisions closing item 29. The whole-profile chi-square is reported, not a
+  filter, and every key is tested. One attack-test list is pinned in Phase 0. Remediation is two
+  levels. Fixes are applied by script. Code: 58 tests passing.
 - 2026-09-26: T1 is the final thesis. There is no fallback topic.
 - 2026-09-14: the title is the panel's wording verbatim (item 0).
 - 2026-09-14: the system is a Python application with a graphical interface beside the

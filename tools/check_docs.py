@@ -91,20 +91,20 @@ CHECKS = [
     ("rate-window",
      r"count ?/ ?window|per minute|per min\b|/ window",
      "Rate stated per unit time.",
-     "differential.py:115 computes a / n1, count per RUN. Windows are "
+     "differential.py:176 computes a / n1, count per RUN. Windows are "
      "validated equal so the ratio is unaffected, but the formula differs."),
 
     ("lost-nonzero",
      r"LOST.{0,80}RR[= ]?0\.[0-9]|RR[= ]?0\.[0-9].{0,80}LOST",
      "A non-zero rate ratio labelled LOST.",
-     "differential.py:146 classifies LOST only when the post-change count is "
+     "differential.py:234 classifies LOST only when the post-change count is "
      "exactly zero. A non-zero ratio is REDUCED."),
 
     ("inconclusive-band",
      r"band spans|too rare.{0,40}band|inconclusive.{0,60}noise band|"
      r"noise band.{0,60}inconclusive",
      "INCONCLUSIVE explained by band width.",
-     "differential.py:138 reports INCONCLUSIVE when the pre-change count is "
+     "differential.py:199 reports INCONCLUSIVE when the pre-change count is "
      "below MIN_PRE_COUNT=30. The band never enters it."),
 
     ("channel-4104",
@@ -128,7 +128,7 @@ CHECKS = [
     ("noise-direction",
      r"RR\(e\) ?< ?noise_floor|below the noise floor|under the noise floor",
      "Noise floor comparison stated as 'below'.",
-     "differential.py:229 requires drop > band, that is 1 - RR > 3 x CoV. "
+     "differential.py:304 requires drop > band, that is 1 - RR > 3 x CoV. "
      "Reporting needs the drop to EXCEED the band."),
 
     # Settled 2026-09-14: not a web application. Any remaining claim that it is
@@ -175,7 +175,8 @@ EXPECTED = [
      r"pair\w*[^.]{0,80}(lost|LOST)|field-l(evel|oss)|LOST and NEW",
      "field_loss_pairs(), eventkey.py:159"),
     ("global-gate", r"global gate|chi-square|chi square|χ²",
-     "global_gate(), differential.py:102"),
+     "global_gate(), differential.py:111. Reported as a summary since "
+     "2026-09-28; it no longer stops the per-key tests"),
 ]
 
 SUFFIXES = {".md", ".txt"}

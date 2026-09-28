@@ -85,11 +85,16 @@ class Phase:
 
 
 class ProfileOutcome(str, Enum):
-    """What the profile-level test concluded about one whole run.
+    """The outcome for one whole run.
 
-    This is not the verdict on blind spots. Blind spots are the reported
-    findings. This answers an earlier question: could the run be tested at all,
-    and if so, did the emitted profile change?
+    CHANGED       at least one event key was classified LOST or REDUCED.
+    UNCHANGED     keys were tested and none was LOST or REDUCED.
+    NOT_TESTABLE  the capture failed, or no key had enough events to test.
+
+    Until 2026-09-28 CHANGED and UNCHANGED were decided by the whole-profile
+    chi-square, and an UNCHANGED profile had no key tested. That hid a key lost
+    among many steady ones. The chi-square is now reported beside the outcome
+    and does not decide it (DECISIONS.md 2026-09-28).
 
     NOT_TESTABLE exists because "this change was safe" and "this run could not
     be tested" are opposite claims. Before 2026-09-14 both were reported as "no

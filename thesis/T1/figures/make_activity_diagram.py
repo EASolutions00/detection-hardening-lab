@@ -10,6 +10,23 @@ hand-computed absolute coordinates. Patching those by hand a second time would
 recreate the same failure. Now the figure is generated, so a design change is a
 string edit and a re-run.
 
+WHAT CHANGED LATER ON 2026-09-28: FOUR DECISIONS (DECISIONS.md, OPEN-QUESTIONS 29)
+
+   7. The gate is no longer a decision. It was "Did the profile change at all?",
+      and its "no" ended at "no blind spot found" with no key tested. 299 steady
+      keys and one key falling from 198 events to 0 went down that branch. It
+      is now a step: one chi-square, reported as a summary, never a filter.
+   8. One attack-test list is pinned in Phase 0, with the window and repeats.
+      Phase 1 no longer chooses tests, the hashed parameters must equal the
+      control runs', and a key the control runs never saw is not tested.
+   9. Remediation candidates are two levels: surviving sources and known
+      compensating controls. Ranked discriminating fields needed captures with
+      no attack suite, and the study has none.
+  10. Phase 5 applies fixes by script. The telemetry fix is supplied as a
+      script, and re-validation restores the snapshot and applies the change
+      and the fix before capturing. The accepted baseline is the snapshot plus
+      the scripts applied on top.
+
 WHAT CHANGED ON 2026-09-28, AND WHY
 
 A sweep of this figure against the records (WORKLOG 2026-09-28) found steps the
@@ -298,9 +315,13 @@ def sheet1() -> str:
                "not per change")
 
     start = s.start(ENG, 150)
+    # CHANGED 2026-09-28 (DECISIONS, one pinned attack-test list): the tests,
+    # window and repeats are fixed here, once, so the control runs and every
+    # compared run share one stimulus.
     register = s.step(ENG, 176, ENG_W, 60, [
         "Register the environment: SIEM, hosts,",
-        "configuration snapshot, rule export"], system=False, size=13)
+        "snapshot, rule export; pin the attack",
+        "tests, window and repeats"], system=False, size=12.5)
     s.down(start, register)
 
     index = s.step(MAIN, 266, MAIN_W, 60, [
@@ -309,8 +330,8 @@ def sheet1() -> str:
     s.hop(register, index)
 
     capture0 = s.step(MAIN, 372, MAIN_W, 60, [
-        "Control capture, no change applied: restore",
-        "and settle, open the window, run the stimulus"], system=True)
+        "Control capture, no change applied: restore and",
+        "settle, open the window, run the pinned attack tests"], system=True)
     s.down(index, capture0)
 
     emit0 = s.step(ENV, 462, ENV_W, 60, [
@@ -352,8 +373,8 @@ def sheet1() -> str:
     s.band(882, "PHASE 1  ·  PRE-CHANGE CAPTURE")
 
     define = s.step(ENG, 944, ENG_W, 60, [
-        "Define the run: target hosts,",
-        "atomic test IDs, window, repeats"], system=False, size=13)
+        "Define the run: target hosts; the",
+        "tests, window and repeats as pinned"], system=False, size=13)
     s.path(f"M{MAIN} {baseline.bot} V928 H{ENG} V{define.y - GAP}")
 
     # D2: the hashed parameters part of the manifest. The change is not among
@@ -361,9 +382,9 @@ def sheet1() -> str:
     # CHANGED 2026-09-28: the list now follows runbook Phase 6 step 11, and the
     # name follows D2's "manifest", as Sheet 2 already did.
     freeze = s.step(MAIN, 1034, MAIN_W, 76, [
-        "Freeze and hash the manifest's parameters:",
-        "configuration snapshot, tests, window, repeats,",
-        "rule set, thresholds, Sysmon config hash, versions"], system=True, size=13)
+        "Freeze and hash the manifest's parameters (must",
+        "equal the control runs'): snapshot, tests, window,",
+        "repeats, rule set, thresholds, Sysmon hash, versions"], system=True, size=13)
     s.hop(define, freeze)
 
     capture1 = s.step(MAIN, 1156, MAIN_W, 60, [
@@ -504,18 +525,25 @@ def sheet2() -> str:
     s.label(check.right + 21, check.cy - 11, "no")
     s.down(untestable, s.end(SUB, 466))
 
-    gate = s.ask(MAIN, 500, 210, 54, [
-        "Did the profile change at all?",
-        "χ² on the full 2 × K table, at α",
-        ("a single key skips χ² and is tested directly", 11)])
+    # CHANGED 2026-09-28 (DECISIONS): was the decision "Did the profile change
+    # at all?", whose "no" ended at "no blind spot found" with no key tested.
+    # One key lost among many steady ones passed straight through it. The
+    # chi-square is now a reported summary and every key is tested.
+    gate = s.step(MAIN, 466, MAIN_W, 70, [
+        "Compute one χ² over the whole 2 × K profile:",
+        "reported as a summary, never a filter",
+        ("one key only: no χ², the key is tested directly", 11)], system=True)
     s.down(check, gate)
     s.label(MAIN + 15, check.bot + 16, "yes")
 
-    test = s.step(MAIN, 582, MAIN_W, 60, [
+    # CHANGED 2026-09-28 (DECISIONS, one pinned attack-test list): a key the
+    # control runs never saw has no noise measurement and is not tested.
+    test = s.step(MAIN, 556, MAIN_W, 76, [
         "Per-key rate-ratio test against the noise model,",
-        "then Benjamini-Hochberg FDR correction"], system=True)
+        "then Benjamini-Hochberg FDR correction",
+        ("a key the control runs never saw is not tested: INCONCLUSIVE", 11)],
+        system=True)
     s.down(gate, test)
-    s.label(MAIN + 15, gate.bot + 14, "yes")
 
     s.connect(170, test.cy, "A")
     s.path(f"M187.0 {test.cy} H{test.left - GAP}", dashed=True)
@@ -544,8 +572,6 @@ def sheet2() -> str:
         "found” and the profile",
         "outcome; archive the",
         "run and its record"], system=True, size=13)
-    s.path(f"M{gate.right} {gate.cy} H{SUB} V{nothing.y - GAP}")
-    s.label(gate.right + 14, gate.cy - 11, "no")
     s.path(f"M{found.right} {found.cy} H{SUB} V{nothing.y - GAP}")
     s.label(found.right + 21, found.cy - 11, "no")
     s.down(nothing, s.end(SUB, nothing.bot + 40))
@@ -568,10 +594,12 @@ def sheet2() -> str:
     s.down(traverse, score)
 
     # CHANGED 2026-09-14 (D1): was "draft Sigma rule".
+    # CHANGED 2026-09-28 (DECISIONS): ranked discriminating fields are dropped.
+    # They need captures without the attack suite, and the study has none.
     remediate = s.step(MAIN, 1194, MAIN_W, 76, [
-        "Generate remediation candidates: surviving",
-        "sources, known compensating controls,",
-        "ranked discriminating fields"], system=True)
+        "Generate remediation candidates:",
+        "surviving sources and known",
+        "compensating controls"], system=True)
     s.down(score, remediate)
 
     report = s.store(MAIN, 1298, MAIN_W, 62, [
@@ -618,20 +646,28 @@ def sheet2() -> str:
     s.down(kind, rule)
     s.label(left + 15, kind.bot + 14, "detection rule")
 
+    # CHANGED 2026-09-28 (DECISIONS, D2 extended to Phase 5): the fix is a
+    # script, like the change. A fix made once by hand was erased by the
+    # snapshot restore that starts every capture, so the re-validation measured
+    # the original machine and could report "restored" for a fix never tested.
     restore = s.step(ENG, 1740, ENG_W, 60, [
-        "Restore telemetry: audit subcategory",
-        "or Sysmon configuration change"], system=False, size=13)
+        "Restore telemetry: supply the fix as a",
+        "script (audit or Sysmon setting)"], system=False, size=12.5)
     s.path(f"M{kind.left} {kind.cy} H{ENG} V{restore.y - GAP}")
     s.label(kind.left - 14, kind.cy - 12, "telemetry", anchor="end")
 
-    recheck_t = s.step(MAIN - 106, 1900, 195, 76, [
+    recheck_t = s.step(MAIN - 106, 1900, 195, 110, [
         "Re-validate telemetry:",
-        "new capture, re-diff against",
-        "the stored pre-change profile"], system=True, size=13)
-    recheck_r = s.step(MAIN + 106, 1900, 195, 76, [
+        "restore, apply change",
+        "and fix by script, confirm,",
+        "capture, re-diff against",
+        "the pre-change profile"], system=True, size=13)
+    recheck_r = s.step(MAIN + 106, 1900, 195, 110, [
         "Re-validate the rule:",
-        "replay the same manifest,",
-        "confirm the rule now fires"], system=True, size=13)
+        "replay the manifest:",
+        "restore, apply the change,",
+        "run the same suite, confirm",
+        "the rule now fires"], system=True, size=13)
 
     # CHANGED 2026-09-14: this path used to run through connector B.
     s.path(f"M{ENG} {restore.bot} V1850 H{recheck_t.cx} V{recheck_t.y - GAP}")
@@ -641,9 +677,10 @@ def sheet2() -> str:
     s.path(f"M187.0 {recheck_t.cy} H{recheck_t.left - GAP}", dashed=True)
     s.label(250, recheck_t.cy - 12, "pre-change profile", anchor="middle")
 
-    restored = s.ask(MAIN, 2045, 150, 41, ["Coverage restored?"])
-    s.path(f"M{recheck_t.cx} {recheck_t.bot} V1990 H{MAIN} V{restored.y - GAP}")
-    s.path(f"M{recheck_r.cx} {recheck_r.bot} V1990 H{MAIN} V{restored.y - GAP}")
+    restored = s.ask(MAIN, recheck_t.bot + 65, 150, 41, ["Coverage restored?"])
+    join = recheck_t.bot + 14
+    s.path(f"M{recheck_t.cx} {recheck_t.bot} V{join} H{MAIN} V{restored.y - GAP}")
+    s.path(f"M{recheck_r.cx} {recheck_r.bot} V{join} H{MAIN} V{restored.y - GAP}")
 
     s.path(f"M{restored.right} {restored.cy} H1685 V{review.cy} "
            f"H{review.right + GAP}")
@@ -651,10 +688,13 @@ def sheet2() -> str:
     s.label(1673, 1900, "no · re-review", anchor="end")
 
     # CHANGED 2026-09-14: promotes after FIXED or ACCEPTED, not FIXED only.
-    close = s.step(MAIN, 2114, MAIN_W, 76, [
+    # CHANGED 2026-09-28: the accepted baseline is the snapshot plus the scripts
+    # applied on top, so a later run can rebuild it the same way D2 rebuilds a
+    # post-change host.
+    close = s.step(MAIN, restored.bot + 28, MAIN_W, 76, [
         "Close the finding as FIXED or ACCEPTED;",
-        "promote the current profile to the",
-        "accepted baseline"], system=True)
+        "accepted baseline = the snapshot plus the",
+        "change and fix scripts applied on top"], system=True)
     s.down(restored, close)
     s.label(MAIN + 15, restored.bot + 14, "yes")
 
@@ -668,8 +708,9 @@ def sheet2() -> str:
     s.down(close, finish)
 
     aria = ("Revised activity diagram, phases 4 and 5: a capture check that ends "
-            "untestable runs, the global gate, per-key testing and classification, "
-            "field-level loss pairing, impact scoring, review, remediation and "
+            "untestable runs, a whole-profile chi-square reported as a summary, "
+            "per-key testing of every key and classification, field-level loss "
+            "pairing, impact scoring, review, remediation by script, and "
             "re-validation.")
     return s.render(finish.bot + 30, aria)
 

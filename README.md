@@ -81,7 +81,7 @@ Honest state of the work, not a plan.
 
 | Component | Status |
 |---|---|
-| Analysis core (event keys, variance model, capture check, differential analysis, classification) | **Built.** 55 tests passing. |
+| Analysis core (event keys, variance model, capture check, differential analysis, classification) | **Built.** 58 tests passing. |
 | Naive baseline, for comparison | **Built** |
 | Reporting | Text output only |
 | Capture harness (acquisition from the lab) | Not built. The next major piece. |
@@ -98,15 +98,17 @@ Honest state of the work, not a plan.
 
 ## How the analysis works
 
-1. **Measure the noise floor.** Run the identical stimulus 5 times against the same restored
-   snapshot with nothing changed. Whatever varies is the laboratory's own noise. Recorded per
-   event key as a coefficient of variation and a dispersion parameter.
-2. **Check the capture, then the global gate.** A run in which any repetition recorded no events
-   at all is reported as not testable, because a dead agent and a real loss both look like zeros.
-   Otherwise, one chi-square test of homogeneity across the whole profile: did anything change at
-   all? Applied once, not once per key.
-3. **Per-key rate ratio.** Dispersion-aware, using the variance measured in step 1 rather than
-   assuming Poisson equidispersion.
+1. **Measure the noise floor.** Run the identical, pinned attack tests 5 times against the same
+   restored snapshot with nothing changed. Whatever varies is the laboratory's own noise. Recorded
+   per event key as a coefficient of variation and a dispersion parameter.
+2. **Check the capture, then summarise the whole profile.** A run in which any repetition recorded
+   no events at all is reported as not testable, because a dead agent and a real loss both look
+   like zeros. Otherwise, one chi-square test of homogeneity across the whole profile: did anything
+   change at all? It is reported as a summary and never stops the next step, because one lost key
+   among hundreds barely moves it (changed 2026-09-28, `docs/DECISIONS.md`).
+3. **Per-key rate ratio, for every key.** Dispersion-aware, using the variance measured in step 1
+   rather than assuming Poisson equidispersion. A key the control runs never saw has no measured
+   noise, so it is not tested and is reported INCONCLUSIVE.
 4. **Correction.** Benjamini-Hochberg across every key tested, because testing several hundred
    at once will otherwise produce findings by chance alone.
 5. **Classification.** LOST, REDUCED, UNCHANGED, NEW, or INCONCLUSIVE.
@@ -122,7 +124,7 @@ was seen at least 30 times before, never after, and still survives the correctio
 ```
 docs/     runbook, decision log, work log, open questions, command reference
 src/      TeLoS analyser (Python)
-tests/    55 tests for the analysis core
+tests/    58 tests for the analysis core
 thesis/   the proposal, and the two alternatives that were not chosen
 lab/      homelab blueprint, pinned configs, hardening scripts
 data/     runs/ is local only, summaries/ is committed

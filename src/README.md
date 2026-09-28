@@ -69,13 +69,17 @@ because the analyser consumes event counts and does not care where they came fro
 
 1. **Noise floor** (`variance.py`). From the control runs, measure each event key's
    coefficient of variation and dispersion. Once per environment.
-2. **Capture check, then global gate** (`differential.capture_problem`,
+2. **Capture check, then a whole-profile summary** (`differential.capture_problem`,
    `differential.global_gate`). A repetition that recorded no events at all makes the run
    NOT_TESTABLE. Otherwise one chi-square over the whole profile: did anything change at
-   all? The profile outcome is CHANGED, UNCHANGED or NOT_TESTABLE. A profile with a single
-   key skips the chi-square and tests that key directly.
-3. **Per-key rate ratio** (`differential._test_key`). Quasi-Poisson, using the measured
-   dispersion rather than assuming variance equals mean.
+   all? **Reported, never a filter, since 2026-09-28**: among 299 steady keys, one key that
+   fell from 198 events to 0 gave p = 0.999, and the old code then tested no key at all. A
+   profile with a single key skips the chi-square.
+3. **Per-key rate ratio, every key** (`differential._test_key`). Quasi-Poisson, using the
+   measured dispersion rather than assuming variance equals mean. A key the control runs never
+   saw (`VarianceModel.measured()` is false) has no noise measurement and is INCONCLUSIVE.
+   The profile outcome follows from the keys: CHANGED if any key is LOST or REDUCED, else
+   UNCHANGED, or NOT_TESTABLE if no key had enough events to test.
 4. **Correction** (`differential.classify`). Benjamini-Hochberg across all tested keys.
 5. **Classification.** LOST, REDUCED, UNCHANGED, NEW, or INCONCLUSIVE.
 
@@ -87,9 +91,11 @@ reported LOST. A dead agent looked like a hardening change that blinded detectio
 is the exact error this thesis exists to catch. "This change was safe" and "this run could
 not be tested" are opposite claims, so they are now separate outcomes.
 
-**Chi-square runs once, globally.** Per event type it fails twice: expected counts for
-rare events break the approximation, and the p value duplicates what the rate ratio
-already gives. Applied once it answers a question nothing else answers.
+**Chi-square runs once, globally, and is only reported.** Per event type it fails twice:
+expected counts for rare events break the approximation, and the p value duplicates what the
+rate ratio already gives. Applied once it answers a question nothing else answers. It is not a
+gate, because a gate hides the usual shape of a blind spot, one key among many
+(`docs/DECISIONS.md` 2026-09-28). Benjamini-Hochberg is what holds false findings down.
 
 **The rate ratio is dispersion-aware, not Poisson.** Poisson assumes variance equals
 mean. The study measures variance from the control runs, so using a test that assumes
@@ -109,7 +115,7 @@ does not support, and would inflate the reported recall.
 
 ## Tests
 
-**55 tests**, 26 in `tests/test_differential.py` and 29 in `tests/test_eventkey.py`.
+**58 tests**, 29 in `tests/test_differential.py` and 29 in `tests/test_eventkey.py`.
 The three that matter most:
 
 - `test_drop_inside_the_noise_band_is_not_reported`

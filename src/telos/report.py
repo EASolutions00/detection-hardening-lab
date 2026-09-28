@@ -41,7 +41,8 @@ def render_variance(vm: VarianceModel, show: int = 6) -> str:
 def render_analysis(result: AnalysisResult) -> str:
     out = [LINE, "DIFFERENTIAL ANALYSIS", LINE, ""]
 
-    out.append("STAGE B  capture check, then global gate (one chi-square over the whole profile)")
+    out.append("STAGE B  capture check, then one chi-square over the whole profile")
+    out.append("         (reported as a summary; since 2026-09-28 it does not stop any key being tested)")
     if result.gate_p_value is not None and result.gate_statistic is not None:
         out.append(f"  chi-square = {result.gate_statistic:,.1f}   p = {result.gate_p_value:.3g}"
                    f"   alpha = {result.alpha}")
@@ -53,12 +54,6 @@ def render_analysis(result: AnalysisResult) -> str:
         out.append("  THIS RUN COULD NOT BE TESTED.")
         out.append("  It is not evidence that coverage survived the change, and it is not")
         out.append("  evidence of a blind spot. Investigate the capture before re-running.")
-        return "\n".join(out)
-
-    if result.outcome is ProfileOutcome.UNCHANGED and not result.findings:
-        out.append("")
-        out.append("  No change was detected in the emitted profile, so no event key was")
-        out.append("  tested on its own. This is recorded, not discarded.")
         return "\n".join(out)
 
     out.append(f"  event keys carried into per-key testing: {result.n_tested}")

@@ -1031,11 +1031,15 @@ sentence to defend than the fix is to write.
 
 ## 23. `global_gate()` ignores the alpha it is given, and is the only stage with no noise model
 
-**Status:** **Half answered.** Defect one, the alpha, was **fixed 2026-09-14**: `global_gate()` now
-takes `alpha`, `analyse()` passes it, and `test_gate_uses_the_alpha_it_is_given` protects it,
-verified against the previous code, which passed the gate at `alpha=0.01` on a p of about 0.025.
-**Defect two, the missing noise model, is still open** and still waits on the Phase 7 control runs.
-Raised 2026-09-12. The line numbers below describe the code before the fix.
+**Status:** **Half answered, and the other half reframed on 2026-09-28.** Defect one, the alpha, was
+**fixed 2026-09-14**: `global_gate()` now takes `alpha`, `analyse()` passes it, and
+`test_gate_uses_the_alpha_it_is_given` protects it, verified against the previous code, which passed
+the gate at `alpha=0.01` on a p of about 0.025. **Defect two no longer applies as written:** since
+2026-09-28 the chi-square is reported, not a filter (`DECISIONS.md`; item 29), so a gate passing on
+noise lets nothing through. **What remains is the question behind it, now for the per-key tests:** on
+real noise, does testing every key produce false findings? Run `analyse()` on the ten
+control-versus-control pairs from the Phase 7 spike. There should be none. Raised 2026-09-12. The line
+numbers below describe the code before the 2026-09-14 fix.
 
 ### Defect one: the alpha parameter does not reach the gate (fixed 2026-09-14)
 
@@ -1127,12 +1131,12 @@ compared against that noise model, and no output would show it.
 
 ---
 
-## 29. Four serious findings from chat 4e01d810 about the method and the diagram
+## 29. Four serious findings from chat 4e01d810 about the method and the diagram (ANSWERED 2026-09-28)
 
-**Status:** Open. The findings were reported on 2026-09-14 by a read-only chat, recorded in WORKLOG on
-2026-09-26, and given this item on 2026-09-28. **Re-checked later on 2026-09-28: all four hold.**
-Finding 1, the gate hiding a complete loss, was reproduced on today's code (section at the end). All
-four need decisions. That chat's full report is kept privately at
+**Status:** **Answered 2026-09-28. All four held, and all four are fixed by the student's decisions**
+(`DECISIONS.md` 2026-09-28, four entries). Summary in the Answered section. The text below is kept as
+it was written. The findings were reported on 2026-09-14 by a read-only chat, recorded in WORKLOG on
+2026-09-26, and given this item on 2026-09-28. That chat's full report is kept privately at
 `C:\Users\Elijah\claude-backups\thesis-chats\2026-09-14_4e01d810_activity-diagram-sweep.md`.
 
 1. **The chi-square gate can hide a complete loss.** On made-up data with 299 steady keys, one key
@@ -2126,6 +2130,31 @@ data was never collected.
 ---
 
 ## Answered
+
+### Four findings from chat 4e01d810: do they hold, and what fixes them? (answered 2026-09-28, item 29)
+
+**Answer: all four held. All four are fixed, by the student's decisions** (`DECISIONS.md`, four
+2026-09-28 entries).
+
+1. **The gate hid a complete loss.** Fixed in code: `analyse()` no longer stops when the whole-profile
+   chi-square sees no change. Evidence: `test_one_lost_key_among_many_steady_keys_is_found` (299 steady
+   keys, one key from 198 events to 0, gate p above 0.9) failed on the previous code and passes now.
+2. **Keys the control runs never saw were tested with zero noise.** Fixed in design and code: one
+   attack-test list is pinned in Phase 0, and `_test_key()` classifies an unmeasured key INCONCLUSIVE
+   (`VarianceModel.measured()`). Evidence: both cases of `test_key_never_seen_in_control_is_not_tested`
+   reported LOST on the previous code and pass now.
+3. **Ranked discriminating fields had no data.** Fixed in design: dropped, future work. D1's third
+   level is superseded.
+4. **Phase 5's hand fix was undone by the snapshot restore.** Fixed in design: fixes are scripts, and
+   re-validation applies the change and the fix by script; the accepted baseline is the snapshot plus
+   the scripts.
+
+**Checked:** `58 passed` (55 before, 3 new; 1 rewritten). The demo's scores are unchanged: naive
+`3 7 0`, proposed `3 0 0`. The diagram, the pipeline figure, FINAL, the panel response, the revisions
+list and the explainer were changed the same day.
+
+**What the fix costs:** the gate was a second layer against false findings. Only Benjamini-Hochberg
+remains, and it relies on the 5-run noise model. Item 23 now carries that check for the spike.
 
 ### Is the system a server-side web application? (answered 2026-09-14, item 17)
 

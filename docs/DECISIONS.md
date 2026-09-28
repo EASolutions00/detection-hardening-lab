@@ -8,6 +8,86 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-09-28 - The whole-profile chi-square is reported, not a filter. Every event key is tested (item 29, finding 1)
+
+**Decision, approved by the student:** the chi-square test over the whole profile no longer decides
+whether any key is tested. Every key is tested every time. The chi-square result is kept in the report
+as a summary of whether the profile changed at all. A capture that recorded nothing still stops the
+analysis as NOT_TESTABLE.
+
+**Why.** Reproduced on the code, with made-up data: 299 steady keys and one key falling from 198
+events to 0 gave a chi-square p of 0.999, so `analyse()` returned UNCHANGED with no key tested. The
+same key tested on its own is LOST with q = 3.1e-84. One key lost among many steady ones is the usual
+shape of a blind spot, which is where a test over the whole table is weakest. Keeping the gate and
+stating the miss as a limitation would mean the method misses its main target.
+
+**What protects against false findings now:** the Benjamini-Hochberg correction across all keys, which
+holds the expected share of false findings to alpha. In the same run, testing every key flagged none of
+the 299 steady keys. That was made-up data where the noise model was right by construction.
+
+**What changed:** `differential.py` `analyse()` and module docstring, `model.py` `ProfileOutcome`
+(CHANGED now means at least one key LOST or REDUCED), `report.py`, two new tests and one rewritten,
+both figures, FINAL's Objective 4 wording, the explainer, the panel response and the revisions list.
+OPEN-QUESTIONS 23's second half, the gate passing on noise, no longer matters, because the gate no
+longer filters.
+
+**Cost if wrong:** more false findings on real data, if the 5-run noise model underestimates the real
+noise. The Phase 7 spike checks it: count findings on control-versus-control comparisons, where there
+should be none.
+
+## 2026-09-28 - One attack-test list is pinned for the whole study, in Phase 0 (item 29, finding 2)
+
+**Decision, approved by the student:** the attack tests, the window length and the repetitions are
+fixed once, in Phase 0, and every control, pre-change and post-change run uses them. Phase 1 no longer
+chooses tests. Two runs are compared only when their hashed parameters equal the control runs'. In the
+code, a key the control runs never saw is INCONCLUSIVE and not tested.
+
+**Why.** The noise model was measured in Phase 0 with "the stimulus", while the tests were chosen later,
+per change, and FINAL and the panel response allowed a different set per change. A key the control runs
+never saw got a coefficient of variation of 0 and the Poisson dispersion, the least noise the code can
+express, so any drop passed the noise condition. The previous code reported such a key as LOST, verified
+2026-09-28 by the new test. `lab/blueprint.md` already specified one pinned technique list.
+
+**Cost if wrong:** the one list must exercise everything the catalogue's changes affect, and choosing it
+is not done yet. Per-change test lists are future work: each would need its own Phase 0.
+
+## 2026-09-28 - Remediation candidates are two levels. Ranked discriminating fields are dropped (supersedes D1's third level; item 29, finding 3)
+
+**Decision, approved by the student:** the system suggests surviving sources and known compensating
+controls. It no longer ranks discriminating fields. D1's main point stands: the system never drafts
+detection rules.
+
+**Why.** D1 defined the third level as fields that "separate adversary activity from control activity".
+Every capture in this design runs the attack suite, the 5 control runs included, because "control" here
+means no configuration change, not no attack. The study records no attack-free activity, so the ranking
+has nothing to compare against. Adding attack-free captures was the alternative. It was rejected for
+lab time and harness work the schedule does not have.
+
+**What changes for the panel:** question Q5, "can it suggest a fix?", is answered "yes, at two levels",
+with the third named as future work because it needs attack-free captures.
+
+**Cost if wrong:** low. The ranking can be added later with attack-free captures, and it changes no
+measurement.
+
+## 2026-09-28 - Fixes are applied by script, like the change. D2 extends to Phase 5 (item 29, finding 4)
+
+**Decision, approved by the student:** a telemetry fix is supplied as a script with an ID, like the
+hardening change. A re-validation run restores the configuration snapshot, applies the change script,
+then the fix script, confirms both on the host, and only then captures. A rule re-validation replays the
+manifest the same way: restore, apply the change, run the pinned tests. The accepted baseline is the
+snapshot plus the scripts applied on top, and a later run rebuilds it the same way.
+
+**Why.** Under D2 every capture begins by restoring the configuration snapshot. A fix made once by hand
+was erased by that restore, together with the hardening change. The re-validation would then measure the
+original machine, match the pre-change profile, and report "coverage restored" for a fix that was never
+tested: a false FIXED.
+
+**Scope in this study:** each change is tested alone against the unchanged snapshot (Scope and
+Limitations, limit 2), so the list of accepted scripts is empty for every study run. It matters for real
+use. Phase 5 is designed, not built.
+
+**Cost if wrong:** low. Scripts are what D2 already requires for changes.
+
 ## 2026-09-26 - T1 is the final thesis. There is no fallback topic (supersedes the open choice in 2026-08-19)
 
 **Decision, by the student, in their words:** "No fallback this time. T1 is the final thesis title."
@@ -297,6 +377,10 @@ then differ, and the hash rule would have to exclude it for that change and say 
 catalogue needs this `(unverified for C8, Credential Guard)`.
 
 ## 2026-09-14 - D1. The system ranks discriminating fields. It does not draft detection rules.
+
+> **Superseded in part, 2026-09-28.** The third level, ranked discriminating fields, is dropped: the
+> study records no attack-free activity to rank against. "No rule drafting" still stands. See the
+> 2026-09-28 entry on remediation candidates.
 
 **Decision:** the third level of remediation candidates is a **ranked list of the event fields that
 still separate adversary activity from control activity after the change**. The system does not

@@ -62,8 +62,8 @@ Read these five, in order. Expand `REPO` first.
    The current blockers and dates, kept short. Added to this list 2026-09-28.
 
 3. `REPO\docs\OPEN-QUESTIONS.md`
-   Items **1, 15, 18, and 20 to 29** are the live ones (23 only half). All are summarised in
-   section 5. Items 0, 16, 17 and 19 are answered. The file is ranked by damage, so read from
+   Items **1, 15, 18, and 20 to 28** are the live ones (23 reframed as a spike check). All are
+   summarised in section 5. Items 0, 16, 17, 19 and 29 are answered. The file is ranked by damage, so read from
    the top.
 
 4. `REPO\docs\DECISIONS.md`
@@ -260,11 +260,11 @@ Item 28 — boot-time evidence
     Wininit events on every date. Boot-time checks, such as Wininit event 12 for LSA
     protection, must be made inside the guest. Cause unverified.
 
-Item 29 — four findings from a read-only chat, all four confirmed 2026-09-28
-    Chat 4e01d810 (2026-09-14) reported four serious problems, and all four hold. The first was
-    reproduced on today's code: the chi-square gate reports UNCHANGED while one key drops from
-    198 events to 0 among 299 steady keys; with the gate skipped the key is LOST. FINAL's
-    Objective 4 names the gate, so the fix needs the student's decision.
+Item 29 — ANSWERED 2026-09-28, all four fixed by decision
+    Chat 4e01d810's four findings all held and are fixed (DECISIONS 2026-09-28): the
+    chi-square is a reported summary and every key is tested; one attack-test list is pinned
+    in Phase 0 and a key the control runs never saw is INCONCLUSIVE; remediation is two
+    levels; fixes are applied by script. The first two are in code with tests.
 
 Item 25 — the schedule, with a date on it
     The harness does not exist, the spike has never run, and 101 windows need about 67 hours
@@ -278,10 +278,11 @@ Item 24 — blocks trusting any UNCHANGED result
     `VarianceModel.from_control()` accepts a control run that recorded nothing. That inflates
     every noise band and pushes real losses toward UNCHANGED. Found 2026-09-14, not fixed.
 
-Item 23 — half fixed, half blocks a reported result
-    The alpha half is fixed: `global_gate()` now takes the alpha passed to `analyse()`. Still
-    open: the gate is the only stage with no noise model, so it may pass on run-to-run variation
-    alone. Ten control pairs from the Phase 7 spike settle it.
+Item 23 — reframed 2026-09-28, a spike check
+    The alpha half is fixed. The other half, the gate passing on noise, no longer matters: since
+    2026-09-28 the chi-square is reported, not a filter. What remains is the question it pointed
+    at: do the per-key tests produce false findings on real noise? Run `analyse()` on the ten
+    control-versus-control pairs from the Phase 7 spike. There should be no findings.
 
 Item 20 — blocks two headline claims
     WIN-EP-01 does not audit process creation. 200 process spawns produced zero `Security-4688`
@@ -311,7 +312,7 @@ Not an item yet — blocks the revisions list
 
 Built and tested, in `REPO\src\telos\`:
     `eventkey.py`, `variance.py`, `differential.py`, `baseline.py`, `report.py`, `model.py`,
-    `synth.py`. Two test files in `REPO\tests\`, 55 tests passing.
+    `synth.py`. Two test files in `REPO\tests\`, 58 tests passing.
 
 Designed only, no code exists:
     the event-key to rule to ATT&CK dependency index, impact scoring, remediation candidate
@@ -341,7 +342,7 @@ git -C "E:\Claude general" log --oneline -8
 In PowerShell a quoted executable needs the call operator, so write
 `& "E:\Claude general\.venv\Scripts\python.exe" ...`. In cmd or bash the quotes alone are enough.
 
-`pytest` should print `55 passed`. If it prints anything else, stop and tell me, because the
+`pytest` should print `58 passed`. If it prints anything else, stop and tell me, because the
 record is stale.
 
 `check_docs.py` flags statements in any document that contradict the code. **It flags, it does

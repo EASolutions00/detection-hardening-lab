@@ -17,6 +17,50 @@ Next:
 
 ---
 
+## 2026-09-28 (third) - Four decisions close item 29: the gate is reported, not a filter; one pinned attack-test list; two remediation levels; fixes by script
+
+Chat 27d2595d, after `911a1c6`.
+
+**Decided by the student:** "approve all four", after each problem and fix was explained. Four entries in
+`DECISIONS.md`, 2026-09-28. D1's third level is marked superseded.
+
+**Code, tests first.** Three new tests and one rewritten were run against the unchanged code first:
+`4 failed, 54 passed`, the four failing exactly as expected. On the old code the key falling from 198 to 0
+among 299 steady keys came out UNCHANGED, and the never-seen key came out LOST in both cases. Then:
+- `differential.py`: `analyse()` no longer returns when the whole-profile chi-square says no change; only
+  NOT_TESTABLE stops it. The outcome comes from the keys. The chi-square reason text now says
+  "whole-profile". `_test_key()` makes a key the control runs never saw INCONCLUSIVE.
+- `variance.py`: `VarianceModel.measured()`, true only when the control runs saw the key occur.
+- `model.py`: `ProfileOutcome` redefined; CHANGED now means at least one key LOST or REDUCED.
+- `report.py`: Stage B says the chi-square is a summary; the "no key was tested" branch is gone.
+- Result: `58 passed`. The demo's scores are unchanged (naive `3 7 0`, F1 0.462; proposed `3 0 0`, F1
+  1.000); only its Stage B lines changed, and `docs/demo-output.txt` was refreshed.
+
+**Figures:** Sheet 2's gate diamond became a step ("reported as a summary, never a filter") and its "no"
+branch is gone; the per-key box carries the never-seen rule; remediation is two levels; Phase 5 supplies
+the fix as a script and both re-validation boxes restore and apply by script; the closing box defines the
+accepted baseline as the snapshot plus scripts. Sheet 1 pins the tests, window and repeats in Phase 0,
+and the hashed parameters must equal the control runs'. The pipeline figure's gate box and decision
+rule match. All rendered and inspected; six copies in the thesis folder match the repo. Sheet 2 is now
+2304 px tall.
+
+**Documents, outside git:** FINAL (algorithm table, Objective 4 (a), Module 3, Module 5, run inputs,
+the diagram summary), the panel response (algorithm notes, captions, Q5 now two tiers, Q6, Q7, the
+decision-rule pseudocode, the method table), the revisions list (Revisions 1, objective 4, Part B, 17,
+18) and the explainer (Box 1, 7, 8, the old Decision 1 now Box 19a, Box 20, the outcome box, Box 25,
+Phase 5, section 7, the worked example, section 11, the self-test).
+
+**Records:** OPEN-QUESTIONS 29 answered, with an Answered-section entry; item 23 reframed as a spike check
+for false findings on control pairs; README and `src/README.md` describe the method as it now runs; the
+test count is 58 in `CLAUDE.md`, README, `src/README.md`, `COMMANDS.md` and `PROMPT-new-chat.md`.
+
+**Broke / stuck on:** nothing failed. One choice made while editing: the report still ends with "THIS RUN
+COULD NOT BE TESTED" for a NOT_TESTABLE run even when that run has per-key rows, because every key being
+too rare is also a run that cannot support any claim.
+
+**Not verified:** that testing every key keeps false findings low on real data. The made-up run flagged
+none of 299 steady keys, but its noise model was right by construction. Item 23 carries the spike check.
+
 ## 2026-09-28 (second) - Activity diagram checked: 13 problems, 8 fixed, 1 left, 4 need decisions. The gate finding reproduced.
 
 Chat 27d2595d, after `b58cc04`.
