@@ -46,6 +46,12 @@ same date (DECISIONS.md, OPEN-QUESTIONS 16):
      only. LOST needs zero after and a corrected q at or below alpha.
   9. The post-change stream says the change is applied by script (D2). There is
      no post-change snapshot.
+
+What changed on 2026-09-28:
+
+ 10. "fewer than 30 events before -> INCONCLUSIVE" also covered NEW keys, which
+     have 0 before. _test_key() tests NEW first. The line now says "1 to 29
+     before" and "0 before -> NEW".
 """
 
 from pathlib import Path
@@ -139,8 +145,8 @@ def build() -> str:
         "INCONCLUSIVE",
         "REDUCED needs q, effect size and the noise floor together   ·   "
         "LOST needs zero after and q ≤ α",
-        "fewer than 30 events before the change  →  INCONCLUSIVE, never "
-        "tested"], size=13)
+        "1 to 29 events before the change  →  INCONCLUSIVE, never tested   ·   "
+        "0 before  →  NEW"], size=13)
     body.append(arrow("M510.0 696.0 V724.0"))
 
     # --- NEW: field-level loss -------------------------------------------

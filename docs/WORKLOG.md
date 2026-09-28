@@ -17,6 +17,59 @@ Next:
 
 ---
 
+## 2026-09-28 (second) - Activity diagram checked: 13 problems, 8 fixed, 1 left, 4 need decisions. The gate finding reproduced.
+
+Chat 27d2595d, after `b58cc04`.
+
+**Did:** checked the activity diagram against the code, the decisions and the 2026-09-26 findings,
+and re-checked the 2026-09-14 report of read-only chat 4e01d810 instead of trusting it. Then, at the
+student's request, fixed items 5 to 13 of that check. Items 1 to 4 need decisions.
+
+**Checked first:**
+- All six diagram copies match the script. A first hash comparison said `DIFFER` for all six. The cause
+  was my check, not the files: `Path.write_text` on Windows writes CRLF line endings, and I had hashed
+  the script's output with LF. With CRLF: all `MATCH`.
+- **The gate finding reproduced on today's code.** Table in OPEN-QUESTIONS 29. My first attempt at the
+  "tested alone" column was wrong: a phase holding only the lost key records nothing after the change,
+  so the capture check correctly returned NOT_TESTABLE. Rerun with the gate skipped on the full 300
+  keys: the lost key is LOST, and no steady key is flagged.
+- `field_loss_pairs()` is called only by `src/demo.py`, never by `analyse()` or `report.py`.
+- Neither Word file is a Word copy of the current proposal (OPEN-QUESTIONS 15).
+
+**Fixed (items 5 to 12):**
+- Sheet 1, Phase 0: a check on the control runs, ending at "Control runs NOT USABLE" (item 24), and
+  the noise model also fits the stimulus fingerprint's spread (item 22).
+- Sheet 1, Phases 1 and 3: a run check after each capture. A failed run is VOID, recorded, and
+  captured again, and the loops read `3 valid runs`. The void path ends in a new shape, a UML flow final,
+  added to `svgkit.py` as `flow_final()`.
+- Sheet 1, Phase 3: the change is confirmed inside the host before the window opens (harness
+  requirement 11, item 28), and the run check includes it.
+- Sheet 1: the hashed box follows runbook step 11 (repeats, Sysmon config hash, versions), and says
+  "manifest's parameters" and "manifest's record part" (D2's names) instead of "run parameters" and
+  "run record".
+- Sheet 2 and the pipeline figure: "1 to 29 before: INCONCLUSIVE". "Under 30" also covered NEW keys.
+- Sheet 1 is 2588 px tall, up from 2160. The three regenerated SVGs are copied to the thesis folder and
+  its `Activity Diagram` subfolder, and all six hashes match the repo.
+- Rendered with Edge headless and inspected: no overlaps. One layout fix was needed before rendering: a
+  loop label "loop [ until 3 valid runs ]" would have run under the arrow at the system column, so it
+  is "loop [ 3 valid runs ]".
+- Thesis documents, outside git: the explainer describes the new checks, the flow-final shape, the
+  new box wording, the "1 to 29" reason, and pairing as "function built, not connected". It also no
+  longer states "LSA Protection is exactly this case" as fact. FINAL's diagram summary now matches the
+  diagram: the index is built before the control runs, the engineer defines the run (not the change)
+  in Phase 1, and the checks are described. The revisions list's Revision 18 and the panel response's
+  Q7 walkthrough mention the checks. Backups of the four documents from earlier today are in
+  `C:\Users\Elijah\claude-backups\docs-before-fixes-2026-09-28\`.
+
+**Not fixed:**
+- **Item 13, the Word files.** No Word copy of `proposal-form-FINAL.md` exists: the REVISED file is the
+  superseded revision, and the 2026-09-07 file is a 426-word start whose title still has "a". The
+  remaining work is building one, recorded in OPEN-QUESTIONS 15.
+- **Items 1 to 4** (the gate, the stimulus order, "control activity", Phase 5 versus D2) need the
+  student's decisions. OPEN-QUESTIONS 29.
+
+**Next:** decide item 29's four findings, starting with the gate.
+
 ## 2026-09-28 - Full document sweep: 18 conflicts found; 15 fixed, 1 partly, 2 wait on decisions
 
 Chat 27d2595d, resumed. Also covers the `/doctor` run at the end of 2026-09-26, which had no entry.

@@ -64,8 +64,11 @@ the lock, value `1`**, so `2` would be a stated deviation (item 18).
   cause. Repaired, but the harness must check the path to SIEM-01 before each run.
 - Item 28, new 2026-09-26. Events written before the Wazuh agent starts never reach the
   archive, so boot-time checks such as Wininit event 12 must be made inside the guest.
-- Item 29, new 2026-09-28. Four serious findings from chat 4e01d810, never checked. The first
-  says the chi-square gate can report no change while one key drops from 200 events to 0.
+- Item 29, new 2026-09-28. Four serious findings from chat 4e01d810, **re-checked the same day:
+  all four hold.** The worst is reproduced on today's code with made-up data: the chi-square
+  gate reported UNCHANGED while one key dropped from 198 events to 0 among 299 steady keys.
+  Skipping the gate, that key is LOST (q = 3.1e-84). FINAL's Objective 4 names the gate, so the
+  fix is a decision.
 - Documents outside the repo still conflict with the 2026-09-26 findings on points that wait
   on the student's decisions: "16 changes", the September Gantt rows, and the standalone-lab
   limitation. See WORKLOG 2026-09-28.

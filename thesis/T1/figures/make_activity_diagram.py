@@ -10,6 +10,33 @@ hand-computed absolute coordinates. Patching those by hand a second time would
 recreate the same failure. Now the figure is generated, so a design change is a
 string edit and a re-run.
 
+WHAT CHANGED ON 2026-09-28, AND WHY
+
+A sweep of this figure against the records (WORKLOG 2026-09-28) found steps the
+design requires but the figure did not draw. Sheet 1 grew by about 430 px.
+
+   1. Phase 0 has a check on the control runs, with its own end: CONTROL RUNS
+      NOT USABLE. Phase 4 checked every repetition, the control runs were never
+      checked, and an empty control run hides real losses (OPEN-QUESTIONS 24).
+      Designed, not built: VarianceModel.from_control() does not check yet.
+   2. Phases 1 and 3 check every run after it: did every attack test complete,
+      and is the stimulus fingerprint within the spread the control runs
+      measured (OPEN-QUESTIONS 22; runbook Phase 6, harness requirement 3). A
+      failed run is voided, recorded in the manifest, and captured again, so the
+      loops read "3 valid runs". The voided path ends in a UML flow final
+      (circle with an X): that path stops, the loop goes on.
+   3. Phase 3 confirms inside the host that the change took effect, before the
+      window opens (harness requirement 11; OPEN-QUESTIONS 28: boot-time proof
+      such as Wininit event 12 never reaches the SIEM). Its run check also
+      voids a run where the change was not confirmed.
+   4. The hashed-parameters box follows runbook Phase 6 step 11: repeats, the
+      Sysmon config hash and the versions were missing.
+   5. Sheet 1 says "manifest's parameters" and "manifest's record part", the
+      two parts D2 defines, where it said "run parameters" and "run record".
+      Sheet 2 already said "manifest".
+   6. The classify box says "1 to 29 before: INCONCLUSIVE". "Under 30" also
+      covered NEW keys, which have 0 before and are tested first in _test_key().
+
 WHAT CHANGED ON 2026-09-14, AND WHY
 
 An outside review of this figure was checked against the code and against the
@@ -56,6 +83,9 @@ NOT DRAWN, ON PURPOSE
   - A single-key profile whose key has fewer than 30 events is NOT_TESTABLE
     (analyse(), differential.py). A box for that corner case would crowd the
     gate, and item 4's label already says single keys are tested directly.
+  - Harness housekeeping that is not a step of the method: checking the path to
+    the SIEM before a run, counting the harness's own guest calls, backups
+    (runbook Phase 6, harness requirements 8 to 10).
 
 HISTORY: WHAT CHANGED ON 2026-09-09
 
@@ -83,7 +113,8 @@ from pathlib import Path
 from svgkit import (
     DEFS, DIVIDER, HEADER, HEADER_SUB, LANE_A, LANE_B,
     action_box, arrow, connector, datastore, decision, edge_label, end_node,
-    line, loop_frame, phase_band, rect, start_node, svg, system_box, text,
+    flow_final, line, loop_frame, phase_band, rect, start_node, svg, system_box,
+    text,
 )
 
 # ----------------------------------------------------------------- geometry
@@ -197,6 +228,11 @@ class Sheet:
         self.nodes += end_node(cx, cy)
         return Box(cx - 14, cy - 14, 28, 28)
 
+    def flow_end(self, cx, cy) -> Box:
+        """This path ends; a surrounding loop carries on."""
+        self.nodes += flow_final(cx, cy)
+        return Box(cx - 11, cy - 11, 22, 22)
+
     def connect(self, cx, cy, letter) -> Box:
         self.nodes += connector(cx, cy, letter)
         return Box(cx - 17, cy - 17, 34, 34)
@@ -283,48 +319,86 @@ def sheet1() -> str:
     s.hop(capture0, emit0)
     s.frame(346, emit0.bot + 18, "loop  [ 5 control runs ]")
 
-    fit = s.step(MAIN, 568, MAIN_W, 60, [
-        "Fit the noise model per event key:",
-        "mean rate, variability, dispersion"], system=True)
-    s.hop(emit0, fit)
+    # NEW 2026-09-28: the control runs get the same capture check as Phase 4,
+    # plus a check that every attack test completed. OPEN-QUESTIONS 22 and 24.
+    ctl_check = s.ask(MAIN, 600, 203, 48, [
+        "Did every control run record events",
+        "and complete all its attack tests?"])
+    s.hop(emit0, ctl_check)
 
-    baseline = s.store(MAIN, 658, MAIN_W, 62, [
-        "« datastore »  Noise baseline",
-        "+ dependency index          →  A"])
+    ctl_bad = s.step(SUB, ctl_check.cy + 24, SUB_W, 76, [
+        "Control runs NOT",
+        "USABLE: investigate,",
+        "then capture again"], system=True, size=13)
+    s.path(f"M{ctl_check.right} {ctl_check.cy} H{SUB} V{ctl_bad.y - GAP}")
+    s.label(ctl_check.right + 21, ctl_check.cy - 11, "no")
+    s.down(ctl_bad, s.end(SUB, ctl_bad.bot + 40))
+
+    # CHANGED 2026-09-28: also measures the spread of the stimulus fingerprint,
+    # which is the tolerance the run checks in Phases 1 and 3 compare against.
+    fit = s.step(MAIN, 676, MAIN_W, 76, [
+        "Fit the noise model per event key: mean",
+        "rate, variability, dispersion; and the spread",
+        "of the stimulus fingerprint across the runs"], system=True)
+    s.down(ctl_check, fit)
+    s.label(MAIN + 15, ctl_check.bot + 14, "yes")
+
+    baseline = s.store(MAIN, 782, MAIN_W, 62, [
+        "« datastore »  Noise baseline + stimulus",
+        "tolerance + dependency index      →  A"])
     s.down(fit, baseline)
 
     # --- phase 1 ----------------------------------------------------------
-    s.band(758, "PHASE 1  ·  PRE-CHANGE CAPTURE")
+    s.band(882, "PHASE 1  ·  PRE-CHANGE CAPTURE")
 
-    define = s.step(ENG, 820, ENG_W, 60, [
+    define = s.step(ENG, 944, ENG_W, 60, [
         "Define the run: target hosts,",
         "atomic test IDs, window, repeats"], system=False, size=13)
-    s.path(f"M{MAIN} {baseline.bot} V804 H{ENG} V{define.y - GAP}")
+    s.path(f"M{MAIN} {baseline.bot} V928 H{ENG} V{define.y - GAP}")
 
-    # D2: the hashed parameters. The change is not among them, so the pre- and
-    # post-change runs can hash equal.
-    freeze = s.step(MAIN, 910, MAIN_W, 60, [
-        "Freeze and hash the run parameters: configuration",
-        "snapshot, tests, window, rule set, thresholds"], system=True)
+    # D2: the hashed parameters part of the manifest. The change is not among
+    # them, so the pre- and post-change runs can hash equal.
+    # CHANGED 2026-09-28: the list now follows runbook Phase 6 step 11, and the
+    # name follows D2's "manifest", as Sheet 2 already did.
+    freeze = s.step(MAIN, 1034, MAIN_W, 76, [
+        "Freeze and hash the manifest's parameters:",
+        "configuration snapshot, tests, window, repeats,",
+        "rule set, thresholds, Sysmon config hash, versions"], system=True, size=13)
     s.hop(define, freeze)
 
-    capture1 = s.step(MAIN, 1016, MAIN_W, 60, [
+    capture1 = s.step(MAIN, 1156, MAIN_W, 60, [
         "Restore the configuration snapshot and settle;",
         "open the window, run the adversary simulation suite"], system=True)
     s.down(freeze, capture1)
 
-    emit1 = s.step(ENV, 1106, ENV_W, 60, [
+    emit1 = s.step(ENV, 1246, ENV_W, 60, [
         "Endpoints emit pre-change",
         "events; the SIEM archives them"], system=False)
     s.hop(capture1, emit1)
 
-    profile1 = s.step(MAIN, 1196, MAIN_W, 60, [
+    # NEW 2026-09-28: the per-run stimulus check. OPEN-QUESTIONS 22.
+    check1 = s.ask(MAIN, 1384, 203, 48, [
+        "Valid run? Every attack test completed,",
+        "fingerprint within the control spread"])
+    s.hop(emit1, check1)
+    void1 = s.step(SUB, check1.cy + 24, SUB_W, 76, [
+        "VOID the run: record",
+        "why in the manifest;",
+        "it is captured again"], system=True, size=13)
+    s.path(f"M{check1.right} {check1.cy} H{SUB} V{void1.y - GAP}")
+    s.label(check1.right + 21, check1.cy - 11, "no")
+    void1_end = s.flow_end(SUB, void1.bot + 36)
+    s.down(void1, void1_end)
+
+    profile1 = s.step(MAIN, 1462, MAIN_W, 60, [
         "Export the archived events; build the pre-change",
         "profile keyed by event type + populated tracked fields"], system=True)
-    s.hop(emit1, profile1)
-    s.frame(990, profile1.bot + 14, "loop  [ 3 runs ]")
+    s.down(check1, profile1)
+    s.label(MAIN + 15, check1.bot + 14, "yes")
+    # The label stays short: a longer one ran under the arrow at x = MAIN.
+    s.frame(1130, max(profile1.bot, void1_end.bot) + 14, "loop  [ 3 valid runs ]")
 
-    pre = s.store(MAIN, 1290, MAIN_W, 62, [
+    pre = s.store(MAIN, 1565, MAIN_W, 62, [
         "« datastore »  Pre-change profile",
         "(3 runs)                              →  B"])
     s.down(profile1, pre)
@@ -332,54 +406,73 @@ def sheet1() -> str:
     # --- phase 2 ----------------------------------------------------------
     # D2: the engineer supplies the change once. The system applies it inside
     # every post-change run, below.
-    s.band(1390, "PHASE 2  ·  SUPPLY THE HARDENING CHANGE")
+    s.band(1665, "PHASE 2  ·  SUPPLY THE HARDENING CHANGE")
 
-    supply = s.step(ENG, 1452, ENG_W, 60, [
+    supply = s.step(ENG, 1727, ENG_W, 60, [
         "Supply the hardening change: CIS /",
         "STIG ID and the script that applies it"], system=False, size=13)
-    s.path(f"M{MAIN} {pre.bot} V1436 H{ENG} V{supply.y - GAP}")
+    s.path(f"M{MAIN} {pre.bot} V1711 H{ENG} V{supply.y - GAP}")
 
-    record = s.step(MAIN, 1542, MAIN_W, 60, [
+    record = s.step(MAIN, 1817, MAIN_W, 60, [
         "Record the change ID and script hash in the",
-        "run record, outside the hashed parameters"], system=True)
+        "manifest's record part, outside the hashed parameters"], system=True)
     s.hop(supply, record)
 
     # --- phase 3 ----------------------------------------------------------
     # Kept short: a longer label ran under the arrow at x = MAIN.
-    s.band(1640, "PHASE 3  ·  POST-CHANGE CAPTURE  ·  change applied inside each run")
+    s.band(1915, "PHASE 3  ·  POST-CHANGE CAPTURE  ·  change applied inside each run")
 
     # D2: the change and its reboot come BEFORE the window opens. The blueprint
     # and runbook had them after the start fence, inside post-change windows
     # only, which was a second difference between the phases.
-    capture2 = s.step(MAIN, 1726, MAIN_W, 76, [
+    # CHANGED 2026-09-28: the change is confirmed inside the host before the
+    # window opens. Runbook Phase 6, harness requirement 11; OPEN-QUESTIONS 28.
+    capture2 = s.step(MAIN, 2001, MAIN_W, 94, [
         "Restore the configuration snapshot; apply the",
         "change by script, reboot if needed, and settle;",
+        "confirm inside the host that it took effect;",
         "then open the window, run the identical suite"], system=True)
     s.down(record, capture2)
 
-    emit2 = s.step(ENV, 1832, ENV_W, 60, [
+    emit2 = s.step(ENV, 2125, ENV_W, 60, [
         "Endpoints emit post-change",
         "events; the SIEM archives them"], system=False)
     s.hop(capture2, emit2)
 
-    profile2 = s.step(MAIN, 1922, MAIN_W, 60, [
+    # NEW 2026-09-28: the same run check, plus the change confirmation.
+    check2 = s.ask(MAIN, 2263, 203, 48, [
+        "Valid run? Tests completed, fingerprint",
+        "in spread, change confirmed in the host"])
+    s.hop(emit2, check2)
+    void2 = s.step(SUB, check2.cy + 24, SUB_W, 76, [
+        "VOID the run: record",
+        "why in the manifest;",
+        "it is captured again"], system=True, size=13)
+    s.path(f"M{check2.right} {check2.cy} H{SUB} V{void2.y - GAP}")
+    s.label(check2.right + 21, check2.cy - 11, "no")
+    void2_end = s.flow_end(SUB, void2.bot + 36)
+    s.down(void2, void2_end)
+
+    profile2 = s.step(MAIN, 2341, MAIN_W, 60, [
         "Export the archived events;",
         "build the post-change profile"], system=True)
-    s.hop(emit2, profile2)
-    s.frame(1700, profile2.bot + 14, "loop  [ 3 runs ]")
+    s.down(check2, profile2)
+    s.label(MAIN + 15, check2.bot + 14, "yes")
+    s.frame(1975, max(profile2.bot, void2_end.bot) + 14, "loop  [ 3 valid runs ]")
 
-    post = s.store(MAIN, 2016, MAIN_W, 50, [
+    post = s.store(MAIN, 2444, MAIN_W, 50, [
         "« datastore »  Post-change profile (3 runs)"])
     s.down(profile2, post)
 
-    to_c = s.connect(MAIN, 2106, "C")
+    to_c = s.connect(MAIN, 2534, "C")
     s.down(post, to_c)
 
-    aria = ("Revised activity diagram, phases 0 to 3: environment setup, "
-            "pre-change capture, supplying the hardening change, and post-change "
-            "capture in which the change is applied by script inside each run. "
-            "Events are keyed by event type plus the tracked fields that were "
-            "populated.")
+    aria = ("Revised activity diagram, phases 0 to 3: environment setup with a "
+            "check on the control runs, pre-change capture, supplying the hardening "
+            "change, and post-change capture in which the change is applied by script "
+            "and confirmed inside each run. Each capture run is checked and a failed "
+            "run is voided and captured again. Events are keyed by event type plus "
+            "the tracked fields that were populated.")
     return s.render(to_c.bot + 37, aria)
 
 
@@ -433,7 +526,7 @@ def sheet2() -> str:
     classify = s.step(MAIN, 670, MAIN_W, 92, [
         "Classify each key:  LOST · REDUCED ·",
         "UNCHANGED · NEW · INCONCLUSIVE",
-        ("LOST: 30 or more before, 0 after, q ≤ α   ·   under 30 before: INCONCLUSIVE", 11),
+        ("LOST: 30 or more before, 0 after, q ≤ α   ·   1 to 29 before: INCONCLUSIVE", 11),
         ("REDUCED needs all three:  q ≤ α,  ratio ≤ 0.5,  drop > 3 × CoV", 11)],
         system=True)
     s.down(test, classify)

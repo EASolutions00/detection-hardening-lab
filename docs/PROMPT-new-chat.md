@@ -260,10 +260,11 @@ Item 28 — boot-time evidence
     Wininit events on every date. Boot-time checks, such as Wininit event 12 for LSA
     protection, must be made inside the guest. Cause unverified.
 
-Item 29 — four findings from a read-only chat, none checked yet
-    Chat 4e01d810 (2026-09-14) reported four serious problems. The first: the chi-square gate can
-    report no change while one key drops from 200 events to 0 among 299 steady keys. Check each
-    against the code before relying on it or dismissing it.
+Item 29 — four findings from a read-only chat, all four confirmed 2026-09-28
+    Chat 4e01d810 (2026-09-14) reported four serious problems, and all four hold. The first was
+    reproduced on today's code: the chi-square gate reports UNCHANGED while one key drops from
+    198 events to 0 among 299 steady keys; with the gate skipped the key is LOST. FINAL's
+    Objective 4 names the gate, so the fix needs the student's decision.
 
 Item 25 — the schedule, with a date on it
     The harness does not exist, the spike has never run, and 101 windows need about 67 hours

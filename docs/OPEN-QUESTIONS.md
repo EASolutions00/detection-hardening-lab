@@ -728,6 +728,12 @@ commands were issued", which is not the same claim.
 
 **Blocks:** the Phase 6 harness design, and the manifest field list in runbook Phase 4.
 
+**Drawn in the activity diagram on 2026-09-28** (Sheet 1: a run check in the Phase 1 and Phase 3
+loops, and the fingerprint's spread fitted in Phase 0). The diagram also shows what happens to a
+voided run: it is recorded and **captured again**, and the loops read "3 valid runs". That last part
+is the diagram's reading, not stated above: `analyse()` requires the same number of runs in both
+phases, so a voided run has to be replaced. Designed, not built.
+
 ---
 
 ## 26. The harness's own `vmrun` logons land in the data
@@ -857,6 +863,9 @@ agent config (`lab/configs/wazuh-agent-ossec.conf`) does not set it.
    the pinned agent config and must be recorded, or keep the default and do boot-time checks in the
    guest. Decide before the golden snapshot.
 
+**Drawn in the activity diagram on 2026-09-28:** each post-change run confirms inside the host that
+the change took effect, before its window opens, and a run where it was not confirmed is voided.
+
 **What a bad answer means:** a change recorded as "applied" with no evidence it took effect, or an
 agent restart mid-window read as telemetry loss.
 
@@ -959,6 +968,20 @@ against `eventkey.py`. Not against another document.
 
 **What a bad answer means:** every stale file found before submission costs minutes. One found by
 a panelist during the defense costs the credibility of every other figure in the document.
+
+**Checked 2026-09-28: there is no Word copy of the current proposal to insert the figures into.**
+Read from the files themselves:
+
+| Word file | Modified | Words | Images inside |
+|---|---|---|---|
+| `T1_Detection of Hardening-Induced Blind Spots REVISED.docx` | 2026-08-31 | 5,730 | the 2026-08-15 diagram (326,941 bytes) and a 52,010-byte image |
+| `Detecting Security Blind Spots Through Pre- and Post-Hardening Events Using a Differential.docx` | 2026-09-07 | 426 | one 52,010-byte image, the same size as the one in the blank template |
+
+The REVISED file is the superseded revision, with its old title. The 2026-09-07 file is a short
+start, and its title and file name still carry the "a" that the 2026-09-14 title decision removed.
+Putting the current diagram into either would pair it with outdated text. **The remaining piece of
+this item is therefore a Word copy of `proposal-form-FINAL.md`, with the four current SVGs.** Best
+made after the open decisions that change FINAL's text (item 25's scope, the Gantt chart).
 
 ---
 
@@ -1080,7 +1103,9 @@ was collected anyway.
 
 **Status:** Open. Found 2026-09-14 while fixing item 16, and deliberately not fixed then because it
 is a different function. Recorded as an item before a session was compacted. **The student has not
-yet chosen between fixing it in code and leaving it as a stated limit.**
+yet chosen between fixing it in code and leaving it as a stated limit.** **2026-09-28:** at the
+student's request, the activity diagram now draws a check on the control runs in Phase 0, ending at
+"Control runs NOT USABLE". So the design includes the check. The code still does not do it.
 
 **The defect.** `capture_problem()` in `differential.py` now rejects a pre-change or post-change
 repetition whose counts sum to zero. **The control phase is never checked.** `from_control()` refuses
@@ -1102,11 +1127,12 @@ compared against that noise model, and no output would show it.
 
 ---
 
-## 29. Four serious findings from chat 4e01d810, none checked against the code yet
+## 29. Four serious findings from chat 4e01d810 about the method and the diagram
 
 **Status:** Open. The findings were reported on 2026-09-14 by a read-only chat, recorded in WORKLOG on
-2026-09-26, and given this item on 2026-09-28 so they are tracked where open problems live. **Reported
-by that chat, not re-checked.** Its full report is kept privately at
+2026-09-26, and given this item on 2026-09-28. **Re-checked later on 2026-09-28: all four hold.**
+Finding 1, the gate hiding a complete loss, was reproduced on today's code (section at the end). All
+four need decisions. That chat's full report is kept privately at
 `C:\Users\Elijah\claude-backups\thesis-chats\2026-09-14_4e01d810_activity-diagram-sweep.md`.
 
 1. **The chi-square gate can hide a complete loss.** On made-up data with 299 steady keys, one key
@@ -1124,6 +1150,35 @@ by that chat, not re-checked.** Its full report is kept privately at
 **How to answer:** check each against the code and the design, starting with 1, which needs no lab:
 build the 299-steady-keys profile in a test, run `analyse()`, and see whether the lost key is reported.
 Open a separate item for each finding that holds, and record the ones that do not, with the evidence.
+
+### Re-checked 2026-09-28: all four hold
+
+**Finding 1, confirmed on today's code with made-up data.** 299 steady keys at about 1,000 events per
+run, moving about 1 percent between runs, 3 runs per phase, plus one key that drops to 0. Seed 1.
+
+| Lost key, events before | Gate p | `analyse()` outcome | Findings | Same data, gate skipped |
+|---|---|---|---|---|
+| 39 | 1.000 | UNCHANGED | 0 | LOST, q = 3.5e-15 |
+| 198 | 0.999 | UNCHANGED | 0 | LOST, q = 3.1e-84 |
+| 300 | 0.112 | UNCHANGED | 0 | LOST, q = 1.5e-128 |
+| 600 | 0.000 | CHANGED | 1 | LOST, q = 8.0e-259 |
+
+With the gate skipped, none of the 299 steady keys was flagged; the only finding was the lost key. The
+cause is in the code: `analyse()` returns before testing any key when the gate says UNCHANGED
+(`differential.py:327`). "Gate skipped" means `_test_key()` and `classify()` run on every key, exactly
+as `analyse()` does after a CHANGED gate. The script is not in the repo. **Real data may differ**: the
+real number of keys and the real noise are unknown until the spike.
+
+**This is a decision, not a documentation fix.** FINAL's Objective 4 names the gate as stage (a) of the
+method. Two ways out: keep the chi-square result as a reported number but always test every key, or
+remove it as a filter. Not decided.
+
+**Findings 2, 3 and 4 hold by reading.** 2: Phase 0's control runs "run the stimulus" before Phase 1
+defines the attack tests, and `VarianceModel.cov()` returns 0 for a key the control runs never saw
+(`variance.py:87`). 3: D1 (`DECISIONS.md:302`) ranks fields that separate "adversary activity from
+control activity", and every capture in the design runs the attack suite. 4: Phase 5's "Restore
+telemetry" is a one-time manual step, and under D2 every capture restores the configuration snapshot,
+which undoes it. All three need design decisions and are not fixed.
 
 **What a bad answer means:** finding 1, if true and left, means a real loss among many steady keys is
 reported as "no blind spot found".

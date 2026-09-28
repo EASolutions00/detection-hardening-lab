@@ -181,6 +181,18 @@ def end_node(cx, cy):
     return [circle(cx, cy, 14, "none", INK), circle(cx, cy, 8.5, INK)]
 
 
+def flow_final(cx, cy, r=11.0):
+    """UML flow final: this one path ends, the rest of the activity goes on.
+
+    Added 2026-09-28 for a voided run inside a capture loop. An end node there
+    would say the whole activity stops, which is wrong.
+    """
+    d = round(r * 0.7071, 2)
+    return [circle(cx, cy, r, "#FFFFFF", INK),
+            line(cx - d, cy - d, cx + d, cy + d, INK, 1.8),
+            line(cx - d, cy + d, cx + d, cy - d, INK, 1.8)]
+
+
 def svg(width, height, aria, body):
     return (f'<?xml version="1.0" encoding="UTF-8"?>\n'
             f'<svg width="{width}" height="{height}" viewBox="0 0 {width} {height}" '
