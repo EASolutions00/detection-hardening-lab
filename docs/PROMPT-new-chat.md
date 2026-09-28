@@ -62,12 +62,13 @@ Read these five, in order. Expand `REPO` first.
    The current blockers and dates, kept short. Added to this list 2026-09-28.
 
 3. `REPO\docs\OPEN-QUESTIONS.md`
-   Items **1, 15, 18, 20 to 28, and 30** are the live ones (23 reframed as a spike check). All
+   Items **1, 15, 18, 20 to 28, and 30** are the live ones (23 reframed as a spike check; 18, 20, 21
+   and 25 decided 2026-09-29 but not built). All
    are summarised in section 5. Items 0, 16, 17, 19 and 29 are answered. The file is ranked by damage, so read from
    the top.
 
 4. `REPO\docs\DECISIONS.md`
-   The newest five entries.
+   The newest nine entries, 2026-09-29 back to 2026-09-26.
 
 5. `REPO\docs\WORKLOG.md`
    The newest three entries.
@@ -166,7 +167,9 @@ in `REPO\src\telos\` unless stated otherwise.
   no 4688 events, because process creation auditing is off (item 20).
   `eventkey.py`
 
-- The key records **that** a tracked field carried a value, never **which** value.
+- The key records **that** a tracked field carried a value, never **which** value. That is the
+  code today. **Decided 2026-09-29, not built:** for a short list of fields (set after the C3
+  capture) the key will record the value, grouped into a few classes. DECISIONS 2026-09-29.
   `eventkey.py`, `is_populated()`
 
 - Empty, `-`, `N/A`, `(null)` and `NULL` count as absent. **Numeric zero counts as present.**
@@ -210,9 +213,11 @@ in `REPO\src\telos\` unless stated otherwise.
   strict subset.
   `eventkey.py`, `field_loss_pairs()`
 
-- 16 hardening changes, 5 control runs, 3 pre and 3 post per change, as designed. The catalogue
-  holds 14, and scope is not decided (item 25). Each phase ends with 3 **valid** runs: a failed
-  run is voided and captured again (design, 2026-09-28).
+- 5 control runs, 3 pre and 3 post per change, as designed. The catalogue holds 14. **Scope,
+  decided 2026-09-29:** keep every measurable class C change (about 7), reduce the graphical
+  interface first and then class B; the spike sets the final number. "16" is no longer a target.
+  Each phase ends with 3 **valid** runs: a failed run is voided and captured again (design,
+  2026-09-28).
   `REPO\lab\blueprint.md`
 
 - One attack-test list, window and repetition count, pinned once in Phase 0 for every change.
@@ -237,22 +242,22 @@ in `REPO\src\telos\` unless stated otherwise.
 
 ## 5. Open, so do not state these as settled
 
-Item 21 — blocks the catalogue, the golden snapshot, and data collection
+Item 21 — decided 2026-09-29, not built
     Every class C hardening change is an authentication control, and there is no domain
-    controller. `DC-01` is Tier B in `lab/blueprint.md` and was never built. **The archive count
-    ran 2026-09-26: 4768, 4769 and 4776 are zero on every date, and 0 of 2,892 logons were
-    network logons.** What remains is the student's choice among the four ways out. DC-01 alone
-    is not enough; the stimulus must also make network logons. **Answer this before item 18.**
+    controller. **The archive count ran 2026-09-26: 4768, 4769 and 4776 are zero on every date,
+    and 0 of 2,892 logons were network logons.** **Decided: build DC-01**, with its own Wazuh
+    agent and a test that makes network logons, before the golden snapshot. DC-01 alone is not
+    enough; the network-logon test is not designed yet.
 
-Item 18 — blocks data collection
+Item 18 — decided 2026-09-29, not built
     The key sees field presence, not value. Six of the eight class C hardening changes state a
-    telemetry effect that is a value change, which the analyser cannot see. Only C4 and C6 are
-    rate changes, and item 21 shows both of those need the missing domain. The planned capture
-    (`RunAsPPL`, then read `GrantedAccess`) **cannot run as written**, found 2026-09-26: the
+    telemetry effect that is a value change, which the analyser cannot see. The planned capture
+    (`RunAsPPL`, then read `GrantedAccess`) **could not run as written**, found 2026-09-26: the
     pinned Sysmon config records no Event 10 at all, and `RunAsPPL = 1` writes a UEFI firmware
-    variable. Decide first: an `lsass.exe` Sysmon rule or drop C3 and C8; and `RunAsPPL = 2`,
-    a stated deviation, because CIS 18.9.27.2 (Windows 11 Enterprise v5.1.0) requires the lock.
-    As configured today, **no class C change is measurable on this lab.**
+    variable. **Decided:** value keying for a short list of fields (final list after the C3
+    capture); an `lsass.exe` Sysmon rule; `RunAsPPL = 2`, a stated deviation, because CIS
+    18.9.27.2 (Windows 11 Enterprise v5.1.0) requires the lock. Until built, **no class C change
+    is measurable on this lab.**
 
 Item 22 — blocks the harness design
     The stimulus is asserted identical across the two phases and never verified. A hardening
@@ -286,13 +291,14 @@ Item 29 — ANSWERED 2026-09-28, all four fixed by decision
     in Phase 0 and a key the control runs never saw is INCONCLUSIVE; remediation is two
     levels; fixes are applied by script. The first two are in code with tests.
 
-Item 25 — the schedule, with a date on it
-    The harness does not exist, the spike has never run, and 101 windows need about 67 hours
-    unattended. The recommended tripwire was: if one full unattended capture window has not
-    completed by 2026-09-22, cut scope, for example to 8 changes, 53 windows, about 35 hours.
-    **That date passed with no capture window run (checked 2026-09-26), and scope is still not
-    cut.** Data collection was to start by end of September 2026. Also: 30 pre-change events
-    over 3 runs is about 10 per run, so many keys may be untestable. The spike measures both.
+Item 25 — the schedule; target and scope decided 2026-09-29
+    The harness does not exist and the spike has never run. The 2026-09-22 tripwire passed with no
+    capture window run. **Decided 2026-09-29:** school deadline 4 June 2027; target a final defense
+    by the end of January 2027 (March was recommended); keep every measurable class C change,
+    reduce the graphical interface first, then class B; the spike by 2026-10-31 sets the number.
+    Eight checkpoints are in STATUS.md. The panel said the re-presentation will focus on the
+    activity diagram; its date is not set. Also: 30 pre-change events over 3 runs is about 10 per
+    run, so many keys may be untestable. The spike measures it.
 
 Item 24 — blocks trusting any UNCHANGED result
     `VarianceModel.from_control()` accepts a control run that recorded nothing. That inflates
@@ -304,10 +310,11 @@ Item 23 — reframed 2026-09-28, a spike check
     at: do the per-key tests produce false findings on real noise? Run `analyse()` on the ten
     control-versus-control pairs from the Phase 7 spike. There should be no findings.
 
-Item 20 — blocks two headline claims
+Item 20 — decided 2026-09-29, not applied
     WIN-EP-01 does not audit process creation. 200 process spawns produced zero `Security-4688`
     events, so the canonical event key example does not exist on this endpoint. Sysmon Event 1
-    is carrying process creation instead.
+    is carrying process creation instead. **Decided:** Process Creation auditing with command
+    line, and Credential Validation auditing, go into the golden snapshot.
 
 Item 15 — blocks submission
     No Word copy of `proposal-form-FINAL.md` exists (checked 2026-09-28): the REVISED `.docx`
@@ -328,6 +335,12 @@ Settled 2026-09-26 and 2026-09-28, so do not reopen these
     key is tested; one attack-test list is pinned in Phase 0 and a key the control runs never saw is
     INCONCLUSIVE; remediation is two levels; fixes are applied by script (all 2026-09-28, closing
     item 29). All in `REPO\docs\DECISIONS.md`.
+
+Settled 2026-09-29, so do not reopen these
+    Target: final defense by the end of January 2027, school deadline 4 June 2027. Scope keeps every
+    measurable class C change. Build DC-01 with a network-logon test. Value keying for a short list
+    of fields, an `lsass.exe` Sysmon rule, `RunAsPPL = 2`. Process creation and credential
+    validation auditing in the golden snapshot. All in `REPO\docs\DECISIONS.md`, none built.
 
 Not an item yet — blocks the revisions list
     The REVISED-to-FINAL diff has never been run. Measured 2026-09-10: FINAL is 6,395 words

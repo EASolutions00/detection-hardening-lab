@@ -8,6 +8,138 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-09-29 - Target: final defense by end of January 2027. Scope keeps every measurable class C change (item 25)
+
+**Decision, by the student, chat 27d2595d:** the final defense is targeted for the end of January 2027.
+Scope keeps every class C change that the lab can measure. When time runs short, the cut is made in
+this order: the graphical interface is reduced first, then the class B negative controls are reduced.
+The spike, by 2026-10-31, sets the final number of changes. "16 changes" is no longer a target.
+
+**The dates, as stated by the student on 2026-09-29.** The school's deadline for the final thesis is
+**4 June 2027**; no record of it existed in this repo before today. The student's own earlier target was a
+final defense in December 2026, weeks 3 and 4, as FINAL's Gantt chart shows. That plan slipped at its
+first lab rows: "Laboratory Build and Telemetry Acquisition" and "Preliminary Trial", both September 2026,
+produced no capture run. The student wants to finish the course as soon as possible.
+
+**Why January, and the risk stated to the student before choosing.** March 2027 was recommended. January
+gives four months, the same length as the Gantt plan that slipped, and this plan adds work the old one did
+not have: DC-01, a network-logon test, and value keying (the three entries below). One missed checkpoint
+moves the defense to February or later. 4 June 2027 stays the hard limit and leaves time for the
+revisions a final defense usually brings.
+
+**Why keep class C.** Class C changes are the positive cases, where a blind spot can exist. OPEN-QUESTIONS
+1 says fewer than about 8 makes the precision and recall comparison weak, and with DC-01 and value keying
+about 7 are measurable (C8 is blocked, item 2). Class B is reduced, **not removed**: the comparison with the
+naive method needs changes where telemetry is lost but no blind spot exists, and class B is that set
+(OPEN-QUESTIONS 1). The graphical interface is cut first because FINAL's own Gantt note already names it
+"the component that would be reduced first if the schedule slips".
+
+**Checkpoints, proposed 2026-09-29.** Dates are estimates `(unverified)`; the tracked list is in STATUS.md.
+1. 2026-10-09: adviser told of the slip and the new target; re-presentation date requested.
+2. 2026-10-23: DC-01 built, WIN-EP-01 joined, Sysmon rule and audit settings in place, value keying coded
+   and tested, network-logon test designed, golden snapshot taken.
+3. 2026-10-31: spike run, its six answers recorded, final number of changes set.
+4. Re-presentation, on the panel's date.
+5. 2026-11-30: data collection done.
+6. 2026-12-18: the rest of the system and the evaluation done.
+7. 2027-01-08: full draft to the adviser.
+8. By 2027-01-31: final defense.
+
+**What must change outside this file:** FINAL's Gantt chart and every "16 changes" in FINAL and the other
+submission documents. The Gantt change probably needs the adviser's approval. Not done.
+
+**Cost if wrong:** if the spike shows even the class C set cannot be captured in time, the evaluation rests
+on fewer positive cases and says so, or the date moves toward March. Both are recoverable only if the
+spike runs on time.
+
+## 2026-09-29 - Build DC-01, with a test that makes network logons (item 21, option 1)
+
+**Decision, by the student, chat 27d2595d:** build `DC-01` as `lab/blueprint.md` Tier B specifies (Server
+2022 Evaluation, AD DS and DNS, 2 vCPU, 6 GB, 60 GB, on F:). WIN-EP-01 joins the domain. DC-01 gets its own
+Wazuh agent, because 4768 and 4769, and 4776 for domain accounts, are written on the domain controller. A
+test that makes network logons during every capture window is designed and added to the pinned test list.
+All of it happens **before the golden snapshot**.
+
+**Why.** The archive count on 2026-09-26 found 4768, 4769 and 4776 at zero on every date and 0 network
+logons among 2,892 (OPEN-QUESTIONS 21). C2, C4, C6 and C7 have nothing to act on without a domain. With
+the value keying below, about 7 class C changes become measurable instead of 0. The golden snapshot does
+not exist yet, so joining the domain now costs no re-taken snapshot.
+
+**What it costs.** One to two days to build (item 21's estimate, `(unverified)`), plus designing the
+network-logon test, which does not exist. Two blueprint rules change: DC-01 is no longer "optional", and
+the rule "suspend all Tier B VMs during actual capture runs" cannot apply to it, because the capture needs
+it running. The blueprint budget for Tier A and B fits (49 GB of 64). The Server 2022 evaluation period is
+180 days `(unverified)`, which from October 2026 ends after the January target.
+
+**For the defense:** the student must explain Kerberos ticket requests (4768, 4769) and NTLM credential
+validation (4776). The class C changes need that knowledge anyway.
+
+**Cost if wrong:** one to two days and a larger lab. If the network-logon test cannot be built, C2 and C4
+still see zero before and zero after.
+
+## 2026-09-29 - The event key adds values for a short list of fields; Sysmon records `lsass.exe` access; C3 uses `RunAsPPL = 2` (item 18; supersedes in part 2026-09-04)
+
+**Decision, by the student, chat 27d2595d, in three parts:**
+
+1. **Value keying for a short list of fields.** For those fields the key records the value, grouped into a
+   few classes, not only that the field was filled. A field is keyed by value only when detection rules
+   match on specific values of it (item 18, option 1). The final list is set after the C3 capture.
+   Candidates from the catalogue, `(unverified)` until then: 4624 `LogonType` (C1, C5), 4624
+   `LmPackageName` (C2), Sysmon 10 `GrantedAccess` (C3, C8), and the 4768 and 4769 ticket encryption type
+   (C7). This also fixes `DEFAULT_TRACKED_FIELDS`, which tracks 4776 `PackageName`, a field that never
+   changes, and does not track 4624 `LmPackageName` or 4768 and 4769 at all.
+2. **An `lsass.exe` rule in the Sysmon `ProcessAccess` section.** The pinned config records no Event 10
+   today (0 of 14,102 Sysmon events). The config hash changes, so the pinned table below is updated before
+   the golden snapshot. The added event volume is not measured, and the config's own comment warns about
+   load.
+3. **C3 uses `RunAsPPL = 2` in the lab**, stated as a deviation from CIS Windows 11 Enterprise v5.1.0
+   18.9.27.2, which requires the UEFI lock (value `1`). Value `1` writes a UEFI variable the registry
+   cannot undo, and whether a snapshot revert clears it is untested. Microsoft's LSA protection page says
+   LSASS runs as a protected process with or without the lock.
+
+**Why.** Six of the eight class C changes change a value, not whether a field is filled (OPEN-QUESTIONS 18).
+The key as built on 2026-09-04 records presence only, so `GrantedAccess` going from one number to another
+leaves the key and the count the same, and the analyser reports UNCHANGED. The value change is the blind
+spot in those cases. The 2026-09-04 entry says key format changes are cheap only while no real runs exist,
+which is still true today.
+
+**What it supersedes:** 2026-09-04's rule that the key records "that" a field carried a value and never
+"which" value, for the listed fields only. Every other field is still keyed by presence. 2026-09-04's
+honest limit applies here too: better keys help the naive method equally.
+
+**What must change, before the re-presentation:** `eventkey.py` and its tests; the event key definition in
+FINAL Module 2, the activity diagram, the diagram explainer, the panel response, the revisions list and
+PROMPT-new-chat section 4; and the `key-values` check in `tools/check_docs.py`, which today flags any key
+defined by values. Not done.
+
+**Still open inside item 18:** which registry key the C3 script sets, Microsoft's direct key or the CIS
+policy key (item 18, consequence 3).
+
+**For the defense:** the rule to explain is "a field is keyed by value only when a detection rule matches
+on its value".
+
+**Cost if wrong:** more keys, so fewer of them reach 30 events (item 25's power question). Grouping values
+into a few classes limits this; the spike measures it.
+
+## 2026-09-29 - Process creation and credential validation auditing go into the golden snapshot (item 20)
+
+**Decision, by the student, chat 27d2595d:** before the golden snapshot, WIN-EP-01 audits Process Creation
+(success) with `ProcessCreationIncludeCmdLine_Enabled = 1`, and audits Credential Validation. DC-01 audits
+Credential Validation too, because domain 4776 events are written there. The exact success and failure
+settings follow the CIS benchmark the catalogue cites, matched when the script is written.
+
+**Why.** 200 process starts produced 0 Security 4688 events, because Process Creation auditing is off, and
+the proposal's main key example is a 4688 key (OPEN-QUESTIONS 20). The endpoint is also out of line with
+the CIS control that OPEN-QUESTIONS 1 cites. 2,285 local credential checks produced 0 4776 events,
+probably because Credential Validation is off; **check it first** inside the guest with
+`auditpol /get /subcategory:"Credential Validation"`.
+
+**What it costs:** more events per window. Each harness `vmrun` guest call probably writes a 4776 as well as
+its batch logon (item 26, `(unverified)`), so the harness must count its own calls.
+
+**Cost if wrong:** low while no snapshot exists. After the golden snapshot, changing it means taking the
+snapshot again.
+
 ## 2026-09-28 - The whole-profile chi-square is reported, not a filter. Every event key is tested (item 29, finding 1)
 
 **Decision, approved by the student:** the chi-square test over the whole profile no longer decides
@@ -496,6 +628,9 @@ before being installed. The 2026-08-28 originals are kept as `*.2026-08-28.svg.b
 them. Details and the full finding list are in WORKLOG 2026-09-09.
 
 ## 2026-09-04 - The unit of analysis is (event type + populated tracked fields), not event type alone (closes OPEN-QUESTIONS 1b)
+
+**Superseded in part, 2026-09-29:** for a short list of fields the key now records the value, grouped
+into a few classes, not only presence. See the 2026-09-29 entry on item 18. Not built yet.
 
 **Decision:** an analysis key is the event type **plus which tracked fields were actually
 populated**, written `Security-4688[CommandLine,NewProcessName]`. Chosen over the simpler

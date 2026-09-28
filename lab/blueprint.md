@@ -63,6 +63,12 @@ Tier A + B = 18 vCPU, 37 GB. Plus 12 GB host = 49 GB of 64. Fits with margin.
 **Rule: suspend all Tier B VMs during actual capture runs.** Concurrent VM
 activity is a variance source, and variance is the thing T1 is measuring.
 
+**Changed 2026-09-29: DC-01 is no longer optional.** The student decided to build it
+(`docs/DECISIONS.md` 2026-09-29, OPEN-QUESTIONS 21), with its own Wazuh agent and a test that
+makes network logons, before the golden snapshot. The rule above cannot apply to DC-01: the
+capture needs it running, so its activity is part of every run, control runs included. The rule
+still applies to the other Tier B VMs.
+
 ### The orchestrator is not a VM
 
 `vmrun` lives on the Windows host. Run the Python harness on the host directly,
@@ -231,7 +237,9 @@ VMware Tools installed.
 ### Run count and time budget
 
 Per T1's stated design: 16 changes × (3 pre + 3 post) = 96, plus 5 control runs
-= **101 capture windows** minimum.
+= **101 capture windows** minimum. **Scope changed 2026-09-29:** every measurable class C change
+is kept and the rest reduced, and the spike sets the final number (`docs/DECISIONS.md`), so the
+real count will be lower. The per-run arithmetic below still applies.
 
 Estimated wall clock per run `(unverified — measure this in week 1)`:
 
@@ -376,13 +384,14 @@ capture".
 
 - `lab/configs/sysmonconfig.xml:472` has an empty `ProcessAccess` include list, so Sysmon records no
   Event 10 at all: 0 of 14,102 Sysmon events in the archive. Both C3 and C8 state their effect as
-  Event 10. Adding an `lsass.exe` rule changes the pinned config hash. Not decided.
+  Event 10. Adding an `lsass.exe` rule changes the pinned config hash. **Decided 2026-09-29: add
+  the rule** (`docs/DECISIONS.md`). Not done yet.
 - Microsoft's LSA protection page: `RunAsPPL = 1` stores the setting in a UEFI variable on Secure
   Boot machines, and the registry can no longer turn it off. `RunAsPPL = 2` gives the same protection
   without the variable, enforced on Windows 11 22H2 and later. WIN-EP-01 has Secure Boot on and runs
-  24H2. Whether a snapshot revert resets the variable is unknown, so **the lab should use `2`**, a
-  recommendation not yet decided. What CIS 18.9.27.2 requires exactly, with or without the lock, is
-  not checked.
+  24H2. Whether a snapshot revert resets the variable is unknown, so **the lab should use `2`**.
+  **Decided 2026-09-29: `2`** (`docs/DECISIONS.md`). What CIS 18.9.27.2 requires was checked later
+  on 2026-09-26, next bullet.
 - **Checked later on 2026-09-26: CIS requires the lock.** CIS Windows 11 Enterprise v5.1.0, 18.9.27.2:
   "Enabled: Enabled with UEFI Lock", audited as `HKLM\SOFTWARE\Policies\Microsoft\Windows\System`,
   `RunAsPPL = 1`, the 24H2 policy location. So `2` is a **stated deviation** from the benchmark, and
@@ -484,7 +493,7 @@ Total footprint: under 10 GB. Both topics run on a laptop.
 | 2 | Golden snapshot. Config S / Config N snapshots. Write the `vmrun` harness (steps 1–11 above). |
 | 2 | **Run the spike (Section 7). Record Q1 to Q6.** |
 | 2 | **Decide scope from the spike** (`docs/OPEN-QUESTIONS.md` item 25). The topic is settled: T1, no fallback (`docs/DECISIONS.md` 2026-09-26). *(Until 2026-09-28 this row read "Go/no-go decision on T1 vs T3", and a further row planned T3's build.)* |
-| 3+ | The data collection campaign, then the dependency index, impact scoring and the interface. The statistical engine exists since 2026-08-31. Data collection was to start no later than end of September 2026. |
+| 3+ | The data collection campaign, then the dependency index, impact scoring and the interface. The statistical engine exists since 2026-08-31. Data collection was to start no later than end of September 2026; that slipped. Since 2026-09-29 the target is a final defense by the end of January 2027, with dated checkpoints in `docs/STATUS.md`. DC-01 is now built before the golden snapshot, so it goes between the week 1 and week 2 rows above. |
 
 ---
 

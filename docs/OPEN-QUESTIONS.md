@@ -78,7 +78,9 @@ authentication control, and it is a **stated limitation**: the findings generali
 authentication telemetry, not to hardening in general.
 
 **Still needed:** two more changes to reach 16, and every remaining `(unverified)` ID resolved
-before data collection begins. Current total is 14.
+before data collection begins. Current total is 14. **2026-09-29: the count no longer has to reach
+16.** Scope now keeps every measurable class C change and reduces the rest (`DECISIONS.md` 2026-09-29,
+item 25); the IDs of the changes kept must still be verified.
 
 **Why it matters:** Four items in the catalogue in `lab/blueprint.md` section 8 are the
 **opposite** of what the benchmarks require, verified 2026-08-20:
@@ -136,8 +138,9 @@ labeled set.
 **Status:** Open. Raised 2026-09-12 during a documentation sweep. **Ranked above item 18 because
 item 18's recommended fix does not reach this problem.** **The check ran 2026-09-26 and confirmed
 it: 4768, 4769 and 4776 are zero on every archive date, and the lab has never made a network
-logon.** Results in "The check, run 2026-09-26" below. What remains open is the choice among the
-four ways out, which is the student's.
+logon.** Results in "The check, run 2026-09-26" below. **Decided 2026-09-29: option 1, build DC-01,
+with its own Wazuh agent and a test that makes network logons, before the golden snapshot**
+(`DECISIONS.md` 2026-09-29). Open until it is built and the test exists.
 
 **What was verified.**
 
@@ -273,7 +276,7 @@ occur 4 to 14 times a day (type 2) or never (type 10).
    what was measured.
 
 **Recommendation: 1, conditional on the check**, with 3 as the fallback if there is no time left
-to rebuild the golden image.
+to rebuild the golden image. **Chosen 2026-09-29: option 1** (`DECISIONS.md`).
 
 **What a bad answer means:** if the count comes back at zero and nothing changes, the experiment
 runs to completion and reports that hardening does not create blind spots. That is the worst
@@ -287,8 +290,9 @@ collection.
 ## 25. Can the capture campaign finish by the deadline, and will enough keys be testable?
 
 **Status:** Open. Raised 2026-09-13 in a "will this thesis survive" assessment and recorded 2026-09-14
-before a session was compacted. **Nothing below is decided.** These are recommendations, and the
-student has not accepted or rejected them.
+before a session was compacted. **The target and the scope rule were decided 2026-09-29** (section at
+the end of "State of the schedule" below, and `DECISIONS.md`). The recommendations above that point are
+kept as the record of what was advised.
 
 **Tripwire checked 2026-09-26: the condition is met, and scope is still not cut.** No capture window
 has run. Evidence on this machine: no commit after 2026-09-14; `data/runs/` holds only `.gitkeep`;
@@ -330,6 +334,17 @@ running the spike take about 4 to 6 days without DC-01, and more with it. **Reco
 still open: tell the adviser now that the start has slipped, with a new date, rather than on
 1 October.** The student has not said this was done.
 
+### Decided 2026-09-29: a January 2027 target and a scope rule
+
+The student stated the school's deadline for the final thesis, **4 June 2027**, and chose a target of a
+**final defense by the end of January 2027** (March 2027 was recommended). Scope keeps every measurable
+class C change (about 7 with DC-01 and value keying); the graphical interface is reduced first, then the
+class B negative controls, never to zero; the spike, by 2026-10-31, sets the final number. Eight dated
+checkpoints are in `STATUS.md`. Details and the stated risk in `DECISIONS.md` 2026-09-29.
+
+**Still open in this item:** the adviser message (checkpoint 1), the new Gantt chart in FINAL, and the
+spike's power question below.
+
 ### A second problem inside the same numbers: statistical power
 
 `MIN_PRE_COUNT = 30` (`differential.py`) over **3** pre-change runs means a key needs about **10
@@ -348,7 +363,9 @@ too thin to support its precision and recall claims. Both are recoverable only i
 
 ## 20. WIN-EP-01 does not audit process creation, and two headline claims depend on it
 
-**Status:** Open. Raised 2026-09-11, measured while testing item 19.
+**Status:** Open. Raised 2026-09-11, measured while testing item 19. **Decided 2026-09-29: "yes"
+below, plus Credential Validation, on WIN-EP-01 and DC-01, before the golden snapshot**
+(`DECISIONS.md` 2026-09-29). Open until applied and checked inside the guest.
 
 **What was measured.** 200 process spawns across three test runs produced **zero** Security 4688
 events. Confirmed directly rather than inferred from their absence:
@@ -511,7 +528,10 @@ not create blind spots, which would be an artifact of the key design and not a f
 world. **2026-09-26: the capture below was stopped before it started, because it cannot work as
 written.** The pinned Sysmon config never records Event 10, and `RunAsPPL = 1` locks itself into the
 endpoint's firmware. See "Checked before the capture, 2026-09-26" at the end of this item. Two
-decisions come first.
+decisions come first. **Decided 2026-09-29, all three parts** (`DECISIONS.md` 2026-09-29): option 1
+below, value keying for a short list of fields, with the final list set after the C3 capture; an
+`lsass.exe` rule in the Sysmon config; and `RunAsPPL = 2`, stated as a deviation from CIS. Open until
+built; the C3 capture below is still the next step, now possible once the Sysmon rule is in.
 
 **Answer item 21 first.** This item was the most serious in the file until 2026-09-12, when item 21
 found that the two changes it leaves measurable, C4 and C6, both need a domain controller that does
@@ -674,8 +694,9 @@ PDF needs a CIS login:
    is **not checked**. Settle it before the C3 script is written, from Microsoft's `LocalSecurityAuthority`
    policy CSP page or by setting the policy in `gpedit` and reading the key.
 
-**Recommendation, not decided:** use `2` and state the deviation. The alternative is `1`, only after a
-throwaway VM shows that a snapshot revert clears the firmware variable.
+**Recommendation:** use `2` and state the deviation. The alternative is `1`, only after a
+throwaway VM shows that a snapshot revert clears the firmware variable. **Decided 2026-09-29: `2`**
+(`DECISIONS.md`).
 
 **Submission documents outside the repo that carry the old form, not changed:**
 - `T1-PANEL-RESPONSE.md:340`, the worked example: "After setting `RunAsPPL = 1`, read what Sysmon Event

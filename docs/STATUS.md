@@ -1,115 +1,114 @@
 # STATUS
 
 Current blockers and dates. This file changes often. CLAUDE.md does not.
-Last updated: 2026-09-28, end of day (from git log)
+Last updated: 2026-09-29 (from git log)
 
 Every item here must also exist in OPEN-QUESTIONS.md or DECISIONS.md. This file only
 says which ones matter right now.
 
 ---
 
-## Deadline
+## Deadline and target
 
-Data collection must start no later than end of September 2026. On 2026-09-28 nothing has been
-captured, and there is no harness, no golden snapshot and no spike result, so that start date
-will be missed. **Recommended (2026-09-26, not yet done): tell the adviser now, with a new date,
-rather than on 1 October.** Recorded in OPEN-QUESTIONS 25.
+- **School deadline for the final thesis: 4 June 2027** (stated by the student 2026-09-29).
+- **Target: final defense by the end of January 2027** (DECISIONS.md 2026-09-29). March 2027 was
+  recommended; January was chosen, with the risk stated: four months, the same length as the Gantt plan
+  that slipped, with more work in it. One missed checkpoint moves the defense to February or later.
+- The earlier target, a final defense in December 2026 (FINAL's Gantt), slipped at its first lab rows:
+  no capture run exists.
+- **The re-presentation:** the panel said it will focus on the **activity diagram** (student, 2026-09-29).
+  The date is not set; it is the panel's. Recommended, not decided: run the full data collection only
+  after the panel approves the diagram, and run the spike before the re-presentation if the date allows.
 
-## Decisions waiting on the student
+## Checkpoints (proposed 2026-09-29, dates are estimates)
 
-Nothing below can move until these are made. Each one goes into DECISIONS.md.
+| By | Done when |
+|---|---|
+| 2026-10-09 | Adviser told of the slip and the January target; re-presentation date requested |
+| 2026-10-23 | DC-01 built, WIN-EP-01 joined, Sysmon `lsass.exe` rule and audit settings in place, value keying coded and tested, network-logon test designed, golden snapshot taken |
+| 2026-10-31 | Spike run, six answers recorded, final number of changes set |
+| panel's date | Re-presentation |
+| 2026-11-30 | Data collection done |
+| 2026-12-18 | Rest of the system (impact scoring, remediation, reports) and the evaluation done |
+| 2027-01-08 | Full draft to the adviser |
+| 2027-01-31 | Final defense |
 
-1. **Item 21, the domain controller.** Build DC-01 (plus a stimulus that makes network logons),
-   a file server only, re-scope to local-only changes, or report the restriction.
-2. **Item 25, scope.** The number of changes to test, replacing "16" in FINAL and two other
-   documents, and new dates for FINAL's Gantt chart.
-3. **Item 18, Sysmon and LSA Protection.** Add an `lsass.exe` rule to the Sysmon config or drop
-   C3 and C8; `RunAsPPL = 1` (CIS, firmware lock) or `2` (a stated deviation).
-4. **Item 20, the audit baseline.** Turn on process creation auditing, and probably Credential
-   Validation, before the golden snapshot, or rewrite the 4688 examples.
-5. **Item 24, empty control runs.** The diagram now draws the check; build it in code or state it
-   as a limit.
-6. **Item 15, the Word file.** A Word copy of FINAL with the four current figures, best made after
-   decisions 1 and 2.
+If a checkpoint is missed: cut in the decided order (the graphical interface first, then class B negative
+controls), and record the miss in WORKLOG the same day.
 
-Recommended order: 1, then 2, then 3 and 4 (both change the golden snapshot), then the harness and
-the spike.
+## Decided 2026-09-29 (details in DECISIONS.md)
 
-## Most urgent: scope (OPEN-QUESTIONS item 25)
+1. **Item 21:** build DC-01, with its own Wazuh agent and a test that makes network logons, before the
+   golden snapshot.
+2. **Item 18:** value keying for a short list of fields (final list after the C3 capture); an `lsass.exe`
+   rule in the Sysmon config; C3 uses `RunAsPPL = 2`, a stated deviation from CIS 18.9.27.2.
+3. **Item 20:** Process Creation auditing with command line, and Credential Validation auditing, go into
+   the golden snapshot.
+4. **Item 25:** target January 2027; keep every measurable class C change; cut the graphical interface,
+   then class B, first; the spike sets the final number.
 
-The 2026-09-22 date check has passed, and its condition is met: **no capture window has run.**
-The capture harness (runbook Phase 6) does not exist, `data/runs/` is empty, and the lab VMs
-were not powered on between 2026-09-11 and 2026-09-26. Evidence in WORKLOG 2026-09-26.
-Item 25 recommends a scope cut in this case. **Scope is not cut. No decision is in
-DECISIONS.md.** It is the student's decision. With no fallback topic, scope is the only lever
-left.
+**None of it is built.** Each is work for checkpoint 2.
+
+## Next, in order
+
+1. **Tell the adviser** (checkpoint 1). The student sends it.
+2. **Study the activity diagram** for the re-presentation. For each box, know: built, designed only, or
+   waiting on a decision. `ACTIVITY-DIAGRAM-EXPLAINED.md` in the thesis folder.
+3. **Build DC-01 and join WIN-EP-01**; apply the Sysmon rule and the audit settings; code value keying.
+4. **Update the documents the decisions changed**, before the re-presentation: the event key definition
+   in FINAL Module 2, the diagram and its explainer, the panel response, the revisions list; FINAL's Gantt
+   chart, every "16 changes", and the standalone-lab limitation, which DC-01 changes (WORKLOG 2026-09-28).
+5. Golden snapshot, a minimal harness, one capture window by hand as a trial, then the spike.
+
+## Still waiting on the student
+
+- **Item 24, empty control runs.** The diagram draws the check; build it in code or state it as a limit.
+- **Item 30, field-loss pairing.** Connect it to `analyse()` and the report, or say it is demo-only.
+- **Item 15, the Word file.** A Word copy of FINAL with the four current figures, after the document
+  updates in "Next" step 4.
 
 ## The spike
 
-T1 is approved and final. There is **no fallback** (DECISIONS.md 2026-09-26). The spike has
-still not run. Since 2026-09-28 it answers six questions, not two (runbook Phase 7): run-to-run
-variance, wall clock, zero findings on control-versus-control pairs, how many keys reach 30
-events, the stimulus fingerprint's spread, and the extra reboot's effect. If it shows T1
-cannot finish in time, the answer is scope (item 25), not a different topic.
+T1 is approved and final. There is **no fallback** (DECISIONS.md 2026-09-26). The spike has not run. It
+answers six questions (runbook Phase 7): run-to-run variance, wall clock, zero findings on
+control-versus-control pairs, how many keys reach 30 events, the stimulus fingerprint's spread, and the
+extra reboot's effect. Its result sets the number of changes (DECISIONS.md 2026-09-29).
 
-## Live blocker: OPEN-QUESTIONS item 21
+## Why nothing was measurable (items 21 and 18, now decided)
 
-Raised 2026-09-12. Every class C hardening change is an authentication control, and there
-is **no domain controller**. `DC-01` is Tier B and was never built.
-**The archive count ran 2026-09-26 and confirmed it:** 4768, 4769 and 4776 are zero on every
-date, and the lab has **never made a network logon** (0 of 2,892 logons). C2, C4, C6 and C7
-have nothing to act on. **Now a decision for the student** among item 21's four ways out.
-Building DC-01 alone is not enough: the test suite must also make network logons.
-
-**As configured on 2026-09-26, no class C change is measurable on this lab.** Item 21 removes
-C2, C4, C6 and C7; the Sysmon finding below removes C3 and C8; C1 and C5 need logons that are
-rare or absent.
-
-## Second: OPEN-QUESTIONS item 18
-
-Six of the eight class C changes state a telemetry effect that is a *value change*, and the
-analyser records which fields were **populated**, not what they contained. Only C4 and C6
-are rate changes, and item 21 shows both of those need the missing domain. Value keying
-cannot rescue an event that never fires.
-The planned capture (`RunAsPPL`, then read `GrantedAccess`) **cannot run as written**, found
-2026-09-26 before WIN-EP-01 was touched: the pinned Sysmon config records **no Event 10 at all**
-(0 of 14,102 Sysmon events), and `RunAsPPL = 1` writes a UEFI firmware variable the registry
-cannot undo. Two decisions first: add an `lsass.exe` rule to the Sysmon config or drop C3 and
-C8, and use `RunAsPPL = 2` in the lab. **CIS 18.9.27.2 (Windows 11 Enterprise v5.1.0) requires
-the lock, value `1`**, so `2` would be a stated deviation (item 18).
+On 2026-09-26: 4768, 4769 and 4776 were zero on every archive date, and the lab never made a network
+logon (0 of 2,892). The pinned Sysmon config records no Event 10 (0 of 14,102 Sysmon events). So, as
+configured then, **no class C change was measurable.** The 2026-09-29 decisions fix this on paper; about 7
+class C changes become measurable once they are built.
 
 ## Also open
 
-- Item 1, the catalogue. Rebuilt on 2026-09-08, but it holds 14 of the 16 changes and several
-  control IDs are still `(unverified)`. It still blocks data collection.
-- Item 26, new 2026-09-26. The harness's own `vmrun` guest calls most likely write a batch
-  logon each, inside every capture window: 1,641 of them on 2026-09-02. Count and record them.
-- Item 27, new 2026-09-26. The host's VMware network adapters broke twice with no known
-  cause. Repaired, but the harness must check the path to SIEM-01 before each run.
-- Item 28, new 2026-09-26. Events written before the Wazuh agent starts never reach the
-  archive, so boot-time checks such as Wininit event 12 must be made inside the guest.
-- Item 23, reframed 2026-09-28. With the chi-square no longer a filter, only Benjamini-Hochberg
-  guards against false findings. The spike must run `analyse()` on control-versus-control pairs
-  and find none.
-- Documents outside the repo still conflict with the 2026-09-26 findings on points that wait
-  on the student's decisions: "16 changes", the September Gantt rows, and the standalone-lab
-  limitation. See WORKLOG 2026-09-28.
-- Item 30, new 2026-09-28. Field-loss pairing is built and tested (`field_loss_pairs()`), but
-  `analyse()` and the report never call it; only `src/demo.py` does. The diagram draws it inside
-  the flow.
+- Item 1, the catalogue. 14 changes; several control IDs still `(unverified)`. It still blocks data
+  collection. The count no longer has to reach 16.
+- Item 26. The harness's own `vmrun` guest calls most likely write a batch logon each, inside every capture
+  window: 1,641 on 2026-09-02. With Credential Validation on, probably a 4776 each too.
+- Item 27. The host's VMware network adapters broke twice with no known cause. The harness must check the
+  path to SIEM-01 before each run.
+- Item 28. Events written before the Wazuh agent starts never reach the archive, so boot-time checks such
+  as Wininit event 12 must be made inside the guest.
+- Item 23. The spike must run `analyse()` on control-versus-control pairs and find none.
+- Item 22. The stimulus is asserted identical across runs and never verified.
 
 ## Lab state
 
-- No lab VM was running on 2026-09-28 (`vmrun -T ws list`: `Total running VMs: 0`). SIEM-01 had
-  been booted 2026-09-26 for the item 21 check. Check with `vmrun` rather than trusting this line.
+- No lab VM was running on 2026-09-28 (`vmrun -T ws list`: `Total running VMs: 0`). Check with `vmrun`
+  rather than trusting this line.
 - Host VMnet2 is at `10.20.10.1` again after a hand repair (item 27). Pre-flight now checks it.
+- DC-01 does not exist yet.
 
 ## Recently settled (details in DECISIONS.md)
 
-- 2026-09-28: four decisions closing item 29. The whole-profile chi-square is reported, not a
-  filter, and every key is tested. One attack-test list is pinned in Phase 0. Remediation is two
-  levels. Fixes are applied by script. Code: 58 tests passing.
+- 2026-09-29: four decisions: January 2027 target and the scope rule; build DC-01; value keying, the Sysmon
+  `lsass.exe` rule and `RunAsPPL = 2`; process creation and credential validation auditing.
+- 2026-09-28: four decisions closing item 29. The whole-profile chi-square is reported, not a filter, and
+  every key is tested. One attack-test list is pinned in Phase 0. Remediation is two levels. Fixes are
+  applied by script. Code: 58 tests passing.
 - 2026-09-26: T1 is the final thesis. There is no fallback topic.
 - 2026-09-14: the title is the panel's wording verbatim (item 0).
-- 2026-09-14: the system is a Python application with a graphical interface beside the
-  SIEM, not a web application (item 17).
+- 2026-09-14: the system is a Python application with a graphical interface beside the SIEM, not a web
+  application (item 17).

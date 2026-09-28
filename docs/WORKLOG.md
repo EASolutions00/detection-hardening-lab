@@ -17,6 +17,56 @@ Next:
 
 ---
 
+## 2026-09-29 - Four decisions: January 2027 target, DC-01, value keying, audit settings
+
+Chat 27d2595d, after `ba3506d`.
+
+**New facts from the student:**
+- The panel said the re-presentation will focus on the **activity diagram**. Its date is not set.
+- The school's deadline for the final thesis is **4 June 2027**. The earlier target, a final defense in
+  December 2026 (FINAL's Gantt), did not hold. The student wants to finish the course as soon as possible.
+- None of this was in the repo before today.
+
+**Advice given, not decided:**
+- Do not run the full data collection before the re-presentation. Every compared run must carry the same
+  hashed settings, so a method change asked for by the panel would force every earlier run to be repeated.
+- Run the spike before the re-presentation if the date allows. The spike can change numbers in the diagram
+  (the "3 valid runs" loop may become 5 for the before phase, the per-run tolerance, a guard from the
+  control-versus-control check, the extra reboot), probably not its steps `(unverified)`.
+- Study the diagram now, and ask for the re-presentation date now.
+
+**Why the plan slipped, from the record:** no commit between 2026-09-14 and 2026-09-26; the lab VMs not
+started from 2026-09-11 to 2026-09-26; every commit from 26 to 28 September changed documents, diagrams or
+analysis code, and the only lab work was reading SIEM-01's archive and the Sysmon config. Four decisions
+that set the golden snapshot stayed open. The assistant ran four full sweeps on request without saying they
+did not move the lab; the last two found only disagreements between documents. Recommended, not decided:
+make the decisions this week, start every session with a runbook step, no more full sweeps until the spike,
+one capture window by hand before the full harness, send the checkpoints to the adviser, and optional
+scheduled reminders on the checkpoint dates.
+
+**Decided, by the student, all in `DECISIONS.md` 2026-09-29:**
+1. Item 21: build DC-01, with its own Wazuh agent and a test that makes network logons, before the golden
+   snapshot.
+2. Item 18: value keying for a short list of fields, final list after the C3 capture; an `lsass.exe` rule in
+   the Sysmon config; `RunAsPPL = 2`, a stated deviation from CIS 18.9.27.2.
+3. Item 20: Process Creation auditing with command line, and Credential Validation auditing, in the golden
+   snapshot.
+4. Item 25: target a final defense by the end of January 2027 (March 2027 was recommended; the risk was
+   stated first). Keep every measurable class C change; reduce the graphical interface first, then class B,
+   never to zero; the spike by 2026-10-31 sets the number. Eight checkpoints in `STATUS.md`.
+
+**Records changed:** `DECISIONS.md` (four entries, and a superseded-in-part note on 2026-09-04);
+`STATUS.md` rewritten around the target and the checkpoints; OPEN-QUESTIONS 1, 18, 20, 21 and 25;
+`lab/blueprint.md` (DC-01 no longer optional and the suspend rule's exception, the C3 notes, the run count,
+the build order); `thesis/T1/README.md`; `PROMPT-new-chat.md` sections 1, 4 and 5.
+
+**Not changed, on purpose:** no code, and nothing in the thesis folder outside the repo. FINAL's Gantt chart,
+every "16 changes", the event key definition in FINAL and the diagram, and the standalone-lab limitation
+must change before the re-presentation; listed in `STATUS.md`, "Next", step 4.
+
+**Next:** checkpoint 1, by 2026-10-09: the student tells the adviser about the slip and the January target
+and asks for the re-presentation date.
+
 ## 2026-09-28 (seventh) - Second record check: two methods existed only in the scratchpad; one stale demo value
 
 Chat 27d2595d, after `6a28147`.
