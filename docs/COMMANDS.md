@@ -871,6 +871,31 @@ ssh -i $key eli@10.20.10.10 "sudo -n /usr/local/sbin/telos-archive show /home/el
 | **Traps** | A pattern file with Windows line endings matches nothing, because the `\r` becomes part of the pattern. Check with `od -c`. `dated-list` exits `1` even when it works, from its last test line. SIEM-01's dates are UTC, so a morning run in the Philippines lands on the previous date. **A loop passed inline from PowerShell to `ssh` loses its quotes and spaces** and the output runs together. Put the loop in a `.sh` file with Unix line endings, `scp` it, and run `ssh ... "bash /home/eli/item21/count.sh"`. |
 | **Safe to re-run** | Yes. Read only. |
 
+**Grouping the downloaded logons (added 2026-09-28).** This is the step that produced the logon table
+in OPEN-QUESTIONS 21. Run it in Git Bash in the folder holding the `e4624-<date>.jsonl` downloads:
+
+```bash
+.venv/Scripts/python.exe - <<'EOF'
+import json, glob, collections
+for f in sorted(glob.glob("e4624-*.jsonl")):
+    c = collections.Counter()
+    for line in open(f, encoding="utf-8-sig"):
+        if line.strip():
+            e = json.loads(line)["data"]["win"].get("eventdata", {})
+            c[(e.get("logonType"), e.get("authenticationPackageName"), e.get("targetUserName"))] += 1
+    print(f, sum(c.values()))
+    for (t, pkg, user), n in c.most_common():
+        print(f"  {n:5d} type={t} pkg={pkg} user={user}")
+EOF
+```
+
+| | |
+|---|---|
+| **What** | Counts the downloaded 4624 events by logon type, authentication package and target user. Reads files only. |
+| **Why** | A search pattern can give a false zero. `"authenticationPackageName":"NTLM"` returned 0 because the local package is named `MICROSOFT_AUTHENTICATION_PACKAGE_V1_0`. Grouping shows every value that occurs, and the groups must add up to the 4624 total. |
+| **Correct result** | On the 2026-09-02 download: `1764`, then `1641 type=4 pkg=MICROSOFT_AUTHENTICATION_PACKAGE_V1_0 user=eli`, `119 type=5 pkg=Negotiate user=SYSTEM`, `4 type=2 pkg=Negotiate user=eli`. Re-run and matched on 2026-09-28. |
+| **Safe to re-run** | Yes. |
+
 ---
 
 ## Part 4: The five commands used from now on
@@ -880,8 +905,20 @@ ssh -i $key eli@10.20.10.10 "sudo -n /usr/local/sbin/telos-archive show /home/el
 ```bash
 .venv/Scripts/python.exe src/demo.py
 ```
-**Correct result.** The noise floor table, the analysis, then the Stage D comparison showing
-naive at 20.0% precision and the proposed system at 100%.
+**Correct result.** The noise floor table, the analysis, then the Stage D comparison:
+`naive differencing  3  7  0  30.0%  100.0%  0.462` and `proposed system  3  0  0  100.0%  100.0%  1.000`.
+Checked 2026-09-28. *(Until then this line said "naive at 20.0% precision", which the demo has not
+printed since its scenario changed.)*
+
+**To refresh `docs/demo-output.txt`**, which the READMEs link to, use Git Bash, not PowerShell:
+
+```bash
+PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe src/demo.py > docs/demo-output.txt
+```
+
+PowerShell's `>` rewrites the encoding and would change every byte of the file. The Git Bash command
+above reproduced the committed file byte for byte on 2026-09-28. Without `PYTHONIOENCODING=utf-8`,
+Python on this host may fail on the non-ASCII characters in the output.
 
 ### Run the tests
 

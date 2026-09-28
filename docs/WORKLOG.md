@@ -17,6 +17,28 @@ Next:
 
 ---
 
+## 2026-09-28 (seventh) - Second record check: two methods existed only in the scratchpad; one stale demo value
+
+Chat 27d2595d, after `6a28147`.
+
+**Did:** a fourth sweep and a second record check, at the student's request. Clean: nothing uncommitted
+or untracked, `58 passed`, LIVE checker hits 13, 8 of 8 figure copies matching, and the C: backup of the
+thesis folder identical to the source file by file (hashes compared).
+
+**Found and fixed:**
+- **Two methods existed only in this chat's temporary scratchpad.** The Python grouping that produced the
+  item 21 logon table was run inline and saved nowhere; it is now in `COMMANDS.md` 3.7, re-run on the saved
+  downloads first, and it reproduced the recorded table exactly (2026-09-02: 1,641 / 119 / 4). The way
+  `docs/demo-output.txt` was refreshed was a scratch script; `COMMANDS.md` Part 4 now gives a Git Bash
+  command, which reproduced the committed file byte for byte before it was recorded.
+- **`COMMANDS.md` Part 4 said the demo shows "naive at 20.0% precision".** The demo prints 30.0% (3 true,
+  7 false), with F1 0.462 against 1.000. Corrected with the exact lines.
+
+**Not copied into the repo, on purpose:** the scratchpad's downloaded events (`e4624-*.jsonl`) and pattern
+files. They are raw lab data, and `data/runs/` policy keeps raw data out of git; the results are in
+OPEN-QUESTIONS 21 and 28, and the method now reproduces them from the SIEM-01 archive, which still holds
+every date.
+
 ## 2026-09-28 (sixth) - End-of-day record check before compaction; gaps filled; thesis folder backed up
 
 Chat 27d2595d, after `35232cc`.
