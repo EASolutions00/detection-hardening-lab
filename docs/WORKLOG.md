@@ -17,6 +17,53 @@ Next:
 
 ---
 
+## 2026-09-28 (sixth) - End-of-day record check before compaction; gaps filled; thesis folder backed up
+
+Chat 27d2595d, after `35232cc`.
+
+**Did:** at the student's request, checked that everything this chat did from 2026-09-26 to 2026-09-28
+is written down where a new chat will find it, then filled the gaps.
+
+**This chat's work, in order, with where each is recorded:**
+
+| When | What | Recorded in |
+|---|---|---|
+| 09-26 | Tripwire of 2026-09-22 checked: met, scope not cut | WORKLOG 2026-09-26; OPEN-QUESTIONS 25; STATUS |
+| 09-26 | Item 21 count: 4768/4769/4776 zero, no network logons; host network repaired | WORKLOG 09-26 (second); OPEN-QUESTIONS 21, 26, 27; COMMANDS 1.3, 1.4, 3.7 |
+| 09-26 | Item 18 capture stopped: no Sysmon Event 10, `RunAsPPL = 1` firmware lock, boot events lost | WORKLOG 09-26 (third); OPEN-QUESTIONS 18, 28; blueprint C3 |
+| 09-26 | CIS 18.9.27.2 requires the UEFI lock | WORKLOG 09-26 (fourth); OPEN-QUESTIONS 18, 1, 4 |
+| 09-26 | `/doctor`: humanizer header, `CLAUDE.md` trim, auto mode declined | WORKLOG 09-28 (first) |
+| 09-28 | First sweep: 18 conflicts, 15 fixed | WORKLOG 09-28 (first) |
+| 09-28 | Diagram check: 13 problems; run checks drawn; gate finding reproduced | WORKLOG 09-28 (second); OPEN-QUESTIONS 15, 22, 24, 28, 29 |
+| 09-28 | Four decisions: chi-square reported not filtered, pinned tests, two remediation levels, fixes by script | DECISIONS 2026-09-28 (four entries); WORKLOG 09-28 (third); OPEN-QUESTIONS 29 answered, 23 reframed |
+| 09-28 | Second sweep: 11 fixes, spike now six questions | WORKLOG 09-28 (fourth); runbook Phase 7; blueprint section 7 |
+| 09-28 | Third sweep: 8 fixes, one hashed-settings list | WORKLOG 09-28 (fifth) |
+
+**Gaps found and filled:**
+- `PROMPT-new-chat.md`, which a new chat reads first, still described the chi-square as deciding the
+  outcome and had nothing on the four decisions, the six-question spike, or the new designed-only parts.
+  Sections 2, 4, 5 and 6 updated.
+- `STATUS.md` had no single list of the decisions waiting on the student. Added, with a recommended order.
+- Only in chat until now, now in OPEN-QUESTIONS 25: the 2026-09-26 recommendation to tell the adviser
+  the start has slipped, and the rough `(unverified)` estimate of 4 to 6 days to a first spike without
+  DC-01.
+- Only in chat until now, now in OPEN-QUESTIONS 21: class B controls B5 and B2 have nothing to remove in
+  this lab `(unverified)`.
+- **New OPEN-QUESTIONS 30:** field-loss pairing is built but not called by `analyse()` or the report. It
+  had been noted only in the explainer and STATUS, which requires a numbered item behind every line.
+
+**Backup:** the whole thesis folder, 30 files and 1,684,956 bytes, copied to
+`C:\Users\Elijah\claude-backups\thesis-folder-end-of-day-2026-09-28\`, a different physical drive from
+E:. Source and copy match in file count and total size. The earlier copies of the four documents from
+before today's edits are in `docs-before-fixes-2026-09-28\` and `docs-before-fixes-2026-09-28-evening\`.
+
+**Not recorded here, on purpose:** a message the student asked for on 2026-09-26 about an account
+application. It is not thesis work.
+
+**What compaction cannot keep:** the back-and-forth reasoning. Every conclusion, decision and open choice
+is in a file; the arguments behind them are in the DECISIONS entries' "Why" and "Cost if wrong", and in the
+private chat archive the hook keeps.
+
 ## 2026-09-28 (fifth) - Third full sweep: 8 problems, all fixed. The hashed-settings list disagreed across documents.
 
 Chat 27d2595d, after `766bd58`.

@@ -232,6 +232,10 @@ zero with `Kerberos` as the package, and `lmPackageName` is empty on every one.*
 - **Option 3 is thinner than it looked.** Type 2 logons, the ones C1 would act on, were 4 to 14 per
   day, far below the 30 pre-change events the analyser needs before it tests a key
   (`MIN_PRE_COUNT`, item 25). The stimulus would have to create them.
+- **The class B negative controls are thin too `(unverified)`, noted 2026-09-28.** B5, Disable Remote
+  Registry, is expected to remove "a 4624 type-3 subset", and this lab has no type 3 logons to
+  remove. B2, Disable SMBv1, removes SMB1 events, and nothing in the lab speaks SMB1. Both would
+  show zero before and zero after unless the stimulus creates that traffic.
 
 **Two things found on the way, not settled.**
 
@@ -316,6 +320,15 @@ the fallback undecided and never chose T2. Since 2026-09-26 there is no fallback
   This also needs the proposal's "16 changes" text changed, so it is a decision for the student and
   possibly the adviser.
 - Impact scoring stated as designed, with a minimal dependency index, if it does not fit.
+
+### State of the schedule on 2026-09-28, and a recommendation not yet acted on
+
+Nothing has been captured. There is no harness, no golden snapshot and no spike result, so data
+collection cannot start by the end of September. A rough estimate given on 2026-09-26 `(unverified,
+not measured)`: deciding items 21 and 18, taking the golden snapshot, building a minimal harness and
+running the spike take about 4 to 6 days without DC-01, and more with it. **Recommended then, and
+still open: tell the adviser now that the start has slipped, with a new date, rather than on
+1 October.** The student has not said this was done.
 
 ### A second problem inside the same numbers: statistical power
 
@@ -733,6 +746,29 @@ loops, and the fingerprint's spread fitted in Phase 0). The diagram also shows w
 voided run: it is recorded and **captured again**, and the loops read "3 valid runs". That last part
 is the diagram's reading, not stated above: `analyse()` requires the same number of runs in both
 phases, so a voided run has to be replaced. Designed, not built.
+
+---
+
+## 30. Field-loss pairing is built but never called by the analysis or the report
+
+**Status:** Open. Found 2026-09-28 while checking the activity diagram. Given a number the same day so
+`STATUS.md` can point at it.
+
+**What was checked.** `field_loss_pairs()` in `eventkey.py` is tested (`tests/test_eventkey.py`), but a
+search of the code finds it called only by `src/demo.py`. Neither `analyse()` in `differential.py` nor
+`report.py` calls it. The activity diagram draws pairing inside Phase 4, and the explainer now labels it
+"the function only".
+
+**Why it matters.** Pairing is how a report says "event 4688 lost the CommandLine field" instead of
+showing an unexplained LOST key beside an unexplained NEW key. Until it is connected, a real run's report
+would show the two keys unpaired, and a panelist reading the diagram would expect otherwise.
+
+**How to answer:** call `field_loss_pairs()` from `analyse()` on the LOST and NEW keys, carry the pairs in
+`AnalysisResult`, print them in `report.py`, and add a test that a stripped field appears as one named
+pair in the result. Or keep it demo-only and say so in the diagram. Not decided.
+
+**What a bad answer means:** the method's showcase capability, seeing a field-level loss, works in the
+demo and not in the product.
 
 ---
 

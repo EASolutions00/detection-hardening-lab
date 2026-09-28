@@ -1,7 +1,7 @@
 # STATUS
 
 Current blockers and dates. This file changes often. CLAUDE.md does not.
-Last updated: 2026-09-28, second update of the day (from git log)
+Last updated: 2026-09-28, end of day (from git log)
 
 Every item here must also exist in OPEN-QUESTIONS.md or DECISIONS.md. This file only
 says which ones matter right now.
@@ -10,7 +10,30 @@ says which ones matter right now.
 
 ## Deadline
 
-Data collection must start no later than end of September 2026.
+Data collection must start no later than end of September 2026. On 2026-09-28 nothing has been
+captured, and there is no harness, no golden snapshot and no spike result, so that start date
+will be missed. **Recommended (2026-09-26, not yet done): tell the adviser now, with a new date,
+rather than on 1 October.** Recorded in OPEN-QUESTIONS 25.
+
+## Decisions waiting on the student
+
+Nothing below can move until these are made. Each one goes into DECISIONS.md.
+
+1. **Item 21, the domain controller.** Build DC-01 (plus a stimulus that makes network logons),
+   a file server only, re-scope to local-only changes, or report the restriction.
+2. **Item 25, scope.** The number of changes to test, replacing "16" in FINAL and two other
+   documents, and new dates for FINAL's Gantt chart.
+3. **Item 18, Sysmon and LSA Protection.** Add an `lsass.exe` rule to the Sysmon config or drop
+   C3 and C8; `RunAsPPL = 1` (CIS, firmware lock) or `2` (a stated deviation).
+4. **Item 20, the audit baseline.** Turn on process creation auditing, and probably Credential
+   Validation, before the golden snapshot, or rewrite the 4688 examples.
+5. **Item 24, empty control runs.** The diagram now draws the check; build it in code or state it
+   as a limit.
+6. **Item 15, the Word file.** A Word copy of FINAL with the four current figures, best made after
+   decisions 1 and 2.
+
+Recommended order: 1, then 2, then 3 and 4 (both change the golden snapshot), then the harness and
+the spike.
 
 ## Most urgent: scope (OPEN-QUESTIONS item 25)
 
@@ -71,6 +94,9 @@ the lock, value `1`**, so `2` would be a stated deviation (item 18).
 - Documents outside the repo still conflict with the 2026-09-26 findings on points that wait
   on the student's decisions: "16 changes", the September Gantt rows, and the standalone-lab
   limitation. See WORKLOG 2026-09-28.
+- Item 30, new 2026-09-28. Field-loss pairing is built and tested (`field_loss_pairs()`), but
+  `analyse()` and the report never call it; only `src/demo.py` does. The diagram draws it inside
+  the flow.
 
 ## Lab state
 

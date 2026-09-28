@@ -62,8 +62,8 @@ Read these five, in order. Expand `REPO` first.
    The current blockers and dates, kept short. Added to this list 2026-09-28.
 
 3. `REPO\docs\OPEN-QUESTIONS.md`
-   Items **1, 15, 18, and 20 to 28** are the live ones (23 reframed as a spike check). All are
-   summarised in section 5. Items 0, 16, 17, 19 and 29 are answered. The file is ranked by damage, so read from
+   Items **1, 15, 18, 20 to 28, and 30** are the live ones (23 reframed as a spike check). All
+   are summarised in section 5. Items 0, 16, 17, 19 and 29 are answered. The file is ranked by damage, so read from
    the top.
 
 4. `REPO\docs\DECISIONS.md`
@@ -106,7 +106,8 @@ Lab design, resource budget, the hardening change catalogue
 The event key, what is counted, field presence
     -> `REPO\src\telos\eventkey.py`
 
-The statistics: gate, rate ratio, correction, classification
+The statistics: capture check, whole-profile chi-square (a summary, not a gate), rate ratio,
+correction, classification
     -> `REPO\src\telos\differential.py`
 
 The noise floor, coefficient of variation, dispersion
@@ -171,16 +172,21 @@ in `REPO\src\telos\` unless stated otherwise.
 - Empty, `-`, `N/A`, `(null)` and `NULL` count as absent. **Numeric zero counts as present.**
   `eventkey.py`, `is_populated()`
 
-- Chi-square runs **once** over the whole 2 by K profile, never per key.
-  `differential.py`, `global_gate()`
+- Chi-square runs **once** over the whole 2 by K profile, never per key, and since 2026-09-28 it
+  is **reported, never a filter**: every key is tested whatever it says. Among 299 steady keys a
+  key falling from 198 events to 0 gave p = 0.999, and the old gate then tested no key.
+  `differential.py`, `global_gate()` and `analyse()`; DECISIONS 2026-09-28
 
-- A run has one of three profile outcomes: **CHANGED, UNCHANGED, NOT_TESTABLE**. Any
-  repetition that recorded zero events in total makes the run NOT_TESTABLE, never LOST. A
-  profile with only one key skips the chi-square and tests that key directly. Since 2026-09-14.
-  `model.py`, `ProfileOutcome`; `differential.py`, `capture_problem()`
+- A run has one of three profile outcomes: **CHANGED, UNCHANGED, NOT_TESTABLE**. Since
+  2026-09-28 the outcome comes from the keys: CHANGED if any key is LOST or REDUCED, UNCHANGED if
+  keys were tested and none is, NOT_TESTABLE if the capture failed or no key had enough events.
+  Any repetition that recorded zero events in total makes the run NOT_TESTABLE, never LOST
+  (since 2026-09-14). A profile with only one key skips the chi-square.
+  `model.py`, `ProfileOutcome`; `differential.py`, `capture_problem()`, `analyse()`
 
-- Classification order is **NEW, then INCONCLUSIVE, then LOST**.
-  `differential.py`, `_test_key()`
+- Classification order is **NEW, then INCONCLUSIVE for fewer than 30 before, then INCONCLUSIVE
+  for a key the control runs never saw (added 2026-09-28), then LOST**.
+  `differential.py`, `_test_key()`; `variance.py`, `VarianceModel.measured()`
 
 - LOST requires the post-change count to be **exactly zero**.
   `differential.py`, `_test_key()`
@@ -204,8 +210,17 @@ in `REPO\src\telos\` unless stated otherwise.
   strict subset.
   `eventkey.py`, `field_loss_pairs()`
 
-- 16 hardening changes, 5 control runs, 3 pre and 3 post per change.
+- 16 hardening changes, 5 control runs, 3 pre and 3 post per change, as designed. The catalogue
+  holds 14, and scope is not decided (item 25). Each phase ends with 3 **valid** runs: a failed
+  run is voided and captured again (design, 2026-09-28).
   `REPO\lab\blueprint.md`
+
+- One attack-test list, window and repetition count, pinned once in Phase 0 for every change.
+  Remediation suggestions are **two levels**: surviving sources and known compensating controls.
+  Fixes are applied **by script**; the accepted baseline is the snapshot plus the scripts.
+  All three are design, `REPO\docs\DECISIONS.md` 2026-09-28.
+
+- The feasibility spike answers **six** questions, not two: runbook Phase 7.
 
 ### Facts that get stated wrong, including in this project's own documents
 
@@ -260,6 +275,11 @@ Item 28 — boot-time evidence
     Wininit events on every date. Boot-time checks, such as Wininit event 12 for LSA
     protection, must be made inside the guest. Cause unverified.
 
+Item 30 — field-level loss works in the demo only
+    `field_loss_pairs()` is built and tested, but `analyse()` and `report.py` never call it; only
+    `src/demo.py` does. The diagram draws pairing inside Phase 4. Connect it or say it is
+    demo-only. Found 2026-09-28.
+
 Item 29 — ANSWERED 2026-09-28, all four fixed by decision
     Chat 4e01d810's four findings all held and are fixed (DECISIONS 2026-09-28): the
     chi-square is a reported summary and every key is tested; one attack-test list is pinned
@@ -303,6 +323,12 @@ Settled 2026-09-14, so do not reopen these
     is a Python application with a graphical interface beside the SIEM, not a web application
     (item 17). The interface toolkit is not decided. Both in `REPO\docs\DECISIONS.md`.
 
+Settled 2026-09-26 and 2026-09-28, so do not reopen these
+    T1 is final, with no fallback topic (2026-09-26). The chi-square is a reported summary and every
+    key is tested; one attack-test list is pinned in Phase 0 and a key the control runs never saw is
+    INCONCLUSIVE; remediation is two levels; fixes are applied by script (all 2026-09-28, closing
+    item 29). All in `REPO\docs\DECISIONS.md`.
+
 Not an item yet — blocks the revisions list
     The REVISED-to-FINAL diff has never been run. Measured 2026-09-10: FINAL is 6,395 words
     against REVISED's 7,742. **Re-measure rather than quoting these.**
@@ -318,7 +344,15 @@ Built and tested, in `REPO\src\telos\`:
 
 Designed only, no code exists:
     the event-key to rule to ATT&CK dependency index, impact scoring, remediation candidate
-    generation, all of Phase 5, and the capture harness that would drive Phases 0 to 3.
+    generation, all of Phase 5, and the capture harness that would drive Phases 0 to 3. Also
+    designed only, added to the diagram 2026-09-28: the check on the control runs (the code's
+    `VarianceModel.from_control()` does not check yet, item 24), the per-run check that voids and
+    re-captures a failed run (item 22), and confirming the change on the host (item 28).
+
+Built but not connected:
+    `field_loss_pairs()` in `eventkey.py` is tested, but `analyse()` and `report.py` never call
+    it; only `src/demo.py` does. The diagram draws pairing inside the flow. Checked 2026-09-28,
+    item 30.
 
 The lab:
     SIEM-01 and WIN-EP-01 exist. The runbook is partly executed. Read `REPO\docs\WORKLOG.md`
