@@ -17,6 +17,60 @@ Next:
 
 ---
 
+## 2026-09-29 (second) - Submission plan for Friday; FINAL and two figures updated with the four decisions
+
+Chat 27d2595d, after `9220646`.
+
+**New facts from the student:** the panel sets a re-presentation date only after the revised documentation
+is submitted, about 3 to 7 days later. The student is not yet ready to present and wants to submit by
+**Friday 2026-10-02**, working full days.
+
+**Corrections to the first entry of today.** It advised asking for the re-presentation date now; that is
+not possible, so checkpoint 1 in `STATUS.md` and `DECISIONS.md` was corrected. It also listed "the
+standalone-lab limitation" as a document change; WORKLOG 2026-09-28 says that limitation was needed only
+if DC-01 was not built, so with DC-01 decided nothing is added.
+
+**Decided, by the student:** items 24 and 30 stay in the design as drawn and are built before data
+collection (`DECISIONS.md` 2026-09-29). The Word copy of FINAL: the student does the formatting from
+copy-friendly text.
+
+**Plan, one step a day:** Tuesday, FINAL and figures; Wednesday, study the diagram box by box and explain
+it back; Thursday, the Word copy; Friday, one consistency check, then submit. Lab work from Monday
+2026-10-05.
+
+**Did, in the thesis folder (outside git; the C: backup of 2026-09-28 holds the previous versions):**
+- `proposal-form-FINAL.md`: Objective 4 no longer says 16 changes; Scale of the Experiment keeps every
+  measurable class C change (about seven) plus fewer negative controls, the number fixed after the trial,
+  and a new paragraph on the laboratory as a small Windows domain with the CIS audit settings; Features and
+  Module 2 describe value keying for a few fields, with LSA Protection as the expected case; limit 2 drops
+  "Sixteen"; limit 8 rewritten; new limit 10 on `RunAsPPL = 2` without the UEFI lock; the Gantt chart now
+  runs to January 2027 (weeks 3 and 4: final defense) and its note puts the evaluation in December.
+- Sheet 1 and the pipeline figure: the key wording now includes "a few by value". Regenerated from
+  `thesis/T1/figures/`, rendered and checked by eye, copied to both figure locations, 4 of 4 hashes
+  matching. Sheet 2 did not change.
+
+**Submission set, as recommended and accepted by the student ("update the revisions list for
+submission"):** FINAL and the revisions list are submitted. The panel response (a working document with a "What to change in the paper" section) and
+the diagram explainer (a study guide) are not.
+
+**Then, same day, at the student's request:**
+- `T1-REVISIONS-LIST.md`, made ready to submit: header no longer names internal files, and the "Read this
+  first" note about REVISED is gone; the opening says the method stands but the number of changes and the
+  laboratory changed; Revision 2 said "seven short" paragraphs, FINAL has six; Revision 7 notes the
+  Objective 4 change; Revision 10 explains the domain, the audit settings and the scope; Revision 12 said
+  "ten ... now fourteen", FINAL has fifteen, and the validity checks of 2026-09-28 were missing; Revision
+  14 describes value keying and drops the REVISED-versus-FINAL note; Revisions 17 and 19 lose "16", and 19
+  has ten limits with limit 10 added; Revision 18 notes the Sheet 1 wording; Revision 23 describes the new
+  Gantt chart; Part 3 no longer says the scale is unchanged; Part 4 lists only what is submitted.
+- `ACTIVITY-DIAGRAM-EXPLAINED.md`, for the student's Wednesday study: the 4688 warning says the auditing is
+  decided but not yet on; Box 11 quotes the new wording and explains value keying, its two rules and the
+  candidate fields; section 10 rewritten for value keying, plus the `RunAsPPL = 2` deviation; section 11
+  lists the four 2026-09-29 decisions as designed, not built; test question 10 asks for both cases.
+- Document checker over the thesis folder: LIVE hits unchanged at 13, all old quoted wording.
+
+**Not changed:** `T1-PANEL-RESPONSE.md`, which still says "16 changes" in places and describes presence-only
+keys. It is not submitted; update it before using it to prepare answers.
+
 ## 2026-09-29 - Four decisions: January 2027 target, DC-01, value keying, audit settings
 
 Chat 27d2595d, after `ba3506d`.

@@ -282,8 +282,8 @@ Item 28 — boot-time evidence
 
 Item 30 — field-level loss works in the demo only
     `field_loss_pairs()` is built and tested, but `analyse()` and `report.py` never call it; only
-    `src/demo.py` does. The diagram draws pairing inside Phase 4. Connect it or say it is
-    demo-only. Found 2026-09-28.
+    `src/demo.py` does. The diagram draws pairing inside Phase 4. Found 2026-09-28. **Decided
+    2026-09-29: connect it before data collection.** Not built.
 
 Item 29 — ANSWERED 2026-09-28, all four fixed by decision
     Chat 4e01d810's four findings all held and are fixed (DECISIONS 2026-09-28): the
@@ -296,13 +296,15 @@ Item 25 — the schedule; target and scope decided 2026-09-29
     capture window run. **Decided 2026-09-29:** school deadline 4 June 2027; target a final defense
     by the end of January 2027 (March was recommended); keep every measurable class C change,
     reduce the graphical interface first, then class B; the spike by 2026-10-31 sets the number.
-    Eight checkpoints are in STATUS.md. The panel said the re-presentation will focus on the
-    activity diagram; its date is not set. Also: 30 pre-change events over 3 runs is about 10 per
+    Checkpoints are in STATUS.md. The panel said the re-presentation will focus on the activity
+    diagram, and sets its date 3 to 7 days after the revised documentation is submitted; the
+    student's target is to submit by Friday 2026-10-02. Also: 30 pre-change events over 3 runs is about 10 per
     run, so many keys may be untestable. The spike measures it.
 
 Item 24 — blocks trusting any UNCHANGED result
     `VarianceModel.from_control()` accepts a control run that recorded nothing. That inflates
-    every noise band and pushes real losses toward UNCHANGED. Found 2026-09-14, not fixed.
+    every noise band and pushes real losses toward UNCHANGED. Found 2026-09-14. **Decided
+    2026-09-29: fix it in code before data collection**; the diagram keeps the check. Not built.
 
 Item 23 — reframed 2026-09-28, a spike check
     The alpha half is fixed. The other half, the gate passing on noise, no longer matters: since

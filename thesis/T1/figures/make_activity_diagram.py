@@ -10,6 +10,13 @@ hand-computed absolute coordinates. Patching those by hand a second time would
 recreate the same failure. Now the figure is generated, so a design change is a
 string edit and a re-run.
 
+WHAT CHANGED ON 2026-09-29 (DECISIONS.md 2026-09-29, OPEN-QUESTIONS 18)
+
+  11. The pre-change profile box said "keyed by event type + populated tracked
+      fields". For a short list of fields the key now also records the value,
+      grouped into a few classes, so it reads "populated fields, a few by value".
+      Designed, not built yet.
+
 WHAT CHANGED LATER ON 2026-09-28: FOUR DECISIONS (DECISIONS.md, OPEN-QUESTIONS 29)
 
    7. The gate is no longer a decision. It was "Did the profile change at all?",
@@ -411,9 +418,10 @@ def sheet1() -> str:
     void1_end = s.flow_end(SUB, void1.bot + 36)
     s.down(void1, void1_end)
 
+    # CHANGED 2026-09-29 (DECISIONS, item 18): a few fields are keyed by value.
     profile1 = s.step(MAIN, 1462, MAIN_W, 60, [
         "Export the archived events; build the pre-change",
-        "profile keyed by event type + populated tracked fields"], system=True)
+        "profile: event type + populated fields, a few by value"], system=True)
     s.down(check1, profile1)
     s.label(MAIN + 15, check1.bot + 14, "yes")
     # The label stays short: a longer one ran under the arrow at x = MAIN.
@@ -493,7 +501,8 @@ def sheet1() -> str:
             "change, and post-change capture in which the change is applied by script "
             "and confirmed inside each run. Each capture run is checked and a failed "
             "run is voided and captured again. Events are keyed by event type plus "
-            "the tracked fields that were populated.")
+            "the tracked fields that were populated, and for a few fields their "
+            "value, grouped into classes.")
     return s.render(to_c.bot + 37, aria)
 
 

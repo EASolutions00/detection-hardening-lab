@@ -8,6 +8,20 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-09-29 - The control-run check and field-loss pairing stay in the design, and are built before data collection (items 24, 30)
+
+**Decision, by the student, chat 27d2595d:** the activity diagram keeps both steps as drawn. The check that
+stops the setup when a control run recorded nothing (item 24) is built into `VarianceModel.from_control()`
+or before it, and `field_loss_pairs()` is connected to `analyse()` and the report (item 30). Both are
+built before data collection, with the lab work from 2026-10-05.
+
+**Why.** The panel will focus on the activity diagram at the re-presentation. Keeping the steps keeps the
+submitted design unchanged; removing them would have meant a new limit and a changed diagram. Both are
+small in code: the check mirrors `capture_problem()`, and pairing is already built and tested.
+
+**Cost if wrong:** low. Until built, the diagram shows two steps the code does not run, which must be said
+plainly if the panel asks (PROMPT-new-chat section 6).
+
 ## 2026-09-29 - Target: final defense by end of January 2027. Scope keeps every measurable class C change (item 25)
 
 **Decision, by the student, chat 27d2595d:** the final defense is targeted for the end of January 2027.
@@ -44,6 +58,10 @@ naive method needs changes where telemetry is lost but no blind spot exists, and
 6. 2026-12-18: the rest of the system and the evaluation done.
 7. 2027-01-08: full draft to the adviser.
 8. By 2027-01-31: final defense.
+
+**Corrected later on 2026-09-29:** checkpoint 1 cannot request a date. The panel sets the re-presentation
+date only after the revised documentation is submitted, about 3 to 7 days later (student). The student's
+target is to submit by Friday 2026-10-02; STATUS.md holds the corrected list.
 
 **What must change outside this file:** FINAL's Gantt chart and every "16 changes" in FINAL and the other
 submission documents. The Gantt change probably needs the adviser's approval. Not done.

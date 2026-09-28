@@ -56,6 +56,12 @@ What changed on 2026-09-28:
      -> UNCHANGED, no key tested". The chi-square is now reported as a summary
      and never stops a key being tested. And a key the control runs never saw
      is INCONCLUSIVE, because it has no noise measurement.
+
+What changed on 2026-09-29 (DECISIONS.md 2026-09-29, OPEN-QUESTIONS 18):
+
+ 12. The key box said "e = ( source, event ID, populated tracked fields )". For a
+     short list of fields the key now also records the value, grouped into a few
+     classes. Designed, not built yet.
 """
 
 from pathlib import Path
@@ -92,9 +98,11 @@ def build() -> str:
     # CHANGED: was "an event-type key e = ( source, event ID, discriminating
     # fields )". The key is the event type plus the tracked fields that were
     # populated. See eventkey.py.
+    # CHANGED 2026-09-29 (DECISIONS, item 18): a few fields are keyed by value.
     body += action_box(30, 130, 960, 56, [
         "Reduce every raw record to an event key    "
-        "e = ( source, event ID, populated tracked fields )"], size=13)
+        "e = ( source, event ID, populated tracked fields, value class of a few )"],
+        size=13)
     for cx in STREAM_CX:
         body.append(arrow(f"M{cx} 186.0 V218.0"))
 

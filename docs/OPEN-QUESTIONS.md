@@ -773,7 +773,8 @@ phases, so a voided run has to be replaced. Designed, not built.
 ## 30. Field-loss pairing is built but never called by the analysis or the report
 
 **Status:** Open. Found 2026-09-28 while checking the activity diagram. Given a number the same day so
-`STATUS.md` can point at it.
+`STATUS.md` can point at it. **Decided 2026-09-29: connect it** to `analyse()` and the report before data
+collection; the diagram stays as drawn (`DECISIONS.md` 2026-09-29). Open until built.
 
 **What was checked.** `field_loss_pairs()` in `eventkey.py` is tested (`tests/test_eventkey.py`), but a
 search of the code finds it called only by `src/demo.py`. Neither `analyse()` in `differential.py` nor
@@ -1163,8 +1164,9 @@ was collected anyway.
 ## 24. `VarianceModel.from_control()` accepts a control run that recorded nothing
 
 **Status:** Open. Found 2026-09-14 while fixing item 16, and deliberately not fixed then because it
-is a different function. Recorded as an item before a session was compacted. **The student has not
-yet chosen between fixing it in code and leaving it as a stated limit.** **2026-09-28:** at the
+is a different function. Recorded as an item before a session was compacted. **Decided 2026-09-29:
+fix it in code before data collection; the diagram keeps the check** (`DECISIONS.md` 2026-09-29). Open
+until built. **2026-09-28:** at the
 student's request, the activity diagram now draws a check on the control runs in Phase 0, ending at
 "Control runs NOT USABLE". So the design includes the check. The code still does not do it.
 

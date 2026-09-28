@@ -17,14 +17,16 @@ says which ones matter right now.
 - The earlier target, a final defense in December 2026 (FINAL's Gantt), slipped at its first lab rows:
   no capture run exists.
 - **The re-presentation:** the panel said it will focus on the **activity diagram** (student, 2026-09-29).
-  The date is not set; it is the panel's. Recommended, not decided: run the full data collection only
-  after the panel approves the diagram, and run the spike before the re-presentation if the date allows.
+  **The panel sets a date only after the revised documentation is submitted, about 3 to 7 days later**
+  (student, 2026-09-29). **Target: submit by Friday 2026-10-02.** Recommended, not decided: run the full
+  data collection only after the panel approves the diagram.
 
 ## Checkpoints (proposed 2026-09-29, dates are estimates)
 
 | By | Done when |
 |---|---|
-| 2026-10-09 | Adviser told of the slip and the January target; re-presentation date requested |
+| 2026-10-02 | Revised documentation submitted (the panel then sets the re-presentation date) |
+| 2026-10-09 | Adviser told of the slip and the January target |
 | 2026-10-23 | DC-01 built, WIN-EP-01 joined, Sysmon `lsass.exe` rule and audit settings in place, value keying coded and tested, network-logon test designed, golden snapshot taken |
 | 2026-10-31 | Spike run, six answers recorded, final number of changes set |
 | panel's date | Re-presentation |
@@ -51,21 +53,23 @@ controls), and record the miss in WORKLOG the same day.
 
 ## Next, in order
 
-1. **Tell the adviser** (checkpoint 1). The student sends it.
-2. **Study the activity diagram** for the re-presentation. For each box, know: built, designed only, or
-   waiting on a decision. `ACTIVITY-DIAGRAM-EXPLAINED.md` in the thesis folder.
-3. **Build DC-01 and join WIN-EP-01**; apply the Sysmon rule and the audit settings; code value keying.
-4. **Update the documents the decisions changed**, before the re-presentation: the event key definition
-   in FINAL Module 2, the diagram and its explainer, the panel response, the revisions list; FINAL's Gantt
-   chart, every "16 changes", and the standalone-lab limitation, which DC-01 changes (WORKLOG 2026-09-28).
-5. Golden snapshot, a minimal harness, one capture window by hand as a trial, then the spike.
+1. **Submit the revised documentation by Friday 2026-10-02**, one step a day:
+   - Tuesday 09-29, **done:** FINAL updated with the four decisions and a new Gantt chart; the key wording
+     fixed in Sheet 1 and the pipeline figure; the revisions list made ready to submit; the diagram
+     explainer updated for study (WORKLOG 2026-09-29, second). **Submitted: FINAL and the revisions
+     list.** Not submitted: the panel response (still stale in places) and the explainer.
+   - Wednesday: study the activity diagram box by box and explain each box back.
+   - Thursday: the Word copy. The student formats it from copy-friendly text of FINAL.
+   - Friday: one consistency check of the submitted files, then submit.
+2. **Tell the adviser** (checkpoint 2026-10-09). The student sends it.
+3. From Monday 2026-10-05: **build DC-01 and join WIN-EP-01**; apply the Sysmon rule and the audit
+   settings; code value keying, the control-run check (item 24) and pairing (item 30).
+4. Golden snapshot, a minimal harness, one capture window by hand as a trial, then the spike.
 
 ## Still waiting on the student
 
-- **Item 24, empty control runs.** The diagram draws the check; build it in code or state it as a limit.
-- **Item 30, field-loss pairing.** Connect it to `analyse()` and the report, or say it is demo-only.
-- **Item 15, the Word file.** A Word copy of FINAL with the four current figures, after the document
-  updates in "Next" step 4.
+- **Item 15, the Word file.** The student formats it from copy-friendly text of FINAL (Thursday).
+- Items 24 and 30 were decided 2026-09-29: both stay in the design and are built before data collection.
 
 ## The spike
 
