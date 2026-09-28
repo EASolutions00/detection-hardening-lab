@@ -4,8 +4,8 @@ Three candidate topics. They are **alternatives, not components.** One gets buil
 
 | | Topic | Status |
 |---|---|---|
-| [T1](T1/README.md) | Hardening-induced blind spots | Primary, gated behind the spike |
-| [T2](T2/README.md) | Severity inversion in the Wazuh ruleset | Second fallback |
+| [T1](T1/README.md) | Hardening-induced blind spots | **The thesis. Final, no fallback** (`docs/DECISIONS.md` 2026-09-26). The feasibility spike now decides scope only |
+| [T2](T2/README.md) | Severity inversion in the Wazuh ruleset | Not chosen. Kept as a record only |
 | [T3](T3/README.md) | Analytic robustness scoring | **Dead, killed 2026-08-19.** Only 6 of 3,783 SigmaHQ rules carry the annotation its evaluation needed |
 
 ---

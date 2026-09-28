@@ -13,18 +13,25 @@ proposal's reproducibility claim needs. And 16 branching snapshot delta chains w
 
 ## Naming
 
-`change-NN-short-name.ps1`, for example `change-01-disable-audit-process-creation.ps1`.
-The number matches the catalogue in `../blueprint.md` section 8.
+`change-ID-short-name.ps1`, for example `change-C1-disable-wdigest.ps1`. The ID matches the
+catalogue in `../blueprint.md` section 8 (C1 to C8, B1 to B6). **No change script exists yet.**
 
 ## Every script must carry its source
 
-At the top of each script, in a comment:
+At the top of each script, in a comment. The example uses C1, whose control ID is verified:
 
 ```
-# Change 01: Disable Audit Process Creation subcategory
-# Source: <specific CIS Benchmark or DISA STIG control ID>
-# Expected telemetry effect: removes Windows Security EventID 4688
+# Change C1: Disable WDigest (UseLogonCredential = 0)
+# Source: DISA V-253358 (Windows 11 STIG)
+# Expected telemetry effect: 4624 logon-type distribution shifts (a value change, OPEN-QUESTIONS 18)
 ```
+
+Write the benchmark name and version beside every CIS number, because the numbering changes
+between versions: the LSASS protected-process control is 18.9.25.2 in CIS Windows 11 Enterprise
+v2.0.0 and 18.9.27.2 in v5.1.0 (OPEN-QUESTIONS 4 and 18).
+
+This file's example used to be "Disable Audit Process Creation". That change was removed from the
+catalogue on 2026-09-08, because CIS requires the setting **on**, so turning it off is de-hardening.
 
 The control ID is not optional. T1's proposal states the 16 changes come from CIS Benchmarks
 and DISA STIGs. A panelist can ask for the ID of any one of them, and several in the current

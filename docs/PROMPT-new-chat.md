@@ -51,21 +51,25 @@ is readable, and you should ask me to paste `REPO\CLAUDE.md` and
 
 ## 1. Boot sequence
 
-Read these four, in order. Expand `REPO` first.
+Read these five, in order. Expand `REPO` first.
 
 1. `REPO\CLAUDE.md`
    This auto-loads only if the chat was opened in `REPO`. Otherwise read it explicitly.
    It goes stale: four claims in it were wrong on 2026-09-10 and were corrected that day.
    **Treat it as a map, not as truth.**
 
-2. `REPO\docs\OPEN-QUESTIONS.md`
-   Items **1, 15, 18, and 20 to 25** are the live ones. All are summarised in section 5.
-   Items 0, 16, 17 and 19 are answered. The file is ranked by damage, so read from the top.
+2. `REPO\docs\STATUS.md`
+   The current blockers and dates, kept short. Added to this list 2026-09-28.
 
-3. `REPO\docs\DECISIONS.md`
+3. `REPO\docs\OPEN-QUESTIONS.md`
+   Items **1, 15, 18, and 20 to 29** are the live ones (23 only half). All are summarised in
+   section 5. Items 0, 16, 17 and 19 are answered. The file is ranked by damage, so read from
+   the top.
+
+4. `REPO\docs\DECISIONS.md`
    The newest five entries.
 
-4. `REPO\docs\WORKLOG.md`
+5. `REPO\docs\WORKLOG.md`
    The newest three entries.
 
 Then run this, exactly as written, so it works from any folder:
@@ -157,7 +161,8 @@ Verify any you rely on. Listed so you do not re-derive them every session. Files
 in `REPO\src\telos\` unless stated otherwise.
 
 - An event key is `Source-EventID[PopulatedField,...]`, for example
-  `Security-4688[CommandLine,NewProcessName]`.
+  `Security-4688[CommandLine,NewProcessName]`. A format example only: the lab endpoint writes
+  no 4688 events, because process creation auditing is off (item 20).
   `eventkey.py`
 
 - The key records **that** a tracked field carried a value, never **which** value.
@@ -255,12 +260,18 @@ Item 28 — boot-time evidence
     Wininit events on every date. Boot-time checks, such as Wininit event 12 for LSA
     protection, must be made inside the guest. Cause unverified.
 
+Item 29 — four findings from a read-only chat, none checked yet
+    Chat 4e01d810 (2026-09-14) reported four serious problems. The first: the chi-square gate can
+    report no change while one key drops from 200 events to 0 among 299 steady keys. Check each
+    against the code before relying on it or dismissing it.
+
 Item 25 — the schedule, with a date on it
     The harness does not exist, the spike has never run, and 101 windows need about 67 hours
-    unattended. Recommended tripwire, not yet accepted: if one full unattended capture window has
-    not completed by **2026-09-22**, cut scope, for example to 8 changes, 53 windows, about 35
-    hours. Also: 30 pre-change events over 3 runs is about 10 per run, so many keys may be
-    untestable. The spike measures both.
+    unattended. The recommended tripwire was: if one full unattended capture window has not
+    completed by 2026-09-22, cut scope, for example to 8 changes, 53 windows, about 35 hours.
+    **That date passed with no capture window run (checked 2026-09-26), and scope is still not
+    cut.** Data collection was to start by end of September 2026. Also: 30 pre-change events
+    over 3 runs is about 10 per run, so many keys may be untestable. The spike measures both.
 
 Item 24 — blocks trusting any UNCHANGED result
     `VarianceModel.from_control()` accepts a control run that recorded nothing. That inflates

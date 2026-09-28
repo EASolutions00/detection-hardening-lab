@@ -83,8 +83,7 @@ Uncertainty goes in `OPEN-QUESTIONS.md`, not in a comment inside a draft.
 profile, checked 2026-09-26; PowerShell 7 is not installed). Admin tasks: Terminal (Admin), same
 shell. Inside SIEM-01: bash.
 
-Stack pinned in `requirements.txt`: numpy 2.5.2, scipy 1.18.1, pandas 3.0.5, PyYAML 6.0.3,
-pytest 9.1.1. Do not upgrade mid-experiment. See [src/](src/README.md).
+Stack pinned in `requirements.txt`. Do not upgrade mid-experiment. See [src/](src/README.md).
 
 Run the pre-flight check in [docs/COMMANDS.md](docs/COMMANDS.md) Part 5 before any runbook phase.
 

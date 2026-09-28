@@ -1,7 +1,7 @@
 # STATUS
 
 Current blockers and dates. This file changes often. CLAUDE.md does not.
-Last updated: 2026-09-26, fourth update of the day (from git log)
+Last updated: 2026-09-28 (from git log)
 
 Every item here must also exist in OPEN-QUESTIONS.md or DECISIONS.md. This file only
 says which ones matter right now.
@@ -64,11 +64,16 @@ the lock, value `1`**, so `2` would be a stated deviation (item 18).
   cause. Repaired, but the harness must check the path to SIEM-01 before each run.
 - Item 28, new 2026-09-26. Events written before the Wazuh agent starts never reach the
   archive, so boot-time checks such as Wininit event 12 must be made inside the guest.
+- Item 29, new 2026-09-28. Four serious findings from chat 4e01d810, never checked. The first
+  says the chi-square gate can report no change while one key drops from 200 events to 0.
+- Documents outside the repo still conflict with the 2026-09-26 findings on points that wait
+  on the student's decisions: "16 changes", the September Gantt rows, and the standalone-lab
+  limitation. See WORKLOG 2026-09-28.
 
 ## Lab state
 
-- SIEM-01 was booted 2026-09-26 for the item 21 check and was still running when chat 27d2595d
-  ended. Check with `vmrun -T ws list` rather than trusting this line.
+- No lab VM was running on 2026-09-28 (`vmrun -T ws list`: `Total running VMs: 0`). SIEM-01 had
+  been booted 2026-09-26 for the item 21 check. Check with `vmrun` rather than trusting this line.
 - Host VMnet2 is at `10.20.10.1` again after a hand repair (item 27). Pre-flight now checks it.
 
 ## Recently settled (details in DECISIONS.md)

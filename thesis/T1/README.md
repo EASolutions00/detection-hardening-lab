@@ -1,9 +1,13 @@
 # T1 - Hardening-Induced Blind Spots
 
-**Full title:** Detection of Hardening-Induced Blind Spots via Differential Sequence Alignment
-of Pre- and Post-Change Security Event Streams
+**Approved title:** Detecting Security Blind Spots Through Pre- and Post-Hardening Events Using
+Differential Analysis Algorithm (the panel's wording, kept verbatim, `docs/DECISIONS.md`
+2026-09-14). The title first submitted is kept only in `proposal.txt`, the version the panel
+read.
 
-**Status:** Primary choice. Gated behind the feasibility spike (runbook Phase 7).
+**Status:** The thesis. Final, with no fallback topic (`docs/DECISIONS.md` 2026-09-26). The
+feasibility spike (runbook Phase 7) has not run; its result now decides scope only. Current
+blockers are in `docs/STATUS.md`.
 
 ## The idea in one paragraph
 
@@ -16,7 +20,9 @@ moment the change is made.
 ## What makes it hard
 
 - Needs the full lab. It is the only one of the three topics that does.
-- **101 capture runs.** 16 changes times (3 pre + 3 post) = 96, plus 5 control runs.
+- **101 capture runs.** 16 changes times (3 pre + 3 post) = 96, plus 5 control runs. That is the
+  design. The catalogue holds 14 changes today (`docs/OPEN-QUESTIONS.md` item 1), and scope is not
+  yet decided (item 25).
 - About 67 hours of wall clock, which only works if the harness is fully unattended.
 
 ## The falsifiable claim
@@ -28,12 +34,17 @@ the strongest defense against the sharpest objection a panel can raise.
 
 ## Ground truth
 
-Two-tier labeling. Positive class is event types the change verifiably removed, where you
+Two-tier labeling. Positive class is event keys the change verifiably removed, where you
 know the cause because you caused it. Negative class is everything else in the pre-change
-profile. Hand labeling 200 to 500 event types is not feasible and is not the plan.
+profile. Hand labeling 200 to 500 event keys is not feasible and is not the plan. (The unit
+changed from event type to event key on 2026-09-04, `docs/DECISIONS.md`.)
 
 ## Files
 
-- `proposal.txt` - the submitted proposal, institutional template, do not restructure
+- `proposal.txt` - the proposal as first submitted, the version the panel read. Old title and
+  old wording are correct here. Institutional template, do not restructure
+- `proposal-form.md`, `proposal-form-REVISED.md` - earlier Markdown forms of the proposal,
+  superseded. The current revision, `proposal-form-FINAL.md`, lives outside this repo
+- `figures/` - the scripts that generate the four T1 figures, and their SVG output
 - `../../lab/blueprint.md` - lab design and the go/no-go analysis
 - `../../docs/RUNBOOK-homelab.md` - how to actually build it

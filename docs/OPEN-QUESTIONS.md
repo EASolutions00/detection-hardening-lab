@@ -1102,6 +1102,34 @@ compared against that noise model, and no output would show it.
 
 ---
 
+## 29. Four serious findings from chat 4e01d810, none checked against the code yet
+
+**Status:** Open. The findings were reported on 2026-09-14 by a read-only chat, recorded in WORKLOG on
+2026-09-26, and given this item on 2026-09-28 so they are tracked where open problems live. **Reported
+by that chat, not re-checked.** Its full report is kept privately at
+`C:\Users\Elijah\claude-backups\thesis-chats\2026-09-14_4e01d810_activity-diagram-sweep.md`.
+
+1. **The chi-square gate can hide a complete loss.** On made-up data with 299 steady keys, one key
+   dropping from 200 events to 0 gave gate p = 0.99 and no finding. Tested alone, the same key came out
+   LOST (q = 4.2e-85). Item 23 covers only the opposite risk, the gate passing on noise. **If this
+   holds, it produces a false UNCHANGED, the dangerous direction.**
+2. **The noise model can be measured on a different stimulus from the one being compared.** A key the
+   control runs never saw gets a coefficient of variation of 0, so its noise band is 0.
+3. **Remediation level 3 has no "control activity" to compare against.** It ranks fields that separate
+   attack activity from control activity, but every capture, the control runs included, runs the
+   attack suite.
+4. **D2 was not carried into Phase 5.** "Restore telemetry" is a one-time manual step, but every
+   capture restores the configuration snapshot, which undoes it.
+
+**How to answer:** check each against the code and the design, starting with 1, which needs no lab:
+build the 299-steady-keys profile in a test, run `analyse()`, and see whether the lost key is reported.
+Open a separate item for each finding that holds, and record the ones that do not, with the evidence.
+
+**What a bad answer means:** finding 1, if true and left, means a real loss among many steady keys is
+reported as "no blind spot found".
+
+---
+
 ## 1b-remainder. Harness counting rules that survive the schema decision
 
 **Status:** Open, but no longer a schema question. The schema itself was decided 2026-09-04,

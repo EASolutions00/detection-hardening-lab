@@ -131,7 +131,8 @@ found by the suite: an all-zero post-change phase used to raise from `chi2_conti
 
 An analysis key is the event type **plus which tracked fields were populated**, written
 `Security-4688[CommandLine,NewProcessName]`. See `eventkey.py` and the decision entry in
-`docs/DECISIONS.md`.
+`docs/DECISIONS.md`. That is a format example: the lab endpoint does not currently audit
+process creation, so it writes no 4688 events (`docs/OPEN-QUESTIONS.md` item 20).
 
 Keying on the event type alone cannot see a field-level loss. Emptying CommandLine leaves
 4688 firing at its former rate, so the profile reports UNCHANGED while every rule matching

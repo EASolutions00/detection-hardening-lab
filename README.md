@@ -45,7 +45,9 @@ measures each event key's natural variation first, then only reports a drop that
 
 An **event key** is the event type plus which of its tracked fields actually carried a value, for
 example `Security-4688[CommandLine,NewProcessName]`. That is how a change that empties one field,
-while the event keeps firing at its usual rate, becomes visible at all.
+while the event keeps firing at its usual rate, becomes visible at all. (The example shows the key
+format. The lab endpoint does not currently audit process creation, so it writes no 4688 events;
+see `docs/OPEN-QUESTIONS.md` item 20.)
 
 **These numbers are synthetic.** They demonstrate that the code is correct. They are not
 measurements, and they are not a result of the study. Full output:
@@ -175,8 +177,9 @@ I wrote up two other topics as full proposals before choosing T1. Both remain in
 [thesis/](thesis/README.md).
 
 **T2, severity inversion in the Wazuh ruleset.** Rules form a dependency graph, and a serious
-alert can sit at a severity level no analyst ever sees. Not chosen, but it remains the fallback
-if the primary approach fails its feasibility gate.
+alert can sit at a severity level no analyst ever sees. Not chosen, and not a fallback: T1 is the
+final thesis with no fallback topic (`docs/DECISIONS.md` 2026-09-26). If T1's feasibility spike
+shows the full study cannot finish in time, the answer is a smaller scope, not a different topic.
 
 **T3, analytic robustness scoring.** Score how hard each detection rule is to evade, and
 validate against the manually annotated subset of the Sigma corpus. **I killed it after

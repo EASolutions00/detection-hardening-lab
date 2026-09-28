@@ -697,6 +697,10 @@ WIN-EP-01
       SIEM-01   : phase3-complete-2026-09-02, timesync-off-2026-09-03,
                   snapd-off-archive-v2-2026-09-03
 
+      **Plus a fourth on each VM, taken 2026-09-10 for the UWF test:** `uwf-test-baseline-2026-09-10`.
+      It holds memory, so reverting to it resumes with a stale clock and must never start a run
+      (WORKLOG 2026-09-11). `vmrun listSnapshots` on 2026-09-26 showed 4 snapshots on each VM.
+
       They are superseded by `golden-base` and only consume delta space after that.
       `vmrun -T ws deleteSnapshot <vmx> <name>` for each.
 

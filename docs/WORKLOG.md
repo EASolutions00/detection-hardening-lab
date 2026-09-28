@@ -17,6 +17,65 @@ Next:
 
 ---
 
+## 2026-09-28 - Full document sweep: 18 conflicts found; 15 fixed, 1 partly, 2 wait on decisions
+
+Chat 27d2595d, resumed. Also covers the `/doctor` run at the end of 2026-09-26, which had no entry.
+
+**`/doctor`, 2026-09-26, after `b90705f`.** A health check of the Claude Code setup. Two fixes applied
+with the student's approval: a header block added to the private `humanizer` skill, which had none,
+and the version list cut from `CLAUDE.md` because it copied `requirements.txt`. That `CLAUDE.md` edit
+was left uncommitted for review and is committed now. Auto mode was offered and **declined**: the
+student keeps permission prompts. Claude Code in the desktop app was 2.1.281 against 2.1.283 latest.
+
+**Did, 2026-09-28:** a read-only sweep of the repository and the four LIVE thesis documents for anything
+that conflicts with a recorded decision or with the 2026-09-26 findings. Then, at the student's request,
+fixed every conflict that did not need a new decision. The four thesis documents outside git were
+copied first to `C:\Users\Elijah\claude-backups\docs-before-fixes-2026-09-28\`.
+
+**Fixed in the repo:**
+- `README.md`: T2 no longer called "the fallback" (DECISIONS 2026-09-26). The 4688 key example now
+  says the endpoint writes no 4688 (item 20).
+- `thesis/README.md`: T1 "Final, no fallback"; T2 "Not chosen".
+- `thesis/T1/README.md`: the approved title replaces the first-submitted one; status "Final";
+  "16 changes" marked as the design with 14 in the catalogue; "event types" corrected to "event keys";
+  files list completed. **Correction:** the sweep said `proposal.txt` did not exist. It does. The sweep's
+  search listed only `.md` files.
+- `src/README.md`, `PROMPT-new-chat.md`: the 4688 key example carries the same note.
+- `lab/scripts/README.md`: the example script was "Disable Audit Process Creation", removed as
+  de-hardening on 2026-09-08. Now C1, Disable WDigest, DISA V-253358, with a rule to write the
+  benchmark version beside every CIS number.
+- `PROMPT-new-chat.md`: startup steps now read `STATUS.md`; item 25's 2026-09-22 date marked as passed
+  and met; item 29 added.
+- `RUNBOOK-homelab.md` Phase 5: the build-snapshot list now includes `uwf-test-baseline-2026-09-10`
+  on each VM.
+- `STATUS.md`: no VM running (`vmrun list` on 2026-09-28: `Total running VMs: 0`); items 29 and the
+  waiting document conflicts listed.
+- **New OPEN-QUESTIONS 29:** the four serious findings from chat 4e01d810, which were only in WORKLOG.
+
+**Fixed in the thesis documents, outside git:**
+- `T1-PANEL-RESPONSE.md`: a note under the report table that the example lines are illustrative and
+  that the `Sysmon-10` rows cannot come from this lab; the worked example no longer says
+  `RunAsPPL = 1` and now lists the two things to settle first (the Sysmon rule, and `1` versus `2`);
+  a note under the three example keys that none is produced by the lab today, and that 4776
+  `PackageName` never varies; "LSA Protection is exactly that case" changed to "expected, not yet
+  measured".
+- `ACTIVITY-DIAGRAM-EXPLAINED.md`: the CIS example now names the benchmark version.
+- `T1-REVISIONS-LIST.md`: the 4688 example carries a note; Revision 19 now lists nine limits, not
+  seven. FINAL already had eight.
+- `proposal-form-FINAL.md`: limit 9 added, "The findings describe authentication telemetry, not
+  hardening in general", which `lab/blueprint.md` said to state in the paper.
+
+**Not fixed, because each needs the student's decision first:**
+1. "16 hardening changes" in FINAL, the revisions list and the panel response. The catalogue holds 14,
+   and item 25's scope decision is not made.
+2. FINAL's Gantt chart puts telemetry acquisition and the preliminary trial in September. Neither
+   happened. A new schedule is the student's and the adviser's call.
+3. A "standalone laboratory, no domain" limitation. It applies only if item 21 is answered without
+   building DC-01.
+4. A `RunAsPPL` deviation in the limitations. It applies only if `2` is chosen.
+
+**Next:** the decisions above, in `DECISIONS.md`; then item 29 finding 1, which needs no lab.
+
 ## 2026-09-26 (fourth) - CIS 18.9.27.2 requires the UEFI lock, so `RunAsPPL = 2` would be a stated deviation
 
 Chat 27d2595d, continued after `42dc97c`. Read only, web sources.
