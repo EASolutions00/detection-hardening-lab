@@ -17,6 +17,44 @@ Next:
 
 ---
 
+## 2026-09-28 (fourth) - Second full sweep: 11 problems in older files, all fixed. The spike checklist was missing four checks.
+
+Chat 27d2595d, after `67e8c93`.
+
+**Did:** a read-only sweep of the repository and the thesis folder after the four decisions, then, at
+the student's request, fixed everything found. Checked first and clean: nothing uncommitted, `58 passed`,
+LIVE checker hits 13, all 8 figure copies matching the repo, and the four decisions applied consistently
+in code, tests, figures, FINAL, the panel response, the revisions list and the explainer.
+
+**Found and fixed:**
+- `lab/blueprint.md` section 7, Q2: "T1 is not deliverable and the answer is T3". T3 was killed on
+  2026-08-19, and since 2026-09-26 there is no fallback. Now: a smaller scope, item 25.
+- `lab/blueprint.md` section 10: "Go/no-go decision on T1 vs T3" and a row planning T3's build; section
+  11: the T3 annotation risk "currently unverified", measured 2026-08-19 at 6 of 3,783. Both updated; the
+  heading, section 0 and section 9 now say T2 and T3 were not chosen.
+- **"Truncate the archive after every run"** at `blueprint.md:85`, `:237` and `:461`, and in the runbook's
+  troubleshooting table. The 2026-09-03 decision is export by date, never truncate, and the blueprint's
+  own section 6 explains it. All four now match it.
+- **The spike checklist** (runbook Phase 7 and blueprint section 7) listed two questions. Other records
+  assign four more checks to the spike, and none was on the list: zero findings on control-versus-control
+  pairs (item 23, now the main guard against false findings), how many keys reach 30 events (item 25),
+  the stimulus fingerprint's spread (item 22), and the extra reboot's effect (D2). Added as Q3 to Q6 in
+  both files; STATUS and the `CLAUDE.md` index now say six questions.
+- Both spike sections said "Do not write the analysis engine yet" (built 2026-08-31) and "CoV per event
+  type" (the unit has been the event key since 2026-09-04). Corrected.
+- `docs/T1-PROPOSAL-REVISION.md` had no superseded banner while carrying the web-application ASSUMPTION;
+  banner added, naming how both ASSUMPTIONs were settled. `docs/T1-WALKTHROUGH.md`'s banner now also says
+  its Stage B "global gate" is out of date.
+- `PROMPT-new-chat.md` item 15 now says no Word copy of FINAL exists. A test comment explaining a key as
+  there "so the gate passes", and the `variance.py` docstring's "event-type key", corrected.
+
+**Broke / stuck on:** one slip of mine, corrected before committing: the new blueprint notes were first
+dated 2026-09-29 instead of 2026-09-28.
+
+**Not changed, noted:** the five files in the thesis folder's `prep-local` are the 25 August title-defense
+prep. They carry the old title and treat T2 and T3 as live, which was right then. They are a record, not
+for reuse.
+
 ## 2026-09-28 (third) - Four decisions close item 29: the gate is reported, not a filter; one pinned attack-test list; two remediation levels; fixes by script
 
 Chat 27d2595d, after `911a1c6`.

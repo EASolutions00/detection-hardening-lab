@@ -1,5 +1,18 @@
 # T1 Proposal Revision Draft
 
+> **SUPERSEDED. Kept as a record; do not quote from it.** The current revision is
+> `proposal-form-FINAL.md`, outside this repository. Both ASSUMPTION decisions below were settled
+> differently or more narrowly:
+> 1. **"Web-based system with existing agent"**: decided against on 2026-09-14. The system is a
+>    Python application with a graphical interface beside the SIEM, and the SIEM agent executes
+>    nothing (`docs/DECISIONS.md` 2026-09-14).
+> 2. **"Limited remediation suggestion"**: the system never drafts rules (D1, 2026-09-14), and
+>    since 2026-09-28 it suggests at two levels, surviving sources and known compensating controls
+>    (`docs/DECISIONS.md` 2026-09-28).
+>
+> Other content here is also older than the event key decision (2026-09-04) and the chi-square
+> change (2026-09-28). Banner added 2026-09-28.
+
 Answers to the panel's revision items, written to drop into the research topic proposal form.
 
 **How to use this file.** Each block below names the exact form section it belongs to and is

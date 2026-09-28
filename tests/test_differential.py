@@ -91,8 +91,9 @@ def test_rare_key_is_inconclusive_not_unchanged():
     pre = Phase("pre", {"rare": [2, 2, 2], "big": [100, 100, 100], "gone": [100, 100, 100]})
     # Changed 2026-09-14. This test used to empty every key in the post-change
     # phase, which is now correctly a failed capture and never reaches the
-    # classifier. "big" stays alive so the capture is real, and "gone" is lost
-    # so the gate passes and "rare" is actually classified.
+    # classifier. "big" stays alive so the capture is real. "gone" is lost; it
+    # was there so the old gate would pass and let "rare" be classified. Since
+    # 2026-09-28 every key is classified anyway, and "gone" is simply a loss.
     post = Phase("post", {"rare": [0, 0, 0], "big": [100, 100, 100], "gone": [0, 0, 0]})
     res = analyse(pre, post, vm)
     got = {f.key: f.classification for f in res.findings}

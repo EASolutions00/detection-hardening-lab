@@ -1,4 +1,9 @@
-# Homelab Blueprint: Detection-Engineering Thesis Lab (T1 / T2 / T3)
+# Homelab Blueprint: Detection-Engineering Thesis Lab (T1)
+
+> **Since 2026-09-26, T1 is the thesis and there is no fallback topic** (`docs/DECISIONS.md`
+> 2026-09-26). T2 and T3 were not chosen; their rows and section 9 below are kept as a record. If
+> the spike shows the full study cannot finish in time, the answer is a smaller scope
+> (`docs/OPEN-QUESTIONS.md` item 25), not a different topic.
 
 Host: Ryzen 7950X (16C/32T), 64 GB RAM, VMware Workstation 17.5.1 Pro
 Drives: C: NVMe (345 GB free) · E: HDD (2371 GB free) · F: NVMe (727 GB free)
@@ -13,9 +18,9 @@ judgment, labeled `(unverified)` where they are not from a named source.
 
 | Topic | Lab requirement | Verdict |
 |---|---|---|
-| T1 Differential event-stream alignment | Full purple-team lab, snapshot automation, ~101 capture runs | **Load-bearing.** Everything below exists for this. |
-| T2 Severity inversion (Wazuh ruleset) | `git clone` + Python. One VM only to run `wazuh-logtest` for spot-checks. | Not load-bearing. |
-| T3 Analytic-robustness scoring (Sigma/Wazuh) | `git clone` + Python. No SIEM at all. | Not load-bearing. |
+| T1 Hardening-induced blind spots (the thesis; first named "differential event-stream alignment") | Full purple-team lab, snapshot automation, ~101 capture runs | **Load-bearing.** Everything below exists for this. |
+| T2 Severity inversion (Wazuh ruleset). Not chosen | `git clone` + Python. One VM only to run `wazuh-logtest` for spot-checks. | Not load-bearing. |
+| T3 Analytic-robustness scoring (Sigma/Wazuh). Not chosen; killed 2026-08-19 | `git clone` + Python. No SIEM at all. | Not load-bearing. |
 
 T2 and T3 are declared in their own proposals as offline static analysis with
 "no log ingestion, no network access during analysis." Build the lab only if you
@@ -81,8 +86,10 @@ coefficient-of-variation figure T1's entire statistical justification rests on.
 You would be measuring your disk, not your hypothesis.
 
 F: has 727 GB free. 280 GB of Tier A VMs plus snapshot deltas plus a growing
-`archives.json` will get tight. Mitigation is in the run protocol: export and
-truncate archives after every run.
+`archives.json` will get tight. Mitigation is in the run protocol: export by date
+after every run, **never truncate** (changed 2026-09-03, section 6, "Why step 10 no
+longer truncates"), and the harness checks free space before each run and aborts
+cleanly when it is low.
 
 ---
 
@@ -234,7 +241,7 @@ Estimated wall clock per run `(unverified — measure this in week 1)`:
 | Settle | 3 min |
 | Change application + reboot | 0–5 min |
 | ART suite | 10–40 min (depends on technique count) |
-| Drain + export + truncate | 4–6 min |
+| Drain + export (no truncate since 2026-09-03) | 4–6 min |
 | **Total** | **~25–60 min** |
 
 101 runs × 40 min ≈ **67 hours of wall clock.** That is achievable overnight and
@@ -245,13 +252,16 @@ does not finish. This is the hard constraint on T1.
 
 ## 7. The two-week feasibility spike (do this before committing)
 
-Build Tier A only. Do not build Tier B. Do not write the analysis engine yet.
-Run one hardening change and answer two pre-declared questions:
+Build Tier A only. Do not build Tier B. The analysis engine already exists
+(`src/telos/`, built 2026-08-31), so the spike runs real captures through it.
+Run one hardening change and answer the pre-declared questions below: Q1 and Q2
+from the start, Q3 to Q6 added 2026-09-28 because other records assign those
+checks to the spike.
 
 **Q1 — What is the run-to-run coefficient of variation?**
-Execute the identical ART suite 5 times against the same restored snapshot with
-zero configuration change. Compute CoV per event type. Do this under **both**
-Config S (suppressed) and Config N (natural).
+Execute the identical, pinned ART suite 5 times against the same restored
+snapshot with zero configuration change. Compute CoV per event key. Do this under
+**both** Config S (suppressed) and Config N (natural).
 
 - CoV(N) meaningfully > 0 → the statistical layer has an in-lab justification,
   and the naive-differencing baseline will produce false positives you can
@@ -267,8 +277,32 @@ suppressed background activity.
 
 **Q2 — What is the real per-run wall clock?**
 Time 5 unattended end-to-end runs. Multiply by 101. If the result exceeds the
-hours you actually have between now and the December defense, T1 is not
-deliverable and the answer is T3.
+hours you actually have between now and the December defense, the full study is
+not deliverable and **the answer is a smaller scope** (`docs/OPEN-QUESTIONS.md`
+item 25). There is no fallback topic since 2026-09-26. *(Until 2026-09-28 this
+line said "the answer is T3". T3 was killed on 2026-08-19.)*
+
+**Q3 — Do control runs compared with each other give zero findings?**
+Run `analyse()` on the ten control-versus-control pairs the 5 control runs give,
+one run on each side. Every LOST or REDUCED key is a false finding, because
+nothing changed. Since 2026-09-28 the whole-profile chi-square no longer filters
+anything, so the Benjamini-Hochberg correction is the only guard against false
+findings, and this is its test (`docs/OPEN-QUESTIONS.md` item 23;
+`docs/DECISIONS.md` 2026-09-28).
+
+**Q4 — How many event keys can be tested at all?**
+Count the keys with at least 30 events across 3 runs, the minimum before a key is
+tested. If only a small share clears it, raise the pre-change repetitions from 3
+to 5 (`docs/OPEN-QUESTIONS.md` item 25).
+
+**Q5 — How much does the stimulus itself vary?**
+Measure the stimulus fingerprint in each of the 5 control runs, for example the
+count of Sysmon Event ID 1 records carrying the run ID. Its spread is the
+tolerance that voids a later run (`docs/OPEN-QUESTIONS.md` item 22).
+
+**Q6 — Does the extra reboot in a post-change run leave a trace?**
+Compare a control run with one extra reboot and settle before the start fence
+against one without (decision D2, `docs/DECISIONS.md` 2026-09-14).
 
 ---
 
@@ -423,6 +457,9 @@ findings generalise to authentication telemetry rather than to hardening in gene
 
 ## 9. T2 / T3 environment (minimal)
 
+> **Not needed since 2026-09-26.** T1 is final and there is no fallback (`docs/DECISIONS.md`
+> 2026-09-26). Kept as a record.
+
 No lab needed. On the host:
 
 - WSL2 Ubuntu, or a single 2 vCPU / 4 GB Ubuntu VM if you prefer isolation
@@ -445,10 +482,9 @@ Total footprint: under 10 GB. Both topics run on a laptop.
 | 1 | Virtual Network Editor setup. Build SIEM-01, install Wazuh, pin version, enable `logall_json`, disable repo. |
 | 1 | Build WIN-EP-01, Sysmon + agent + ART pinned. Verify events land in `archives.json`. |
 | 2 | Golden snapshot. Config S / Config N snapshots. Write the `vmrun` harness (steps 1–11 above). |
-| 2 | **Run the spike (Section 7). Record CoV and wall clock.** |
-| 2 | **Go/no-go decision on T1 vs T3.** |
-| 3+ | If T1: profile builder, then the statistical engine, then the dependency index. Data collection must start no later than end of September. |
-| 3+ | If T3: parser, condition-tree traversal, STP knowledge base, kappa validation. |
+| 2 | **Run the spike (Section 7). Record Q1 to Q6.** |
+| 2 | **Decide scope from the spike** (`docs/OPEN-QUESTIONS.md` item 25). The topic is settled: T1, no fallback (`docs/DECISIONS.md` 2026-09-26). *(Until 2026-09-28 this row read "Go/no-go decision on T1 vs T3", and a further row planned T3's build.)* |
+| 3+ | The data collection campaign, then the dependency index, impact scoring and the interface. The statistical engine exists since 2026-08-31. Data collection was to start no later than end of September 2026. |
 
 ---
 
@@ -456,9 +492,9 @@ Total footprint: under 10 GB. Both topics run on a laptop.
 
 | Risk | Impact | Mitigation |
 |---|---|---|
-| Harness not unattended by end of Sept | T1 undeliverable | Spike gate at week 2 |
+| Harness not unattended by end of Sept | Full scope undeliverable | Spike at week 2; cut scope (item 25). There is no fallback topic |
 | CoV ≈ 0 under both configs | T1 headline result collapses to "justified only in production" | Report both configs; pre-declare the outcome as falsifiable, per the proposal's own framing |
-| `archives.json` fills F: | Runs fail mid-experiment | Export + truncate every run; monitor free space in the harness and abort cleanly |
+| `archives.json` fills F: | Runs fail mid-experiment | Export by date every run and **never truncate** (section 6, changed 2026-09-03); check free space before each run in the harness and abort cleanly |
 | Wazuh auto-upgrade mid-experiment | All prior runs invalidated | Disable the repo at install |
 | Nested virt unavailable for VBS | Drop change #8 | Test in week 1; substitute another change |
-| **T3-specific:** the manually annotated STP subset in SigmaHQ may be too small for a meaningful Cohen's kappa | T3's entire Objective 5 fails | **Verify the annotation count before committing to T3.** This is a hard prerequisite and is currently unverified. |
+| **T3-specific:** the manually annotated STP subset in SigmaHQ may be too small for a meaningful Cohen's kappa | T3's entire Objective 5 fails | **Happened.** Measured 2026-08-19: 6 of 3,783 rules carry the annotation, and T3 was dropped (`docs/OPEN-QUESTIONS.md`, Answered). Kept as a record. |

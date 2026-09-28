@@ -856,11 +856,14 @@ copied archive matches the `sha256_gz` the export printed.
 > answers Q1 and Q2 below. A bad answer now means cutting scope (OPEN-QUESTIONS 25), not switching
 > topic.
 
-Do not build Tier B. Do not write the analysis engine yet. Answer two questions.
+Do not build Tier B. The analysis engine already exists (`src/telos/`, built 2026-08-31), so the
+spike runs real captures through it. Answer six questions. Q1 and Q2 are the original ones; Q3 to
+Q6 were added 2026-09-28, because other records assign those checks to the spike. The same list
+is in `lab/blueprint.md` section 7.
 
 **Q1. What is the run to run coefficient of variation?**
-Run the identical suite 5 times against the same restored snapshot with zero config change.
-Do it under Config S and again under Config N. Compute CoV per event type. Save to
+Run the identical, pinned suite 5 times against the same restored snapshot with zero config
+change. Do it under Config S and again under Config N. Compute CoV per event key. Save to
 `data/summaries/cov_control_runs.csv`.
 
 - CoV above zero under Config N: the statistics layer is justified in the lab, and naive
@@ -873,7 +876,25 @@ Time 5 unattended end to end runs. Multiply by 101. Save to `data/summaries/run_
 101 runs at 40 minutes is about 67 hours. That works overnight and on weekends only if the
 harness is fully unattended. Semi-automated, it does not finish before the defense.
 
-- [ ] Record both answers in `docs/DECISIONS.md`.
+**Q3. Do control runs compared with each other give zero findings?**
+Run `analyse()` on the ten control-versus-control pairs the 5 control runs give, one run on each
+side. Every LOST or REDUCED key is a false finding, because nothing changed. Since 2026-09-28 the
+whole-profile chi-square no longer filters anything, so Benjamini-Hochberg is the only guard, and
+this is its test. OPEN-QUESTIONS 23; DECISIONS 2026-09-28.
+
+**Q4. How many event keys can be tested at all?**
+Count the keys with at least 30 events across 3 runs, the minimum before a key is tested. If only
+a small share clears it, raise the pre-change repetitions from 3 to 5. OPEN-QUESTIONS 25.
+
+**Q5. How much does the stimulus itself vary?**
+Measure the stimulus fingerprint in each control run, for example the count of Sysmon Event ID 1
+records carrying the run ID. Its spread is the tolerance that voids a later run. OPEN-QUESTIONS 22.
+
+**Q6. Does the extra reboot in a post-change run leave a trace?**
+Compare a control run with one extra reboot and settle before the start fence against one without.
+Phase 6 step 5; decision D2, DECISIONS 2026-09-14.
+
+- [ ] Record all six answers in `docs/DECISIONS.md`.
 - [ ] Decide scope from Q2 (OPEN-QUESTIONS 25). The topic is already settled: T1, no fallback
       (`docs/DECISIONS.md` 2026-09-26).
 
@@ -913,6 +934,6 @@ pinning commit `994da16` for exactly this reason.
 | `vmrun` guest commands fail | VMware Tools not installed, or wrong guest credentials |
 | No events in `archives.json` | `logall_json` not set, or manager not restarted |
 | Agent shows disconnected | Static IP wrong, or vmnet2 has DHCP still on |
-| F: fills mid batch | Archives not truncated after each run (Phase 6 step 10) |
+| F: fills mid batch | Free space not checked before the run. Archives are never truncated (Phase 6 step 10, changed 2026-09-03), so the harness must check free space and abort cleanly. Until 2026-09-28 this row blamed "archives not truncated" |
 | Counts drift between runs | Something updated. Check the Phase 4 pin list |
 | Credential Guard change fails | Nested virtualization not enabled. See OPEN-QUESTIONS.md |

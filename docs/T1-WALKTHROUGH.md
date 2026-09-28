@@ -21,6 +21,11 @@
 > and the naive-versus-proposed comparison in Stage D. Those do not depend on which change is
 > used as the example.
 >
+> **Also out of date since 2026-09-28:** Stage B below calls the chi-square a "global gate" and
+> prints "Gate PASSED. Proceeding to per-event testing." The chi-square is now reported as a
+> summary and never stops the per-key tests (`docs/DECISIONS.md` 2026-09-28), so that part of the
+> structure changed too.
+>
 > **To fix:** rebuild the example around a class C change once the 16-change catalogue is
 > rebuilt with pinned control IDs. The three solid class C candidates recorded so far are
 > disable WDigest, restrict NTLM, and enforce RDP NLA. The catalogue rebuild is the top task

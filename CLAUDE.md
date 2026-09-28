@@ -13,7 +13,8 @@ homelab built to run it. Student: Elijah Amorsolo, OED20-0012616.
 T1, T2 and T3 are **alternatives, not components.** One gets built.
 - **T1** is approved and is the thesis. **It is final, and there is no fallback**
   (DECISIONS.md 2026-09-26). It is gated behind a feasibility spike (runbook Phase 7) that
-  measures run-to-run variance and real wall clock. If the spike shows T1 cannot finish in
+  measures run-to-run variance, real wall clock, and four further checks listed there. If the
+  spike shows T1 cannot finish in
   time, the answer is a scope cut (OPEN-QUESTIONS 25), not a different topic.
 - **T2 and T3 were not chosen.** Kept as a record only. T3 lost its fallback status on
   2026-08-19. Do not spend time on either.

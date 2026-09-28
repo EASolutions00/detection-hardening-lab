@@ -4,7 +4,8 @@ Control runs execute the identical stimulus against the identical restored
 snapshot with no configuration change at all. Whatever variation remains is the
 laboratory's own noise. Every later comparison is judged against it.
 
-Two quantities are taken per event-type key.
+Two quantities are taken per event key: the event type plus which tracked fields
+were populated (DECISIONS.md 2026-09-04).
 
 coefficient of variation (CoV) = standard deviation / mean
     A plain relative spread. Used as the effect-size guard: a drop smaller than

@@ -290,8 +290,10 @@ Item 20 — blocks two headline claims
     is carrying process creation instead.
 
 Item 15 — blocks submission
-    Which documents still carry the superseded event key. The `.docx` still embeds the
-    2026-08-15 diagram, not either revised sheet.
+    No Word copy of `proposal-form-FINAL.md` exists (checked 2026-09-28): the REVISED `.docx`
+    is the superseded revision with the 2026-08-15 diagram, and the 2026-09-07 `.docx` is a
+    426-word start whose title still has "a". The remaining work is a Word copy of FINAL with
+    the four current SVGs, best made after the scope and Gantt decisions.
 
 Item 1 — blocks data collection
     The 16-change catalogue. Three control IDs verified, several still `(unverified)`.

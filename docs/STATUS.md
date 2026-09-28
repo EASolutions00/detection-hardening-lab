@@ -23,10 +23,11 @@ left.
 
 ## The spike
 
-T1 is approved and final. There is **no fallback** (DECISIONS.md 2026-09-26). The spike
-measuring run-to-run variance and real wall clock has still not run. See
-[runbook Phase 7](RUNBOOK-homelab.md). If it shows T1 cannot finish in time, the answer is
-scope (item 25), not a different topic.
+T1 is approved and final. There is **no fallback** (DECISIONS.md 2026-09-26). The spike has
+still not run. Since 2026-09-28 it answers six questions, not two (runbook Phase 7): run-to-run
+variance, wall clock, zero findings on control-versus-control pairs, how many keys reach 30
+events, the stimulus fingerprint's spread, and the extra reboot's effect. If it shows T1
+cannot finish in time, the answer is scope (item 25), not a different topic.
 
 ## Live blocker: OPEN-QUESTIONS item 21
 
