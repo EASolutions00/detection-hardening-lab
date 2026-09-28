@@ -11,6 +11,16 @@ experiment can be reconstructed exactly.
 | `ossec.conf` (relevant blocks) | Must contain `<logall_json>yes</logall_json>`. Without it T1 is impossible. |
 | Wazuh agent `<localfile>` block | Points at `Microsoft-Windows-Sysmon/Operational`. |
 
+## What the pinned Sysmon config does not log
+
+**Sysmon Event ID 10, process access, is not recorded at all.** `sysmonconfig.xml:472` is an empty
+`ProcessAccess` include list, and the file's own comment says that means nothing in the section is
+logged. The archive agrees: 14,102 Sysmon events on 2026-09-02, 09-03 and 09-10, none with ID 10.
+So any hardening change whose effect is stated as Event 10, C3 LSA Protection and C8 Credential
+Guard, cannot be measured with this file. Adding a rule for `lsass.exe` would change the pinned
+SHA256 and must be recorded in `docs/DECISIONS.md` before the golden snapshot. Not decided yet.
+Found 2026-09-26; `docs/OPEN-QUESTIONS.md` item 18, "Checked before the capture".
+
 ## Rule
 
 Record the SHA256 of every file here in `docs/DECISIONS.md`, and re-record it if you ever

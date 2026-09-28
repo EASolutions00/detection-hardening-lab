@@ -17,6 +17,42 @@ Next:
 
 ---
 
+## 2026-09-28 (fifth) - Third full sweep: 8 problems, all fixed. The hashed-settings list disagreed across documents.
+
+Chat 27d2595d, after `766bd58`.
+
+**Did:** a deeper read-only sweep, into FINAL's objectives, features and modules, the other panel
+questions, lists that should agree across documents, and the older `DECISIONS.md` entries. Then, at the
+student's request, fixed everything found. Checked first and clean: `58 passed`, LIVE checker hits 13, 8
+of 8 figure copies matching the repo, and today's four decisions reading the same everywhere. The
+revisions list's "what did not change" section was checked and is still accurate. The four thesis
+documents were backed up first to `C:\Users\Elijah\claude-backups\docs-before-fixes-2026-09-28-evening\`.
+
+**Found and fixed:**
+1. **The list of hashed settings disagreed.** Runbook Phase 6 step 11 and D2 list 9 items, and the diagram
+   matches. FINAL Module 1 listed 4, the panel response's Q6 7, the revisions list and the explainer's
+   vocabulary 6 each. All four now give the full list: snapshot, tests and versions, window, repetitions,
+   rule set version, thresholds, Sysmon configuration hash, SIEM agent version, and the harness version.
+2. **FINAL Module 1 described none of the run checks** added to the design today. It now covers the
+   control-run check, the per-run check that voids and re-captures a failed run, confirming the change on
+   the host, and the control runs' hash having to match.
+3. The **2026-09-14 promotion entry** in `DECISIONS.md` now carries a "superseded in part" note: promotion
+   on both closures stands, but the accepted baseline is the snapshot plus scripts, not the latest capture.
+4. The **spike results table** in `DECISIONS.md` gets rows for Q3 to Q6, and no longer calls the spike a
+   go/no-go gate.
+5. The **2026-08-19 entry "T3 loses its fallback status"** ended "Not yet decided"; it now points to the
+   2026-09-26 decision that settled it.
+6. The 2026-09-14 **title entry's** Chapter 3 obligation said "global gate"; a dated note now says the
+   chi-square is a summary.
+7. FINAL's **features list** said "each event type" and had no line for the run checks; both fixed.
+8. **`lab/configs/README.md`** now states that the pinned Sysmon config records no Event 10, with the
+   archive evidence, and what adding an `lsass.exe` rule would cost.
+
+**Not a problem:** `git status` showed `.claude/settings.local.json.tmp...` once. It was Claude Code's
+temporary file while saving local settings, gone moments later. `settings.local.json` is gitignored.
+
+**Broke / stuck on:** nothing.
+
 ## 2026-09-28 (fourth) - Second full sweep: 11 problems in older files, all fixed. The spike checklist was missing four checks.
 
 Chat 27d2595d, after `67e8c93`.

@@ -180,7 +180,9 @@ the panel's exact wording and needed nothing.
 **The obligation this creates, and it is not optional.** The title names a category, "Differential
 Analysis Algorithm", not a specific method. **Chapter 3 must name the specific algorithm and define it
 once**, as the composite of profile alignment, the capture check and global gate, dispersion-aware rate
-testing, Benjamini-Hochberg correction, and classification. `T1-PANEL-RESPONSE.md`'s title section
+testing, Benjamini-Hochberg correction, and classification. *(Updated 2026-09-28: the chi-square is no
+longer a gate. Chapter 3 defines it as a whole-profile summary that never stops the per-key tests; see
+the 2026-09-28 entry.)* `T1-PANEL-RESPONSE.md`'s title section
 already warns that a panel should not accept "Algorithm" attached to a category with nothing behind it.
 
 **Cost if wrong:** low. A reader may notice the missing article. The answer is one sentence: it is the
@@ -223,6 +225,11 @@ submitted diagram.
 **Cost if wrong:** none. No result depends on it.
 
 ## 2026-09-14 - The accepted baseline is promoted when a finding closes either way: FIXED or ACCEPTED
+
+> **Superseded in part, 2026-09-28.** Promotion on both closures stands. What the accepted baseline
+> **is** changed: not "the current profile", the latest capture, but the configuration snapshot plus
+> the change and fix scripts applied on top of it, so a later run can rebuild it the way every
+> capture is built. See the 2026-09-28 entry "Fixes are applied by script, like the change".
 
 **Decision:** when a finding closes, the current profile becomes the accepted baseline that later runs
 are compared against. That happens after a passing re-validation (closed as FIXED) **and** after a
@@ -1259,6 +1266,9 @@ the WORKLOG entry for the same date.
 
 ## 2026-08-19 - T3 loses its fallback status (SigmaHQ has only 6 STP-annotated rules)
 
+> **The open choice at the end of this entry was settled on 2026-09-26: neither path.** T1 is final
+> and there is no fallback topic. See the 2026-09-26 entry at the top of this file.
+
 **Finding:** `SigmaHQ/sigma` at commit `da9bb07` carries STP robustness tags on only **6 of
 3,783 rules (0.16%)**. See the full evidence in OPEN-QUESTIONS.md, Answered section.
 
@@ -1405,7 +1415,9 @@ version `4.14.7-1`, not `rc1`.
 
 # Spike results (fill in after Phase 7)
 
-The go/no-go gate for T1. Both must be answered before committing.
+The spike decides scope, not the topic: T1 is final with no fallback (2026-09-26). Six questions,
+listed in runbook Phase 7 and `lab/blueprint.md` section 7. Q3 to Q6 were added on 2026-09-28; until
+then this table had rows for Q1 and Q2 only and called the spike "the go/no-go gate for T1".
 
 | Question | Result | Date |
 |---|---|---|
@@ -1413,4 +1425,8 @@ The go/no-go gate for T1. Both must be answered before committing.
 | Q1 CoV under Config N | not yet measured | |
 | Q2 real wall clock per run | not yet measured | |
 | Q2 projected total for 101 runs | not yet measured | |
+| Q3 findings on the ten control-versus-control pairs (should be 0) | not yet measured | |
+| Q4 share of event keys with at least 30 events across 3 runs | not yet measured | |
+| Q5 stimulus fingerprint spread across the 5 control runs | not yet measured | |
+| Q6 effect of one extra reboot before the start fence | not yet measured | |
 | **Topic decision** | **T1 final, no fallback** (entry of the same date above) | 2026-09-26 |
