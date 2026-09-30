@@ -17,6 +17,77 @@ Next:
 
 ---
 
+## 2026-09-30 - Diagram study started; walkthrough aligned to the diagram; explainer rewritten in plain English; seven findings
+
+Chat 243e446b, after `44529c1`. Started 2026-09-29 and continued into 2026-09-30. A study chat for the
+re-presentation (STATUS "Next", Wednesday): box by box through the activity diagram, with explain-back and
+one panel question per important box. It became a working chat at the student's request.
+
+**Read, not changed:** the generator, both sheets, FINAL (Modules 1 to 5 and the Activity Diagram section),
+STATUS, DECISIONS, OPEN-QUESTIONS, WORKLOG. All six copies of the two sheets hash equal (Sheet 1
+`3EDBBEE5…`, Sheet 2 `840C6080…`), and the text drawn in Sheet 1 matches the generator line for line. The
+hook's "entries missing" warning for five thesis-folder files was a false alarm: all five were saved between
+02:29 and 03:01 on 2026-09-29, before WORKLOG was committed at 03:02:40, and WORKLOG 2026-09-29 (second)
+describes them.
+
+**Done, at the student's request:**
+- `docs/T1-WALKTHROUGH.md` rewritten in full to match the diagram of 2026-09-29. It was twelve design points
+  behind: keys by event ID alone, one hash over the whole manifest, the change applied once between the
+  phases while every capture restores the snapshot, no run checks, no capture check, the chi-square as a
+  gate, three classes, no pairing, no accept path, and more. The example, chosen by the student over C3 and a
+  generic change, is C4, Restrict NTLM outgoing. Its counts are made up; the Part 3 numbers are the output of
+  the real `analyse()` and `naive_differencing()` on those counts (the 4776 key LOST, q = 7.0e-54; naive 2
+  false alarms, proposed 0). Every count is in the walkthrough's tables, so the numbers can be reproduced from
+  the file. The script that ran them exists only in this chat's scratchpad; whether to add it to the repo is
+  not decided. `check_docs.py`: 0 hits in the file.
+- `DOCS\ACTIVITY-DIAGRAM-EXPLAINED.md` rewritten in the plain voice of the student's reply rules: short
+  sentences, no idioms (about 20 replaced), each term defined once, with hash, event key and field presence
+  added to section 2. Checked: every number and one-line code term of the old file is still present (0
+  missing), and `check_docs.py` LIVE hits are unchanged at 13. Then two facts fixed, approved by the student:
+  section 8 cited `differential.py` lines 48 to 51, and the constants are at 57 to 60; section 9 said the
+  latest capture becomes the accepted baseline, and now says the snapshot plus the change and fix scripts
+  (DECISIONS 2026-09-28), with the fix supplied as a script. The previous version is kept beside it as
+  `ACTIVITY-DIAGRAM-EXPLAINED.2026-09-29.md.bak`, because that folder is not in git.
+- A possible look for the graphical interface was drawn in the chat and not saved: five screens
+  (environment, new run, progress, report, findings), each part marked built, not connected, or designed.
+  Advice given: keep it out of the submitted documents, because no toolkit is chosen (DECISIONS 2026-09-14)
+  and the interface is the first thing cut (DECISIONS 2026-09-29).
+
+**Found, not recorded anywhere else yet (the student decides):**
+1. **C4's CIS number.** The catalogue and OPEN-QUESTIONS 1 say 2.3.11.13, with no benchmark version.
+   Third-party copies of the CIS text, read 2026-09-30: 2.3.11.12 in CIS Windows 10 Enterprise v5.0.0
+   (Syxsense) and CIS Windows Server 2019 Stand-alone v2.0.0 (Tenable); 2.3.11.13 in the domain controller
+   benchmarks (Tenable: Server 2019 v3.0.1 DC, Server 2022 STIG v2.0.0 DC). The Windows 11 number is
+   `(unverified)`. Places: `lab/blueprint.md:357`, OPEN-QUESTIONS 1.
+2. **C4's value is not recorded.** CIS asks for "Audit all" or higher, and Deny all conforms. Audit all
+   (`RestrictSendingNTLMTraffic = 1`) blocks nothing, so the expected 4776 drop needs Deny all (`2`). Place:
+   `lab/blueprint.md:357`.
+3. **C4 needs a network-logon test that still succeeds over Kerberos after the change.** A test that can only
+   use NTLM would fail, and the run check would void every post-change run `(unverified)`. Belongs with the
+   network-logon test design (DECISIONS 2026-09-29).
+4. **The event key has no host part.** With DC-01, the same key from WIN-EP-01 and from DC-01 is counted
+   together, so a drop on one host can be hidden by a rise on the other. No record mentions it. Place:
+   `src/telos/eventkey.py`, `KeySpec`.
+5. **Low.** For a rise, the reason text reads "drop -68.7% within noise band 8.0%". Place:
+   `src/telos/differential.py:319`.
+6. **Low.** `lab/blueprint.md:263`, in the spike section, still says "Build Tier A only. Do not build Tier
+   B", while DC-01, a Tier B machine, is now built before the golden snapshot (DECISIONS 2026-09-29).
+7. **Low.** `lab/scripts/README.md` lines 8 and 36 still speak of 16 changes; 16 is no longer a target
+   (DECISIONS 2026-09-29).
+
+**Study running list (Sheet 1, in progress):**
+- Boxes not yet explained back: Box 1 (asked, no answer yet). Box 2 onward not started.
+- Problems in the diagram or the documents: items 1 to 7 above. The walkthrough and the two explainer facts
+  are fixed.
+- Answers given well: none yet.
+
+**Also:** chat 7c823959 (2026-09-29 11:22, opened in the repo folder) asked a scripture question, not thesis
+work. Noted here so the hook stops listing it.
+
+**Not committed:** `docs/T1-WALKTHROUGH.md` and this entry wait for the student's yes.
+
+**Next:** Box 1's explain-back and panel question, then Box 2 onward. Update this entry at the end of Sheet 1.
+
 ## 2026-09-29 (second) - Submission plan for Friday; FINAL and two figures updated with the four decisions
 
 Chat 27d2595d, after `9220646`.

@@ -1,335 +1,467 @@
 # T1 System Walkthrough
 
-> # DO NOT USE THIS FOR THE DEFENSE YET
+> **Aligned 2026-09-30 to the current design** (chat 243e446b). It follows the activity diagram
+> regenerated 2026-09-29 (`thesis/T1/figures/make_activity_diagram.py`) and `docs/DECISIONS.md` up
+> to 2026-09-29. Where this file disagrees with the code, `DECISIONS.md` or
+> `proposal-form-FINAL.md`, they win (`docs/PROMPT-new-chat.md` section 3).
 >
-> **The example scenario in this document is wrong.** Written 2026-08-31 without checking
-> [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) item 1, which had already recorded the defect on
-> 2026-08-20.
+> **The example is illustrative.** Every count is made up. The analysis numbers in Part 3 are what
+> the real code in `src/telos/` prints for those made-up counts, so the classes, rate ratios and q
+> values are correct for that input. No capture has run in the lab yet (`docs/STATUS.md`).
 >
-> **What is wrong:**
-> 1. The scenario uses "disable Audit Process Creation". CIS **requires** this setting to be
->    enabled (17.3.1 or 17.3.2). Disabling it is de-hardening, not hardening. It is a class A
->    item in the catalogue classification.
-> 2. The control ID "CIS 17.6.2" cited below is invented and does not exist.
-> 3. The walkthrough never applies condition (d) of the corrected blind-spot definition: the
->    technique must still be executable after the change.
-> 4. The surviving-coverage numbers are internally inconsistent. If Sysmon Event ID 1 still
->    records process creation, the Mshta and Service Control detections would likely survive
->    too. See OPEN-QUESTIONS item 1c.
+> **Each part says what is built and what is only designed.** For a designed step, say "is
+> designed to", never "does".
 >
-> **What is still usable:** the structure (Parts 1 to 5), the noise-floor table in Part 1.3,
-> and the naive-versus-proposed comparison in Stage D. Those do not depend on which change is
-> used as the example.
->
-> **Also out of date since 2026-09-28:** Stage B below calls the chi-square a "global gate" and
-> prints "Gate PASSED. Proceeding to per-event testing." The chi-square is now reported as a
-> summary and never stops the per-key tests (`docs/DECISIONS.md` 2026-09-28), so that part of the
-> structure changed too.
->
-> **To fix:** rebuild the example around a class C change once the 16-change catalogue is
-> rebuilt with pinned control IDs. The three solid class C candidates recorded so far are
-> disable WDigest, restrict NTLM, and enforce RDP NLA. The catalogue rebuild is the top task
-> in OPEN-QUESTIONS item 1.
+> The version of 2026-08-31 is in git history (commit `19f6b90`). Its example, disabling Audit
+> Process Creation under an invented "CIS 17.6.2", was de-hardening, and it described a design
+> that has since changed in twelve places: keys built from the event ID alone, one hash over the
+> whole manifest, the change applied once between the phases, no run checks, and the chi-square
+> as a gate among them.
 
 ---
 
-A complete demonstration of using the system, with worked numbers.
+A complete demonstration of using the system, with worked numbers. It is written as a
+demonstration script for the defense, and as a specification to build against. It follows the
+activity diagram box by box; the box numbers are those in `ACTIVITY-DIAGRAM-EXPLAINED.md`.
 
-**Nothing is built yet.** This describes the designed behavior. It is written as a
-demonstration script for the defense, and as a specification to build against.
+## The scenario
 
-**Scenario (INVALID, see the warning above):** a company must disable Audit Process Creation
-to meet CIS Benchmark 17.6.2. The change is correct and required. The question is whether
-detection survives it.
+**The change: C4, "Restrict NTLM: Outgoing NTLM traffic to remote servers"**, a class C change in
+the catalogue (`lab/blueprint.md`). It is set on the endpoint WIN-EP-01:
+`HKLM\System\CurrentControlSet\Control\Lsa\MSV1_0\RestrictSendingNTLMTraffic = 2`, Deny all.
 
----
+**Why it is class C.** The attack survives: authentication continues over Kerberos
+(`lab/blueprint.md`, C4). What changes is the evidence. NTLM credential validation, event 4776, is
+written on the machine that holds the account, which for a domain account is the domain controller
+(Microsoft's 4776 reference, recorded in `lab/blueprint.md`). After the change NTLM is not used, so
+4776 is not written, and a detection rule that reads 4776 cannot fire.
 
-## Part 1: One-time setup
+**Three things about this change are not settled.** A panel can check all three.
 
-Done once per environment, not once per change.
+1. **The control ID.** The catalogue says CIS 2.3.11.13, with no benchmark version. Third-party
+   copies of the CIS text, read 2026-09-30, number this item **2.3.11.12** in CIS Microsoft
+   Windows 10 Enterprise v5.0.0 (Syxsense) and CIS Windows Server 2019 Stand-alone v2.0.0
+   (Tenable), and **2.3.11.13** in the domain controller benchmarks (Tenable). The Windows 11
+   Enterprise number is not checked `(unverified)`. OPEN-QUESTIONS 1.
+2. **The value.** CIS requires "Audit all" or higher, and states that Deny all also conforms (same
+   sources). Audit all, value `1`, only logs NTLM use and blocks nothing, so it cannot cause the
+   expected 4776 drop. This walkthrough uses Deny all, value `2`. The catalogue does not record a
+   value yet.
+3. **The stimulus.** The expected effect needs NTLM logons before the change that still succeed,
+   over Kerberos, after it. The network-logon test that must create them is decided but not
+   designed (DECISIONS 2026-09-29). A test that can only use NTLM `(unverified: for example one
+   that connects to an IP address)` would fail after the change. The run check would then void
+   every post-change run, and for that test the change would behave like class B, removing the
+   attack together with its evidence (OPEN-QUESTIONS 22).
 
-### 1.1 Connect to the existing platform
-
-The engineer enters the Wazuh indexer address and credentials. No new agent is installed
-anywhere. The endpoints already run the Wazuh agent, which is how their events reach the
-platform.
-
-### 1.2 Build the dependency index
-
-The system reads the detection rule set and builds the map linking event types to rules to
-ATT&CK techniques.
-
-```
-Index built.
-  Rules read:            847
-  Event-type keys found: 213
-  ATT&CK techniques:      94
-```
-
-### 1.3 Measure the noise floor
-
-The system runs the same attack suite 5 times against the same snapshot, changing nothing.
-About 2 hours, unattended.
-
-Three of the 213 event types, as an illustration:
-
-| Event type | R1 | R2 | R3 | R4 | R5 | Mean | Noise (CoV) |
-|---|---|---|---|---|---|---|---|
-| 4688 Process Creation | 1251 | 1238 | 1247 | 1259 | 1240 | 1247.0 | **0.7%** |
-| 5156 Network Connection | 4102 | 3847 | 4455 | 3901 | 4290 | 4119.0 | **6.2%** |
-| 4697 Service Installed | 2 | 1 | 3 | 2 | 2 | 2.0 | 36% |
-
-**This table is the heart of the system.**
-
-Event 4688 is stable. It varies under 1% between runs. A 5% drop in 4688 means something
-real happened.
-
-Event 5156 is noisy. It swings over 6% on its own with nothing changed. A 5% drop in 5156
-means nothing at all.
-
-The same 5% drop means two different things. That is why simple subtraction fails, and it is
-the empirical basis for the whole statistical layer.
+**The lab it needs:** DC-01 with its own Wazuh agent, WIN-EP-01 joined to the domain, Credential
+Validation auditing on both, and the network-logon test. All decided 2026-09-29, none built.
 
 ---
 
-## Part 2: Running a validation
+## Part 1: Environment setup (Phase 0)
 
-### 2.1 The engineer fills one form
+Done once per environment, not once per change. "Environment" means everything in the hashed
+parameters (Part 2.2). The hashed parameters of every run must equal the control runs' (Box 8), so
+changing any of them, for example adding the `lsass.exe` rule to the Sysmon config, means new
+control runs.
+
+### 1.1 Register the environment (Box 1, the engineer)
+
+- **SIEM:** SIEM-01, running Wazuh. The system exports the dated event archive over SSH with
+  `telos-archive` (`lab/blueprint.md` section 6, step 10). It does not query the indexer.
+- **Hosts:** WIN-EP-01 and DC-01.
+- **Configuration snapshot:** `cfg-suppressed`, restored at the start of every run
+  (`lab/blueprint.md` section 6, step 1).
+- **Rule export:** the pinned clones of the Sigma and Wazuh rule sets.
+- **Pinned once, for the whole study:** the attack-test list, the window length, and the repeats (5
+  control, 3 before, 3 after). **The list is not chosen yet** (DECISIONS 2026-09-28). This
+  walkthrough uses 18 tests and a 15-minute window as examples.
+
+No software is installed on the endpoints. They already run the Wazuh agent, which only collects.
+The attack tests reach the guest through the hypervisor's guest operations (FINAL, "System Type and
+Deployment").
+
+*Designed, not built: the capture harness does not exist. In the lab, SIEM-01 and WIN-EP-01 exist;
+DC-01, the golden snapshot and `cfg-suppressed` do not.*
+
+### 1.2 Build the dependency index (Box 2)
+
+The system reads the rule set and builds the map from event key to the rules that read it, and from
+each rule to its ATT&CK techniques.
+
+*Designed, not built. No index module exists in `src/telos/`.*
+
+### 1.3 Five control runs (Boxes 3 and 4)
+
+Five runs with **no change at all**. Each one: restore `cfg-suppressed`, boot, settle 180 s, start
+fence, the 18 pinned tests, end fence, drain 120 s, export the dated archive and verify its hash. The
+fences are single marker events written inside the telemetry (`lab/scripts/telos-fence.cs`), so the
+window is cut by what the machine recorded, not by the host clock.
+
+### 1.4 Check the control runs (the Phase 0 check)
+
+Every control run must have recorded events and completed all 18 tests. If one did not, the setup
+ends at **CONTROL RUNS NOT USABLE: investigate, then capture again**. A control run that recorded
+nothing would make every key look far noisier than it is, and real losses would be reported
+UNCHANGED.
+
+*Designed, not built: `VarianceModel.from_control()` does not check yet. Decided 2026-09-29: built
+before data collection (OPEN-QUESTIONS 24).*
+
+### 1.5 Fit the noise model (Box 5)
+
+Six of the keys, as an illustration:
+
+| Event key | R1 | R2 | R3 | R4 | R5 | Mean | CoV | Dispersion |
+|---|---|---|---|---|---|---|---|---|
+| `Security-4776[PackageName,TargetUserName,Workstation]` | 42 | 40 | 41 | 43 | 39 | 41.0 | 3.86% | 1.00 |
+| `Security-4624[AuthenticationPackageName,LogonType,TargetUserName]` | 120 | 117 | 123 | 119 | 121 | 120.0 | 1.86% | 1.00 |
+| `Security-4769[]` | 58 | 61 | 57 | 60 | 59 | 59.0 | 2.68% | 1.00 |
+| `Sysmon-3[DestinationIp,DestinationPort,Image]` | 412 | 385 | 446 | 390 | 429 | 412.4 | 6.25% | 1.61 |
+| `Security-4697[ServiceFileName,ServiceName]` | 2 | 1 | 3 | 2 | 2 | 2.0 | 35.36% | 1.00 |
+| `Sysmon-1[CommandLine,Hashes,Image,OriginalFileName,ParentImage]` | 1171 | 1208 | 1134 | 1236 | 1190 | 1187.8 | 3.24% | 1.24 |
+
+**CoV**, the coefficient of variation, is the standard deviation divided by the mean: how much a
+count moves between identical runs, as a fraction. **Dispersion** is the variance divided by the
+mean. It is floored at 1.0, so the system never claims a key is more regular than random arrival;
+four of these six keys sit on that floor.
+
+**This table is why subtraction fails.** The 4624 key moves under 2% between identical runs. The
+Sysmon-3 key moves over 6%. The same 5% drop is a signal for the first and nothing for the second.
+
+`Security-4769[]` has empty brackets because 4769 has no tracked fields in the code today
+(`DEFAULT_TRACKED_FIELDS` in `eventkey.py` has no entry for 4768 or 4769; OPEN-QUESTIONS 18). Such
+an event is counted by its type alone.
+
+*Built: `variance.py`, `VarianceModel.from_control()`. These numbers are its output.*
+
+The same five runs give the **stimulus fingerprint** and its spread. Here the fingerprint is the
+count of Sysmon Event 1, process creation, in the window: 1,134 to 1,236 across the five runs. This
+walkthrough uses that lowest-to-highest range as the tolerance; how the tolerance is computed is not
+decided (OPEN-QUESTIONS 22). *Designed, not built.*
+
+### 1.6 Saved (Box 6)
+
+The noise baseline, the stimulus tolerance and the index are stored, and connector **A** carries
+them into Phase 4.
+
+---
+
+## Part 2: Running a validation (Phases 1 to 3)
+
+### 2.1 The engineer defines the run (Box 7)
 
 ```
 NEW VALIDATION RUN
-
-Change ID          CIS-17.6.2
-Description        Disable Audit Process Creation subcategory
-Apply script       change-01-disable-audit-process-creation.ps1
-Target host        WIN-EP-01
-Snapshot           cfg-natural
-Stimulus set       ART-WINDOWS-BASELINE-v1  (18 tests)
-Window duration    15 minutes
-Repetitions        3 per phase
-
-                                        [ Start ]
+Target hosts             WIN-EP-01, DC-01
+Tests, window, repeats   as pinned in Phase 0   (18 tests, 15 minutes, 3 per phase)
 ```
 
-The engineer needs no prior knowledge of which rules will be affected. Determining that is
-the purpose of the system.
+The engineer chooses nothing else here. The engineer does not need to know which detection rules
+will be affected. Finding that out is the purpose of the system.
 
-### 2.2 The manifest is frozen and hashed
+### 2.2 The manifest's parameters are frozen and hashed (Box 8)
 
-```
-Manifest hash: 7f3a9c2e14b8d05f
-Any later run must produce this same hash to be comparable.
-```
+The manifest has two parts (D2, DECISIONS 2026-09-14; `lab/blueprint.md` section 6, step 11).
 
-### 2.3 Three pre-change captures
-
-Unattended, about 75 minutes. Each capture:
-
-```
-[1/3] Restoring snapshot cfg-natural .............. done
-      Booting ............................. done
-      Settling 180 s ...................... done
-      START FENCE emitted at 14:02:11
-      Running 18 Atomic Red Team tests .... done
-      END FENCE emitted at 14:17:44
-      Draining 120 s ...................... done
-      Collecting events between fences .... 34,891 events
-```
-
-The settle period excludes the boot event storm. The drain period catches events still
-buffered by the agent. Both are required, and both are fixed for every run.
-
-### 2.4 Apply the hardening change
+- **Hashed parameters,** which must be identical for two runs to be compared: the configuration
+  snapshot ID, the Atomic Red Team commit and test IDs, the window, the repetitions, the rule set
+  version, the thresholds, the Sysmon config hash, the Wazuh version, and the harness's git commit.
+- **Recorded, not hashed:** the run ID, the phase, the change ID and its script hash, the fence
+  times, and each test's exit status and duration.
 
 ```
-Running change-01-disable-audit-process-creation.ps1
-  auditpol /set /subcategory:"Process Creation" /success:disable /failure:disable
-Verifying ......... setting confirmed OFF
-Rebooting ......... done
+Parameters hash     7f3a9c2e14b8d05f    (example)
+Control runs        7f3a9c2e14b8d05f    match
 ```
 
-### 2.5 Three post-change captures
+If the hashes differ, the system is designed to decline the comparison and name the parameter that
+differs (FINAL, Module 1). *Designed, not built.*
 
-Same manifest. Same 18 tests. Same timings. Nothing else differs.
+### 2.3 Three valid pre-change runs (Boxes 9 and 10, the Phase 1 run check, Box 11)
 
-Total: about 3 hours, unattended.
+```
+[P1] Restore snapshot cfg-suppressed ........... done
+     Boot, settle 180 s ........................ done
+     START FENCE ............................... emitted
+     18 pinned tests ........................... 18 of 18 completed
+     END FENCE ................................. emitted
+     Drain 120 s ............................... done
+     Export dated archive, verify hash ......... done
+     Run check: 18 of 18 tests, fingerprint 1,182 (tolerance 1,134 to 1,236) ... VALID
+```
+
+**A voided run, as an example.** On its first attempt P3 completed 17 of 18 tests and its
+fingerprint was 1,090, outside the tolerance. The run is **VOID**: the reason is written in the
+manifest, the run is not analysed, and it is captured again. That is why the loop reads "3 valid
+runs": the analysis needs the same number of runs in both phases (`analyse()` refuses otherwise).
+The repeat of P3 was valid, with a fingerprint of 1,165.
+
+**The pre-change profile** is built from the exported events. Each event becomes a key: the event
+type plus which tracked fields carried a value. Empty, `-`, `N/A`, `(null)` and `NULL` count as
+absent; numeric zero counts as present. For a short list of fields the key will also record the
+value, grouped into a few classes (DECISIONS 2026-09-29). C4 needs none of them, because its effect
+is a change in rate, not in value.
+
+*Built: `eventkey.py`, `KeyBuilder.build()` and `is_populated()`. Designed, not built: the run
+check, the voiding, and value keying.* The pre-change profile is stored, and connector **B**
+carries it into Phase 5.
+
+### 2.4 Supply the hardening change (Boxes 13 and 14)
+
+The engineer supplies the change ID and the script that applies it,
+`change-C4-restrict-ntlm-outgoing.ps1` (the naming rule in `lab/scripts/README.md`; no change script
+exists yet). The system records both in the manifest's record part, **outside the hash**. The
+change is the one thing that must differ between a before run and an after run. Inside the hash,
+the two could never match.
+
+### 2.5 Three valid post-change runs (Box 15, the Phase 3 run check)
+
+```
+[Q1] Restore snapshot cfg-suppressed ........... done
+     Apply change-C4-restrict-ntlm-outgoing.ps1  done
+     Reboot if needed, settle 180 s ............ done
+     Confirm inside the host ................... RestrictSendingNTLMTraffic = 2
+     START FENCE, 18 of 18 tests, END FENCE, drain 120 s, export ... done
+     Run check: tests 18 of 18, fingerprint 1,178, change confirmed ... VALID
+```
+
+**The order is the design.** The change is applied, and the machine restarts and settles, **before**
+the window opens (D2). Otherwise the change and its restart would sit inside every after run and no
+before run, and the comparison would measure two differences at once. The change is applied again
+in every run because every run begins by restoring the snapshot, and the restore erases it. The
+2026-08-31 version of this walkthrough applied the change once between the phases, which that
+restore would have undone.
+
+The change is confirmed inside the host, not from the SIEM, because events written during start-up
+never reach the archive (OPEN-QUESTIONS 28).
+
+What this does not yet prove: that the extra restart leaves no trace in the window. The spike
+measures it (runbook Phase 7).
+
+*Designed, not built: the whole capture sequence is the harness.*
 
 ---
 
-## Part 3: What the system computes
+## Part 3: What the system computes (Phase 4)
 
-### Stage A. Count
+### Stage A. Align (Box 19)
 
-**Before the change:**
+The two profiles are aligned over the union of their keys, with an explicit zero wherever a key is
+missing from one phase.
 
-| Event type | P1 | P2 | P3 | Mean |
-|---|---|---|---|---|
-| 4688 | 1244 | 1252 | 1249 | 1248.3 |
-| 5156 | 4180 | 3920 | 4310 | 4136.7 |
-| 4697 | 2 | 2 | 1 | 1.7 |
+| Event key | P1 | P2 | P3 | Q1 | Q2 | Q3 |
+|---|---|---|---|---|---|---|
+| `Security-4776[PackageName,TargetUserName,Workstation]` | 43 | 40 | 41 | 0 | 0 | 0 |
+| `Security-4624[AuthenticationPackageName,LogonType,TargetUserName]` | 121 | 118 | 124 | 119 | 123 | 120 |
+| `Security-4769[]` | 60 | 58 | 61 | 101 | 98 | 103 |
+| `Sysmon-3[DestinationIp,DestinationPort,Image]` | 418 | 392 | 431 | 399 | 440 | 385 |
+| `Security-4697[ServiceFileName,ServiceName]` | 2 | 2 | 1 | 2 | 1 | 2 |
+| `Sysmon-1[CommandLine,Hashes,Image,OriginalFileName,ParentImage]` | 1182 | 1201 | 1165 | 1178 | 1195 | 1189 |
 
-**After the change:**
+*Built: `differential.py`, `align()`.*
 
-| Event type | Q1 | Q2 | Q3 | Mean |
-|---|---|---|---|---|
-| 4688 | 0 | 0 | 0 | **0.0** |
-| 5156 | 3990 | 4402 | 3850 | 4080.7 |
-| 4697 | 2 | 1 | 2 | 1.7 |
+### Stage B. Capture check, then one chi-square as a summary (the Phase 4 check, Box 19a)
 
-### Stage B. The global gate
-
-One chi-square test across the whole profile, not one per event type.
+Every repetition in both phases recorded events, so the run can be tested. Had any repetition
+recorded nothing, the run would end as **NOT TESTABLE**, because an empty capture cannot be told
+apart from a dead agent.
 
 ```
-Chi-square across 213 event types
-Result: the profile changed. p < 0.001
-Gate PASSED. Proceeding to per-event testing.
+Chi-square over the whole 2 x 6 profile:  155.6,  p = 8.6e-32
+Reported as a summary. Every key goes on to Stage C whatever it says.
 ```
 
-If this had failed, the run stops and records "no significant change". A negative result is
-recorded, not discarded.
+*Built: `capture_problem()`, `global_gate()` and `analyse()` in `differential.py`.*
 
-### Stage C. Test each event type
+### Stage C. Test and classify every key (Boxes 20 and 21)
 
-| Event | Before | After | Ratio | Noise floor | Verdict |
+Rates are events per run.
+
+| Event key | Before | After | Ratio | q | Class |
 |---|---|---|---|---|---|
-| 4688 | 1248.3 | 0.0 | 0.000 | 0.7% | **LOST** |
-| 5156 | 4136.7 | 4080.7 | 0.986 | 6.2% | **UNCHANGED** |
-| 4697 | 1.7 | 1.7 | 1.000 | too few counts | **INCONCLUSIVE** |
+| `Security-4776[PackageName,TargetUserName,Workstation]` | 41.3 | 0.0 | 0.000 | 7.0e-54 | **LOST** |
+| `Security-4624[AuthenticationPackageName,LogonType,TargetUserName]` | 121.0 | 120.7 | 0.997 | 0.97 | UNCHANGED |
+| `Security-4769[]` | 59.7 | 100.7 | 1.687 | 7.4e-8 | UNCHANGED |
+| `Sysmon-3[DestinationIp,DestinationPort,Image]` | 413.7 | 408.0 | 0.986 | 0.97 | UNCHANGED |
+| `Security-4697[ServiceFileName,ServiceName]` | 1.7 | 1.7 | n/a | n/a | INCONCLUSIVE |
+| `Sysmon-1[CommandLine,Hashes,Image,OriginalFileName,ParentImage]` | 1182.7 | 1187.3 | 1.004 | 0.97 | UNCHANGED |
+
+Profile outcome: **CHANGED**, because one key is LOST. Five keys were tested; the 4697 key was not.
 
 Reading each row:
 
-**4688 went from 1248 to zero.** Its natural variation is 0.7%. A drop to zero is far outside
-that. This is a real loss.
+- **4776 is LOST.** 124 events before, at least the 30 needed, exactly zero after, and its q value
+  survives the correction. The q value is the p value after the Benjamini-Hochberg correction, which
+  holds the expected share of false findings at 5% or less when many keys are tested at once.
+- **Sysmon-3 fails all three REDUCED conditions.** Its q is 0.97, above 0.05. Its ratio is 0.986,
+  above 0.5. Its drop, 1.4%, is inside its noise band of 3 × 6.25% = 18.7%. Any one failure is
+  enough to keep it out of the report.
+- **4769 rose by 69%, and that is not a finding.** Its q is 7.4e-8, so the rise is real, but the
+  method looks for lost evidence, and a rise is UNCHANGED. It is the expected sign that
+  authentication moved to Kerberos.
+- **4624 did not move in count.** The same logons still happen, now over Kerberos, so their
+  `AuthenticationPackageName` changes from `NTLM` to `Kerberos`. That is a change of value, which
+  a key that records only presence cannot see, and the field is not on the value-keying candidate
+  list (DECISIONS 2026-09-29).
+- **4697 is INCONCLUSIVE.** Five events before is under 30, so it is not tested. It is reported as
+  "not tested", never as "unchanged".
+- A key the control runs never saw would also be INCONCLUSIVE. There is none here.
 
-**5156 dropped 1.4%.** Its natural variation is 6.2%. The drop is smaller than the noise. Not
-a finding.
+*Built: `_test_key()` and `classify()` in `differential.py`.*
 
-**4697 occurs twice per run.** Below the minimum count needed for the test to have power.
-Reported as inconclusive, not as unchanged. Calling it unchanged would claim knowledge the
-data does not support, and would inflate the reported recall.
+### The comparison that is the study's result
 
-### Stage D. The comparison that is the experimental result
+The naive method on the same data reports every key whose mean fell, by any amount (`baseline.py`).
 
-The naive method runs on the same data. It reports any event whose count went down.
+| Event key | Naive differencing | Proposed method |
+|---|---|---|
+| `Security-4776[...]` | reports it, 100% drop | LOST |
+| `Sysmon-3[...]` | **reports it, 1.37% drop** | not reported |
+| `Security-4624[...]` | **reports it, 0.28% drop** | not reported |
+| Result | 1 correct, **2 false alarms** | 1 correct, **0 false alarms** |
 
-| Method | 4688 | 5156 | Result |
-|---|---|---|---|
-| Naive differencing | reports LOST | **reports LOST** | 1 correct, **1 false alarm** |
-| Proposed system | reports LOST | reports unchanged | 1 correct, **0 false alarms** |
+Both false alarms are keys that moved by less than their own run-to-run noise.
 
-This table, scaled across 16 changes, is the headline result of the study.
+**This is made-up data, and the claim is falsifiable either way.** If the lab's measured noise turns
+out near zero, the naive method raises almost no false alarms, the statistical layer gains nothing
+inside the lab, and the study says so (FINAL, "The Variance Floor and External Validity").
 
-### Stage E. Map the loss to detections
+*Built: `baseline.py`, `naive_differencing()`; `report.py`, `render_comparison()`.*
 
-```
-4688 is read by 12 detection rules
-  Rule 92052  Suspicious Process Creation        severity 12
-  Rule 92053  Mshta Suspicious Execution         severity 12
-  ... 10 more
+### Stage D. Pair field-level losses (Box 22)
 
-Those 12 rules cover 5 ATT&CK techniques.
+A LOST key and a NEW key of the same event type, where the new key has fewer fields, would mean a
+field was emptied while the event kept firing. There is no NEW key here: C4 stops 4776 as a whole
+event, so nothing is paired.
 
-Checking surviving coverage for each technique:
-  T1059.001 PowerShell     -> Sysmon Event 1 still active. STILL COVERED
-  T1053.005 Scheduled Task -> Sysmon Event 1 still active. STILL COVERED
-  T1036     Masquerading   -> Sysmon Event 1 still active. STILL COVERED
-  T1218.005 Mshta          -> no surviving source. NOW BLIND
-  T1543.003 Service Ctrl   -> no surviving source. NOW BLIND
+*Built but not connected: `field_loss_pairs()` in `eventkey.py` is tested, but `analyse()` and
+`report.py` do not call it yet. Decided 2026-09-29: connected before data collection
+(OPEN-QUESTIONS 30).*
 
-Impact score: 89 of 100
-  affected rule severity   high
-  rules affected           12
-  techniques fully blind   2 of 5
-```
+### Stage E. Map the loss to rules and techniques, and score it (Boxes 23 and 24)
 
-The system does not report "5 techniques lost". Three still have working detection through
-Sysmon Event 1. Only 2 are genuinely blind. That distinction is what makes the ranking
-useful rather than alarming.
+The lost 4776 key is looked up in the index: which rules read it, which ATT&CK techniques those
+rules cover, and whether another key that is still observed also supports each technique
+(**surviving coverage**). A technique that keeps another working source is not blind. A technique
+whose only source went silent is.
+
+The impact score weighs the severity of the affected rules, how many are affected, the importance
+of the techniques, and surviving coverage (FINAL, Module 4).
+
+*Designed, not built. There is no index and no scorer, so this walkthrough names no rules and gives
+no score. The 2026-08-31 version printed rule IDs and a score of 89; no index produced them.*
+
+### Stage F. Remediation candidates (Box 25)
+
+Two levels, in order of confidence: a **surviving source**, another key still observed that
+supports the same technique; and a **known compensating control** from a curated list. The system
+does not write rules and deploys nothing (DECISIONS 2026-09-14, D1; 2026-09-28).
+
+*Designed, not built.*
 
 ---
 
-## Part 4: The report
+## Part 4: The report (Box 26)
 
 ```
-VALIDATION REPORT
-Change:   CIS-17.6.2  Disable Audit Process Creation
-Host:     WIN-EP-01        Date: 2026-10-05
-Manifest: 7f3a9c2e14b8d05f
+VALIDATION REPORT                                          (example data)
+Change    C4  Restrict NTLM: Outgoing NTLM traffic to remote servers
+          CIS item number and benchmark version: to be confirmed (see the scenario)
+Hosts     WIN-EP-01, DC-01
+Manifest  7f3a9c2e14b8d05f  (parameters; the change is recorded outside the hash)
 
-VERDICT: BLIND SPOTS FOUND.  1 finding.  Highest impact 89.
+VERDICT   BLIND SPOTS FOUND.  1 finding.  Profile outcome CHANGED.
+          Whole-profile chi-square 155.6, p = 8.6e-32 (summary only)
 
-FINDING 1                    Impact 89           LOST
-  Event type   4688 Process Creation
-  Rate before  1248.3 per window
-  Rate after   0.0 per window
-  Confirmed    loss exceeds the measured noise floor of 0.7%
+FINDING 1   LOST   Security-4776[PackageName,TargetUserName,Workstation]
+  rate before    41.3 per run
+  rate after     0.0 per run
+  95% bound      the after rate is at most 0.024 of the before rate
+  q value        7.02e-54   (BH corrected)
+  noise floor    3.86% CoV, dispersion 1.00
+  rules, techniques, impact, remediation     designed, not built
 
-  Rules blinded             12
-  Techniques fully blind     2   T1218.005 Mshta
-                                 T1543.003 Service Control
-
-  REMEDIATION CANDIDATES
-  1. Surviving source     Sysmon Event ID 1 records process creation
-                          and is still active. 12 rules can be
-                          re-expressed against it.
-  2. Compensating control Sysmon config already captures the needed
-                          fields. No new telemetry required.
-
-  NOTE: the hardening change stays in place. Remediation restores
-        detection, it does not reverse the security control.
+NOT TESTED, REPORTED AS INCONCLUSIVE
+  Security-4697[ServiceFileName,ServiceName]   5 occurrences before the change
 
 NOT REPORTED
-  5156  dropped 1.4%, within its 6.2% noise band
-  4697  too few occurrences to test. Inconclusive, not cleared.
+  Sysmon-3[...]       fell 1.4%, inside its noise band of 18.7%
+  Security-4769[]     rose 69%; a rise is not a loss
+  Security-4624[...]  same count; its package moved from NTLM to Kerberos,
+                      a value change this key does not see
 ```
 
-Exports: a CSV of all 213 event types, a JSON of findings for a ticketing system, and an
-ATT&CK Navigator layer showing the 2 blind techniques in red.
+*Built: the statistical part, printed as text by `report.py`. Designed: the rules and techniques,
+coverage change, remediation, and the CSV, JSON and ATT&CK Navigator exports.*
 
 ---
 
-## Part 5: Fix and re-validate
+## Part 5: Review, remediate, re-validate (Phase 5)
 
-### 5.1 The detection engineer acts
+*All of Phase 5 is designed, not built.*
 
-They read the report, accept candidate 1, and rewrite the 12 rules to read Sysmon Event 1
-instead of 4688.
+### 5.1 The detection engineer reviews the report (Box 27)
 
-### 5.2 Re-validation
+Three outcomes are possible.
 
-The system knows this was a detection rule fix, not a telemetry fix, so it replays the
-identical manifest and checks whether the rules now fire. It does not need a fresh capture,
-because a rule change does not alter what the host emits.
+- **No remediation:** the engineer documents and accepts the residual risk. The finding closes as
+  ACCEPTED.
+- **A detection rule:** the engineer writes a rule against evidence that still exists.
+- **Restore telemetry:** the engineer supplies a fix as a script, an audit or Sysmon setting.
+
+**For C4, restoring telemetry is not a real option `(reasoning, not measured)`.** 4776 records NTLM
+credential validation, and after the change NTLM is not used. Bringing 4776 back would mean allowing
+NTLM again, which undoes the hardening. So the realistic choices here are a rule on the evidence
+that remains, or acceptance.
+
+### 5.2 Re-validation, detection rule mode (Box 31)
+
+A new rule does not change what the host emits, so a fresh telemetry comparison would prove
+nothing. The system replays the manifest and checks that the rule fires.
 
 ```
-RE-VALIDATION  (mode: detection rule)
-Replaying manifest 7f3a9c2e14b8d05f
-  12 rewritten rules fired on the stimulus:  12 of 12
-  Techniques recovered:  T1218.005, T1543.003
-
+RE-VALIDATION  (mode: detection rule)                      (example)
+Replay manifest 7f3a9c2e14b8d05f:
+  restore cfg-suppressed, apply change-C4 script, confirm, run the 18 pinned tests
+New rule fired on the stimulus ............ yes
 FINDING 1 -> CLOSED AS FIXED
+Accepted baseline: cfg-suppressed + change-C4-restrict-ntlm-outgoing.ps1
 ```
 
-A finding cannot reach "closed as fixed" without a passing re-validation. The system enforces
-this rather than accepting the engineer's word.
+If the rule had not fired, the finding would go back to review. **A finding cannot reach "closed as
+fixed" without a passing re-validation run.** The system is designed to enforce this rather than
+accept the engineer's word.
 
-If instead the fix had been a telemetry restoration, such as re-enabling an audit
-subcategory, the re-validation would take a fresh capture and compare it against the stored
-pre-change profile, because that kind of fix does change what the host emits.
+### 5.3 Re-validation, telemetry mode (Box 30)
+
+Not used for C4, for the reason in 5.1. For a change where it applies: restore the snapshot, apply
+the change script and then the fix script, confirm both inside the host, capture, and compare
+against the stored pre-change profile (connector **B**). A fix made once by hand would be erased by
+the restore at the start of every capture, so the fix must be a script (DECISIONS 2026-09-28).
+
+### 5.4 The accepted baseline
+
+Whether the finding closes as FIXED or ACCEPTED, the accepted baseline becomes the snapshot plus the
+scripts applied on top of it. Later runs rebuild it the same way, so an accepted loss is not
+reported again on every run. In this study each change is tested alone against the unchanged
+snapshot, so the list of accepted scripts is empty for every study run (DECISIONS 2026-09-28).
 
 ---
 
 ## For the defense: three sentences
 
-1. "The system learns how much each log type naturally varies, by running the same test five
-   times and changing nothing."
-2. "Then it compares before and after, and only reports a loss when the drop is bigger than
-   that natural variation."
-3. "Then it shows which detection rules depended on the lost log, which attacks are now
-   invisible, and which still-working log could replace it."
+1. "The system learns how much each event key naturally varies, by running the same pinned attack
+   tests five times and changing nothing."
+2. "Then it compares before and after. It reports a loss only when it survives the correction for
+   testing many keys, and a reduction only when the rate also fell to half or less, by more than
+   that key's own natural variation."
+3. "Then it is designed to show which detection rules depended on the lost evidence, which
+   techniques are now unseen, and which still-working source could replace it."
 
 ## The single strongest slide
 
-The Stage D table. It shows the naive method producing a false alarm on the same data where
-the proposed method does not. That is the entire contribution in six numbers.
+The comparison table in Part 3: on the same data, the naive method raises two false alarms and the
+proposed method raises none. **Say that the numbers are illustrative** until the lab produces its
+own. The real version of this table comes from the evaluation.
