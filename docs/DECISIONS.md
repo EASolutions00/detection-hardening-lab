@@ -8,6 +8,57 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-10-01 - The study uses Wazuh 4.14.7's shipped rules, exported whole; a change whose evidence no rule reads is reported as affecting no detection (choice 1)
+
+**Decision, by the student, chat 243e446b, in two parts:**
+
+1. **The rule set is Wazuh's own.** The rule set installed with the pinned manager `4.14.7-1` is exported
+   whole from SIEM-01 (`/var/ossec/ruleset/rules/`, plus `/var/ossec/etc/rules/` if it holds custom rules),
+   not picked by hand. Its version and one hash over the folder go into the hashed parameters. The index
+   keeps the rules that read a Windows event key: 454 rules in 15 files at tag `v4.14.7`. Sigma is not used;
+   the clone at `da9bb07` stays a record of the T3 count. The student's reason: "to not complicate things".
+2. **Choice 1: accept what the shipped rules give, and report it.** With these rules only C1, C3 and C5
+   have a rule that reads their evidence while the attack still works (OPEN-QUESTIONS 1, "Which changes a
+   Wazuh rule depends on"). The study reports that plainly. It does not add Sigma rules for the other
+   changes (choice 2). It writes no rules of its own to create dependencies (choice 3), because the study
+   would then report blind spots it had made itself.
+
+**Why Wazuh's rules.** The thesis asks whether the detections a SIEM actually runs go blind. On SIEM-01
+those are Wazuh's rules; Wazuh does not run Sigma rules directly. Phase 5's "confirm the rule now fires" can
+be checked on SIEM-01 only with Wazuh's rules. The version is already pinned with the package.
+
+**What it changes.**
+- **Positive cases: about 3, not about 7.** Supersedes in part the two 2026-09-29 entries that expected
+  about 7 measurable class C changes. About 7 may still change telemetry, but only C1, C3 and C5 can blind a
+  shipped Wazuh rule. C4's only affected rules (92652, 92657) detect pass-the-hash, which C4 blocks, so it
+  behaves like class B. C2, C6 and C7 have no rule that reads their evidence.
+- **The value-keying list follows the rule set.** A field is keyed by value only when a rule matches
+  specific values of it (2026-09-29). With Wazuh's rules: `GrantedAccess` qualifies (rule 92900 matches
+  `0x1010|0x40`), `LogonType` qualifies (60118 matches `2`; 92653 and 92656 match `10`), and
+  `AuthenticationPackageName` qualifies (92652 matches `NTLM`). `LmPackageName` and `TicketEncryptionType`
+  do not: no rule reads them, so under FINAL Module 2 they are not tracked at all, and C2 and C7 leave the
+  key unchanged. The final list is still set after the C3 capture.
+- **The statistical comparison keeps its test cases** from every change that moves a tracked key, class B
+  included. What shrinks is the number of real blind spots the study can show.
+- **Changed the same day, approved by the student:** FINAL "Scale of the Experiment" and
+  `T1-REVISIONS-LIST.md:141` no longer say "about seven"; both now say the lab uses Wazuh's shipped rules
+  and that a first check finds about three changes a rule depends on. STATUS updated. **Still to change:**
+  `DEFAULT_TRACKED_FIELDS` in `eventkey.py`, when the index is built.
+
+**Not checked** `(unverified)`: the per-change result comes from a text search of the rule files at tag
+`v4.14.7`, not a reading of all 454 rules, and parent-rule conditions were not followed. Whether those files
+equal the ones installed on SIEM-01 needs a hash comparison there. The index, once built, gives the exact
+list.
+
+**For the defense:** "Why do only three of your changes produce blind spots?" Because a blind spot needs a
+detection that reads the evidence, and the SIEM's own rules read the evidence of only three. The others
+change telemetry that no shipped rule uses, and the system reports them as affecting no detection. That is
+a result, not a failure.
+
+**Cost if wrong:** if the search missed a rule, a change is misclassified. Low, and caught before data
+collection by the index and the hash comparison. If the panel expects more positive cases, choice 2 (Sigma
+for the rest) is still possible before data collection.
+
 ## 2026-10-01 - Operator access is a precondition: the credentials are limited to one account that signs in with MFA; the system has no login of its own
 
 **Decision, by the student, chat 243e446b:** FINAL's preconditions table gains a seventh row. The passwords

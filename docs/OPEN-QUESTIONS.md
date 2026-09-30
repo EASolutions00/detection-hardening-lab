@@ -165,6 +165,40 @@ Tenable, [Server 2019 Stand-alone v2.0.0](https://www.tenable.com/audits/items/C
 and the [Windows 11 Enterprise v4.0.0 listing](https://www.tenable.com/audits/items/CIS_Microsoft_Windows_11_Enterprise_v4.0.0_L1_BitLocker.audit:c63f38508013258a079cf766eed5175d)
 (404 on 2026-09-30).
 
+### Which changes a Wazuh rule depends on, checked 2026-10-01
+
+Found by chat 243e446b after the student chose Wazuh's shipped rules. **Decided the same day: choice 1,
+accept and report** (`DECISIONS.md` 2026-10-01).
+
+**Method.** The Windows rule files of `wazuh/wazuh` at tag `v4.14.7`, matching the installed `4.14.7-1`,
+were downloaded with `gh api` and searched as text for the event IDs and fields each change affects: 15
+files, 454 rules. A text search, not a rule-by-rule reading; parent-rule conditions (`if_sid`, `if_group`)
+were not followed.
+
+**Event IDs named in any rule:** 4624 (5 matches), 4625 (2), 4769 (2). **None:** 4776, 4768, 4771, 4688,
+4697, 4104. The PowerShell rules read 4104's `scriptBlockText` (42 matches) without naming the ID. Process
+creation is read from Sysmon event 1 (`commandLine`, 61 matches in `0800-sysmon_id_1.xml`), never from 4688.
+
+| Change | Evidence it changes | Rule that reads it | Blind spot possible? |
+|---|---|---|---|
+| C1 WDigest | 4624 `LogonType` | 60118, level 3 (logon type 2) | Yes, if the catalogue's stated effect holds `(unverified)` |
+| C2 NTLMv2 only | 4624 `LmPackageName` | none found | No: no rule reads it, so it is not tracked and the key does not change |
+| C3 LSA Protection | Sysmon 10 `GrantedAccess` to `lsass.exe` | 92900, level 12, T1003.001, matches `0x1010\|0x40` | Yes; condition (d) rests on documented bypasses |
+| C4 Restrict NTLM | 4776; NTLM network logons | none on 4776; 92652 and 92657 (level 6, T1550.002) read `authenticationPackageName=NTLM` | No: those rules detect pass-the-hash, which C4 blocks (reasoning, not measured) |
+| C5 RDP NLA | 4624 / 4625 `LogonType` 10 | 92653 (level 3), 92656 (level 15) | Yes, if the stated effect holds `(unverified)` |
+| C6 Cached credentials | cached logons | none found | No rule |
+| C7 RC4 for Kerberos | 4768 / 4769 `TicketEncryptionType` | none | No: no rule reads it, so it is not tracked and the key does not change |
+| C8 Credential Guard | Sysmon 10 to `lsass.exe` | 92900 | Blocked anyway (item 2) |
+
+**What it means.** With the shipped rules, about three changes (C1, C3, C5) can blind a detection, not the
+about seven expected on 2026-09-29. The warning below, fewer than about 8, now applies to the blind-spot
+claims. The key-level comparison with the naive method draws on every change that moves a tracked key,
+class B included, so it is affected less.
+
+**Still to do:** compare SIEM-01's installed rule files with tag `v4.14.7` by hash; replace this search with
+the index once it is built. FINAL "Scale of the Experiment" and `T1-REVISIONS-LIST.md:141` were changed the
+same day to say "about three" (`DECISIONS.md` 2026-10-01).
+
 **What a bad answer means:** If fewer than about 8 class C changes can be pinned, the precision
 and recall comparison is underpowered and T1's evaluation has to be restated around a smaller
 labeled set.

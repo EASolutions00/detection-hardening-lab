@@ -83,7 +83,8 @@ extra reboot's effect. Its result sets the number of changes (DECISIONS.md 2026-
 On 2026-09-26: 4768, 4769 and 4776 were zero on every archive date, and the lab never made a network
 logon (0 of 2,892). The pinned Sysmon config records no Event 10 (0 of 14,102 Sysmon events). So, as
 configured then, **no class C change was measurable.** The 2026-09-29 decisions fix this on paper; about 7
-class C changes become measurable once they are built.
+class C changes become measurable once they are built. **2026-10-01:** the study uses Wazuh's shipped rules,
+and with them only C1, C3 and C5 can blind a detection (`DECISIONS.md` 2026-10-01, choice 1; OPEN-QUESTIONS 1).
 
 ## Also open
 

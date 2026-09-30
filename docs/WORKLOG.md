@@ -101,6 +101,19 @@ running list, none recorded elsewhere: the study's rule set (Sigma or Wazuh) is 
 window has a fixed length, and runbook Phase 6 fires the end fence when the suite finishes; whether DC-01 is
 restored each run is not decided; Box 1 does not list the thresholds, which FINAL fixes there.
 
+**Then, same day: the rule set.** The student chose Wazuh's shipped rules over Sigma ("to not complicate
+things"). The Windows rule files of `wazuh/wazuh` at tag `v4.14.7` were read with `gh api` into the scratchpad
+(29 of 168 files are Windows-related; 15 searched, 454 rules). A first pattern missed conditions written with
+a `type="pcre2"` attribute and was widened. Result: no rule names 4776, 4768, 4771, 4688, 4697 or 4104, and
+only C1, C3 and C5 have a rule that reads their evidence while the attack survives. The student chose choice
+1, accept and report: `DECISIONS.md` 2026-10-01 (second entry that day), OPEN-QUESTIONS 1 "Which changes a
+Wazuh rule depends on", STATUS. The assistant's claim earlier in the chat that C2, C6 and C7 would still count
+as test cases once value keying is built was wrong for C2 and C7: no rule reads their fields, so they are not
+tracked. Then, approved by the student: FINAL "Scale of the Experiment" and `T1-REVISIONS-LIST.md:141` no
+longer say "about seven"; both now name Wazuh's shipped rules and "about three". In FINAL the next sentence
+now begins "The changes that remove an attack along with its telemetry are negative controls" instead of
+"The second set are negative controls", because the new sentences made "second" unclear.
+
 **Committed:** the walkthrough and the first version of this entry as `615ad32`, pushed. The first commit
 attempt failed (`error: pathspec 'Align the walkthrough …' did not match any file(s) known to git`: the
 message was passed as an argument after `-F -`), and the second put a byte-order mark before the subject;
