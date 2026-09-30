@@ -8,6 +8,38 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-10-01 - The attack-test list is chosen from the rules: each test covers the ATT&CK technique of a shipped Wazuh rule that reads a kept change's evidence
+
+**Decision, by the student, chat 243e446b:** the one pinned attack-test list (2026-09-28) is chosen from the
+rule set, not from the changes alone. For each kept change, the Wazuh rules that read its evidence
+(OPEN-QUESTIONS 1, "Which changes a Wazuh rule depends on") name their ATT&CK techniques, and the list takes
+Atomic Red Team tests (commit `cb486d9`) for those techniques. Two additions that do not come from a rule:
+the network-logon test (2026-09-29), and tests whose evidence the class B negative controls remove, so those
+changes have something to act on.
+
+**A test is kept only if** it runs on the lab's Windows 11; it needs no internet after the golden snapshot;
+it needs no one at the keyboard and cleans up after itself; it is not destructive; its definition reads
+correctly with `-ShowDetailsBrief` (runbook 3.8); and it completes in every spike control run without an
+unusual swing in its event count (OPEN-QUESTIONS 22). The list is kept short, because it runs in every window.
+
+**Recorded for each test:** the technique ID, the test number, and the library commit. One hash over the
+list goes into the hashed parameters.
+
+**Why.** Every test is then tied to a detection that really runs, so each one matters for the blind-spot
+question, and "why these tests?" has a checkable answer: the rules chose the techniques. Choosing from the
+changes alone would add tests whose evidence no rule reads. Those would still feed the statistical
+comparison, but they would lengthen every window.
+
+**What it means.** The list depends on the rule set, so the two are chosen and pinned together in Box 1;
+changing either one makes a new environment. The tests themselves do not depend on Wazuh: they run the same
+under any rule set, and Wazuh cannot stop one, because active response is off (2026-09-03).
+
+**Not done:** the list itself. It is chosen before the spike, and the spike then tests its stability.
+
+**Cost if wrong:** low. Evidence that no rule reads is exercised only when a chosen test happens to produce
+it, so C2, C6 and C7 may get little stimulus. Under choice 1 (the entry below) they affect no detection
+anyway.
+
 ## 2026-10-01 - The study uses Wazuh 4.14.7's shipped rules, exported whole; a change whose evidence no rule reads is reported as affecting no detection (choice 1)
 
 **Decision, by the student, chat 243e446b, in two parts:**

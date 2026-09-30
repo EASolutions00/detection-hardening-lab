@@ -112,7 +112,14 @@ as test cases once value keying is built was wrong for C2 and C7: no rule reads 
 tracked. Then, approved by the student: FINAL "Scale of the Experiment" and `T1-REVISIONS-LIST.md:141` no
 longer say "about seven"; both now name Wazuh's shipped rules and "about three". In FINAL the next sentence
 now begins "The changes that remove an attack along with its telemetry are negative controls" instead of
-"The second set are negative controls", because the new sentences made "second" unclear.
+"The second set are negative controls", because the new sentences made "second" unclear. Committed as
+`f765b4f`, pushed.
+
+**Then, same day: how the attack tests are chosen.** Decided by the student: by the rules. Each test covers
+the ATT&CK technique of a shipped Wazuh rule that reads a kept change's evidence, plus the network-logon test
+and tests for the class B changes' evidence (`DECISIONS.md` 2026-10-01, third entry that day). The student
+asked whether the simulation depends on the rules; answered: the choice of tests does, the tests themselves
+do not, and Wazuh cannot stop a test because active response is off.
 
 **Committed:** the walkthrough and the first version of this entry as `615ad32`, pushed. The first commit
 attempt failed (`error: pathspec 'Align the walkthrough …' did not match any file(s) known to git`: the
