@@ -75,6 +75,14 @@ describes them.
 7. **Low.** `lab/scripts/README.md` lines 8 and 36 still speak of 16 changes; 16 is no longer a target
    (DECISIONS 2026-09-29).
 
+**Later the same chat, at the student's request: findings 1 to 4 recorded in OPEN-QUESTIONS.** Findings 1
+and 2 in item 1 ("C4: its number and its value"), 3 in item 21 ("What the network-logon test must do for
+C4"), and 4 as new item 31. While recording finding 1, a search listing showed 2.3.11.12 in CIS Windows 11
+Enterprise v4.0.0 as a different item, "Restrict NTLM: Audit …", so the catalogue's 2.3.11.13 may be right
+for Windows 11 `(unverified)`. The remark earlier in this chat that it "may be the domain controller number"
+is withdrawn. Item 31 also records that C4's 4776 key may never reach zero, if WIN-EP-01 writes 4776 for its
+own local `vmrun` logons (items 20 and 26); the walkthrough assumes every 4776 event comes from DC-01.
+
 **Study running list (Sheet 1, in progress):**
 - Boxes not yet explained back: Box 1 (asked, no answer yet). Box 2 onward not started.
 - Problems in the diagram or the documents: items 1 to 7 above. The walkthrough and the two explainer facts
@@ -84,7 +92,19 @@ describes them.
 **Also:** chat 7c823959 (2026-09-29 11:22, opened in the repo folder) asked a scripture question, not thesis
 work. Noted here so the hook stops listing it.
 
-**Not committed:** `docs/T1-WALKTHROUGH.md` and this entry wait for the student's yes.
+**Later, 2026-10-01, same chat.** Box 1 explained as a procedure for the finished system (nine steps, the
+ones not in the record marked "proposed"). The student found that step 1, typing an authorization ticket
+number, proves nothing, and proposed MFA with administrator-only use. After a review, the student decided to
+put the control on the credentials instead: `DECISIONS.md` 2026-10-01. FINAL's preconditions table gained a
+seventh row, and `T1-REVISIONS-LIST.md` Revision 9 now says "seven" and names it. Four more gaps found for the
+running list, none recorded elsewhere: the study's rule set (Sigma or Wazuh) is not chosen; no record says the
+window has a fixed length, and runbook Phase 6 fires the end fence when the suite finishes; whether DC-01 is
+restored each run is not decided; Box 1 does not list the thresholds, which FINAL fixes there.
+
+**Committed:** the walkthrough and the first version of this entry as `615ad32`, pushed. The first commit
+attempt failed (`error: pathspec 'Align the walkthrough …' did not match any file(s) known to git`: the
+message was passed as an argument after `-F -`), and the second put a byte-order mark before the subject;
+it was amended before the push. The OPEN-QUESTIONS records and this update wait for the student's yes.
 
 **Next:** Box 1's explain-back and panel question, then Box 2 onward. Update this entry at the end of Sheet 1.
 

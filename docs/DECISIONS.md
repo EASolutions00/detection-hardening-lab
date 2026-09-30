@@ -8,6 +8,35 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-10-01 - Operator access is a precondition: the credentials are limited to one account that signs in with MFA; the system has no login of its own
+
+**Decision, by the student, chat 243e446b:** FINAL's preconditions table gains a seventh row. The passwords
+and the key the system uses to reach the hosts and the SIEM archive are readable only by the authorized
+operator's account, which signs in with multi-factor authentication. The organization provides it, as
+existing access control. The system adds no login of its own. The written-authorization row stays as it is.
+
+**Why.** The student's point: a typed ticket number proves nothing, because anyone can type one. The student
+proposed MFA and administrator-only use. Placed inside the system, that fails: the system is a Python program
+on the operator's computer (2026-09-14), so anyone who can run it can also edit it, or call `vmrun` with the
+stored password, and skip the check. Without the credentials the system cannot touch any machine, so
+limiting them is the control that cannot be bypassed from inside the program. MFA proves who the operator
+is, not that a second person approved. Approval stays with the written-authorization row (separation of
+duties, NIST SP 800-53 AC-5).
+
+**Proposed, not decided:** detection. A SIEM rule that alerts on attack-test activity with no registered run
+ID, and the operator's account name in each run's manifest record part. Every run already leaves fence events
+with its run ID in the SIEM, and the export tool cannot delete them (runbook Phase 6).
+
+**Changed:** `proposal-form-FINAL.md`, the preconditions table (one row); `T1-REVISIONS-LIST.md`, Revision 9,
+"six" to "seven" with the new item named. Not changed: a Word copy of FINAL, if one was already made.
+
+**Cost if wrong:** low. One table row; no code and no measurement changes. In the lab the operator is the
+student and the credentials are in `C:\Users\Elijah\.telos\`; whether that folder is readable only by one
+account is not checked.
+
+**For the defense:** "Why does your system have no login?" Because a login inside a program on the
+operator's own computer can be skipped. The control sits on the credentials, and the SIEM records every run.
+
 ## 2026-09-29 - The control-run check and field-loss pairing stay in the design, and are built before data collection (items 24, 30)
 
 **Decision, by the student, chat 27d2595d:** the activity diagram keeps both steps as drawn. The check that

@@ -70,7 +70,8 @@ whether the scorer can distinguish a lost capability from a lost detection.
 | LSA Protection, LSASS as protected process | CIS Win11 **18.9.27.2**, Level 1 (Enterprise v5.1.0; 18.9.25.2 in v2.0.0; requires the UEFI lock, see item 18) |
 
 Restrict NTLM outgoing has a confirmed CIS number (2.3.11.13) and registry path, but its
-Windows 11 DISA V-ID is not confirmed.
+Windows 11 DISA V-ID is not confirmed. **2026-09-30: the number is not settled, and the value C4 needs
+is not recorded.** See "C4: its number and its value, checked 2026-09-30" at the end of this item.
 
 **The pattern that generates more candidates:** class C changes alter *how* something happens;
 class B changes stop it happening at all. This is why nearly every class C candidate is an
@@ -126,6 +127,43 @@ restrict anonymous SAM enumeration, enforce SMB signing, enforce LDAP signing an
 binding, disable AutoPlay and AutoRun. Keep the class B items as **negative controls** for the
 impact scorer, where telemetry loss is expected and the impact score should correctly be near
 zero. Keep the count at 16 so the submitted proposal text stays true.
+
+### C4: its number and its value, checked 2026-09-30
+
+Found by chat 243e446b while writing C4 into `docs/T1-WALKTHROUGH.md`. Read from third-party copies of
+the CIS text, because the CIS PDFs need a CIS login (the same method as item 18).
+
+**The number is not settled.** The outgoing-NTLM item carries different numbers in different benchmarks:
+
+| Source | Item | Benchmark |
+|---|---|---|
+| Syxsense | 2.3.11.12, Level 1 | CIS Microsoft Windows 10 Enterprise v5.0.0 |
+| Tenable | 2.3.11.12, L1 | CIS Microsoft Windows Server 2019 Stand-alone v2.0.0, member server |
+| Tenable | 2.3.11.13, L1 | CIS Microsoft Windows Server 2019 v3.0.1, domain controller |
+| Tenable | 2.3.11.13 | CIS Microsoft Windows Server 2022 STIG v2.0.0, domain controller |
+
+No Windows 11 copy of this item was found. A search listing shows **2.3.11.12** in CIS Windows 11
+Enterprise v4.0.0 as a different item, titled "Restrict NTLM: Audit …" (the title is cut off, and the page
+itself returned 404). If that holds, the outgoing item is not 2.3.11.12 there, and the catalogue's 2.3.11.13
+may be right for Windows 11 `(unverified)`. **Check it in CIS Microsoft Windows 11 Enterprise v5.1.0**, the
+version item 18 already uses for C3, and write the version beside the number (item 4).
+
+**The value is not recorded.** Every copy above asks for "Audit all" or higher, and says Deny all also
+conforms. The registry values (Syxsense copy): `RestrictSendingNTLMTraffic = 1` for Audit all, `2` for Deny
+all. **Audit all blocks nothing.** It only logs NTLM use, in the NTLM operational log. With `1`, 4776 does
+not drop, and the stated effect "4776 reduced or removed" (`lab/blueprint.md:357`) cannot happen. C4 needs
+`2`, Deny all. That is inside the benchmark ("or higher"), so it is not a deviation, but it must be written
+into the catalogue row and the change script.
+
+**C4 also needs a particular network-logon test.** See item 21, "What the network-logon test must do for
+C4".
+
+Sources: [Syxsense, Windows 10 Enterprise v5.0.0](https://www.syxsense.com/syxsense-securityarticles/cis_benchmarks/syx-1033-14570.html);
+Tenable, [Server 2019 Stand-alone v2.0.0](https://www.tenable.com/audits/items/CIS_Microsoft_Windows_Server_2019_Stand-alone_v2.0.0_L1_MS.audit:714d07c7d5085b1d78c8f1df117dd0c8),
+[Server 2019 v3.0.1 DC](https://www.tenable.com/audits/items/CIS_Microsoft_Windows_Server_2019_v3.0.1_L1_DC.audit:8c0512817fbc9b3ac6217098d10360c6),
+[Server 2022 STIG v2.0.0 DC](https://www.tenable.com/audits/items/CIS_Microsoft_Windows_Server_2022_STIG_v2.0.0_L1_DC.audit:7056023b4485f0e811a19e2ce8e63119),
+and the [Windows 11 Enterprise v4.0.0 listing](https://www.tenable.com/audits/items/CIS_Microsoft_Windows_11_Enterprise_v4.0.0_L1_BitLocker.audit:c63f38508013258a079cf766eed5175d)
+(404 on 2026-09-30).
 
 **What a bad answer means:** If fewer than about 8 class C changes can be pinned, the precision
 and recall comparison is underpowered and T1's evaluation has to be restated around a smaller
@@ -277,6 +315,27 @@ occur 4 to 14 times a day (type 2) or never (type 10).
 
 **Recommendation: 1, conditional on the check**, with 3 as the fallback if there is no time left
 to rebuild the golden image. **Chosen 2026-09-29: option 1** (`DECISIONS.md`).
+
+### What the network-logon test must do for C4, noted 2026-09-30
+
+Found by chat 243e446b while writing C4 into `docs/T1-WALKTHROUGH.md`. Reasoning, not measured.
+
+C4, set to Deny all (item 1), is expected to remove 4776 because authentication moves to Kerberos
+(`lab/blueprint.md:357`: "Authentication continues via Kerberos"). That needs two things from the
+network-logon test:
+
+1. **Before the change, some of its logons must use NTLM.** Otherwise 4776 on DC-01 is zero before and
+   zero after, and C4 has nothing to act on.
+2. **After the change, the same logons must still succeed, over Kerberos.** A logon that can only use NTLM
+   fails under Deny all `(unverified: for example a connection made to an IP address rather than a
+   name)`. The run check (item 22) would then find an attack test that did not complete and void every
+   post-change run, so C4 never reaches 3 valid runs. For that test, C4 would behave like a class B change:
+   it removes the activity together with its evidence.
+
+The two pull against each other, because Windows in a domain normally prefers Kerberos `(unverified)`. So
+the test must be designed so that NTLM is used before the change and Kerberos can take over after it.
+**Design the network-logon test with this in mind before it goes into the pinned list.** Item 31 adds a
+second C4 problem: 4776 written on WIN-EP-01 itself.
 
 **What a bad answer means:** if the count comes back at zero and nothing changes, the experiment
 runs to completion and reports that hardening does not create blind spots. That is the worst
@@ -704,6 +763,61 @@ throwaway VM shows that a snapshot revert clears the firmware variable. **Decide
   pinned Sysmon config records no Event 10. The section already says not to show the example to the
   panel until the capture exists, so it is not wrong, but its steps are.
 - `ACTIVITY-DIAGRAM-EXPLAINED.md:151`: "`CIS Windows 11 18.9.27.2`", with no benchmark version.
+
+---
+
+## 31. The event key has no host part, and the lab will have two monitored Windows hosts
+
+**Status:** Open. Found 2026-09-30 by chat 243e446b while writing C4 into `docs/T1-WALKTHROUGH.md`. Not
+decided. Ranked here, beside item 18, because it is also a key-format question, and the key format is cheap
+to change only before real runs (`DECISIONS.md` 2026-09-04 and 2026-09-29).
+
+**What was checked.** `KeySpec` in `src/telos/eventkey.py` has three parts: the source, the event ID, and
+the populated tracked fields. Its text form is `Source-EventID[fields]`, and a profile (`Phase.counts` in
+`model.py`) is keyed by that text. Nothing names the host. A search of `docs/`, `lab/` and `src/telos/` for
+a per-host key or a host part found nothing (2026-09-30).
+
+**Why it matters now.** Until 2026-09-29 the lab had one monitored Windows machine, so no host part was
+needed. DC-01 (item 21, `DECISIONS.md` 2026-09-29) adds a second one, with its own Wazuh agent. Events of
+the same key from WIN-EP-01 and DC-01 are then counted as one key.
+
+1. **A host that carries less than half of a key's events can lose all of them with no finding.** This
+   follows from the code's own rules. REDUCED needs the pooled rate to fall to half or less (`MAX_RATIO =
+   0.5`, `differential.py`), and LOST needs the pooled count to reach exactly zero. If one host holds 40% of
+   a key and loses it all, the pooled rate ratio is 0.6: neither LOST nor REDUCED.
+2. **C4 is a likely case `(unverified)`.** C4's 4776 events are written on DC-01. With Credential Validation
+   auditing on WIN-EP-01 (item 20, decided), the harness's own `vmrun` logons with the local account
+   probably write 4776 on WIN-EP-01 too (item 26). If both carry the same populated fields, they share the
+   key `Security-4776[PackageName,TargetUserName,Workstation]`. The key then does not reach zero after C4,
+   and if WIN-EP-01 holds half or more of it, C4's loss is not reported at all. `docs/T1-WALKTHROUGH.md`
+   assumes every 4776 event comes from DC-01.
+3. **The noise model mixes two machines.** The CoV of a pooled key combines both hosts' run-to-run
+   variation.
+4. **The report cannot say which host lost the evidence**, and a fix is applied to one specific machine.
+
+**Options, not decided:**
+
+1. **Put the host in the key.** One analysis and one Benjamini-Hochberg correction across all keys stay.
+   Cost: more keys, so fewer reach 30 events (item 25); the key text and `parse()` change; and pairing
+   (item 30) must group by host as well as by event type.
+2. **Analyse each host as its own profile.** `analyse()` is unchanged. Cost: a noise model per host, and the
+   correction runs per host instead of across all keys, which changes what the false discovery rate is
+   controlled over.
+3. **Keep pooled keys and state the limit.** Cost: point 1 stays true, and part of the reason for building
+   DC-01 is lost.
+
+**Recommendation, not decided `(unverified)`:** option 1, decided together with value keying (item 18),
+because both change `eventkey.py` and the key format, and both must be fixed before the first real run.
+
+**How to answer.** First check that the archive records which host each event came from: read one archived
+event and find the agent name field `(unverified: Wazuh archive events normally carry the agent's name)`.
+Then choose an option, record it in `DECISIONS.md`, and add a test with two hosts in which one host's key
+falls to zero and the other's stays. The result must report the loss.
+
+**What a bad answer means:** a loss on the smaller host is reported as UNCHANGED, and the study reports "no
+blind spot" for a change that created one.
+
+**Blocks:** the key format, so value keying (item 18), and therefore data collection.
 
 ---
 
