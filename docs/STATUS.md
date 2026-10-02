@@ -1,7 +1,7 @@
 # STATUS
 
 Current blockers and dates. This file changes often. CLAUDE.md does not.
-Last updated: 2026-09-29 (from git log)
+Last updated: 2026-10-02 (from git log)
 
 Every item here must also exist in OPEN-QUESTIONS.md or DECISIONS.md. This file only
 says which ones matter right now.
@@ -18,14 +18,17 @@ says which ones matter right now.
   no capture run exists.
 - **The re-presentation:** the panel said it will focus on the **activity diagram** (student, 2026-09-29).
   **The panel sets a date only after the revised documentation is submitted, about 3 to 7 days later**
-  (student, 2026-09-29). **Target: submit by Friday 2026-10-02.** Recommended, not decided: run the full
-  data collection only after the panel approves the diagram.
+  (student, 2026-09-29). **Target: submit by Wednesday 2026-10-07.** The first target, Friday 2026-10-02,
+  was missed and moved by the student (`DECISIONS.md` 2026-10-02): the student studies the diagram and the
+  panel's eleven questions first, Saturday to Tuesday. The re-presentation then falls between 2026-10-10
+  and 2026-10-14. Recommended, not decided: run the full data collection only after the panel approves the
+  diagram.
 
 ## Checkpoints (proposed 2026-09-29, dates are estimates)
 
 | By | Done when |
 |---|---|
-| 2026-10-02 | Revised documentation submitted (the panel then sets the re-presentation date) |
+| 2026-10-07 | Revised documentation submitted (the panel then sets the re-presentation date). **Moved from 2026-10-02, which was missed** |
 | 2026-10-09 | Adviser told of the slip and the January target |
 | 2026-10-23 | DC-01 built, WIN-EP-01 joined, Sysmon `lsass.exe` rule and audit settings in place, value keying coded and tested, network-logon test designed, golden snapshot taken |
 | 2026-10-31 | Spike run, six answers recorded, final number of changes set |
@@ -53,22 +56,29 @@ controls), and record the miss in WORKLOG the same day.
 
 ## Next, in order
 
-1. **Submit the revised documentation by Friday 2026-10-02**, one step a day:
-   - Tuesday 09-29, **done:** FINAL updated with the four decisions and a new Gantt chart; the key wording
-     fixed in Sheet 1 and the pipeline figure; the revisions list made ready to submit; the diagram
-     explainer updated for study (WORKLOG 2026-09-29, second). **Submitted: FINAL and the revisions
-     list.** Not submitted: the panel response (still stale in places) and the explainer.
-   - Wednesday: study the activity diagram box by box and explain each box back.
-   - Thursday: the Word copy. The student formats it from copy-friendly text of FINAL.
-   - Friday: one consistency check of the submitted files, then submit.
+1. **Submit the revised documentation by Wednesday 2026-10-07.** The plan the student follows is in the
+   thesis folder, `prep-local\STUDY-GUIDE.md` (private, not in this repo):
+   - Done by 2026-10-01: FINAL updated with the 2026-09-29 decisions and a new Gantt chart; the figures; the
+     revisions list; then the 2026-10-01 decisions (operator access, Wazuh's shipped rules and choice 1, how
+     the attack tests are chosen). The submission set is FINAL and the revisions list. Not submitted: the
+     panel response (stale in places) and the explainer.
+   - Saturday 10-03: Sheet 1 of the diagram, box by box, each explained back.
+   - Sunday 10-04: Phase 4, the statistics, and the demo run by the student.
+   - Monday 10-05: Phase 5, then panel questions Q1 to Q6.
+   - Tuesday 10-06: Q7 to Q11; a mock panel of 15 questions with a pass mark of 12; all document fixes in
+     one batch; the Word copy, formatted by the student.
+   - Wednesday 10-07: one consistency check of the submitted files, then submit.
+   - Rule for these days: no document changes and no side work during study. Problems go on the list in
+     the study guide and are fixed on Tuesday.
 2. **Tell the adviser** (checkpoint 2026-10-09). The student sends it.
-3. From Monday 2026-10-05: **build DC-01 and join WIN-EP-01**; apply the Sysmon rule and the audit
-   settings; code value keying, the control-run check (item 24) and pairing (item 30).
+3. From Thursday 2026-10-08 (was Monday 2026-10-05): **build DC-01 and join WIN-EP-01**; apply the Sysmon
+   rule and the audit settings; code value keying, the control-run check (item 24) and pairing (item 30).
+   The 2026-10-23 checkpoint keeps its date and has three fewer days.
 4. Golden snapshot, a minimal harness, one capture window by hand as a trial, then the spike.
 
 ## Still waiting on the student
 
-- **Item 15, the Word file.** The student formats it from copy-friendly text of FINAL (Thursday).
+- **Item 15, the Word file.** The student formats it from copy-friendly text of FINAL (Tuesday 2026-10-06).
 - Items 24 and 30 were decided 2026-09-29: both stay in the design and are built before data collection.
 
 ## The spike

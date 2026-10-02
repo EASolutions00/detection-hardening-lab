@@ -8,6 +8,33 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-10-02 - The revised documentation is submitted on Wednesday 2026-10-07, not Friday 2026-10-02. Checkpoint 1 is missed
+
+**Decision, by the student, chat 243e446b:** the submission moves five days, to Wednesday 2026-10-07. From
+Saturday 2026-10-03 to Tuesday 2026-10-06 the student studies the activity diagram box by box and the
+panel's eleven questions, following `prep-local\STUDY-GUIDE.md` in the thesis folder. The student's reason:
+to understand the work well enough to answer every panel question before the documents go in.
+
+**Why it is reasonable.** The panel sets the re-presentation 3 to 7 days after the submission, and said it
+will focus on the activity diagram. From 2026-09-29 to 2026-10-01, studying one box changed FINAL three
+times (the operator-access row, "about seven" to "about three", six preconditions to seven), and a fourth
+fix is waiting. A FINAL submitted on 2026-10-02 would have carried those errors. No Word copy of FINAL
+exists yet (OPEN-QUESTIONS 15).
+
+**What was said against it before the student chose.** Understanding is not needed to submit, only for the
+re-presentation, and study time exists after the submission. In those three days the study covered one
+box, because six side tasks took the time. So the plan has four rules: one box at a time with an
+explain-back; no document changes during study, with all fixes in one batch on Tuesday; no side work; a
+time limit per box. Readiness is tested on Tuesday: a mock panel of 15 questions, pass mark 12.
+
+**What it costs.** Checkpoint 1 of 2026-09-29 is missed, and that entry says one missed checkpoint moves
+the defense to February or later. The lab work planned from Monday 2026-10-05 starts Thursday 2026-10-08 at
+the earliest, so the 2026-10-23 checkpoint has three fewer days. The re-presentation falls between
+2026-10-10 and 2026-10-14. The January target is not changed by this entry; it is at more risk.
+
+**Cost if wrong:** if the study again turns into side work, Wednesday is missed too. The Tuesday mock panel
+shows this a day early.
+
 ## 2026-10-01 - The attack-test list is chosen from the rules: each test covers the ATT&CK technique of a shipped Wazuh rule that reads a kept change's evidence
 
 **Decision, by the student, chat 243e446b:** the one pinned attack-test list (2026-09-28) is chosen from the

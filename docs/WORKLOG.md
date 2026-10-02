@@ -17,6 +17,42 @@ Next:
 
 ---
 
+## 2026-10-02 - Checkpoint 1 missed; submission moved to Wednesday 2026-10-07; a study guide and schedule
+
+Chat 243e446b, after `aed6786`. The same chat as the 2026-09-30 entry below.
+
+**Missed checkpoint, recorded the same day as STATUS requires:** the revised documentation was due today,
+Friday 2026-10-02. It was not submitted. No Word copy of FINAL exists (item 15), and the study of the
+diagram had covered one box.
+
+**Decided, by the student:** submit on Wednesday 2026-10-07; study from Saturday 2026-10-03, not today.
+`DECISIONS.md` 2026-10-02 has the reason, what was said against it, and the cost. STATUS: the target, the
+first checkpoint row, "Next" step 1 (the day-by-day plan) and step 3 (lab work from Thursday 2026-10-08).
+
+**Made:** `prep-local\STUDY-GUIDE.md` in the thesis folder (private, outside this repo). Four days, three
+sessions a day: Saturday Sheet 1; Sunday Phase 4 and the demo run by the student; Monday Phase 5 and panel
+questions Q1 to Q6; Tuesday Q7 to Q11, a mock panel of 15 questions with a pass mark of 12, the fix batch and
+the Word copy; Wednesday the check and the submission. It lists every box with the question to be ready for,
+the numbers to know, what is built, the four 2026-10-01 decisions, and a list of nine fixes held for Tuesday.
+
+**Before that, same chat:** Box 2 explained (import the rules, build the index), with a panel question, not
+yet answered. Box 1 was never explained back; the student moved on. Found for the fix batch: FINAL line 432
+and the revisions list line 183 say the fields are read "since a Sigma rule states ...", and the lab now uses
+Wazuh rules; the index needs a mapping from Wazuh field names (`win.eventdata.grantedAccess`) to the key's
+names (`GrantedAccess`), and none is designed.
+
+**Not recorded anywhere else:** chat a1468b68 (2026-10-01, 20:23 to 20:34, outside the thesis folders) asked
+about a VMware message, "the specified virtual disk needs repair". Which VM it was, and whether it is fixed,
+is not known to this chat. If it is a lab VM, it belongs in OPEN-QUESTIONS before lab work starts.
+
+**One push failed on 2026-10-01** and was retried: the first `git push` of `aed6786` ran with its error
+output hidden (`2>$null`) and did not go through; the retry in Bash worked. Pushes now run in Bash with the
+output visible.
+
+**Not committed:** STATUS, DECISIONS and this entry wait for the student's yes.
+
+**Next:** Saturday 2026-10-03, session 1: Boxes 1 to 4 and the Phase 0 check.
+
 ## 2026-09-30 - Diagram study started; walkthrough aligned to the diagram; explainer rewritten in plain English; seven findings
 
 Chat 243e446b, after `44529c1`. Started 2026-09-29 and continued into 2026-09-30. A study chat for the
