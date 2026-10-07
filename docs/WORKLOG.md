@@ -17,6 +17,87 @@ Next:
 
 ---
 
+## 2026-10-07 - Title-defense transcript read against the record; attack-test list added to FINAL's Area of Investigation
+
+Chat 5e235b74, after `5596148`.
+
+**Asked by the student:** the student pasted the transcript of the title proposal defense (the student
+called it the pre-oral; the panel chair calls it the title proposal defense, course Research 1A). Then: what to
+prepare for the re-presentation; then: add the attack-test list to Area of Investigation.
+
+**Found in the transcript, not in the record:**
+1. **The panel chair's closing instruction was to declare the system web-based** in the topic document ("kailangan
+   naka-declare ... na web-based siya"); the student had said "Opo, pwede po" to a panelist. OPEN-QUESTIONS 17
+   says "Nobody ever decided", and FINAL says "It is not a web application" (`DECISIONS.md` 2026-09-14). Not
+   resolved. Three options given (follow it; keep desktop and answer the instruction in Revision 8; a local
+   browser interface). The student has not chosen.
+2. The panel chair asked for the attack tests to be listed in Area of Investigation. FINAL had none. **Done now.**
+3. "Can a manual attack be used?" was answered "not sure" and is not among the eleven questions. Answer added
+   to the new subsection (tests run by hand are not used; `DECISIONS.md` 2026-10-01, "no one at the keyboard").
+4. Statements by the student that the design does not support: 16 changes, "closing a port", SQL injection,
+   "100% no blind spot" after the re-run, "a model of standard hardening", "I will feed the numbers".
+5. The panel chair said the adviser is named after the re-presentation. The 2026-10-09 checkpoint "adviser told"
+   may not be possible as written `(unverified)`.
+
+**Changed (thesis folder, outside git):** FINAL, new subsection "Adversary Emulation Tests Used in the Study"
+between Field and Background and Algorithms: how the list is chosen, a table of three changes with their
+rule, technique and plain description (LSA Protection 92900 T1003.001; NLA 92653/92656 T1021.001; WDigest
+60118 T1078), the network-logon test and the negative-control tests, the keep conditions, why manual tests
+are not used, SQL injection out of scope. Revisions list: Q11 now maps to Revision 2 as well; Revision 2
+records the addition. Document checker: LIVE hits unchanged at 13.
+
+**Checked, read-only:** the four rules' `<mitre>` lines at `wazuh/wazuh` tag `v4.14.7`, and the Atomic
+folders at `cb486d9`. **Atomic has no T1078 and no T1078.002 folder**, so C1 has no Atomic test, and one of
+the four T1021.001 tests disables NLA (reverses C5). Recorded in OPEN-QUESTIONS item 1, "Does Atomic Red Team
+have a test for each of those techniques?".
+
+**Not done:** the web-based decision; the PDF `...Using a Differential.pdf` (2026-10-07 02:58) has an "a" in
+its file name that FINAL's title does not, and the PDF could not be opened here (no `pdftoppm`); not checked.
+The PDF predates this chat's FINAL edit, so it does not contain the new subsection.
+
+**Next:** student decides the web question before submitting; regenerate the Word/PDF copy from FINAL.
+
+---
+
+## 2026-10-06 - Readiness check of the submitted files; two text fixes applied; the reason for the domain corrected
+
+Chat 27d2595d, after `5596148`.
+
+**Asked by the student:** is the document ready to submit (submission due Wednesday 2026-10-07)? Earlier,
+2026-10-01, the same chat answered whether the lab would run on an i5-12500T with 40 GB: yes with smaller VMs
+(SIEM-01 12 to 16 GB, DC-01 4 GB, 8 GB kept for the host), 12 threads for 10 vCPU, slower at 35 W; the host
+must stay the same for every run. Nothing was decided.
+
+**Checked, all read-only:** FINAL against `differential.py:57-60` (0.05, 0.5, 30, 3.0), 5 control runs and 3
+runs per phase: match. The 2026-10-01 decisions are in FINAL (seventh precondition, Wazuh's shipped rules,
+"about three"). The revisions list's counts match FINAL (6 background paragraphs, 7 preconditions, 7 report
+sections, 15 features, 10 limits). All four figures hash equal in the repo, the thesis folder and its
+`Activity Diagram` subfolder. Document checker: LIVE hits unchanged at 13. No Word copy of FINAL is in the
+thesis folder; the newest `.docx` there is from 2026-09-07.
+
+**Applied, approved by the student (thesis folder, outside git):**
+1. Study guide fix 1: FINAL Module 2 ("Which fields are tracked") and revisions list Revision 14 no longer say
+   the fields are read "since a Sigma rule states ...". Both now say each rule states its fields: a Sigma rule in
+   its detection block, a Wazuh rule in its field conditions.
+2. New finding: FINAL "Scale of the Experiment" justified the domain by "most changes where a blind spot can
+   exist ... act on network and domain logons". Since DECISIONS 2026-10-01 only C1, C3 and C5 can blind a
+   shipped Wazuh rule, and none needs a domain (C1 and C3 are local; C5's RDP can come from the host, item 21).
+   The domain still gives C4 and C6 something to act on, and with it the comparison's test cases. FINAL now
+   says that. Revision 10 of the revisions list had the same old reason and now matches.
+
+**Raised, not decided:** whether DC-01 still earns its one to two days now that no positive case needs it.
+Recommended to decide before the lab work planned from Thursday 2026-10-08; it does not block the submission.
+
+**Not changed:** the study guide's fix list (`prep-local\STUDY-GUIDE.md`, section 11, items 1 and the domain
+finding are now done there); Box 1 of the diagram, which does not list the thresholds (fix 9, optional).
+
+**Record gaps noticed:** the study guide was adjusted on 2026-10-04 (study from Monday, Word copy Monday and
+Tuesday, mock panel Friday 2026-10-09) with no WORKLOG entry, and STATUS "Next" step 1 still shows the
+2026-10-02 schedule (Saturday to Tuesday).
+
+**Next:** the student finishes the Word copy with both fixes; on Wednesday, before submitting, check the
+`.docx` for the current figures and the two fixed sentences.
+
 ## 2026-10-02 - Checkpoint 1 missed; submission moved to Wednesday 2026-10-07; a study guide and schedule
 
 Chat 243e446b, after `aed6786`. The same chat as the 2026-09-30 entry below.

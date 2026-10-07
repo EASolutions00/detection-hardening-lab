@@ -199,6 +199,34 @@ class B included, so it is affected less.
 the index once it is built. FINAL "Scale of the Experiment" and `T1-REVISIONS-LIST.md:141` were changed the
 same day to say "about three" (`DECISIONS.md` 2026-10-01).
 
+### Does Atomic Red Team have a test for each of those techniques? Checked 2026-10-07
+
+Found by chat 5e235b74 while adding the attack-test list to FINAL's Area of Investigation (the panel asked
+for it there). **Method:** the four rules' `<mitre>` lines read from `wazuh/wazuh` at tag `v4.14.7`
+(`0580-win-security_rules.xml`, `0945-sysmon_id_10.xml`, `0840-win_event_channel.xml`), and the
+`atomics/<technique>` folders listed with `gh api` at the pinned commit `cb486d9a888e921fac5902a06c7b46e420bb14a7`.
+
+| Change | Rule | Techniques the rule names | Atomic folder at `cb486d9` |
+|---|---|---|---|
+| C3 | 92900 | T1003.001 | Yes, 14 tests (ProcDump, comsvcs.dll, Mimikatz and others) |
+| C5 | 92653, 92656 | T1021.001, T1078.002 | T1021.001 yes, 4 tests; **T1078.002 none** |
+| C1 | 60118 | T1078 | **None.** Only T1078.001 and T1078.003 exist |
+
+**Three problems for the list.**
+1. **C1 has no Atomic test.** The 2026-10-01 rule "take Atomic tests for those techniques" gives nothing for
+   T1078. Rule 60118 needs a logon with `LogonType` 2. The test must be chosen from another technique folder
+   or written for the study, and that is a decision not yet taken. FINAL says only that it "is selected
+   during laboratory setup".
+2. **C5 has one usable test at most.** Of the four T1021.001 tests, only "RDP to DomainController" signs in.
+   Two change the RDP port. **"Disable NLA for RDP via Command Prompt" reverses C5 itself and must never be
+   on the list.** Whether "RDP to DomainController" can target the machine C5 hardens, and runs with no one
+   at the keyboard, is not checked `(unverified)`.
+3. **C3's tests may need tools downloaded** (ProcDump, Mimikatz). The rule "no internet after the golden
+   snapshot" means they must be fetched before it. Not checked which ones need this.
+
+**Also checked:** the two shipped rules that name 4769 are 60106 (logon success) and 60131 (DC logon
+failure). Neither reads `TicketEncryptionType`, which agrees with the C7 row above.
+
 **What a bad answer means:** If fewer than about 8 class C changes can be pinned, the precision
 and recall comparison is underpowered and T1's evaluation has to be restated around a smaller
 labeled set.
