@@ -118,6 +118,10 @@ and with them only C1, C3 and C5 can blind a detection (`DECISIONS.md` 2026-10-0
 
 ## Recently settled (details in DECISIONS.md)
 
+- 2026-10-07: the system stays a desktop application. Revision 8 answers the panel's instruction to declare
+  it web-based (found in the title-defense transcript) and asks the panel to confirm. The interface toolkit
+  must run on Windows, Linux and macOS.
+
 - 2026-09-29: four decisions: January 2027 target and the scope rule; build DC-01; value keying, the Sysmon
   `lsass.exe` rule and `RunAsPPL = 2`; process creation and credential validation auditing.
 - 2026-09-28: four decisions closing item 29. The whole-profile chi-square is reported, not a filter, and

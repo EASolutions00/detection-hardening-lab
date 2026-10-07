@@ -2404,6 +2404,11 @@ rewritten on 2026-09-14. The checker's `web-app` rule now reports any remaining 
 
 **Left open:** the toolkit for the interface.
 
+**2026-10-07: the transcript shows this was a panel instruction, not only a question.** The panel chair's
+closing words asked the document to declare the system web-based. The student kept the desktop application
+and answered the instruction in Revision 8, asking the panel to confirm (`DECISIONS.md` 2026-10-07). Open
+again only if the panel refuses at the re-presentation. The toolkit must now run on Windows, Linux and macOS.
+
 ### What is the exact approved title wording? (answered 2026-09-14, item 0)
 
 **Answer: the panel's proposed title, verbatim, with no grammar correction**, by the student's

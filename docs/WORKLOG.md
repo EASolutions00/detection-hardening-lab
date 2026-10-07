@@ -29,8 +29,10 @@ prepare for the re-presentation; then: add the attack-test list to Area of Inves
 1. **The panel chair's closing instruction was to declare the system web-based** in the topic document ("kailangan
    naka-declare ... na web-based siya"); the student had said "Opo, pwede po" to a panelist. OPEN-QUESTIONS 17
    says "Nobody ever decided", and FINAL says "It is not a web application" (`DECISIONS.md` 2026-09-14). Not
-   resolved. Three options given (follow it; keep desktop and answer the instruction in Revision 8; a local
-   browser interface). The student has not chosen.
+   resolved at first. Three options given (follow it; keep desktop and answer the instruction in Revision 8; a
+   local browser interface). **Later the same chat the student chose the second** (`DECISIONS.md` 2026-10-07).
+   Revision 8 now has a paragraph on the instruction and five reasons, and asks the panel to confirm; Q8 points
+   to it. The "Changed on 14 September" note no longer says the web draft "had never been decided".
 2. The panel chair asked for the attack tests to be listed in Area of Investigation. FINAL had none. **Done now.**
 3. "Can a manual attack be used?" was answered "not sure" and is not among the eleven questions. Answer added
    to the new subsection (tests run by hand are not used; `DECISIONS.md` 2026-10-01, "no one at the keyboard").
@@ -51,11 +53,11 @@ folders at `cb486d9`. **Atomic has no T1078 and no T1078.002 folder**, so C1 has
 the four T1021.001 tests disables NLA (reverses C5). Recorded in OPEN-QUESTIONS item 1, "Does Atomic Red Team
 have a test for each of those techniques?".
 
-**Not done:** the web-based decision; the PDF `...Using a Differential.pdf` (2026-10-07 02:58) has an "a" in
+**Not done:** the PDF `...Using a Differential.pdf` (2026-10-07 02:58) has an "a" in
 its file name that FINAL's title does not, and the PDF could not be opened here (no `pdftoppm`); not checked.
 The PDF predates this chat's FINAL edit, so it does not contain the new subsection.
 
-**Next:** student decides the web question before submitting; regenerate the Word/PDF copy from FINAL.
+**Next:** regenerate the Word/PDF copy from FINAL and the revisions list, then submit.
 
 ---
 

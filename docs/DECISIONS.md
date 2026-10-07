@@ -8,6 +8,41 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-10-07 - The system stays a desktop application; Revision 8 answers the panel's instruction to declare it web-based and asks the panel to confirm
+
+**Decision, by the student, chat 5e235b74:** keep the desktop application (2026-09-14). Do not change FINAL.
+Answer the panel's instruction in `T1-REVISIONS-LIST.md`, Revision 8, and point to it from Q8.
+
+**What the record had missed.** The title-defense transcript (pasted by the student 2026-10-07) shows the
+panel chair's closing instruction: the topic document must declare the system web-based ("kailangan
+naka-declare ... na web-based siya"). The stated reason was access: an engineer should not have to go to each
+computer, for example in another building. Earlier, asked if the student had changed their mind, the student
+said "Opo, pwede po." The 2026-09-14 entry and OPEN-QUESTIONS 17 treated this as a question nobody had
+decided, not as an instruction.
+
+**Why, as written into Revision 8.** (1) The access concern is already met: nothing is installed on the
+monitored computers, and the attack tests start through a channel the organization controls, so the operator
+never goes to them. In the lab the operator works from the VM host, because `vmrun -T ws` controls only local
+virtual machines; a first draft of Revision 8 implied work from anywhere on the network and was corrected the
+same chat. (2) A hosted server,
+sessions and a login serve many users of one copy; the method needs one operator per run (2026-09-14).
+(3) A web application would add a network service able to start attack tests, with its own login to secure;
+the desktop design keeps the credentials readable only by the operator's MFA account and adds no login of its
+own (2026-10-01). (4) Python runs on Windows, Linux and macOS. (5) A web front end can be added later on the
+same core without changing any measurement.
+
+**What it commits to.** Revision 8 says the interface toolkit "runs on all three" operating systems. Both
+desktop candidates of 2026-09-14, CustomTkinter and PySide6, do (general knowledge, `(unverified)` here). A
+browser-based toolkit such as Streamlit would now contradict Revision 8, so the 2026-09-14 recommendation of a
+desktop toolkit follows from this entry.
+
+**Cost if wrong:** the panel can refuse and require a web application. Then a web front end goes on the
+existing core, with a login, sessions and access control of its own, and the 2026-10-01 rule "the system adds
+no login of its own" is reversed. That is new work in a January plan with no spare time `(unverified how
+much)`. The answer is asked for openly, so a refusal comes at the re-presentation, not at the pre-oral.
+
+---
+
 ## 2026-10-02 - The revised documentation is submitted on Wednesday 2026-10-07, not Friday 2026-10-02. Checkpoint 1 is missed
 
 **Decision, by the student, chat 243e446b:** the submission moves five days, to Wednesday 2026-10-07. From
