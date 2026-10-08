@@ -17,6 +17,52 @@ Next:
 
 ---
 
+## 2026-10-08 (second) - Full sweep: the submitted files are clean; stale spots fixed in 11 repo files and 2 thesis-folder files; item 32; the walkthrough's example overtaken
+
+Chat 27d2595d, after `b958ab1`. At the student's request: "update docs. make full sweep".
+
+**The submitted files are clean.** FINAL, the revisions list and the paste-ready HTML: no "16 changes", no
+"about seven", no Sigma-only wording, no stale candidate fields. The HTML (2026-10-07 19:09) is newer than
+FINAL (18:39) and carries both 2026-10-06 fixes and "about three". The four figures were not changed. Document
+checker: LIVE hits unchanged at 13. `58 passed`.
+
+**Fixed, outside the submitted files:**
+- Thesis folder (outside git): the explainer's Sigma definition now has a Wazuh rule entry and the 2026-10-01
+  choice; its Box 2 says each rule states its fields and names the Wazuh field-name gap; its value-keying
+  candidates follow DECISIONS 2026-10-01 (`GrantedAccess`, `LogonType`, `AuthenticationPackageName`; not
+  `LmPackageName` or the ticket encryption type). `T1-PANEL-RESPONSE.md` got a warning at the top listing what
+  it does not know; it stays unsubmitted.
+- `lab/blueprint.md`: the spike section said "Do not build Tier B" (DC-01 is the exception); the labeling
+  section said 16 changes; the C4 row now notes its unrecorded benchmark version and value; the class C table
+  has the 2026-10-01 note (positives C1, C3, C5). `docs/RUNBOOK-homelab.md` Phase 7: the same Tier B line.
+- `lab/scripts/README.md` lines 8, 12 and 36: no fixed 16. `thesis/T1/README.md`: "about 7" now names the
+  three positives under Wazuh's rules.
+- `README.md`: the 4688 note says the auditing is decided; value keying mentioned as designed; three status
+  rows (interface kept 2026-10-07, Wazuh rules, DC-01); "in 8 phases" was wrong, the runbook has phases 0 to 8.
+  `src/README.md`: the honest limit now separates the code today from the decided value keying.
+- `PROMPT-new-chat.md`: live items now 1, 15, 18, 20 to 28 and 30 to 32; DECISIONS reading range; section 4
+  gained the rule set and the value-keying candidates; "about 7" fixed; section 5 gained items 31 and 32, and
+  items 15 and 1 are current; a "Settled 2026-10-01 to 2026-10-08" block.
+- OPEN-QUESTIONS: item 17 records the 2026-10-07 instruction and answer; item 18's last bullet marked fixed
+  (the explainer names v5.1.0); item 21 notes that no positive case needs DC-01 now; item 25 notes about 3.
+- DECISIONS: three 2026-09-29 entries got forward notes to 2026-10-01 (about 7 to about 3; the DC-01 reason;
+  the candidate fields). No entry was reversed.
+- STATUS: item 15 for Thursday, item 32, item 31 in "Also open".
+
+**New item 32**, four points no record held (study guide fix 9 and WORKLOG 2026-10-06): whether the capture
+window is a fixed length (runbook Phase 6 ends it when the suite ends, while FINAL calls it a hashed
+duration); whether DC-01 is restored each run; the Wazuh-to-key field-name mapping; whether DC-01 still earns
+its days. Plus Box 1's missing "thresholds", a wording gap.
+
+**Found, flagged, not fixed: the walkthrough's example.** `docs/T1-WALKTHROUGH.md` uses C4 as the blind-spot
+example. Under DECISIONS 2026-10-01 no shipped rule names 4776 and C4 behaves like a negative control, so the
+security reading in Parts 1.2 and 4 no longer holds. A banner at the top says so; the "Rule export" line is
+corrected. A new example (C3 is the natural one, but needs value keying) is the student's decision.
+
+**Not changed:** `src/telos/differential.py:319` (study guide fix 8, code, not docs); Sheet 1's Box 1 wording
+(a submitted figure, and the Word copy is being made today); `prep-local\DEFENSE-PREP.md` (older, private, not
+checked).
+
 ## 2026-10-08 - Submission date moved to Friday 2026-10-09, Monday 2026-10-12 at the latest
 
 Chat 27d2595d, after `3969fa2`.

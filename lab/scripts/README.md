@@ -5,11 +5,12 @@ config snapshot, and they must be version controlled.
 
 ## Why scripts instead of snapshots
 
-Do not create 16 post-change snapshots. Revert to `cfg-suppressed` or `cfg-natural`, then
-apply the change by running the script.
+Do not create one post-change snapshot per change. Revert to `cfg-suppressed` or `cfg-natural`,
+then apply the change by running the script.
 
 Two reasons. The change itself becomes auditable and reproducible, which is what the
-proposal's reproducibility claim needs. And 16 branching snapshot delta chains would fill F:.
+proposal's reproducibility claim needs. And one branching snapshot delta chain per change would
+fill F:.
 
 ## Naming
 
@@ -33,8 +34,8 @@ v2.0.0 and 18.9.27.2 in v5.1.0 (OPEN-QUESTIONS 4 and 18).
 This file's example used to be "Disable Audit Process Creation". That change was removed from the
 catalogue on 2026-09-08, because CIS requires the setting **on**, so turning it off is de-hardening.
 
-The control ID is not optional. T1's proposal states the 16 changes come from CIS Benchmarks
-and DISA STIGs. A panelist can ask for the ID of any one of them, and several in the current
+The control ID is not optional. T1's proposal states every change comes from the CIS Benchmarks
+or DISA STIGs (the count is no longer fixed at 16 since 2026-09-29; the spike sets it). A panelist can ask for the ID of any one of them, and several in the current
 catalogue are still generic domain knowledge. See `docs/OPEN-QUESTIONS.md` item 4.
 
 ## Expected effect is a prediction, not a fact

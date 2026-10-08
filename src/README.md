@@ -137,15 +137,21 @@ found by the suite: an all-zero post-change phase used to raise from `chi2_conti
 
 An analysis key is the event type **plus which tracked fields were populated**, written
 `Security-4688[CommandLine,NewProcessName]`. See `eventkey.py` and the decision entry in
-`docs/DECISIONS.md`. That is a format example: the lab endpoint does not currently audit
-process creation, so it writes no 4688 events (`docs/OPEN-QUESTIONS.md` item 20).
+`docs/DECISIONS.md`. That is a format example: the lab endpoint does not yet audit process
+creation, so it writes no 4688 events; turning it on before the golden snapshot was decided
+2026-09-29 (`docs/OPEN-QUESTIONS.md` item 20).
 
 Keying on the event type alone cannot see a field-level loss. Emptying CommandLine leaves
 4688 firing at its former rate, so the profile reports UNCHANGED while every rule matching
 on CommandLine is blind. Under the composite key the same change produces a LOST key and a
 NEW key at the same rate, which is the signature of a stripped field.
 
-**The honest limit.** The key records *that* a tracked field carried a value, never *which*
-value. A change that alters a field's contents while leaving it populated moves neither the
-key nor its rate. Whether a small set of fields should also be keyed by value is
-OPEN-QUESTIONS item 18, and one lab capture settles it.
+**The honest limit, in the code today.** The key records *that* a tracked field carried a value,
+never *which* value. A change that alters a field's contents while leaving it populated moves
+neither the key nor its rate.
+
+**Decided 2026-09-29, not built:** for the short list of fields that detection rules match by
+specific value, the key will also record the value, grouped into a few classes (`docs/DECISIONS.md`
+2026-09-29, item 18). Under Wazuh's shipped rules the list is `GrantedAccess`, `LogonType` and
+`AuthenticationPackageName` (2026-10-01), confirmed after the C3 capture. When it is built,
+`DEFAULT_TRACKED_FIELDS` and the `key-values` check in `tools/check_docs.py` change with it.

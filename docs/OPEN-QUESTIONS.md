@@ -240,7 +240,9 @@ item 18's recommended fix does not reach this problem.** **The check ran 2026-09
 it: 4768, 4769 and 4776 are zero on every archive date, and the lab has never made a network
 logon.** Results in "The check, run 2026-09-26" below. **Decided 2026-09-29: option 1, build DC-01,
 with its own Wazuh agent and a test that makes network logons, before the golden snapshot**
-(`DECISIONS.md` 2026-09-29). Open until it is built and the test exists.
+(`DECISIONS.md` 2026-09-29). Open until it is built and the test exists. **2026-10-06:** under Wazuh's
+shipped rules (2026-10-01) the three positive cases, C1, C3 and C5, need no domain; DC-01 now serves
+C4 and C6 and the comparison's test cases. Whether that still earns its one to two days is item 32.
 
 **What was verified.**
 
@@ -459,7 +461,8 @@ still open: tell the adviser now that the start has slipped, with a new date, ra
 
 The student stated the school's deadline for the final thesis, **4 June 2027**, and chose a target of a
 **final defense by the end of January 2027** (March 2027 was recommended). Scope keeps every measurable
-class C change (about 7 with DC-01 and value keying); the graphical interface is reduced first, then the
+class C change (about 7 with DC-01 and value keying, as expected that day; about 3 under Wazuh's shipped
+rules, `DECISIONS.md` 2026-10-01); the graphical interface is reduced first, then the
 class B negative controls, never to zero; the spike, by 2026-10-31, sets the final number. Eight dated
 checkpoints are in `STATUS.md`. Details and the stated risk in `DECISIONS.md` 2026-09-29.
 
@@ -825,6 +828,7 @@ throwaway VM shows that a snapshot revert clears the firmware variable. **Decide
   pinned Sysmon config records no Event 10. The section already says not to show the example to the
   panel until the capture exists, so it is not wrong, but its steps are.
 - `ACTIVITY-DIAGRAM-EXPLAINED.md:151`: "`CIS Windows 11 18.9.27.2`", with no benchmark version.
+  **Fixed by 2026-10-06:** the explainer now names Windows 11 Enterprise v5.1.0.
 
 ---
 
@@ -880,6 +884,40 @@ falls to zero and the other's stays. The result must report the loss.
 blind spot" for a change that created one.
 
 **Blocks:** the key format, so value keying (item 18), and therefore data collection.
+
+---
+
+## 32. Four harness and index points with no record, and whether DC-01 still earns its days
+
+**Status:** Open. Found during the diagram study by chat 243e446b (WORKLOG 2026-09-30 and 2026-10-02; listed
+as study guide fix 9) and by chat 27d2595d (WORKLOG 2026-10-06). Recorded here 2026-10-08 so they are not
+lost. None is decided.
+
+1. **Is the capture window a fixed length?** Box 1 pins "the window", and FINAL calls it the window
+   duration, a hashed parameter. But runbook Phase 6 fires the end fence when the attack suite finishes,
+   so the window's length follows the suite. If a change makes one test run longer, the window grows and
+   counts change for that reason alone. **How to answer:** decide fixed length (pad to a set time) or
+   suite-driven with the duration recorded and checked by the run check (item 22).
+2. **Is DC-01 restored before each run?** Every capture restores WIN-EP-01's snapshot (D2). Nothing says
+   whether DC-01 is restored too. If not, its state drifts across runs (logs, tickets, replication), and
+   its events enter every profile. **How to answer:** decide, and take DC-01's snapshot with the golden
+   snapshot if it is restored.
+3. **The index needs a field-name mapping.** Wazuh rules name fields like `win.eventdata.grantedAccess`; the
+   event key uses `GrantedAccess`. No mapping is designed, so the index cannot yet link a rule to a key.
+   **How to answer:** a table in the index module, tested on the 454 rules, with any unmapped field listed.
+4. **Does DC-01 still earn its one to two days?** It was decided when about 7 positive cases were expected
+   (`DECISIONS.md` 2026-09-29). Under Wazuh's shipped rules the positives are C1, C3 and C5, and none needs a
+   domain (C1 and C3 are local; C5's RDP can come from the host, item 21). DC-01 still gives C4 and C6
+   something to act on, and the comparison their test cases (C4 behaves like a negative control,
+   2026-10-01). Without it, the negative controls that need network logons (B5 too, item 21) have nothing
+   to remove. **How to answer:** decide before the lab work starts, and record it in `DECISIONS.md`. FINAL
+   says the lab is a domain, so dropping DC-01 also changes FINAL.
+
+**Also, a wording gap, not a design question:** Sheet 1's Box 1 says it pins "the attack tests, window and
+repeats", while FINAL's run inputs say the thresholds are fixed at the same time. One string in
+`make_activity_diagram.py` (study guide fix 9).
+
+**Blocks:** points 1 and 2 block the harness; point 3 blocks the index; point 4 blocks the lab work.
 
 ---
 
@@ -1112,7 +1150,10 @@ clean graphical interface, running beside the SIEM.** The student's reason: it w
 so a web application is not needed. Recorded in `DECISIONS.md` 2026-09-14. All three documents below
 were rewritten the same day, and the document checker's rule now treats any remaining web-application
 claim as a defect against that decision. **Still not decided: which toolkit builds the interface.**
-Raised 2026-09-09.
+Raised 2026-09-09. **2026-10-07:** the title-defense transcript shows the panel chair instructed that
+the system be declared web-based. The student kept the desktop application and answers the
+instruction in Revision 8 of the revisions list, asking the panel to confirm (`DECISIONS.md`
+2026-10-07). The panel can still refuse at the re-presentation.
 
 The text below is kept as it was written.
 

@@ -260,7 +260,9 @@ does not finish. This is the hard constraint on T1.
 
 ## 7. The two-week feasibility spike (do this before committing)
 
-Build Tier A only. Do not build Tier B. The analysis engine already exists
+Build Tier A, plus DC-01. Do not build the rest of Tier B. DC-01 is the exception since
+2026-09-29: it goes in before the golden snapshot (`docs/DECISIONS.md` 2026-09-29), so
+the spike runs on the domain the study uses. The analysis engine already exists
 (`src/telos/`, built 2026-08-31), so the spike runs real captures through it.
 Run one hardening change and answer the pre-declared questions below: Q1 and Q2
 from the start, Q3 to Q6 added 2026-09-28 because other records assign those
@@ -317,7 +319,8 @@ against one without (decision D2, `docs/DECISIONS.md` 2026-09-14).
 ## 8. T1 ground-truth labeling (the part the proposal underspecifies)
 
 Precision/recall requires a label for every event type in every run. You cannot
-hand-label ~200–500 event types across 16 changes. Use two-tier labeling:
+hand-label ~200–500 event types across the catalogue's changes (16 at first; since
+2026-09-29 the spike sets the number). Use two-tier labeling:
 
 - **Positive class (provably lost):** event types you deliberately and verifiably
   removed by the change. Example: disabling the *Audit Process Creation*
@@ -349,12 +352,17 @@ authentication control: authentication survives the change, it just proceeds dif
 
 #### Class C: positive cases, where a blind spot can exist
 
+**2026-10-01:** the study uses Wazuh 4.14.7's shipped rules (`docs/DECISIONS.md` 2026-10-01, choice 1).
+With them only **C1, C3 and C5** have a rule that reads their evidence while the attack still works. C4's
+affected rules detect pass-the-hash, which C4 blocks, so it behaves like a negative control; C2, C6 and C7
+have no rule that reads their evidence. Details: OPEN-QUESTIONS 1, "Which changes a Wazuh rule depends on".
+
 | # | Change | Control ID | Setting | Expected telemetry effect | Why the attack survives |
 |---|---|---|---|---|---|
 | C1 | Disable WDigest | **DISA V-253358** (Win11)<br>V-220800 (Win10) | `HKLM\SYSTEM\CurrentControlSet\Control\SecurityProviders\Wdigest\UseLogonCredential = 0` | 4624 logon-type distribution shifts | Credential theft is still attempted; the attacker gets hashes instead of plaintext |
 | C2 | LAN Manager auth level, NTLMv2 only | **DISA V-253462** (Win11)<br>V-220938 (Win10)<br>**CIS 2.3.11.7** | `HKLM\SYSTEM\CurrentControlSet\Control\Lsa\LmCompatibilityLevel = 5` | 4624 `LmPackageName` shifts toward `NTLM V2` **(corrected 2026-09-14: was "4776 package name changes", which cannot happen, see note below)** | Authentication continues at a higher level |
 | C3 | LSA Protection (LSASS as protected process) | **CIS Win11 18.9.27.2**, Level 1 (Windows 11 Enterprise **v5.1.0**; 18.9.25.2 in v2.0.0) | `HKLM\System\CurrentControlSet\Control\Lsa\RunAsPPL = 1` **(2026-09-26: `1` writes a UEFI firmware variable; use `2` in the lab, see note below)** | Sysmon Event 10 access to `lsass.exe` changes from granted to denied **(2026-09-26: the pinned Sysmon config records no Event 10, see note below)** | LSASS access is still attempted; documented bypasses exist |
-| C4 | Restrict NTLM, outgoing traffic to remote servers | **CIS 2.3.11.13**<br>DISA Win11 V-ID `(unverified)` | `HKLM\System\CurrentControlSet\Control\Lsa\MSV1_0\RestrictSendingNTLMTraffic` | 4776 reduced or removed | Authentication continues via Kerberos |
+| C4 | Restrict NTLM, outgoing traffic to remote servers | **CIS 2.3.11.13** (benchmark version not recorded; 2.3.11.12 in some benchmarks, OPEN-QUESTIONS 1)<br>DISA Win11 V-ID `(unverified)` | `HKLM\System\CurrentControlSet\Control\Lsa\MSV1_0\RestrictSendingNTLMTraffic` (value not recorded: `1` audits only, `2` denies, OPEN-QUESTIONS 1) | 4776 reduced or removed | Authentication continues via Kerberos |
 | C5 | Enforce RDP Network Level Authentication | `(unverified)` | `UserAuthentication = 1` | 4624 / 4625 distribution shifts | RDP is still used; authentication happens earlier |
 | C6 | Reduce cached credentials to 0 | `(unverified)` | `CachedLogonsCount = 0` | Cached and offline logon events reduced | Logon still occurs, against the domain instead |
 | C7 | Disable RC4 for Kerberos | `(unverified)` | Kerberos supported encryption types | 4768 / 4769 ticket encryption fields change | Kerberos authentication continues with AES |

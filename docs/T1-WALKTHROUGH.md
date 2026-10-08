@@ -1,5 +1,14 @@
 # T1 System Walkthrough
 
+> **Overtaken in part on 2026-10-01; read this first.** The study now uses Wazuh 4.14.7's shipped
+> rules (`docs/DECISIONS.md` 2026-10-01, choice 1). No shipped rule names event 4776, and C4's only
+> affected rules (92652, 92657) detect pass-the-hash, which C4 blocks, so **C4 behaves like a negative
+> control, not a blind spot**. The statistics in Part 3 stay correct for the made-up counts. The
+> security reading, "a detection rule that reads 4776 cannot fire", and the rule mapping in Parts 1.2
+> and 4 do not hold under the chosen rule set. The positive cases are now C1, C3 and C5; C3 (LSA
+> Protection, rule 92900) is the natural replacement example, but it is a value change and needs value
+> keying, which is not built. Choosing a new example is the student's decision (WORKLOG 2026-10-08).
+>
 > **Aligned 2026-09-30 to the current design** (chat 243e446b). It follows the activity diagram
 > regenerated 2026-09-29 (`thesis/T1/figures/make_activity_diagram.py`) and `docs/DECISIONS.md` up
 > to 2026-09-29. Where this file disagrees with the code, `DECISIONS.md` or
@@ -73,7 +82,8 @@ control runs.
 - **Hosts:** WIN-EP-01 and DC-01.
 - **Configuration snapshot:** `cfg-suppressed`, restored at the start of every run
   (`lab/blueprint.md` section 6, step 1).
-- **Rule export:** the pinned clones of the Sigma and Wazuh rule sets.
+- **Rule export:** Wazuh 4.14.7's shipped rule set, exported whole from SIEM-01 (DECISIONS
+  2026-10-01; this line said "the pinned clones of the Sigma and Wazuh rule sets" until 2026-10-08).
 - **Pinned once, for the whole study:** the attack-test list, the window length, and the repeats (5
   control, 3 before, 3 after). **The list is not chosen yet** (DECISIONS 2026-09-28). This
   walkthrough uses 18 tests and a 15-minute window as examples.

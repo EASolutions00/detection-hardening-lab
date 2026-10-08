@@ -22,7 +22,8 @@ moment the change is made.
 - Needs the full lab. It is the only one of the three topics that does.
 - **101 capture runs.** 16 changes times (3 pre + 3 post) = 96, plus 5 control runs. That is the
   design. The catalogue holds 14 changes today (`docs/OPEN-QUESTIONS.md` item 1). **Scope decided
-  2026-09-29:** keep every measurable class C change (about 7) and reduce the rest; the spike sets
+  2026-09-29:** keep every measurable class C change and reduce the rest. Under Wazuh 4.14.7's shipped
+  rules, about three changes (C1, C3, C5) can blind a detection (`docs/DECISIONS.md` 2026-10-01). The spike sets
   the final number, so the run count will be lower (`docs/DECISIONS.md` 2026-09-29).
 - About 67 hours of wall clock for 101 runs, which only works if the harness is fully unattended.
 - Target: final defense by the end of January 2027; the school deadline is 4 June 2027.

@@ -62,13 +62,13 @@ Read these five, in order. Expand `REPO` first.
    The current blockers and dates, kept short. Added to this list 2026-09-28.
 
 3. `REPO\docs\OPEN-QUESTIONS.md`
-   Items **1, 15, 18, 20 to 28, and 30** are the live ones (23 reframed as a spike check; 18, 20, 21
-   and 25 decided 2026-09-29 but not built). All
+   Items **1, 15, 18, 20 to 28, and 30 to 32** are the live ones (23 reframed as a spike check; 18,
+   20, 21, 24, 25 and 30 decided but not built). All
    are summarised in section 5. Items 0, 16, 17, 19 and 29 are answered. The file is ranked by damage, so read from
    the top.
 
 4. `REPO\docs\DECISIONS.md`
-   The newest nine entries, 2026-09-29 back to 2026-09-26.
+   Every entry from the newest back to 2026-09-26 (sixteen entries on 2026-10-08).
 
 5. `REPO\docs\WORKLOG.md`
    The newest three entries.
@@ -170,7 +170,15 @@ in `REPO\src\telos\` unless stated otherwise.
 - The key records **that** a tracked field carried a value, never **which** value. That is the
   code today. **Decided 2026-09-29, not built:** for a short list of fields (set after the C3
   capture) the key will record the value, grouped into a few classes. DECISIONS 2026-09-29.
+  Under Wazuh's shipped rules the candidates are `GrantedAccess`, `LogonType` and
+  `AuthenticationPackageName`; `LmPackageName` and the ticket encryption type are not read by any
+  rule, so they are not tracked (DECISIONS 2026-10-01). The key has no host part (item 31).
   `eventkey.py`, `is_populated()`
+
+- The rule set is **Wazuh 4.14.7's shipped rules**, exported whole: 454 rules in 15 files read a
+  Windows event. With them only **C1, C3 and C5** can blind a detection, and the study reports that
+  (choice 1). The attack tests are chosen from those rules; Atomic Red Team has no T1078 test, so
+  C1's test is chosen during lab setup. DECISIONS 2026-10-01; OPEN-QUESTIONS 1.
 
 - Empty, `-`, `N/A`, `(null)` and `NULL` count as absent. **Numeric zero counts as present.**
   `eventkey.py`, `is_populated()`
@@ -214,7 +222,8 @@ in `REPO\src\telos\` unless stated otherwise.
   `eventkey.py`, `field_loss_pairs()`
 
 - 5 control runs, 3 pre and 3 post per change, as designed. The catalogue holds 14. **Scope,
-  decided 2026-09-29:** keep every measurable class C change (about 7), reduce the graphical
+  decided 2026-09-29:** keep every measurable class C change (about 3 under Wazuh's shipped rules:
+  C1, C3, C5, DECISIONS 2026-10-01), reduce the graphical
   interface first and then class B; the spike sets the final number. "16" is no longer a target.
   Each phase ends with 3 **valid** runs: a failed run is voided and captured again (design,
   2026-09-28).
@@ -320,18 +329,30 @@ Item 20 — decided 2026-09-29, not applied
     line, and Credential Validation auditing, go into the golden snapshot.
 
 Item 15 — blocks submission
-    No Word copy of `proposal-form-FINAL.md` exists (checked 2026-09-28): the REVISED `.docx`
-    is the superseded revision with the 2026-08-15 diagram, and the 2026-09-07 `.docx` is a
-    426-word start whose title still has "a". The remaining work is a Word copy of FINAL with
-    the four current SVGs, best made after the scope and Gantt decisions.
+    No Word copy of `proposal-form-FINAL.md` existed on 2026-10-08. A paste-ready copy,
+    `DOCS\proposal-form-FINAL-for-Word.html`, was made 2026-10-07; the student makes the Word
+    file from it and inserts the four current SVGs. The revisions list is submitted too and has
+    no paste-ready copy yet. The PDF of 2026-10-07 02:58 is older than the last edits.
+
+Item 31 — the event key has no host part
+    With DC-01 there are two monitored Windows hosts, and the same key from both is counted
+    together, so a drop on one host can be hidden by a rise on the other. Found 2026-09-30. Not
+    decided.
+
+Item 32 — four harness and index points with no record
+    Whether the capture window has a fixed length or ends when the suite ends; whether DC-01 is
+    restored before each run; a mapping from Wazuh field names to the key's field names; and
+    whether DC-01 still earns its days now that no positive case needs it. Recorded 2026-10-08.
 
 Item 1 — blocks data collection
-    The 16-change catalogue. Three control IDs verified, several still `(unverified)`.
+    The catalogue: 14 changes, no longer a target of 16. Three control IDs verified, several
+    still `(unverified)`. Under Wazuh's shipped rules, three positive cases (2026-10-01).
 
 Settled 2026-09-14, so do not reopen these
     The title is the panel's proposed wording, verbatim, with no article added (item 0). The system
     is a Python application with a graphical interface beside the SIEM, not a web application
-    (item 17). The interface toolkit is not decided. Both in `REPO\docs\DECISIONS.md`.
+    (item 17; kept 2026-10-07, see below). The interface toolkit is not decided. Both in
+    `REPO\docs\DECISIONS.md`.
 
 Settled 2026-09-26 and 2026-09-28, so do not reopen these
     T1 is final, with no fallback topic (2026-09-26). The chi-square is a reported summary and every
@@ -344,6 +365,14 @@ Settled 2026-09-29, so do not reopen these
     measurable class C change. Build DC-01 with a network-logon test. Value keying for a short list
     of fields, an `lsass.exe` Sysmon rule, `RunAsPPL = 2`. Process creation and credential
     validation auditing in the golden snapshot. All in `REPO\docs\DECISIONS.md`, none built.
+
+Settled 2026-10-01 to 2026-10-08, so do not reopen these
+    Operator access: the system has no login; only the operator's MFA account can read its
+    credentials. The rule set is Wazuh 4.14.7's shipped rules, choice 1 (C1, C3, C5). The attack
+    tests are chosen from those rules. The system stays a desktop application; the panel chair's
+    "web-based" instruction is answered in Revision 8 of the revisions list, which asks the panel to
+    confirm (2026-10-07). Submission: Friday 2026-10-09, Monday 2026-10-12 at the latest
+    (2026-10-08). All in `REPO\docs\DECISIONS.md`.
 
 Not an item yet — blocks the revisions list
     The REVISED-to-FINAL diff has never been run. Measured 2026-09-10: FINAL is 6,395 words

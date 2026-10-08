@@ -46,8 +46,10 @@ measures each event key's natural variation first, then only reports a drop that
 An **event key** is the event type plus which of its tracked fields actually carried a value, for
 example `Security-4688[CommandLine,NewProcessName]`. That is how a change that empties one field,
 while the event keeps firing at its usual rate, becomes visible at all. (The example shows the key
-format. The lab endpoint does not currently audit process creation, so it writes no 4688 events;
-see `docs/OPEN-QUESTIONS.md` item 20.)
+format. The lab endpoint does not yet audit process creation, so it writes no 4688 events; turning
+that on before the golden snapshot was decided 2026-09-29, see `docs/OPEN-QUESTIONS.md` item 20.)
+Since 2026-09-29 the design also records the value, grouped into a few classes, for the short list of
+fields that detection rules match by value. That part is not built yet.
 
 **These numbers are synthetic.** They demonstrate that the code is correct. They are not
 measurements, and they are not a result of the study. Full output:
@@ -86,7 +88,9 @@ Honest state of the work, not a plan.
 | Reporting | Text output only |
 | Capture harness (acquisition from the lab) | Not built. The next major piece. |
 | Impact scoring (lost event to affected rules to ATT&CK techniques) | Not built |
-| Graphical interface (not a web application; decided 2026-09-14) | Not built |
+| Graphical interface (not a web application; decided 2026-09-14, kept 2026-10-07 after the panel chair asked for web-based) | Not built |
+| Detection rules: Wazuh 4.14.7's shipped rules (decided 2026-10-01) | Chosen; the rule-to-technique index is not built |
+| Domain controller `DC-01` (decided 2026-09-29) | Not built |
 | Lab Phase 0, host readiness | **Done** |
 | Lab Phase 1, virtual networks | **Done** |
 | Lab Phase 2, SIEM build (Wazuh 4.14.7) | **Done** 2026-09-02 |
@@ -137,11 +141,11 @@ Start with [CLAUDE.md](CLAUDE.md). It is the index to everything.
 ## Build the lab yourself
 
 [docs/RUNBOOK-homelab.md](docs/RUNBOOK-homelab.md) rebuilds the whole thing from a bare host,
-in 8 phases, with a check at the end of each one.
+in phases 0 to 8, with a check at the end of each one.
 
 Host: Ryzen 9 7950X, 64 GB RAM, VMware Workstation 17.5.1. Wazuh SIEM on Ubuntu, Sysmon and
 Atomic Red Team on a Windows endpoint, orchestrated over `vmrun` from Python on the Windows
-host. Every command run on the host is recorded in [docs/COMMANDS.md](docs/COMMANDS.md), with
+host. A domain controller joins them before the golden snapshot (decided 2026-09-29, not built). Every command run on the host is recorded in [docs/COMMANDS.md](docs/COMMANDS.md), with
 what a correct result looks like.
 
 ---

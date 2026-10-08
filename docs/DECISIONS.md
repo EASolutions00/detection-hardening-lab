@@ -223,6 +223,9 @@ plainly if the panel asks (PROMPT-new-chat section 6).
 
 ## 2026-09-29 - Target: final defense by end of January 2027. Scope keeps every measurable class C change (item 25)
 
+**Superseded in part:** "about 7" positive cases became about 3 under Wazuh's shipped rules (2026-10-01,
+choice 1). The submission dates were moved twice (2026-10-02, 2026-10-08).
+
 **Decision, by the student, chat 27d2595d:** the final defense is targeted for the end of January 2027.
 Scope keeps every class C change that the lab can measure. When time runs short, the cut is made in
 this order: the graphical interface is reduced first, then the class B negative controls are reduced.
@@ -271,6 +274,10 @@ spike runs on time.
 
 ## 2026-09-29 - Build DC-01, with a test that makes network logons (item 21, option 1)
 
+**Note, 2026-10-08:** the "Why" below counted about 7 measurable class C changes. Under Wazuh's shipped
+rules (2026-10-01) the positives are C1, C3 and C5, and none needs a domain. Whether DC-01 still earns its
+days is OPEN-QUESTIONS 32, point 4. This entry is not reversed.
+
 **Decision, by the student, chat 27d2595d:** build `DC-01` as `lab/blueprint.md` Tier B specifies (Server
 2022 Evaluation, AD DS and DNS, 2 vCPU, 6 GB, 60 GB, on F:). WIN-EP-01 joins the domain. DC-01 gets its own
 Wazuh agent, because 4768 and 4769, and 4776 for domain accounts, are written on the domain controller. A
@@ -295,6 +302,10 @@ validation (4776). The class C changes need that knowledge anyway.
 still see zero before and zero after.
 
 ## 2026-09-29 - The event key adds values for a short list of fields; Sysmon records `lsass.exe` access; C3 uses `RunAsPPL = 2` (item 18; supersedes in part 2026-09-04)
+
+**Superseded in part, 2026-10-01:** the candidate list below follows the rule set. Under Wazuh's shipped
+rules it is `GrantedAccess`, `LogonType` and `AuthenticationPackageName`; `LmPackageName` and the ticket
+encryption type are not read by any rule, so they are not tracked.
 
 **Decision, by the student, chat 27d2595d, in three parts:**
 

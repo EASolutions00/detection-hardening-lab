@@ -78,9 +78,12 @@ controls), and record the miss in WORKLOG the same day.
 
 ## Still waiting on the student
 
-- **Item 15, the Word file.** The student formats it from copy-friendly text of FINAL (Tuesday 2026-10-06).
-  2026-10-07: the copy-friendly text exists, `proposal-form-FINAL-for-Word.html` in the thesis folder,
-  made after the attack-test subsection was added. The Word file itself is still the student's to make.
+- **Item 15, the Word file.** The student makes it Thursday 2026-10-08 from the copy-friendly text,
+  `proposal-form-FINAL-for-Word.html` in the thesis folder (made 2026-10-07, after the attack-test
+  subsection was added). The revisions list has no copy-friendly version yet.
+- **Item 32, new 2026-10-08:** four points with no record (window length, whether DC-01 is restored each run,
+  the Wazuh field-name mapping, whether DC-01 still earns its days). Point 4 should be decided before the lab
+  work starts.
 - Items 24 and 30 were decided 2026-09-29: both stay in the design and are built before data collection.
 
 ## The spike
@@ -110,6 +113,7 @@ and with them only C1, C3 and C5 can blind a detection (`DECISIONS.md` 2026-10-0
   as Wininit event 12 must be made inside the guest.
 - Item 23. The spike must run `analyse()` on control-versus-control pairs and find none.
 - Item 22. The stimulus is asserted identical across runs and never verified.
+- Item 31. The event key has no host part; with DC-01, two hosts' events of one key are counted together.
 
 ## Lab state
 

@@ -856,8 +856,9 @@ copied archive matches the `sha256_gz` the export printed.
 > answers Q1 and Q2 below. A bad answer now means cutting scope (OPEN-QUESTIONS 25), not switching
 > topic.
 
-Do not build Tier B. The analysis engine already exists (`src/telos/`, built 2026-08-31), so the
-spike runs real captures through it. Answer six questions. Q1 and Q2 are the original ones; Q3 to
+Do not build Tier B, except DC-01, which goes in before the golden snapshot since 2026-09-29
+(`docs/DECISIONS.md`), so the spike runs on the domain the study uses. The analysis engine already
+exists (`src/telos/`, built 2026-08-31), so the spike runs real captures through it. Answer six questions. Q1 and Q2 are the original ones; Q3 to
 Q6 were added 2026-09-28, because other records assign those checks to the spike. The same list
 is in `lab/blueprint.md` section 7.
 
