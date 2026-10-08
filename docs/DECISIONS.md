@@ -8,6 +8,31 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-10-08 - The revised documentation is submitted Friday 2026-10-09 if the mock panel passes, and Monday 2026-10-12 at the latest. The 2026-10-07 date is missed
+
+**Decision, by the student, chat 27d2595d:** the goal date to submit FINAL and the revisions list is Friday
+2026-10-09. On Thursday 2026-10-08 the student makes the Word file from `proposal-form-FINAL-for-Word.html`.
+On Friday morning the student takes the mock panel (15 questions, pass mark 12, `prep-local\STUDY-GUIDE.md`)
+and the assistant checks the `.docx`. If the mock panel scores 12 or more, the documents go in on Friday. If
+not, they go in on **Monday 2026-10-12 at the latest, with no further move.**
+
+**What led to it.** Wednesday 2026-10-07 passed without a submission: the Word file did not exist yet, and the
+paste-ready HTML was made only that evening (WORKLOG 2026-10-07). The student told their professor about the
+re-presentation delay and that the work is still in progress, and the professor accepted a new date (as stated
+by the student, 2026-10-08; whether the January target was mentioned is not stated).
+
+**Why a latest date.** This is the second missed date, after 2026-10-02. The date only decides when the panel
+sets the re-presentation (3 to 7 days after the submission). The lab work, which decides the January target,
+shares the student's days with study and documents, so an open "submit when ready" keeps taking lab days.
+
+**What it costs.** The lab work planned from Thursday 2026-10-08 starts the working day after the submission,
+2026-10-12 or 2026-10-13. The 2026-10-23 checkpoint (DC-01, settings, value keying, network-logon test, golden
+snapshot) then has about nine working days, and the 2026-09-29 entry says one missed checkpoint moves the
+defense to February or later. The re-presentation falls between about 2026-10-12 and 2026-10-19.
+
+**Cost if wrong:** if the Word file or the mock panel slips again, Monday is the backstop; past Monday, the
+next move is a decision about the January target, not about the submission date.
+
 ## 2026-10-07 - The system stays a desktop application; Revision 8 answers the panel's instruction to declare it web-based and asks the panel to confirm
 
 **Decision, by the student, chat 5e235b74:** keep the desktop application (2026-09-14). Do not change FINAL.

@@ -298,7 +298,8 @@ Item 25 — the schedule; target and scope decided 2026-09-29
     reduce the graphical interface first, then class B; the spike by 2026-10-31 sets the number.
     Checkpoints are in STATUS.md. The panel said the re-presentation will focus on the activity
     diagram, and sets its date 3 to 7 days after the revised documentation is submitted; the
-    student's target is to submit by Friday 2026-10-02. Also: 30 pre-change events over 3 runs is about 10 per
+    student's target is to submit Friday 2026-10-09, Monday 2026-10-12 at the latest (two earlier
+    dates, 2026-10-02 and 2026-10-07, were missed). Also: 30 pre-change events over 3 runs is about 10 per
     run, so many keys may be untestable. The spike measures it.
 
 Item 24 — blocks trusting any UNCHANGED result

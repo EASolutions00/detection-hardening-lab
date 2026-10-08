@@ -17,6 +17,28 @@ Next:
 
 ---
 
+## 2026-10-08 - Submission date moved to Friday 2026-10-09, Monday 2026-10-12 at the latest
+
+Chat 27d2595d, after `3969fa2`.
+
+**Found first:** this chat's 2026-10-06 entry, left uncommitted on 2026-10-06, was committed by chat
+5e235b74 inside `c64e033` and pushed. Two record edits of chat 5e235b74 (STATUS item 15 and the WORKLOG
+lines about `proposal-form-FINAL-for-Word.html`) were still uncommitted; committed here, with the student's
+yes, because the file they describe exists (2026-10-07 19:09, newer than FINAL at 18:39).
+
+**From the student:** they told their professor about the re-presentation delay and that the work is still
+in progress, and the professor accepted a new date. Wednesday 2026-10-07 passed with no submission.
+
+**Decided, by the student:** submit Friday 2026-10-09 if the mock panel passes (12 of 15), otherwise Monday
+2026-10-12 at the latest, with no further move (`DECISIONS.md` 2026-10-08, placed above 2026-10-07). STATUS:
+the target, the first two checkpoint rows, and "Next" steps 1 to 3 (the old Saturday-to-Tuesday plan is
+replaced). PROMPT-new-chat item 25: the date.
+
+**Noticed for Thursday:** no paste-ready copy of the revisions list exists, though it is submitted too. The
+PDF of 2026-10-07 02:58 is older than the last edits of FINAL and has an "a" in its file name.
+
+**Next:** Thursday the student makes the Word files; Friday morning the mock panel and a check of the `.docx`.
+
 ## 2026-10-07 - Title-defense transcript read against the record; attack-test list added to FINAL's Area of Investigation
 
 Chat 5e235b74, after `5596148`.
@@ -57,7 +79,14 @@ have a test for each of those techniques?".
 its file name that FINAL's title does not, and the PDF could not be opened here (no `pdftoppm`); not checked.
 The PDF predates this chat's FINAL edit, so it does not contain the new subsection.
 
-**Next:** regenerate the Word/PDF copy from FINAL and the revisions list, then submit.
+**Copy-friendly text for Word (item 15):** `proposal-form-FINAL-for-Word.html` written beside FINAL by a
+script in the chat's scratchpad (not in the repo). It drops the working note, turns the "Insert the SVG
+files" line into two `[INSERT FIGURE: ...]` markers, and skips the empty header row of the student-details
+table. Checked: all 8345 words of FINAL in the HTML in order; 31 headings and 8 tables, matching FINAL. The
+word check failed twice first, both times from bugs in the check itself (a marker's "and" removed the title's
+"and"; an italic phrase split across two lines), not in the conversion.
+
+**Next:** the student pastes the HTML into the template and makes the Word/PDF copy, then submits.
 
 ---
 
