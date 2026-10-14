@@ -1,10 +1,11 @@
 # STATUS
 
 Current blockers and dates. This file changes often. CLAUDE.md does not.
-Last updated: 2026-10-08 (from git log)
+Last updated: 2026-10-15 (chat 27d2595d)
 
 Every item here must also exist in OPEN-QUESTIONS.md or DECISIONS.md. This file only
-says which ones matter right now.
+says which ones matter right now. Where every file lives, inside and outside the repo:
+[FILE-MAP.md](FILE-MAP.md).
 
 ---
 
@@ -28,7 +29,7 @@ says which ones matter right now.
 
 | By | Done when |
 |---|---|
-| 2026-10-09, latest 2026-10-12 | Revised documentation submitted (the panel then sets the re-presentation date). **2026-10-02 and 2026-10-07 were missed** |
+| 2026-10-09, latest 2026-10-12 | Revised documentation submitted (the panel then sets the re-presentation date). **2026-10-02 and 2026-10-07 were missed.** On 2026-10-15 whether it was submitted is not recorded |
 | 2026-10-09 | Adviser told of the slip and the January target. **Partly done:** the student told their professor about the delay (by 2026-10-08); the January target is not stated. WORKLOG 2026-10-07: the adviser is named only after the re-presentation |
 | 2026-10-23 | DC-01 built, WIN-EP-01 joined, Sysmon `lsass.exe` rule and audit settings in place, value keying coded and tested, network-logon test designed, golden snapshot taken |
 | 2026-10-31 | Spike run, six answers recorded, final number of changes set |
@@ -62,11 +63,16 @@ controls), and record the miss in WORKLOG the same day.
    not in this repo).
    - Done: FINAL and the revisions list carry the decisions up to 2026-10-07 (the attack-test subsection, the
      desktop answer in Revision 8); study guide fix 1 and the domain reason fixed 2026-10-06; the paste-ready
-     `proposal-form-FINAL-for-Word.html` made 2026-10-07. No paste-ready copy of the revisions list exists yet.
+     `proposal-form-FINAL-for-Word.html` made 2026-10-07; `T1-REVISIONS-LIST-for-Word.html` made 2026-10-08.
    - Thursday 10-08: the student makes the Word file of FINAL from the HTML, and of the revisions list. The
      PDF of 2026-10-07 02:58 is older than the last edits and has an "a" in its file name; it is made again.
    - Friday 10-09 morning: the mock panel (15 questions, pass mark 12); the assistant checks the `.docx` for
      the current figures and text. Submit Friday if the mock panel passes; otherwise Monday 10-12 at the latest.
+   - **State on 2026-10-15:** the updated Word file and its PDF exist (2026-10-12); the four pictures in the
+     Word file match the repo figures. **Whether the documentation was submitted, and whether a
+     re-presentation date is set, is not recorded.** The re-presentation scripts are ready in `prep-local`:
+     `RE-PRESENTATION-SCRIPT 22-MIN.txt` (about 3,100 words) and the full script with 31 answer cards
+     (WORKLOG 2026-10-14).
 2. **Tell the adviser** (checkpoint 2026-10-09). Partly done: the student told their professor about the
    delay. The adviser is named only after the re-presentation (WORKLOG 2026-10-07).
 3. From the working day after the submission (2026-10-12 or 2026-10-13): **build DC-01 and join
@@ -78,9 +84,15 @@ controls), and record the miss in WORKLOG the same day.
 
 ## Still waiting on the student
 
-- **Item 15, the Word file.** The student makes it Thursday 2026-10-08 from the copy-friendly text,
-  `proposal-form-FINAL-for-Word.html` in the thesis folder (made 2026-10-07, after the attack-test
-  subsection was added). The revisions list has no copy-friendly version yet.
+- **Item 15, the Word file.** The student makes it from the copy-friendly text in the thesis folder:
+  `proposal-form-FINAL-for-Word.html` and `T1-REVISIONS-LIST-for-Word.html`, **both regenerated 2026-10-12**
+  after the guideline fixes. FINAL now has four `[INSERT FIGURE]` markers with captions: Figure 1 the
+  pipeline, Figure 2 the noise floor, Figures 3 and 4 the diagram sheets. A Word file made before
+  2026-10-12 is out of date. **2026-10-12: an updated Word file exists**, `FINAL Detecting … Algorithm
+  (updated 2026-10-12).docx`, built on the student's own formatted file, with all of FINAL and the four
+  figures (WORKLOG 2026-10-12, second). The student reviews it and makes the PDF from it.
+- **Item 33, new 2026-10-12:** from the professor's guidelines, four points to ask or decide. Point 1 first:
+  is the January 2027 defense the pre-oral (50% working system) or the final?
 - **Item 32, new 2026-10-08:** four points with no record (window length, whether DC-01 is restored each run,
   the Wazuh field-name mapping, whether DC-01 still earns its days). Point 4 should be decided before the lab
   work starts.
@@ -121,6 +133,9 @@ and with them only C1, C3 and C5 can blind a detection (`DECISIONS.md` 2026-10-0
   rather than trusting this line.
 - Host VMnet2 is at `10.20.10.1` again after a hand repair (item 27). Pre-flight now checks it.
 - DC-01 does not exist yet.
+- Both VM folders on F: have a `.vmx.lck` lock folder dated 2026-10-08 13:10, with no record. The VMware logs
+  did not change, so probably opened but not powered on (unverified). Check with `vmrun` first
+  (FILE-MAP section 6).
 
 ## Recently settled (details in DECISIONS.md)
 

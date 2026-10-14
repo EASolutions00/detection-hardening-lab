@@ -921,6 +921,36 @@ repeats", while FINAL's run inputs say the thresholds are fixed at the same time
 
 ---
 
+## 33. Four points from the professor's guidelines that need asking or deciding
+
+**Status:** Open. Found 2026-10-12 by chat 27d2595d, checking FINAL and the revisions list against the
+professor's recorded lectures for Research 1A (RSCH400): `E:\Elijah MASTER COPY DO NOT DELETE\Documents\AMA\MAY
+2025\RSCH400_CS\Week 1-VC-RSCH400_CS-Research Fundamentals 1.txt` and `...\WEEK 12 - VC - RSCH400_CS.txt`
+(transcripts, outside the repo). The fixes found the same day are in WORKLOG 2026-10-12. These four were not
+fixed, because each needs the adviser or the student.
+
+1. **Pre-oral or final defense in January?** The Week 12 lecture says Research 1A ends in a pre-oral defense
+   with a 50% working system, and the CS thesis course ends in the final defense with a 100% working system
+   and the full manuscript. FINAL's Gantt chart has one "Paper Presentation / Final Defense", in January 2027,
+   like the template's own example. The record calls January the final defense and 4 June 2027 the school's
+   deadline (DECISIONS 2026-09-29). Which defense January is changes the whole plan. **Ask the adviser.**
+2. **Related study 2 is an arXiv preprint.** The lecture asks for "published research works" within five
+   years. Studies 1, 3, 4 and 5 are journal or conference papers (2022 to 2025); study 2 (RAM, 2025) is listed
+   as a preprint, and study 5's journal indexing is not confirmed. Whether the school accepts a preprint is not
+   known. **Check whether RAM has since appeared in a venue, or replace it.**
+3. **No in-text citations in APA style.** The lectures expect APA citations; FINAL has none (for example,
+   "Regulators increasingly require it" has no source), and the template has no references section. Required
+   in the manuscript's Chapter 2; optional in the form `(unverified)`.
+4. **No usability evaluation with respondents.** The Week 12 manuscript outline expects a software evaluation
+   (Likert scale or ISO 25010, with respondents, a blank and answered forms in the appendices). FINAL plans
+   performance testing only (precision, recall, F1, false positive rate against a baseline). The Week 1 lecture
+   says user studies are needed "if applicable". **Decide before Chapter 3**: add a small ISO 25010 evaluation of
+   the interface, or state why it does not apply.
+
+**Blocks:** point 1 blocks the schedule; points 2 to 4 block the manuscript, not this submission.
+
+---
+
 ## 22. The stimulus is asserted identical and never verified
 
 **Status:** Open. Raised 2026-09-12. **This one contaminates results rather than reducing them**,

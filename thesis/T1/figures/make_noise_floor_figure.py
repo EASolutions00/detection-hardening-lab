@@ -40,6 +40,11 @@ reported only when all three hold". That is the rule for REDUCED. LOST, which is
 this figure's own middle row, needs zero events after the change and a corrected
 q at or below 0.05, and is never tested against the ratio or the band. The
 caption now states both.
+
+Changed on 2026-10-12, when the figure was added to FINAL as Figure 2: the LOST
+row was the lsass handle-open key (Sysmon-10). FINAL Module 2 expects LSA
+Protection to keep that event and change only GrantedAccess, so the row now uses
+the NTLM credential validation key, Security-4776, the walkthrough's LOST key.
 """
 
 from pathlib import Path
@@ -70,8 +75,12 @@ ROWS = [
          cov=0.09, ratio=0.88, tested=True,
          verdict="no finding", colour=GOOD,
          reason="drop is inside the noise band"),
-    dict(key="Sysmon-10[GrantedAccess,SourceImage,TargetImage]",
-         sub="lsass handle open  ·  318 events before",
+    # CHANGED 2026-10-12: was the lsass handle-open key, Sysmon-10. FINAL
+    # Module 2 says LSA Protection is expected to keep that event and change
+    # only GrantedAccess, so a reader could take this row as contradicting it.
+    # The NTLM validation key is the walkthrough's LOST key.
+    dict(key="Security-4776[PackageName,TargetUserName,Workstation]",
+         sub="NTLM credential validation  ·  318 events before",
          cov=0.07, ratio=0.0, tested=True,
          verdict="LOST", colour=BAD,
          reason="zero events after the change"),
@@ -95,7 +104,9 @@ def build() -> str:
                      fill=INK, mono=True, spacing="0.08em"))
 
     for row, y in zip(ROWS, ROW_Y):
-        body.append(text(LABEL_R, y - 8, row["key"], size=11.5, weight=600,
+        # size 11.5 -> 10.5 on 2026-10-12: the 4776 key is 53 characters and
+        # ran past the left edge at 11.5.
+        body.append(text(LABEL_R, y - 8, row["key"], size=10.5, weight=600,
                          anchor="end", fill=INK, mono=True))
         body.append(text(LABEL_R, y + 9, row["sub"], size=11, anchor="end",
                          fill=MUTED))

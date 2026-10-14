@@ -62,7 +62,7 @@ Read these five, in order. Expand `REPO` first.
    The current blockers and dates, kept short. Added to this list 2026-09-28.
 
 3. `REPO\docs\OPEN-QUESTIONS.md`
-   Items **1, 15, 18, 20 to 28, and 30 to 32** are the live ones (23 reframed as a spike check; 18,
+   Items **1, 15, 18, 20 to 28, and 30 to 33** are the live ones (23 reframed as a spike check; 18,
    20, 21, 24, 25 and 30 decided but not built). All
    are summarised in section 5. Items 0, 16, 17, 19 and 29 are answered. The file is ranked by damage, so read from
    the top.
@@ -85,6 +85,10 @@ Then stop. Section 9 says what to report.
 ## 2. The map: where to look, by question type
 
 Read the file on the right before answering a question on the left.
+
+Where a file or folder is, inside or outside the repo; which file is the source and which a copy;
+what must never be committed
+    -> `REPO\docs\FILE-MAP.md`
 
 Why a choice was made, or whether something is settled
     -> `REPO\docs\DECISIONS.md`
@@ -308,7 +312,8 @@ Item 25 — the schedule; target and scope decided 2026-09-29
     Checkpoints are in STATUS.md. The panel said the re-presentation will focus on the activity
     diagram, and sets its date 3 to 7 days after the revised documentation is submitted; the
     student's target is to submit Friday 2026-10-09, Monday 2026-10-12 at the latest (two earlier
-    dates, 2026-10-02 and 2026-10-07, were missed). Also: 30 pre-change events over 3 runs is about 10 per
+    dates, 2026-10-02 and 2026-10-07, were missed). On 2026-10-15 whether it was submitted is not
+    recorded; ask the student. Also: 30 pre-change events over 3 runs is about 10 per
     run, so many keys may be untestable. The spike measures it.
 
 Item 24 — blocks trusting any UNCHANGED result
@@ -331,8 +336,10 @@ Item 20 — decided 2026-09-29, not applied
 Item 15 — blocks submission
     No Word copy of `proposal-form-FINAL.md` existed on 2026-10-08. A paste-ready copy,
     `DOCS\proposal-form-FINAL-for-Word.html`, was made 2026-10-07; the student makes the Word
-    file from it and inserts the four current SVGs. The revisions list is submitted too and has
-    no paste-ready copy yet. The PDF of 2026-10-07 02:58 is older than the last edits.
+    file from it and inserts the four current SVGs. The revisions list is submitted too; its
+    paste-ready copy, `DOCS\T1-REVISIONS-LIST-for-Word.html`, was made 2026-10-08. Both HTML files
+    are copies: if FINAL or the list changes, the copy must be made again. The PDF of 2026-10-07
+    02:58 is older than the last edits.
 
 Item 31 — the event key has no host part
     With DC-01 there are two monitored Windows hosts, and the same key from both is counted
@@ -343,6 +350,11 @@ Item 32 — four harness and index points with no record
     Whether the capture window has a fixed length or ends when the suite ends; whether DC-01 is
     restored before each run; a mapping from Wazuh field names to the key's field names; and
     whether DC-01 still earns its days now that no positive case needs it. Recorded 2026-10-08.
+
+Item 33 — the professor's guidelines, four open points
+    From the Research 1A lectures (paths in the item): is January the pre-oral defense (50% working
+    system) or the final; related study 2 is a preprint; no APA in-text citations; no usability
+    evaluation with respondents. Found 2026-10-12. Point 1 changes the schedule.
 
 Item 1 — blocks data collection
     The catalogue: 14 changes, no longer a target of 16. Three control IDs verified, several

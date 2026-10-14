@@ -17,6 +17,233 @@ Next:
 
 ---
 
+## 2026-10-15 - File map of every thesis location; Word tools saved into the repo; thesis folder backed up
+
+Chat 27d2595d. The student asked for a full record of every thesis folder, inside and outside the repo,
+before the chat's context was compacted.
+
+**Did:** listed every location read-only (the repo, DOCS, `prep-local`, the course folder, `F:\TeLoS
+Homelab`, `.telos` by name only, `claude-backups`, `~\.claude`) and wrote `docs/FILE-MAP.md`: each
+place, each file's purpose and status (source, copy, live, frozen, superseded, private), how to make
+each copy again, the never-commit list, and the loose ends. Pointers added to CLAUDE.md, STATUS and
+PROMPT-new-chat.
+
+**Checked at the source, all equal:** the four figure SVGs in DOCS and in `DOCS\Activity Diagram\`
+against `thesis/T1/figures/`; the four pictures inside the updated Word file against the same SVGs
+(Word had renamed them `image2.svg` and so on, so the student opened and saved the file after
+2026-10-12); `proposal-form.md` and `proposal-form-REVISED.md` in DOCS against `thesis/T1/`.
+
+**Found and fixed:**
+- The five Word tools of this chat (`final_to_html_v2.py`, `revisions_to_html.py`, `diff_docx_md.py`,
+  `pdf_pages.ps1`, `build_docx.py`) existed only in the chat's temporary scratchpad. Copied to
+  `tools/word/` with a README. `tools/word/docx_build/`, the PNG renders `build_docx.py` reads, is
+  gitignored.
+- The updated Word file and PDF of 2026-10-12 had no copy off drive E:. The chat hook copies only `.md`
+  and `.txt` files, and the last full copy of DOCS was 2026-09-28. Copied DOCS to
+  `C:\Users\Elijah\claude-backups\thesis-folder-2026-10-15\`: 43 files, each compared equal with `cmp`, 0
+  differences; Word's lock file left out.
+
+**Found, not fixed (FILE-MAP section 12):**
+- Whether the documentation was submitted (latest date 2026-10-12) is not recorded.
+- Both VM folders have a `.vmx.lck` lock folder dated 2026-10-08 13:10; `vmware.log` unchanged since
+  2026-09-26 (SIEM-01) and 2026-09-11 (WIN-EP-01). Probably opened, not powered on (unverified).
+- A Word lock file in DOCS dated 2026-10-13.
+- `data/runs/` is empty; the September archives may exist only inside SIEM-01 (unverified).
+- No backup was found for the course folder or for `.telos`.
+- Chat ce64480d (`E:\MISC\tools\meeting-copilot`, 2026-10-07 to 2026-10-15) is on the hook's list of
+  chats with no WORKLOG entry. It ran outside the thesis folders; this chat did not read it.
+
+**Checks after the edits:** `58 passed in 0.68s`. Document checker over the thesis folder: LIVE hits
+unchanged at 13, all old quoted wording.
+
+## 2026-10-14 - Re-presentation script restructured: from the top of the document, questions answered along the way
+
+Chat 27d2595d. The student corrected the brief: the re-presentation presents the proposal again from the
+top, section by section, as at the title defense, and must answer the panel's questions along the way.
+
+**Done (thesis folder, `prep-local`, outside git):** `RE-PRESENTATION-SCRIPT.txt` rewritten in the template's
+order (title, Area of Investigation with the attack tests and the algorithms, Reasons for Choice of Project,
+Project Context through the activity diagram and the limits, importance, target users, similarities, Gantt
+chart), in the same simple English and speaking style as the 2026-10-12 rewrite. Each panel question is answered
+in its section and announced as "Last time, the panel asked …"; Part A has a map of where each question is
+answered. The section order was checked against the updated Word file first (same order as FINAL, 4 figures).
+New spoken text for the parts the earlier versions skipped (title, research design, problems and objectives,
+concept, features and modules, importance, similarities, schedule) was checked against FINAL.
+
+**Length found and handled:** the full script is about 4,400 spoken words (34 to 37 minutes), and the [CAN SKIP]
+parts save only about 4 minutes, so a separate `RE-PRESENTATION-SCRIPT 22-MIN.txt` was written: same order and
+answers, shorter wording, about 2,500 words, about 20 minutes plus pauses. The previous version is kept as
+"RE-PRESENTATION-SCRIPT (question-order version 2026-10-12).txt".
+
+**2026-10-15, same chat:** the student pasted a 92-slide script from elsewhere and asked whether it was
+necessary. Advised against it: about 10,000 to 11,000 words by estimate (80 to 90 minutes), the same content
+repeated three or four times, designed parts presented as working (manifest, run checks, impact scoring,
+pairing), the lab described as built, the web-based answer stated as "final" with no request to confirm, and a
+formal style. Three of its ideas were added to the 22-minute script at the student's request, in simple English:
+the title explained word by word, a one-minute recap of short answers to the panel's questions before the
+closing, and "It does not replace the SIEM, hardening, or the detection engineer; it adds the missing check".
+The 22-minute script is now about 2,700 spoken words, about 23 to 24 minutes with pauses.
+
+**Then, same day: an outside critique of the 22-minute script** (pasted by the student) was checked against
+FINAL, the diagram generator and the tests before anything changed. Held: problems and objectives only
+summarized; the report's evaluation part unmentioned; "same script" ambiguous (the hardening script runs only in
+the after runs); the WDigest wording too definite (FINAL: the NLA and WDigest effects are expected, not measured);
+the chi-square p value wording and "made-up" data; "everything is measured" in the present tense; "the company
+prepares seven things" (FINAL's "Provided by" column differs); negative controls unexplained; "affects no
+detection" too broad; the inconclusive definition missing; "all eleven questions". Partly: ask for the desktop
+confirmation once, not zero times, because Revision 8 asks the panel to confirm; keep "dead already" as "for this
+attack"; the stored data has three datastores (A, B, C), not four; the "new before rarity" detail went to an
+answer card in the full script. Wrong: "58 tests" unverified; the suite was run that day, `58 passed`. All
+applied at the student's request. Result: about 3,100 spoken words, 24 to 26 minutes of speaking; the header
+lists what to skip to get back to about 22.
+
+## 2026-10-12 (third) - Teleprompter script for the re-presentation
+
+Chat 27d2595d. At the student's request: a full script for the re-presentation by video call, focused on the
+panel's previous questions. Written to `prep-local\RE-PRESENTATION-SCRIPT.txt` in the thesis folder (private,
+outside the repo), plain text for a teleprompter.
+
+**Built from the record, not from memory:** FINAL (title, problems, objectives, algorithms, modules, the activity
+diagram's six phases, limits), revisions list Revision 8 (the five reasons for keeping the desktop application),
+the panel's eleven questions and the title comment, WORKLOG 2026-10-07 (the transcript findings: the web-based
+instruction, the manual-attack question, the statements to correct), and `docs/demo-output.txt` (naive 3 true
+and 7 false alarms, proposed 3 and 0).
+
+**Shape:** before-the-call notes with what is built; opening; the problem; what changed; the questions in the
+order of the system (Q1 and Q8 with the request to confirm the desktop application, Q3, Q2, Q11 with the manual
+attack answer, Q10, Q4 and Q9 with Figures 1 and 2, Q7 walking Figures 3 and 4 phase by phase, Q6, Q5, the title
+comment); the laboratory changes (the domain, about three positive cases under Wazuh's rules); status and four
+limits raised first; three corrections to statements made at the title defense (16 changes, "100% no blind
+spot", SQL injection); closing; 22 answer cards for likely questions. About 28 minutes in full, about 13 in the
+short version.
+
+**Checked against the record before saving:** two sentences made designed parts sound built (the laboratory "is
+now" a domain; value keying) and were corrected to "design" and "not built yet". No dash characters.
+
+**Rewritten the same day in simple English, at the student's request,** after reading the title-defense
+transcript (pasted in chat 5e235b74, read from the private chat archive) and the student's earlier
+`prep-local\title-defense-script.md`. Kept from how the student spoke: the logbook and doors-and-windows pictures,
+"it is dead already", the six months on a security shift, "So," and "po". Fixed from the transcript: answering a
+different question first ("web-based or script?" answered with the virtual machines), reading long technical
+sentences ("poison rate ratio", "G squared"), agreeing on the spot ("Opo, pwede po" to web-based, "Opo" to "a model
+of standard hardening" and "parang antivirus"), and claims bigger than the design ("100% wala nang blind spot",
+sixteen changes, SQL injection and kerberoasting as the attacks). New in the script: an answer to the panel chair's
+unanswered question, where the diagram starts and where the engineer's information comes from (the company's own
+planned change; FINAL: the engineer need not know which rules are affected); five habits in Part A; eight answer
+cards for questions asked at the title defense. 3,635 spoken words (about 28 to 30 minutes), short version 1,684,
+average sentence 7.5 words, 30 answer cards. The formal version is kept beside it as "RE-PRESENTATION-SCRIPT
+(formal version 2026-10-12).txt". The student had deleted one line of the formal version (the web-based bridge);
+the new version uses a shorter bridge, "My answer is in Revision 8."
+
+## 2026-10-12 (second) - Updated Word file of FINAL, built on the student's formatted Word file
+
+Chat 27d2595d. At the student's request: copy `proposal-form-FINAL.md` into a Word file in the format of
+the student's own `FINAL Detecting … Differential Analysis Algorithm.docx` (saved 2026-10-12 15:44, the
+school template filled in), with the blank template as reference.
+
+**Found in the student's file, by comparing its words with FINAL's (8,544 words):** it was made from an older
+copy and lacked the 2026-10-06 and 2026-10-12 fixes, the two "Why…" paragraphs after the algorithms table, the
+whole Activity Diagram section, Scope and Limitations, the four Importance paragraphs (the cell was empty), the
+note on build order, and all figures; it kept the template's "(This is just an example.)". The student's own
+format choices were kept: the template's two-column form (pink label column, 5.5-inch content column),
+Calibri 11 as in the template, uppercase study titles without field labels and "(year)" after the authors,
+"September 2022" for study 4, full month names, green Gantt cells instead of X (they match FINAL's X marks
+exactly), lettered A/B/C lists, "Function/Role". An earlier remark in this chat that the file had broken
+characters ("Hackl�nder") was wrong: the comparison script printed in the wrong encoding; the file has none.
+
+**Made:** `FINAL Detecting … Differential Analysis Algorithm (updated 2026-10-12).docx` in the thesis folder,
+by `build_docx.py` in this chat's scratchpad. It edits a copy of the student's file and never writes the
+original: 24 sentence replacements inside their paragraphs (runs merged first, formatting kept), the missing
+blocks copied from FINAL in the student's paragraph format, a new 1-to-10 numbering for the limits, and the
+four figures as SVG with PNG fallbacks rendered by Edge, 5.3 inches wide inside the content column. The script
+stops without writing if any sentence is not found exactly once or the output exists.
+
+**Checked:** the word comparison again: 56 differences left, all the student's format choices or the four
+markers that are now figures. Word opened the file read-only: 30 pages, 4 inline figures; a PDF export was
+rendered to images with Windows' PDF renderer (`pdf_pages.ps1`, scratchpad) and pages 1, 5, 6, 14, 19, 21, 22,
+24 and 30 were looked at: figures with captions, the Activity Diagram text, limits 1 to 10, Importance, the
+note under the Gantt chart.
+
+**Told the student:** at the content column's width the activity diagram's text prints at about 3 points and the
+noise floor's at about 5, readable only when zoomed; the template's font is Calibri 11, while the professor's
+Arial 12 rule is stated for the abstract and the manuscript; "Concept of the Proposed System" is not bold in the
+student's file, unlike the other subheadings; the PDF of 2026-10-07 must be made again from this file.
+
+## 2026-10-12 - Submitted files checked against the professor's guidelines; six fixes; two figures added; both Word copies regenerated
+
+Chat 27d2595d, after `8edcee8` (the 2026-10-08 third entry was not yet committed). Today is the latest
+submission date of DECISIONS 2026-10-08; no record says the documents were submitted on Friday.
+
+**Asked by the student:** check every file against the professor's guidelines, two transcripts of the
+Research 1A (RSCH400) lectures: Week 1, research fundamentals, and Week 12, research writing (paths in
+OPEN-QUESTIONS 33). Then, on the student's question, the HTML copy itself, which the first check had not read.
+
+**Already followed:** the template's sections in order; the title names the method; a CS thesis with a custom
+algorithm, experimental validation and theoretical justification (Week 1); 5 numbered problems and 5 objectives
+tied to them; a general Field and Background; current process, features, modules and a swimlane diagram;
+importance to society, industry, computer science and practitioners; a target-users table; 5 related studies,
+2022 to 2025, local and foreign, with all six fields; a Gantt chart with month and year and no overlap of results
+and defense; no first person. The blank template has headings only, and its sample Gantt chart ends at "Paper
+Presentation Final Defense".
+
+**Fixed, approved by the student (thesis folder, outside git):**
+1. **Target Users contradicted the diagram.** FINAL called the Detection Engineer the primary operator who defines
+   the run, and said the Security/Systems Engineer applies the change between the phases. The diagram's
+   generator puts register, define and supply in the Security/Systems Engineer lane (lines 328, 383, 441), and
+   D2 has the system apply the change by script. Both rows rewritten; revisions list Revision 21 matches.
+2. **Acronyms defined at first use** (Week 12): CIS, DISA, STIGs, LSA, LSASS, UEFI, SOC, SQL, XML, CSV, JSON,
+   DBSCAN, IT in FINAL; the same in the revisions list, plus SIEM, XDR, ATT&CK. Left as they are: DOI, ISBN, URL,
+   publisher names, technique IDs, acronyms inside paper titles.
+3. **Two "(unverified)" markers** in FINAL rephrased in plain words (the attack-test note; study 5's indexing).
+4. **Five coaching lines** in the revisions list removed or rewritten (Q10, Revision 3, the limit 4 note,
+   Revision 23's "Why", Part 3's first line).
+5. **American spelling throughout** both files (behavior, catalog, analyzed, analyze, modeling, labeled, center,
+   license, generalized, generalize).
+6. **One term:** FINAL now says the diagram calls the adversary emulation tests the attack tests.
+
+**Option 1, approved: four figures, not two.** The HTML had insert markers for only the two diagram sheets, while
+revisions list Part 4 (written 2026-09-29 in this chat without checking FINAL) promised four. FINAL now has a
+marker and caption for each: Figure 1 the pipeline (end of Algorithms to be Used), Figure 2 the noise floor
+(The Variance Floor and External Validity), Figures 3 and 4 the diagram sheets. The working note says how to
+insert them. Revisions list: Revision 3 and 11 record the figures, Revision 18 and Part 4 number them.
+**Revision 11 also named the section "The Variance Floor and the External Validity of the Measurements"; FINAL's
+heading is "The Variance Floor and External Validity". Corrected.**
+
+**The noise floor figure changed before it went in** (repo, `make_noise_floor_figure.py`): checked against
+`differential.py` (3 × CoV band, REDUCED's three conditions, LOST at zero, 30-event minimum): correct. But its
+LOST row was the `lsass` handle-open key, Sysmon 10, while FINAL Module 2 expects LSA Protection to keep that
+event and change only `GrantedAccess`. The row is now `Security-4776[PackageName,TargetUserName,Workstation]`,
+NTLM credential validation, the key `DEFAULT_TRACKED_FIELDS` produces and the walkthrough's LOST key. The key
+labels went from 11.5 to 10.5 so the longer key fits; rendered and checked by eye; copied to both figure
+locations, 4 of 4 figures hash equal.
+
+**Word copies regenerated:** FINAL's by `final_to_html_v2.py` (this chat's scratchpad; chat 5e235b74's converter
+with the built-in pair of markers replaced by FINAL's own markers, exactly 4 required): PASS, all 8,544 words in
+order, 31 headings, 8 tables, 4 markers with captions. The revisions list's by `revisions_to_html.py`: PASS,
+6,392 words. Both HTML files: no stale Target Users text, no "(unverified)", no British spelling, no coaching, no
+Markdown left. Document checker: LIVE hits unchanged at 13.
+
+**Not fixed, recorded as OPEN-QUESTIONS 33:** whether January is the pre-oral (50% working system) or the final
+defense; related study 2 is an arXiv preprint; no APA in-text citations; no usability evaluation with
+respondents. For the Word file: Arial 12, which the template uses and the professor requires; remove the template
+instructions; a grammar check, which the professor suggests.
+
+## 2026-10-08 (third) - Paste-ready copy of the revisions list for Word
+
+Chat 27d2595d, after `8edcee8`. At the student's request.
+
+**Made:** `T1-REVISIONS-LIST-for-Word.html` beside the list in the thesis folder (outside git), by
+`revisions_to_html.py` in this chat's scratchpad (not in the repo). It is chat 5e235b74's `final_to_html.py`
+of 2026-10-07 adapted: no figure markers, its own title, no table styling, and the five "**Label:** value"
+header lines kept as separate lines instead of one joined paragraph. The list itself was not changed.
+
+**Checked:** word check PASS, all 6,197 words of the list in the HTML in the same order; 28 headings and 28
+list items, matching the source; no `**`, backtick or `#` left; a rendered screenshot of the top looked
+right (headings, bold labels, the question list).
+
+**Kept in mind:** both HTML files are copies. If FINAL or the list changes again, the copy is stale and must
+be made again before the Word file is.
+
 ## 2026-10-08 (second) - Full sweep: the submitted files are clean; stale spots fixed in 11 repo files and 2 thesis-folder files; item 32; the walkthrough's example overtaken
 
 Chat 27d2595d, after `b958ab1`. At the student's request: "update docs. make full sweep".

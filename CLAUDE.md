@@ -31,6 +31,7 @@ T1, T2 and T3 are **alternatives, not components.** One gets built.
 | [docs/WORKLOG.md](docs/WORKLOG.md) | What happened each session, newest first. |
 | [docs/RUNBOOK-homelab.md](docs/RUNBOOK-homelab.md) | Build the lab from scratch. Phases 0 to 8, each ends with a check. |
 | [docs/COMMANDS.md](docs/COMMANDS.md) | Every command run on this machine, why, and the correct result. Part 5 is the pre-flight check. |
+| [docs/FILE-MAP.md](docs/FILE-MAP.md) | Every thesis file and folder, inside and outside this repo. Sources, copies, backups, never-commit list. |
 | [thesis/](thesis/README.md) | Proposal template and numbering rules. |
 | [thesis/T1/](thesis/T1/README.md) | Hardening-induced blind spots. The thesis. Final. |
 | [thesis/T2/](thesis/T2/README.md) | Severity inversion in the Wazuh ruleset. Not chosen. Record only. |
@@ -39,6 +40,7 @@ T1, T2 and T3 are **alternatives, not components.** One gets built.
 | [lab/configs/](lab/configs/README.md) | Pinned Sysmon and Wazuh configs. Hash them. |
 | [lab/scripts/](lab/scripts/README.md) | One script per hardening change. Not snapshots. |
 | [src/](src/README.md) | Python package `telos`, the analysis core. |
+| [tools/](tools/word/README.md) | `check_docs.py`; `word/` turns FINAL and the revisions list into Word copies. |
 | `data/runs/` | Raw archives. Gitignored, too big for GitHub. One disk only, so back up elsewhere. |
 | `data/summaries/` | Small derived CSVs. Committed. |
 

@@ -33,6 +33,9 @@ venv/
 # Office temp files (thesis docs)
 ~$*
 
+# Figure renders that tools/word/build_docx.py reads. Made from thesis/T1/figures, so not kept.
+tools/word/docx_build/
+
 # Claude Code personal settings ("don't ask again" choices). Not shared.
 .claude/settings.local.json
 
