@@ -17,7 +17,7 @@ Next:
 
 ---
 
-## 2026-10-15 - File map of every thesis location; Word tools saved into the repo; thesis folder backed up
+## 2026-10-15 - File map of every thesis location; Word tools saved into the repo; revised documentation submitted
 
 Chat 27d2595d. The student asked for a full record of every thesis folder, inside and outside the repo,
 before the chat's context was compacted.
@@ -54,7 +54,81 @@ against `thesis/T1/figures/`; the four pictures inside the updated Word file aga
   chats with no WORKLOG entry. It ran outside the thesis folders; this chat did not read it.
 
 **Checks after the edits:** `58 passed in 0.68s`. Document checker over the thesis folder: LIVE hits
-unchanged at 13, all old quoted wording.
+unchanged at 13, all old quoted wording. Committed and pushed as `13fbc50`.
+
+**Later, same day: the third missed date, and a readiness check.** The student said the documentation is
+not submitted and no re-presentation date is set, and plans to submit today. So 2026-10-12, the date
+DECISIONS 2026-10-08 called the latest with no further move, was missed (after 2026-10-02 and 2026-10-07).
+Checked, read-only:
+- Order of files: FINAL 2026-10-12 15:32, revisions list 15:37, the updated Word file saved 16:05
+  (`lastModifiedBy` the student, revision 3, 30 pages), its PDF 16:10. Nothing changed after that.
+- `tools/word/diff_docx_md.py`, Word file against FINAL: 56 differences, similarity 0.993. All are the
+  student's formatting kept on purpose (field labels, "(year)", full month names, green Gantt cells for
+  X, the four figure markers replaced by the figures, "Function/Role"). No sentence missing. "Research
+  Topic Proposal Form" is not in the body; the student's own Word file has the same header without it.
+- The PDF, all 30 pages rendered with `tools/word/pdf_pages.ps1`: the title on page 1 is the panel's
+  wording; the four figures are on pages 6, 14, 21 and 22 and are vector (sharp at 3 times zoom).
+  **Figures 3 and 4 (the activity diagram) print at about 3 point text** inside the template's narrow
+  right column; readable only when zoomed.
+- **No Word or PDF copy of the revisions list exists** in Documents, Desktop, Downloads or the thesis
+  folders. It is half of the submission set (WORKLOG 2026-09-29, second).
+- OPEN-QUESTIONS 33 blocks the schedule and the manuscript, not this submission.
+
+**Then, at the student's request ("option 1 only"):** the two diagram sheets made into separate full-size
+PDFs to attach with the proposal, so the diagram can be read without the 3 point print size. Edge headless
+`--print-to-pdf` of an HTML page holding each repo SVG at its own size (1800 x 2588 and 1800 x 2304) plus
+FINAL's caption; one page each (1350 x 2001 pt and 1350 x 1788 pt); rendered back with `pdf_pages.ps1` and
+checked by eye. Saved in the thesis folder as `Figure 3 Activity Diagram sheet 1 (full size).pdf` and
+`Figure 4 Activity Diagram sheet 2 (full size).pdf`, both compared equal to the checked copies. The white
+strip on the right of each page is in the figure itself (the lanes end at 1660 of 1800 units), the same as
+in the Word file. First try failed: the output path `"$W\\$s.pdf"` wrote both sheets to one file named
+`diagpdf$s.pdf`; removed and rerun with `cygpath -w` paths.
+
+**The student then said the revisions list is not part of the requirements.** Checked: the title-defense
+transcript asks only that the revised topic document be emailed to the panel chair, who then schedules the
+re-presentation. The revisions list was this chat's recommendation, accepted 2026-09-29 (WORKLOG 2026-09-29,
+second). Found while checking: FINAL says "It is not a web application" with a short reason, but only
+Revision 8 of the revisions list says the panel asked for web-based and asks the panel to confirm (DECISIONS
+2026-10-07). Choice put to the student. **Chosen: send FINAL without the revisions list, and say the
+web-based point in the email** (2 or 3 sentences: the panel's instruction, the desktop decision, a request to
+confirm). The email was drafted in this chat for the student to send.
+
+**Last check before sending (student's request).** Clean: no leftover working text in the Word file
+("Working note", "[INSERT FIGURE", "(unverified)", "TODO"), no tracked changes, no comments; the Dean's name
+matches the template; page 2 is half empty only because the Wazuh rule table moved to page 3 (no text lost).
+**Found:** the Word file's Title property is another thesis's title, "A Mobile Application for finding
+Hospital's Facilities and Services utilizing Dijkstra's Algorithm", with Author "MaryASoriano". It comes from
+`TopicProposalFormTemplateBLANK.docx`, and every Word file built from it carries it (the student's file, the
+2026-10-07 file). The PDF of 2026-10-12 carries the same title in its XMP metadata (`dc:title`). The two
+diagram PDFs made today have the title `sheet1.html` and `sheet2.html` (no `<title>` in the HTML).
+
+**Fixed, then submitted.** The student chose to fix the properties in Word (File, Info) and saved the Word file
+as `Detecting … Algorithm.docx` (19:31). `FINAL … (updated 2026-10-12).docx` and the student's formatted
+`FINAL … Algorithm.docx` left DOCS; both are in the morning backup. Checked against the backed-up 2026-10-12
+file: Title is the thesis title, Author is Elijah Amorsolo; body text identical; all 9 pictures identical;
+`document.xml`, footnotes and endnotes identical once Word's revision ids are removed; the header table's
+column widths moved by 1 to 2 twips (6379 to 6380, 1199 to 1200, 1354 to 1352). The student then made
+`Detecting … Algorithm.pdf` (19:34): 30 pages, XMP title and author correct, no "Dijkstra" or "MaryASoriano"
+anywhere, including compressed streams. All 30 pages differed by bytes from the 2026-10-12 renders, so pixels
+were compared with an Edge headless canvas page: 25 pages differ only inside the page-header cells (about 390
+to 617 pixels); pages 16 to 19 and 26 also show single-letter rendering differences, and pages 17 and 26 viewed
+side by side have the same words, line breaks and positions. The two diagram PDFs were remade with a `<title>`;
+their renders are byte-identical to the checked ones. The first copy into DOCS failed with `cp: cannot create
+regular file ... Device or resource busy` (the files were open); it worked after the student closed them.
+
+**Submitted 2026-10-15** (student): emailed to the panel chair with `Detecting … Algorithm.pdf` and the two
+diagram PDFs. The email's web-based paragraph: the student raised the idea at the title defense and the panel
+asked that it be declared; the system stays a desktop application, with the reason in "System Type and
+Deployment"; "Please let me know if the panel accepts this, or if the system must still be web-based." The
+re-presentation date is not set (3 to 7 days: about 2026-10-18 to 2026-10-22). The thesis folder was copied
+to `claude-backups\thesis-folder-2026-10-15-sent\` (45 files, 0 differences).
+
+**Records:** DECISIONS 2026-10-08 marked overtaken; DECISIONS 2026-10-07 gets a corrected note (the web-based
+idea was the student's; the chair made it a revision item; the email, not Revision 8, asks for the panel's
+answer); OPEN-QUESTIONS 15 answered; STATUS, PROMPT-new-chat, FILE-MAP and `tools/word/README.md` updated.
+
+**Next:** wait for the panel's date and practice the 22-minute script; lab work from 2026-10-16 (DC-01 first),
+with six working days to the 2026-10-23 checkpoint.
 
 ## 2026-10-14 - Re-presentation script restructured: from the top of the document, questions answered along the way
 

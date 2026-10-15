@@ -1224,9 +1224,9 @@ so the answer changes the diff.
 
 ---
 
-## 15. Which submission documents still carry the superseded event key?
+## 15. Which submission documents still carry the superseded event key? (ANSWERED 2026-10-15, see the Answered section)
 
-**Status:** Open. Raised 2026-09-09 while checking the activity diagram. Ranked here because a
+**Status:** Answered 2026-10-15; the history below is kept. Raised 2026-09-09 while checking the activity diagram. Ranked here because a
 submitted document that contradicts another submitted document is a defense problem, not a
 tidiness problem.
 
@@ -2436,6 +2436,23 @@ data was never collected.
 ---
 
 ## Answered
+
+### Which submission documents still carry the superseded event key? (answered 2026-10-15, item 15)
+
+**Answer: none of the submitted files.** The remaining piece was a Word copy of FINAL with the four current
+figures. It was built 2026-10-12, its properties were fixed by the student 2026-10-15, and it was submitted
+2026-10-15 as `Detecting … Algorithm.pdf` with the two diagram sheets as full-size PDFs.
+
+**Evidence, all read from the files on 2026-10-15 (WORKLOG 2026-10-15):**
+- `tools/word/diff_docx_md.py`, the Word file against `proposal-form-FINAL.md`: 56 differences, similarity
+  0.993, all formatting the student chose; no sentence missing. FINAL itself describes field presence plus
+  value keying for a few fields, as `eventkey.py` and DECISIONS 2026-09-29 do.
+- The four pictures inside the Word file are byte-identical to `thesis/T1/figures/*.svg`.
+- The submitted PDF: 30 pages; each page's pixels match the checked 2026-10-12 PDF except the page-header
+  cells and single-letter rendering differences.
+
+**Not submitted, so not checked again:** `T1_Detection of Hardening-Induced Blind Spots REVISED.docx` (still
+embeds the 2026-08-15 diagram), `thesis/T1/proposal-form-REVISED.md`, `T1-REVISION-DRAFT.md`. All superseded.
 
 ### Four findings from chat 4e01d810: do they hold, and what fixes them? (answered 2026-09-28, item 29)
 

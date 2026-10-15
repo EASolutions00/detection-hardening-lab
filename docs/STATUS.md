@@ -19,17 +19,16 @@ says which ones matter right now. Where every file lives, inside and outside the
   no capture run exists.
 - **The re-presentation:** the panel said it will focus on the **activity diagram** (student, 2026-09-29).
   **The panel sets a date only after the revised documentation is submitted, about 3 to 7 days later**
-  (student, 2026-09-29). **Target: submit Friday 2026-10-09 if the mock panel passes, Monday 2026-10-12 at
-  the latest, no further move** (`DECISIONS.md` 2026-10-08). Two earlier dates were missed: Friday
-  2026-10-02 and Wednesday 2026-10-07. The student told their professor about the delay; the professor
-  accepted a new date. The re-presentation then falls between about 2026-10-12 and 2026-10-19.
+  (student, 2026-09-29). **Submitted 2026-10-15** by email to the panel chair (student), after three missed
+  dates: 2026-10-02, 2026-10-07 and 2026-10-12 (`DECISIONS.md` 2026-10-08, overtaken). **The re-presentation
+  date is not set yet.** By the 3 to 7 days, it falls between about 2026-10-18 and 2026-10-22 (estimate).
   Recommended, not decided: run the full data collection only after the panel approves the diagram.
 
 ## Checkpoints (proposed 2026-09-29, dates are estimates)
 
 | By | Done when |
 |---|---|
-| 2026-10-09, latest 2026-10-12 | Revised documentation submitted (the panel then sets the re-presentation date). **2026-10-02 and 2026-10-07 were missed.** On 2026-10-15 whether it was submitted is not recorded |
+| 2026-10-09, latest 2026-10-12 | Revised documentation submitted (the panel then sets the re-presentation date). **Done 2026-10-15** (student), three days after the latest date; 2026-10-02, 2026-10-07 and 2026-10-12 were missed |
 | 2026-10-09 | Adviser told of the slip and the January target. **Partly done:** the student told their professor about the delay (by 2026-10-08); the January target is not stated. WORKLOG 2026-10-07: the adviser is named only after the re-presentation |
 | 2026-10-23 | DC-01 built, WIN-EP-01 joined, Sysmon `lsass.exe` rule and audit settings in place, value keying coded and tested, network-logon test designed, golden snapshot taken |
 | 2026-10-31 | Spike run, six answers recorded, final number of changes set |
@@ -57,40 +56,32 @@ controls), and record the miss in WORKLOG the same day.
 
 ## Next, in order
 
-1. **Submit the revised documentation Friday 2026-10-09, Monday 2026-10-12 at the latest**
-   (`DECISIONS.md` 2026-10-08). The submission set is FINAL and the revisions list. Not submitted: the panel
-   response (stale in places) and the explainer. The study plan is in `prep-local\STUDY-GUIDE.md` (private,
-   not in this repo).
-   - Done: FINAL and the revisions list carry the decisions up to 2026-10-07 (the attack-test subsection, the
-     desktop answer in Revision 8); study guide fix 1 and the domain reason fixed 2026-10-06; the paste-ready
-     `proposal-form-FINAL-for-Word.html` made 2026-10-07; `T1-REVISIONS-LIST-for-Word.html` made 2026-10-08.
-   - Thursday 10-08: the student makes the Word file of FINAL from the HTML, and of the revisions list. The
-     PDF of 2026-10-07 02:58 is older than the last edits and has an "a" in its file name; it is made again.
-   - Friday 10-09 morning: the mock panel (15 questions, pass mark 12); the assistant checks the `.docx` for
-     the current figures and text. Submit Friday if the mock panel passes; otherwise Monday 10-12 at the latest.
-   - **State on 2026-10-15:** the updated Word file and its PDF exist (2026-10-12); the four pictures in the
-     Word file match the repo figures. **Whether the documentation was submitted, and whether a
-     re-presentation date is set, is not recorded.** The re-presentation scripts are ready in `prep-local`:
-     `RE-PRESENTATION-SCRIPT 22-MIN.txt` (about 3,100 words) and the full script with 31 answer cards
-     (WORKLOG 2026-10-14).
+1. **Submitted 2026-10-15.** Sent by the student, by email to the panel chair, with three attachments:
+   `Detecting … Algorithm.pdf` (30 pages, made from `Detecting … Algorithm.docx`, both in the thesis folder)
+   and the two diagram sheets as full-size PDFs. Not sent: the revisions list (not required), the panel
+   response and the explainer. The email says the student raised the web-based idea at the title defense
+   and the panel asked that it be declared; the system stays a desktop application; and asks whether the
+   panel accepts this or the system must still be web-based (DECISIONS 2026-10-07, corrected note). Checks
+   before sending: WORKLOG 2026-10-15.
+   **Now: wait for the panel's date and practice.** The re-presentation scripts are in `prep-local`:
+   `RE-PRESENTATION-SCRIPT 22-MIN.txt` (about 3,100 words) and the full script with 31 answer cards
+   (WORKLOG 2026-10-14). The study plan is `prep-local\STUDY-GUIDE.md`. **When the panel answers the
+   web-based question, record the answer in DECISIONS.** A refusal means a web front end on the same core
+   (DECISIONS 2026-10-07, cost if wrong).
 2. **Tell the adviser** (checkpoint 2026-10-09). Partly done: the student told their professor about the
    delay. The adviser is named only after the re-presentation (WORKLOG 2026-10-07).
-3. From the working day after the submission (2026-10-12 or 2026-10-13): **build DC-01 and join
+3. From Friday 2026-10-16, the working day after the submission: **build DC-01 and join
    WIN-EP-01**; apply the Sysmon rule and the audit settings; code value keying, the control-run check
-   (item 24) and pairing (item 30). The 2026-10-23 checkpoint keeps its date and has about nine working days.
+   (item 24) and pairing (item 30). The 2026-10-23 checkpoint keeps its date and now has six working days
+   (2026-10-16 to 2026-10-23), with the re-presentation probably inside them.
    Open question first: does DC-01 still earn its days, now that no positive case needs it (WORKLOG
    2026-10-06)?
 4. Golden snapshot, a minimal harness, one capture window by hand as a trial, then the spike.
 
 ## Still waiting on the student
 
-- **Item 15, the Word file.** The student makes it from the copy-friendly text in the thesis folder:
-  `proposal-form-FINAL-for-Word.html` and `T1-REVISIONS-LIST-for-Word.html`, **both regenerated 2026-10-12**
-  after the guideline fixes. FINAL now has four `[INSERT FIGURE]` markers with captions: Figure 1 the
-  pipeline, Figure 2 the noise floor, Figures 3 and 4 the diagram sheets. A Word file made before
-  2026-10-12 is out of date. **2026-10-12: an updated Word file exists**, `FINAL Detecting … Algorithm
-  (updated 2026-10-12).docx`, built on the student's own formatted file, with all of FINAL and the four
-  figures (WORKLOG 2026-10-12, second). The student reviews it and makes the PDF from it.
+- **Item 15 answered 2026-10-15:** the submitted Word file and PDF carry all of FINAL's text and the four
+  current figures (OPEN-QUESTIONS, Answered section).
 - **Item 33, new 2026-10-12:** from the professor's guidelines, four points to ask or decide. Point 1 first:
   is the January 2027 defense the pre-oral (50% working system) or the final?
 - **Item 32, new 2026-10-08:** four points with no record (window length, whether DC-01 is restored each run,

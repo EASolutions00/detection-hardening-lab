@@ -10,6 +10,11 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ## 2026-10-08 - The revised documentation is submitted Friday 2026-10-09 if the mock panel passes, and Monday 2026-10-12 at the latest. The 2026-10-07 date is missed
 
+**Overtaken, 2026-10-15:** Monday 2026-10-12 was missed too. The student submitted on **2026-10-15**, by email
+to the panel chair: the proposal's PDF and the two diagram sheets as full-size PDFs. The revisions list was
+not sent: the title-defense transcript asks only for the revised topic document, and the list was this chat's
+recommendation (WORKLOG 2026-09-29, second), not a requirement. Details: WORKLOG 2026-10-15.
+
 **Decision, by the student, chat 27d2595d:** the goal date to submit FINAL and the revisions list is Friday
 2026-10-09. On Thursday 2026-10-08 the student makes the Word file from `proposal-form-FINAL-for-Word.html`.
 On Friday morning the student takes the mock panel (15 questions, pass mark 12, `prep-local\STUDY-GUIDE.md`)
@@ -34,6 +39,20 @@ defense to February or later. The re-presentation falls between about 2026-10-12
 next move is a decision about the January target, not about the submission date.
 
 ## 2026-10-07 - The system stays a desktop application; Revision 8 answers the panel's instruction to declare it web-based and asks the panel to confirm
+
+**Corrected and carried forward, 2026-10-15:**
+1. **Where the web-based idea came from.** The student pointed out that the panel did not propose it, and the
+   transcript agrees: a panelist asked why the system could not be web-based, and the student then said they
+   had just realized it could be, with an agent. Later a panelist said "it's up to you" and that web-based is
+   much better for remote access. The chair's closing verdict then asked that the document declare it. So the
+   idea is the student's; the instruction to declare it is the chair's. This entry's title and "What the record
+   had missed" give only the second half.
+2. **How the confirmation is asked.** Revision 8 was not sent (the revisions list was not submitted). The
+   submission email carried the point instead: the student said the system could be web-based at the title
+   defense and the panel asked that it be declared; after the design work the student kept a desktop
+   application, with the reason in "System Type and Deployment"; and asked the panel to say whether it
+   accepts this or the system must still be web-based. FINAL itself says only "It is not a web application",
+   with a two-sentence reason. The five reasons below were not sent.
 
 **Decision, by the student, chat 5e235b74:** keep the desktop application (2026-09-14). Do not change FINAL.
 Answer the panel's instruction in `T1-REVISIONS-LIST.md`, Revision 8, and point to it from Q8.

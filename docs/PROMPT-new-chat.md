@@ -62,9 +62,9 @@ Read these five, in order. Expand `REPO` first.
    The current blockers and dates, kept short. Added to this list 2026-09-28.
 
 3. `REPO\docs\OPEN-QUESTIONS.md`
-   Items **1, 15, 18, 20 to 28, and 30 to 33** are the live ones (23 reframed as a spike check; 18,
+   Items **1, 18, 20 to 28, and 30 to 33** are the live ones (23 reframed as a spike check; 18,
    20, 21, 24, 25 and 30 decided but not built). All
-   are summarised in section 5. Items 0, 16, 17, 19 and 29 are answered. The file is ranked by damage, so read from
+   are summarised in section 5. Items 0, 15, 16, 17, 19 and 29 are answered. The file is ranked by damage, so read from
    the top.
 
 4. `REPO\docs\DECISIONS.md`
@@ -310,11 +310,11 @@ Item 25 — the schedule; target and scope decided 2026-09-29
     by the end of January 2027 (March was recommended); keep every measurable class C change,
     reduce the graphical interface first, then class B; the spike by 2026-10-31 sets the number.
     Checkpoints are in STATUS.md. The panel said the re-presentation will focus on the activity
-    diagram, and sets its date 3 to 7 days after the revised documentation is submitted; the
-    student's target is to submit Friday 2026-10-09, Monday 2026-10-12 at the latest (two earlier
-    dates, 2026-10-02 and 2026-10-07, were missed). On 2026-10-15 whether it was submitted is not
-    recorded; ask the student. Also: 30 pre-change events over 3 runs is about 10 per
-    run, so many keys may be untestable. The spike measures it.
+    diagram, and sets its date 3 to 7 days after the revised documentation is submitted. It was
+    submitted 2026-10-15, after three missed dates (2026-10-02, 2026-10-07, 2026-10-12); the date was
+    not set on 2026-10-15 (about 2026-10-18 to 2026-10-22 by estimate; ask the student). Also: 30
+    pre-change events over 3 runs is about 10 per run, so many keys may be untestable. The spike
+    measures it.
 
 Item 24 — blocks trusting any UNCHANGED result
     `VarianceModel.from_control()` accepts a control run that recorded nothing. That inflates
@@ -333,13 +333,11 @@ Item 20 — decided 2026-09-29, not applied
     is carrying process creation instead. **Decided:** Process Creation auditing with command
     line, and Credential Validation auditing, go into the golden snapshot.
 
-Item 15 — blocks submission
-    No Word copy of `proposal-form-FINAL.md` existed on 2026-10-08. A paste-ready copy,
-    `DOCS\proposal-form-FINAL-for-Word.html`, was made 2026-10-07; the student makes the Word
-    file from it and inserts the four current SVGs. The revisions list is submitted too; its
-    paste-ready copy, `DOCS\T1-REVISIONS-LIST-for-Word.html`, was made 2026-10-08. Both HTML files
-    are copies: if FINAL or the list changes, the copy must be made again. The PDF of 2026-10-07
-    02:58 is older than the last edits.
+Item 15 — answered 2026-10-15
+    Submitted 2026-10-15 by email: `DOCS\Detecting … Algorithm.pdf` (made from
+    `DOCS\Detecting … Algorithm.docx`) and the two diagram sheets as full-size PDFs. The revisions
+    list was not sent; it was not required. The Word file is now the source of the submitted
+    text: if FINAL changes, the Word file must be changed to match, and the HTML copies made again.
 
 Item 31 — the event key has no host part
     With DC-01 there are two monitored Windows hosts, and the same key from both is counted
@@ -381,12 +379,14 @@ Settled 2026-09-29, so do not reopen these
 Settled 2026-10-01 to 2026-10-08, so do not reopen these
     Operator access: the system has no login; only the operator's MFA account can read its
     credentials. The rule set is Wazuh 4.14.7's shipped rules, choice 1 (C1, C3, C5). The attack
-    tests are chosen from those rules. The system stays a desktop application; the panel chair's
-    "web-based" instruction is answered in Revision 8 of the revisions list, which asks the panel to
-    confirm (2026-10-07). Submission: Friday 2026-10-09, Monday 2026-10-12 at the latest
-    (2026-10-08). All in `REPO\docs\DECISIONS.md`.
+    tests are chosen from those rules. The system stays a desktop application (2026-10-07). The
+    web-based idea was the student's own at the title defense; the chair then asked that the
+    document declare it. The answer went in the submission email, which asks the panel whether it
+    accepts the desktop application; Revision 8 was not sent (corrected note, 2026-10-15).
+    Submitted 2026-10-15, after the 2026-10-12 latest date (2026-10-08 entry, overtaken). All in
+    `REPO\docs\DECISIONS.md`.
 
-Not an item yet — blocks the revisions list
+Not an item yet — no longer blocks anything (the revisions list was not sent, 2026-10-15)
     The REVISED-to-FINAL diff has never been run. Measured 2026-09-10: FINAL is 6,395 words
     against REVISED's 7,742. **Re-measure rather than quoting these.**
 

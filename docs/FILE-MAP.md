@@ -24,7 +24,7 @@ Status words used below:
 | # | Location | Holds | Version control | Copy elsewhere |
 |---|---|---|---|---|
 | 1 | REPO = `E:\Claude general` | Code, tests, records, lab configs, figure generators | git | GitHub (public) |
-| 2 | DOCS = `E:\Elijah MASTER COPY DO NOT DELETE\Documents\New folder (5)` | The submission files: FINAL, revisions list, Word file, PDF, figures | none | `claude-backups\thesis-folder-2026-10-15` (full) |
+| 2 | DOCS = `E:\Elijah MASTER COPY DO NOT DELETE\Documents\New folder (5)` | The submission files: FINAL, revisions list, Word file, PDF, figures | none | `claude-backups\thesis-folder-2026-10-15-sent` (full, after the submission) |
 | 3 | `DOCS\prep-local` | Re-presentation scripts, study guide, title-defense transcript. PRIVATE | none | same as DOCS |
 | 4 | Course folder `E:\Elijah MASTER COPY DO NOT DELETE\Documents\AMA\MAY 2025\RSCH400_CS` | The professor's lectures, the template, old drafts, reference studies | none | none found |
 | 5 | `F:\TeLoS Homelab` | The lab VMs SIEM-01 and WIN-EP-01 | none (too big) | snapshots only, on the same disk |
@@ -97,11 +97,12 @@ from `/var/ossec/logs/archives/`. Whether those archives are still on SIEM-01's 
 |---|---|---|
 | `proposal-form-FINAL.md` | The revised proposal text | SOURCE, LIVE |
 | `proposal-form-FINAL-for-Word.html` | Paste-ready copy. `tools/word/final_to_html_v2.py` | COPY |
-| `T1-REVISIONS-LIST.md` | What changed after the title defense, by revision | SOURCE, LIVE |
+| `T1-REVISIONS-LIST.md` | What changed after the title defense, by revision. **Not submitted** (not required, 2026-10-15) | SOURCE |
 | `T1-REVISIONS-LIST-for-Word.html` | Paste-ready copy. `tools/word/revisions_to_html.py` | COPY |
-| `FINAL Detecting … Algorithm (updated 2026-10-12).docx` | **The Word file to submit.** Built by `tools/word/build_docx.py`, then opened and saved in Word by the student. Now the source | SOURCE, LIVE |
-| `FINAL Detecting … Algorithm (updated 2026-10-12).pdf` | Made by the student from that Word file | COPY, LIVE |
-| `FINAL Detecting … Algorithm.docx` (no date) | The student's own formatted Word file. Input of `build_docx.py`. Keep it | SUPERSEDED |
+| `Detecting … Algorithm.docx` | **The submitted Word file.** Built 2026-10-12 by `tools/word/build_docx.py` as `FINAL … (updated 2026-10-12).docx`; saved under this name by the student 2026-10-15 with the Title and Author properties fixed. Text and pictures unchanged. The source of the submitted text | SOURCE, SUBMITTED |
+| `Detecting … Algorithm.pdf` | **Submitted 2026-10-15.** Made by the student from that Word file; 30 pages; hidden title and author correct | COPY, SUBMITTED |
+| `FINAL Detecting … Algorithm (updated 2026-10-12).pdf` | The 2026-10-12 PDF. Same content, but its hidden title is the template's "A Mobile Application for finding Hospital's Facilities…". Do not send | SUPERSEDED |
+| `FINAL … (updated 2026-10-12).docx` and `FINAL … Algorithm.docx` (the student's own formatted file, input of `build_docx.py`) | No longer in DOCS after 2026-10-15. Both are kept in `claude-backups\thesis-folder-2026-10-15` | SUPERSEDED |
 | `Detecting … Using a Differential.docx` and `.pdf` | The 2026-10-07 version, with "a" in the name | SUPERSEDED |
 | `T1_Detection of Hardening-Induced Blind Spots REVISED.docx` | Earlier revision | SUPERSEDED |
 | `proposal-form.md` | Same file as `thesis/T1/proposal-form.md` | FROZEN |
@@ -113,10 +114,12 @@ from `/var/ossec/logs/archives/`. Whether those archives are still on SIEM-01's 
 | The four figure `.svg` files | Copies of `thesis/T1/figures/*.svg` (identical on 2026-10-15) | COPY |
 | The four `*.2026-08-28.svg.bak` files | The figures before 2026-08-28 | SUPERSEDED |
 | `T1_Activity_Diagram_Swimlane.png` | The diagram shown at the title defense | FROZEN |
-| `TopicProposalFormTemplateBLANK.docx` | The school's blank template (also in the course folder) | SOURCE |
+| `TopicProposalFormTemplateBLANK.docx` | The school's blank template (also in the course folder). Its Title property is another thesis's title and its Author is "MaryASoriano"; a Word file made from it keeps both until changed in File, Info | SOURCE |
+| `Figure 3 Activity Diagram sheet 1 (full size).pdf`, `Figure 4 Activity Diagram sheet 2 (full size).pdf` | **Submitted 2026-10-15.** The two diagram sheets at full size, one page each, with FINAL's captions and matching hidden titles. Made with Edge headless from `thesis/T1/figures/` | COPY, SUBMITTED |
 | `Activity Diagram\` | Four more copies of the same four SVGs (identical on 2026-10-15) | COPY |
 | `UWF Test\` | Empty folder left from the UWF test (item 19) | |
-| `~$NAL Detecting … (updated 2026-10-12).docx` | Word's lock file, dated 2026-10-13. Word makes it while the file is open and removes it on close. If Word is closed, it is left over and can be deleted by hand | |
+| `~$NAL Detecting … (updated 2026-10-12).docx` | Word's lock file, dated 2026-10-13. Word makes it while the file is open and removes it on close. Its Word file is gone, so it is left over and can be deleted by hand | |
+| `~$tecting … Algorithm.docx` | Word's lock file for the submitted Word file, 2026-10-15 19:34: Word had it open. It goes away when Word closes | |
 
 ---
 
@@ -195,7 +198,8 @@ into a variable (COMMANDS.md). **Never print, echo, log or commit them.** No bac
 | `CLAUDE-4th-year-CS-student-2026-09-19.md` | A saved instructions file of 2026-09-19. No record refers to it |
 | `docs-before-fixes-2026-09-28\`, `docs-before-fixes-2026-09-28-evening\` | The four DOCS text files before the two sweeps of that day |
 | `thesis-folder-end-of-day-2026-09-28\` | Full copy of DOCS on 2026-09-28 |
-| `thesis-folder-2026-10-15\` | **Full copy of DOCS on 2026-10-15**, made by chat 27d2595d: 43 files, each compared equal. The Word lock file was left out |
+| `thesis-folder-2026-10-15\` | **Full copy of DOCS on the morning of 2026-10-15**, made by chat 27d2595d: 43 files, each compared equal. The Word lock file was left out. Holds the two Word files later removed from DOCS |
+| `thesis-folder-2026-10-15-sent\` | **Full copy of DOCS right after the submission, 2026-10-15**: 45 files, each compared equal, lock files left out. Holds the submitted Word file and the three submitted PDFs |
 | `thesis-chats\` | Kept by the private hook `thesis_log.py`: `CHAT-LOG.md` (each chat, its dates, files changed), `transcripts\` (38 files in 6 folders), `file-copies\` (changed text files from E: and F:), `state.json`, and a 2026-09-14 sweep note from chat 4e01d810 |
 
 The hook copies text files only (`.md`, `.txt`). It does not copy `.docx`, `.pdf`, `.svg` or `.html`.
@@ -233,20 +237,22 @@ The hook copies text files only (`.md`, `.txt`). It does not copy `.docx`, `.pdf
 | `thesis/T1/figures/*.svg` | the `make_*.py` beside them | `.venv/Scripts/python.exe thesis/T1/figures/make_<name>.py`; each writes its SVG beside itself |
 | The SVGs in DOCS and `DOCS\Activity Diagram\` | `thesis/T1/figures/*.svg` | Copy by hand, then compare (for example `cmp`) |
 | The two `-for-Word.html` files | FINAL and the revisions list | `tools/word/` (see its README) |
-| The updated Word file | the student's formatted Word file, FINAL, the figures | `tools/word/build_docx.py`, one time only. The Word file is now the source |
-| The PDF | the updated Word file | Word, Save As PDF (the student) |
+| The submitted Word file | the student's formatted Word file, FINAL, the figures | `tools/word/build_docx.py`, one time only (2026-10-12). The Word file is now the source |
+| The submitted PDF | the submitted Word file | Word, Save As PDF (the student). Check Title and Author in File, Info first |
+| The two diagram PDFs | `thesis/T1/figures/` Sheet 1 and Sheet 2 | Edge headless `--print-to-pdf` of an HTML page with the SVG at its own size, the caption and a `<title>` (WORKLOG 2026-10-15) |
 | `docs/demo-output.txt` | `src/demo.py` | COMMANDS.md Part 4 |
 
 ---
 
 ## 12. Loose ends found on 2026-10-15
 
-1. **Submission.** Whether the revised documentation was submitted (latest date 2026-10-12) is not
-   recorded. The PDF exists, and the Word lock file is dated 2026-10-13.
+1. **Submission.** Done 2026-10-15 (student), after the latest date, 2026-10-12. Sent: the proposal's PDF and
+   the two full-size diagram PDFs. The revisions list was not sent (not required), so it has no Word or PDF
+   copy. Fixed before sending: the template's wrong Title and Author properties (section 3).
 2. **VM lock folders** dated 2026-10-08 13:10, with no record (section 6).
-3. **Word lock file** in DOCS (section 3).
-4. **The Word file and PDF had no copy off drive E:.** Fixed 2026-10-15: `thesis-folder-2026-10-15`.
-   The next change needs a new copy (section 8).
+3. **A left-over Word lock file** in DOCS, `~$NAL …` (section 3). Delete by hand.
+4. **The Word file and PDF had no copy off drive E:.** Fixed 2026-10-15: `thesis-folder-2026-10-15`, then
+   `thesis-folder-2026-10-15-sent` after the submission. The next change needs a new copy (section 8).
 5. **The five Word tools existed only in a temporary chat folder.** Fixed 2026-10-15: `tools/word/`.
 6. **Chat ce64480d** (`E:\MISC\tools\meeting-copilot`) is on the hook's list of chats with no WORKLOG
    entry. It ran outside the three thesis folders. Chat 27d2595d did not read it.

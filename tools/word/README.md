@@ -46,11 +46,15 @@ Read-only. Prints every word that differs between a Word file and FINAL.
 
 The assistant's file reader cannot show PDF pages on this machine (no pdftoppm). This script uses the PDF renderer
 built into Windows (Windows.Data.Pdf). It reads the PDF and writes PNG files only into the output
-folder. Run it in Windows PowerShell:
+folder. The output folder must already exist. Run it inside Windows PowerShell, from the repo folder:
 
 ```
-powershell -ExecutionPolicy Bypass -File tools\word\pdf_pages.ps1 -Pdf "<file>.pdf" -OutDir "<scratch folder>" -Pages 1,2,3
+& .\tools\word\pdf_pages.ps1 -Pdf "<file>.pdf" -OutDir "<scratch folder>" -Pages (1..30)
 ```
+
+Correct result: `PDF pages: 30`, then one `wrote page<N>.png` line per page. Do not start it through
+`powershell -File`: that passes the page list as separate words, and only the first page is rendered
+(found 2026-10-15).
 
 ## build_docx.py (one-off record)
 
@@ -71,6 +75,12 @@ not committed (`.gitignore`). To make it again:
    (each equals the SVG's own `viewBox`).
 
 The student opened and saved the built file in Word after 2026-10-12 (Word renamed its pictures to
-`image2.svg` and so on). So **the Word file in DOCS is now the source**, and running this script
-again would lose any hand edits. Checked 2026-10-15: the four pictures inside it are identical to the
-four SVGs in `thesis/T1/figures/`.
+`image2.svg` and so on), and on 2026-10-15 saved it as `Detecting … Algorithm.docx`, the submitted
+file. So **that Word file in DOCS is now the source**, and running this script again would lose any
+hand edits. Checked 2026-10-15: the four pictures inside it are identical to the four SVGs in
+`thesis/T1/figures/`.
+
+**The template's hidden properties.** The school's blank template carries another thesis's title in
+its Title property and "MaryASoriano" as Author, and the student's formatted file kept both, so the
+built file did too. This script does not change `docProps/core.xml`. Set Title and Author in Word
+(File, Info) before making a PDF; the PDF copies them into its metadata (found 2026-10-15).
