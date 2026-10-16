@@ -17,6 +17,13 @@ Next:
 
 ---
 
+## 2026-10-16 - Re-presentation set for Thursday 2026-10-22, 3:30 to 5:00 pm
+
+Chat 27d2595d. The student pasted the calendar entry: "Title Proposal Re-presentation", Thursday 2026-10-22,
+3:30 pm to 5:00 pm. That is seven days after the submission, the end of the 3 to 7 day range. STATUS (the
+re-presentation line, the checkpoint table, "Next" step 1) and PROMPT-new-chat updated. The 2026-10-23 lab
+checkpoint is the day after; whether it still holds was not decided.
+
 ## 2026-10-15 - File map of every thesis location; Word tools saved into the repo; revised documentation submitted
 
 Chat 27d2595d. The student asked for a full record of every thesis folder, inside and outside the repo,

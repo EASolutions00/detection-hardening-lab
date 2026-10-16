@@ -1,7 +1,7 @@
 # STATUS
 
 Current blockers and dates. This file changes often. CLAUDE.md does not.
-Last updated: 2026-10-15 (chat 27d2595d)
+Last updated: 2026-10-16 (chat 27d2595d)
 
 Every item here must also exist in OPEN-QUESTIONS.md or DECISIONS.md. This file only
 says which ones matter right now. Where every file lives, inside and outside the repo:
@@ -21,7 +21,8 @@ says which ones matter right now. Where every file lives, inside and outside the
   **The panel sets a date only after the revised documentation is submitted, about 3 to 7 days later**
   (student, 2026-09-29). **Submitted 2026-10-15** by email to the panel chair (student), after three missed
   dates: 2026-10-02, 2026-10-07 and 2026-10-12 (`DECISIONS.md` 2026-10-08, overtaken). **The re-presentation
-  date is not set yet.** By the 3 to 7 days, it falls between about 2026-10-18 and 2026-10-22 (estimate).
+  is Thursday 2026-10-22, 3:30 to 5:00 pm** ("Title Proposal Re-presentation", calendar entry pasted by the
+  student 2026-10-16), seven days after the submission.
   Recommended, not decided: run the full data collection only after the panel approves the diagram.
 
 ## Checkpoints (proposed 2026-09-29, dates are estimates)
@@ -30,9 +31,9 @@ says which ones matter right now. Where every file lives, inside and outside the
 |---|---|
 | 2026-10-09, latest 2026-10-12 | Revised documentation submitted (the panel then sets the re-presentation date). **Done 2026-10-15** (student), three days after the latest date; 2026-10-02, 2026-10-07 and 2026-10-12 were missed |
 | 2026-10-09 | Adviser told of the slip and the January target. **Partly done:** the student told their professor about the delay (by 2026-10-08); the January target is not stated. WORKLOG 2026-10-07: the adviser is named only after the re-presentation |
+| 2026-10-22, 3:30 to 5:00 pm | **Re-presentation** (date set by the panel; student, 2026-10-16) |
 | 2026-10-23 | DC-01 built, WIN-EP-01 joined, Sysmon `lsass.exe` rule and audit settings in place, value keying coded and tested, network-logon test designed, golden snapshot taken |
 | 2026-10-31 | Spike run, six answers recorded, final number of changes set |
-| panel's date | Re-presentation |
 | 2026-11-30 | Data collection done |
 | 2026-12-18 | Rest of the system (impact scoring, remediation, reports) and the evaluation done |
 | 2027-01-08 | Full draft to the adviser |
@@ -63,7 +64,7 @@ controls), and record the miss in WORKLOG the same day.
    and the panel asked that it be declared; the system stays a desktop application; and asks whether the
    panel accepts this or the system must still be web-based (DECISIONS 2026-10-07, corrected note). Checks
    before sending: WORKLOG 2026-10-15.
-   **Now: wait for the panel's date and practice.** The re-presentation scripts are in `prep-local`:
+   **Now: the re-presentation, Thursday 2026-10-22, 3:30 to 5:00 pm. Practice.** The scripts are in `prep-local`:
    `RE-PRESENTATION-SCRIPT 22-MIN.txt` (about 3,100 words) and the full script with 31 answer cards
    (WORKLOG 2026-10-14). The study plan is `prep-local\STUDY-GUIDE.md`. **When the panel answers the
    web-based question, record the answer in DECISIONS.** A refusal means a web front end on the same core
@@ -72,8 +73,9 @@ controls), and record the miss in WORKLOG the same day.
    delay. The adviser is named only after the re-presentation (WORKLOG 2026-10-07).
 3. From Friday 2026-10-16, the working day after the submission: **build DC-01 and join
    WIN-EP-01**; apply the Sysmon rule and the audit settings; code value keying, the control-run check
-   (item 24) and pairing (item 30). The 2026-10-23 checkpoint keeps its date and now has six working days
-   (2026-10-16 to 2026-10-23), with the re-presentation probably inside them.
+   (item 24) and pairing (item 30). The 2026-10-23 checkpoint keeps its date and has six working days
+   (2026-10-16 to 2026-10-23), and the re-presentation on 2026-10-22 is inside them. Whether the checkpoint
+   still holds is the student's call (not decided 2026-10-16).
    Open question first: does DC-01 still earn its days, now that no positive case needs it (WORKLOG
    2026-10-06)?
 4. Golden snapshot, a minimal harness, one capture window by hand as a trial, then the spike.
