@@ -17,12 +17,19 @@ Next:
 
 ---
 
-## 2026-10-16 - Re-presentation set for Thursday 2026-10-22, 3:30 to 5:00 pm
+## 2026-10-16 - Re-presentation set for Thursday 2026-10-22, 3:30 to 5:00 pm; lab checkpoint moved to 2026-10-30
 
 Chat 27d2595d. The student pasted the calendar entry: "Title Proposal Re-presentation", Thursday 2026-10-22,
 3:30 pm to 5:00 pm. That is seven days after the submission, the end of the 3 to 7 day range. STATUS (the
 re-presentation line, the checkpoint table, "Next" step 1) and PROMPT-new-chat updated. The 2026-10-23 lab
 checkpoint is the day after; whether it still holds was not decided.
+
+**Then, same day: the lab checkpoint moved** (DECISIONS 2026-10-16). The student asked what the 10-23 checkpoint
+is (answered from DECISIONS 2026-09-29: the six lab tasks that end with the golden snapshot), then decided to
+move it after the re-presentation and spend the days until 2026-10-22 on practice. The student named no
+dates, so the old lengths were kept: lab checkpoint 2026-10-30 (six working days from 2026-10-23), spike
+2026-11-07 (eight days later), later checkpoints unchanged. Cost: data collection gets 23 days after the spike
+instead of 30. Updated: DECISIONS (new entry; a note on 2026-09-29), STATUS, OPEN-QUESTIONS 25, PROMPT-new-chat.
 
 ## 2026-10-15 - File map of every thesis location; Word tools saved into the repo; revised documentation submitted
 

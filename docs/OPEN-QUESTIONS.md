@@ -464,7 +464,8 @@ The student stated the school's deadline for the final thesis, **4 June 2027**, 
 class C change (about 7 with DC-01 and value keying, as expected that day; about 3 under Wazuh's shipped
 rules, `DECISIONS.md` 2026-10-01); the graphical interface is reduced first, then the
 class B negative controls, never to zero; the spike, by 2026-10-31, sets the final number. Eight dated
-checkpoints are in `STATUS.md`. Details and the stated risk in `DECISIONS.md` 2026-09-29.
+checkpoints are in `STATUS.md`. **Moved 2026-10-16:** the lab checkpoint to 2026-10-30 and the spike to
+2026-11-07, after the re-presentation (`DECISIONS.md` 2026-10-16). Details and the stated risk in `DECISIONS.md` 2026-09-29.
 
 **Still open in this item:** the adviser message (checkpoint 1), the new Gantt chart in FINAL, and the
 spike's power question below.

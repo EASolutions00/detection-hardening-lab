@@ -8,6 +8,30 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-10-16 - The lab checkpoint moves after the re-presentation: lab ready by Friday 2026-10-30, spike by Saturday 2026-11-07
+
+**Decision, by the student, chat 27d2595d:** "move it after the re-presentation. I want to focus my time
+preparing for re-presentation." Until the re-presentation on Thursday 2026-10-22, 3:30 to 5:00 pm, the
+student's time goes to practice. Lab work starts Friday 2026-10-23.
+
+**The dates.** The student did not name dates, so the assistant kept the old lengths. Checkpoint 2 (DC-01
+built, WIN-EP-01 joined, Sysmon rule and audit settings, value keying coded and tested, network-logon test
+designed, golden snapshot) keeps its six working days: 2026-10-23 to **2026-10-30**. Checkpoint 3, the spike,
+keeps its eight days after checkpoint 2: **2026-11-07**. Checkpoints 5 to 8 are unchanged. The open question
+on whether DC-01 still earns its days (OPEN-QUESTIONS 32, point 4) is still decided first.
+
+**Why.** The re-presentation is the nearer gate, and its answer can change the design: a refusal of the
+desktop application means a web front end (2026-10-07, cost if wrong), and the panel said it will focus on
+the activity diagram. Lab days spent before that answer could be spent on the wrong design.
+
+**What it costs.** Data collection keeps its end date, 2026-11-30, so it gets 23 days after the spike
+instead of 30. The 2026-09-29 entry says one missed checkpoint moves the final defense to February or later.
+This move was decided in advance, not missed, but the January target now has one week less slack. How many
+days data collection needs is not known `(unverified)`; the spike measures it.
+
+**Cost if wrong:** if the 2026-10-30 checkpoint slips too, the next decision is about the January target
+(February or March), not another week.
+
 ## 2026-10-08 - The revised documentation is submitted Friday 2026-10-09 if the mock panel passes, and Monday 2026-10-12 at the latest. The 2026-10-07 date is missed
 
 **Overtaken, 2026-10-15:** Monday 2026-10-12 was missed too. The student submitted on **2026-10-15**, by email
@@ -270,6 +294,8 @@ naive method needs changes where telemetry is lost but no blind spot exists, and
 "the component that would be reduced first if the schedule slips".
 
 **Checkpoints, proposed 2026-09-29.** Dates are estimates `(unverified)`; the tracked list is in STATUS.md.
+**Superseded in part, 2026-10-16:** checkpoint 2 moves to 2026-10-30 and checkpoint 3 to 2026-11-07, after
+the re-presentation of 2026-10-22 (entry of that date).
 1. 2026-10-09: adviser told of the slip and the new target; re-presentation date requested.
 2. 2026-10-23: DC-01 built, WIN-EP-01 joined, Sysmon rule and audit settings in place, value keying coded
    and tested, network-logon test designed, golden snapshot taken.

@@ -308,7 +308,8 @@ Item 25 — the schedule; target and scope decided 2026-09-29
     The harness does not exist and the spike has never run. The 2026-09-22 tripwire passed with no
     capture window run. **Decided 2026-09-29:** school deadline 4 June 2027; target a final defense
     by the end of January 2027 (March was recommended); keep every measurable class C change,
-    reduce the graphical interface first, then class B; the spike by 2026-10-31 sets the number.
+    reduce the graphical interface first, then class B; the spike sets the number, by 2026-11-07
+    since 2026-10-16 (was 2026-10-31; the lab checkpoint moved to 2026-10-30, after the re-presentation).
     Checkpoints are in STATUS.md. The panel said the re-presentation will focus on the activity
     diagram, and sets its date 3 to 7 days after the revised documentation is submitted. It was
     submitted 2026-10-15, after three missed dates (2026-10-02, 2026-10-07, 2026-10-12); the panel set
