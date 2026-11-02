@@ -110,7 +110,8 @@ from `/var/ossec/logs/archives/`. Whether those archives are still on SIEM-01's 
 | `T1-REVISION-DRAFT.md` | Earlier replacement text for `proposal-form.md`, written to answer the panel | SUPERSEDED |
 | `T1-PANEL-RESPONSE.md` | Each panel question with the reasoning behind the answer. Not submitted; stale in places (banner) | LIVE, not submitted |
 | `ACTIVITY-DIAGRAM-EXPLAINED.md` | The diagram in plain words, for study. Not submitted | LIVE, not submitted |
-| `ACTIVITY-DIAGRAM-EXPLAINED.2026-09-29.md.bak` | The explainer before the 2026-09-29 rewrite | SUPERSEDED |
+| `CLAUDE.md` | Rules for chats opened in this folder: points to the repo record and repeats the "keep it simple" rule (2026-10-30) | LIVE, not submitted |
+| `ACTIVITY-DIAGRAM-EXPLAINED.2026-09-29.md.bak`, `.2026-10-19.md.bak`, `.2026-10-19b.md.bak` | The explainer before the 2026-09-29 rewrite, before the 2026-10-19 fixes, and before the 2026-10-19 "where it starts" part | SUPERSEDED |
 | The four figure `.svg` files | Copies of `thesis/T1/figures/*.svg` (identical on 2026-10-15) | COPY |
 | The four `*.2026-08-28.svg.bak` files | The figures before 2026-08-28 | SUPERSEDED |
 | `T1_Activity_Diagram_Swimlane.png` | The diagram shown at the title defense | FROZEN |
@@ -133,6 +134,13 @@ Removed from the public repo on 2026-09-10. Never put back.
 | `RE-PRESENTATION-SCRIPT.txt` | Full script from the top, about 4,400 words; Part C has 31 answer cards | SOURCE |
 | `RE-PRESENTATION-SCRIPT (formal version 2026-10-12).txt` | First, formal wording | SUPERSEDED |
 | `RE-PRESENTATION-SCRIPT (question-order version 2026-10-12).txt` | Second version, ordered by panel question | SUPERSEDED |
+| `RE-PRESENTATION-SCRIPT LIVE.txt` | Full script in the student's Taglish voice, following the form's order; made 2026-10-19 by chat 952071be. **One of the two masters** (student, 2026-10-19) | SOURCE |
+| `Re-presentation Script Detecting Security Blind Spots.docx` | Full script in plain English with stage directions, timing and answer cards; made 2026-10-19 outside this chat. **The other master** | SOURCE |
+| `TELEPROMPTER LIVE.txt`, `TELEPROMPTER WORD SCRIPT.txt` | Teleprompter text of the two masters: spoken text word for word, stage directions as [CUES], no notes. Made 2026-10-19 by chat 27d2595d | COPY |
+| `RE-PRESENTATION-SCRIPT NEW.txt`, `RE-PRESENTATION-SCRIPT LIVE (before personal voice).txt` | Other versions of 2026-10-19 (chat 952071be) | SUPERSEDED |
+| `CUE-CARD LIVE.txt`, `CHEATSHEET.html` | One-page cue card for the LIVE script and a cheat sheet; 2026-10-19 (chat 952071be) | SOURCE |
+| `PANEL-QUESTIONS-CHECKLIST.md` | Every title-defense question, wrong claim and instruction, with the answer now (2026-10-16) | SOURCE |
+| The `(before ...)` copies of the 22-minute and full scripts | Backups made before each change on 2026-10-16 and 2026-10-17 | SUPERSEDED |
 | `STUDY-GUIDE.md` | The study plan for the diagram and the re-presentation | SOURCE |
 | `DEFENSE-PREP.md` | Defense preparation notes | SOURCE |
 | `Thesis Pre-oral defense transcript.txt` | Transcript of the title defense session (the file name says pre-oral) | FROZEN |

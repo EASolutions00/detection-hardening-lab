@@ -913,6 +913,12 @@ lost. None is decided.
    2026-10-01). Without it, the negative controls that need network logons (B5 too, item 21) have nothing
    to remove. **How to answer:** decide before the lab work starts, and record it in `DECISIONS.md`. FINAL
    says the lab is a domain, so dropping DC-01 also changes FINAL.
+   **Conflict found 2026-10-16 (chat 27d2595d), checking the re-presentation script:** the submitted FINAL
+   (attack-test table, added 2026-10-07) says the C5 test "Signs in to a machine over Remote Desktop with a
+   domain account", and both C5 rules also name T1078.002, Domain Accounts. A domain account needs a domain.
+   So, as submitted, C5's test needs DC-01, which contradicts "none needs a domain" above. Either the test
+   uses a domain account (DC-01 is needed for a positive case) or a local account from the host (FINAL's
+   table changes). The script's answer card now follows FINAL. Not decided.
 
 **Also, a wording gap, not a design question:** Sheet 1's Box 1 says it pins "the attack tests, window and
 repeats", while FINAL's run inputs say the thresholds are fixed at the same time. One string in
@@ -935,6 +941,9 @@ fixed, because each needs the adviser or the student.
    and the full manuscript. FINAL's Gantt chart has one "Paper Presentation / Final Defense", in January 2027,
    like the template's own example. The record calls January the final defense and 4 June 2027 the school's
    deadline (DECISIONS 2026-09-29). Which defense January is changes the whole plan. **Ask the adviser.**
+   **Partly answered 2026-10-22** (DECISIONS 2026-10-22): the panel confirmed both defenses, a pre-oral
+   (chapters 1 to 3, a 50% working prototype, the Research 1A grade) and a final (100% working, complete
+   chapters). Which one is in January is still open; the adviser is now named, Prof. Ervin Moran.
 2. **Related study 2 is an arXiv preprint.** The lecture asks for "published research works" within five
    years. Studies 1, 3, 4 and 5 are journal or conference papers (2022 to 2025); study 2 (RAM, 2025) is listed
    as a preprint, and study 5's journal indexing is not confirmed. Whether the school accepts a preprint is not
@@ -949,6 +958,42 @@ fixed, because each needs the adviser or the student.
    the interface, or state why it does not apply.
 
 **Blocks:** point 1 blocks the schedule; points 2 to 4 block the manuscript, not this submission.
+
+---
+
+## 34. The run check voids every post-change run of a negative control
+
+**Status:** Open. Found 2026-10-20 by chat 27d2595d, in the sweep of the re-presentation script.
+
+**The conflict.** A negative control is a change that removes the attack together with its telemetry
+(FINAL, Scale of the Experiment). FINAL's attack-test list adds "one test for each negative control kept. It
+uses the feature the change removes", for example running a script through Windows Script Host for the change
+that disables Windows Script Host. After such a change, that test is blocked on purpose. But the run check
+voids "a run whose attack tests did not all complete" (FINAL, Activity Diagram, Phases 1 and 3; diagram sheet 1,
+"Valid run? Every attack test completed"), and a voided run is captured again. So a negative control's
+post-change runs are voided every time and never reach 3 valid runs. The negative controls, which exist to
+show that the method does not report a blind spot when the attack itself is gone, could never be measured.
+
+Item 21 already notes the same effect for one change: if C4's network-logon test fails under the change, "C4
+never reaches 3 valid runs". It was not recorded as a general problem for every negative control.
+
+**Ways out, none decided:**
+1. Define "completed" as "the test ran to its end", whatever its result, so a blocked attack still counts as
+   completed. Cost: the check then cannot tell a test blocked by the change from a test that broke for another
+   reason, which is what item 22 wants it to catch. Whether `Invoke-AtomicTest` reports a blocked attack
+   differently from a crashed test is not known `(unverified)`.
+2. Record, per change, the attack tests that the change is expected to block, in the manifest's record part
+   (Phase 2). The run check accepts exactly those tests failing, and only in that change's post-change runs.
+   Cost: one more manifest field and a check, written before the runs.
+3. Judge negative controls by the stimulus fingerprint only, without the completion rule.
+
+Recommendation `(unverified)`: option 2. It keeps the check strict for every other test, and the expected
+failure is written down before the data exists, as the thresholds are.
+
+**If the panel asks on 2026-10-22:** say it is an open point found while preparing; the run check must accept a
+test that the change blocks on purpose, and the rule is written before the trial.
+
+**Blocks:** the negative controls in the evaluation, and the run-check design (item 22) before the trial.
 
 ---
 

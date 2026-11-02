@@ -21,6 +21,22 @@ T1, T2 and T3 are **alternatives, not components.** One gets built.
 
 ---
 
+## Default rule: keep it simple
+
+The student's standing rule (2026-10-30), after the panel asked for a simpler proposal (DECISIONS 2026-10-22
+and 2026-10-30). It applies to every answer, design and document in this project.
+
+1. **The system stays simple.** Build the smallest version that answers the research question. Add no
+   component, method, step or option unless the study needs it to prove its claim.
+2. **The documentation is simple.** Plain words, short sentences, one idea per paragraph. The proposal form
+   says what and why; the how-in-detail goes into the thesis chapters, not the form.
+3. **When two options work, pick the simpler one** and say what it costs. A more complex option needs a
+   written reason in DECISIONS.md first.
+4. **Simple is not the same as missing.** Keep the falsifiable claims, the noise floor and anything the panel
+   asked for. Cut the words, keep the facts.
+
+---
+
 ## Where everything lives
 
 | Path | What is in it |

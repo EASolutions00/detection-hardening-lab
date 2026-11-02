@@ -8,6 +8,48 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-10-30 - Default rule: the system and its documentation stay simple
+
+**Decision, by the student, chat 27d2595d:** "make a default rule for this thesis that this system should not
+be complicated. make it simple especially the documentation." Written into CLAUDE.md as "Default rule: keep
+it simple": build the smallest version that answers the research question; plain, short documentation, with
+detail moved from the proposal form into the chapters; the simpler of two working options, unless a written
+reason says otherwise; simple never means dropping the falsifiable claims, the noise floor, or what the panel
+asked for.
+
+**Why.** The panel accepted the proposal on condition that it is simplified (2026-10-22), and the
+re-presentation ran out of time while the student read long passages aloud (WORKLOG 2026-10-22). A system the
+student can explain beats a larger one he cannot.
+
+**Cost if wrong:** a cut that removes something the study needs to prove its claim. Rule 4 guards against
+that; any doubtful cut is checked against the research question and the falsifiable claims before it is made.
+
+## 2026-10-22 - The panel accepts the proposal on condition that the document is revised and simplified; the adviser and the pre-oral panel are named
+
+**Decision, by the panel, at the re-presentation.** Source: the student's recording transcript,
+`E:\Elijah MASTER COPY DO NOT DELETE\Videos\2026-10-22 15-28-54.transcript.txt` (speech-to-text, so names and
+some words are garbled), lines 1406 to 1446, spoken by Prof. Ervin Moran:
+- "your proposal is accepted naman. Congratulations! However, to be fully accepted and approved, kailangan
+  natin i-revise yung title proposal mo. To simplify the matters" (lines 1423 to 1425). The details "would have
+  to go to the documentation", the thesis chapters (lines 1426 to 1433). The simplified document goes back to the
+  panel "for complete acceptance and approval" (lines 1418 to 1421).
+- Pre-oral panel: Prof. Dan Mercolita, chair; Prof. Joanna Lynn Mabula, member (transcribed "Mapula" and
+  "Mabula"); Prof. Josephine Casin (Ma'am Jo), guest panel (lines 1435 to 1438).
+- **Adviser: Prof. Ervin Moran** (line 1444). Online consultations are required (line 1446).
+- The pre-oral defense grades Research 1A: chapters 1 to 3 and a 50% working prototype. The final defense:
+  100% working, with complete chapters (lines 1439 to 1442).
+
+**Not decided:** the web-based question. The script's question to the panel was not asked, and no panelist
+asked for a web version; Sir Dan's questions (lines 992 to 1102) were about how a standalone application reads
+Wazuh. What "simplify" means, and by when, was not stated.
+
+**Why it matters.** The proposal is accepted but not fully approved: one more submission is needed. OPEN-QUESTIONS
+33, point 1, is partly answered: there are two defenses, a pre-oral (chapters 1 to 3, 50% prototype) and a final
+(100%); which one the January 2027 target is remains open.
+
+**Cost if this record is wrong:** the student revises the wrong thing. The transcript is speech-to-text and the
+"simplify" instruction has no detail, so the scope is confirmed with the adviser at the first consultation.
+
 ## 2026-10-16 - The lab checkpoint moves after the re-presentation: lab ready by Friday 2026-10-30, spike by Saturday 2026-11-07
 
 **Decision, by the student, chat 27d2595d:** "move it after the re-presentation. I want to focus my time

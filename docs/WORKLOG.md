@@ -17,6 +17,318 @@ Next:
 
 ---
 
+## 2026-11-02 - Pending items closed: two missing chat entries, the simplicity rule, the missed lab checkpoint
+
+Chat 27d2595d, continued. The student: "NO Words from prof ervin.; in the mean time, lets finish the pendings".
+No consultation has happened yet; the questions for the adviser stand (STATUS, Next, item 1).
+
+**2026-10-30, the default rule.** At the student's request, CLAUDE.md gained "Default rule: keep it simple"
+(the system stays as small as the research question needs; plain documentation, detail moved from the proposal
+form into the chapters; the simpler of two working options; simple never means dropping the falsifiable
+claims, the noise floor, or what the panel asked for). Reason and cost: DECISIONS 2026-10-30. The same four
+rules went into a new `CLAUDE.md` in the thesis folder, because chats opened there do not read this repo's file.
+
+**The lab checkpoint of 2026-10-30 was not met.** No lab work is recorded since the re-presentation, and the
+student reported none. Recorded in STATUS. The new date waits for the adviser's answer on which defense January
+is (OPEN-QUESTIONS 33, point 1).
+
+**Missing entries, written from the private chat log** (`claude-backups\thesis-chats\CHAT-LOG.md`, which lists
+each chat's first request and the files it changed; the content of the work is not checked here):
+- **Chat cedaa040**, 2026-10-16 14:39 to 21:41 and 2026-10-21 17:38 to 18:04, folder `Documents\Python projects`.
+  A mock panel interview app for practice. It made `mock-panel\` (a panel profile and README) and
+  `panel-room\panel-room.html` with `panel_server.py` and `Open Panel Room.bat`. Later requests: transcription
+  that stopped mid-answer, better Tagalog-English (Taglish) transcription, and an offline mode that reads the
+  attached questions with no API call. That last one also wrote `prep-local\PANEL-QUESTIONS-DRILL.md` in the
+  thesis folder.
+- **Chat 03180b88**, 2026-10-16 23:19 to 23:22, folder `New folder (5)`. Read only: "list all the questions in
+  the transcript attached, nothing else", on the title-defense transcript. No file changed.
+
+## 2026-10-22 - Re-presentation held: proposal accepted on condition of a simplified revision; adviser named
+
+Chat 27d2595d. The student pasted the recording transcript (`E:\Elijah MASTER COPY DO NOT DELETE\Videos\2026-10-22
+15-28-54.transcript.txt`, speech-to-text, 1,462 lines) and said "i messed up". Outcome, panel and adviser:
+DECISIONS 2026-10-22. Read in full; line numbers below are the transcript's.
+
+**How it ran.** Sir Ervin asked for the document from the start "hanggang target users lang", stressing the
+revisions (lines 14 to 20). The student read large parts of FINAL aloud instead of the script (for example the
+algorithm table's purpose column, lines 257 to 261 and 328 to 329; the manifest paragraph, 566 to 573; the
+problems and objectives, 610 to 696; System Type, 718 to 737; the preconditions, 753 to 761). He asked to open
+notes at Figure 1, row 3 (449 to 457). At the preconditions the panel stopped the reading (849 to 856), moved to
+features, then asked for a Tagalog summary (894 to 896), because another student was due at 5 pm (885). The
+activity diagram appeared only briefly in that summary (911 to 919). Not presented: Scale, the variance floor,
+Figure 2, limitations, importance, the Gantt note. The script's web-based question to the panel was not asked.
+
+**Answered correctly:** the blind-spot definition as a gap (72 to 76); Atomic Red Team by Red Canary as the
+source of the tests (151, 163 to 164); Sir Dan: a standalone application that only reads Wazuh (1040 to 1052);
+Ma'am Joanna: counts move normally, so the control runs set the bar (1118 to 1143); Ma'am Jo: it compares
+telemetry, not configuration (1201 to 1216); recommendations are advisory and the detection engineer decides
+(1150 to 1155); Sir Ervin's analogy: one computer, the same snapshot, the same attack tests, before and after
+(1317 to 1334).
+
+**Said wrong, to correct with the adviser**, most important first:
+1. Agreed that the aim is to re-run until "zero blind spots" (1378 to 1382), and that blind spots remain after
+   hardening because hardening is "preventive, not 100%" (1355 to 1366). Same error as at the title defense:
+   hardening creates the blind spot by removing evidence, and a re-run proves only that one finding is fixed.
+2. "I use only 5 attacks… 5 hardening change" (950 to 954; also 842, 1098). FINAL: about three changes where a
+   blind spot can exist, plus negative controls; the list is 3 rule-based tests, a network-logon test and one test
+   per negative control; the final number is set after the trial.
+3. Atomic Red Team "naka-integrate na rin" in the application, "automated na po siya" (1092 to 1095). The capture
+   part is designed, not built; only the analysis core is built.
+4. Agreed it is "not installed… parang portable app" (1071 to 1079). FINAL's "no software agent is installed"
+   is about the monitored endpoints; the application runs on its own machine beside the SIEM.
+5. "Impossible for now to deploy this in real world" (937). FINAL: it needs restorable virtual machines, a
+   precondition the organization provides, and the measured benefit is a lower bound; not impossible.
+6. Called the virtual machine "the hypervisor" (783 to 785); the hypervisor runs the virtual machines.
+7. "Ang file format niya is YML", exported from the SIEM (818 to 826). FINAL: Sigma in YAML or Wazuh in XML;
+   this lab uses Wazuh's rules, XML.
+8. Called CIS and DISA "the regulators" that "make the standard" (124 to 126); they publish the baselines.
+9. The objective as patching vulnerabilities and making hardening more effective (655 to 660). FINAL: detect
+   hardening-induced detection blind spots and quantify the coverage each change costs.
+10. Placed the report's seven sections in "Figure 1" (1177 to 1179); they are in C. Outputs, page 12.
+
+**Records updated:** DECISIONS 2026-10-22 (new), STATUS (re-presentation done, next step the first
+consultation), OPEN-QUESTIONS 33 point 1 (partly answered).
+
+## 2026-10-22 - Poisson paragraph and Figure 1 added to the script; now over 30 minutes at the slow estimate
+
+Chat 27d2595d, continued, the day of the re-presentation. The student: the proposal has
+"Why the rate test is dispersion-aware, not Poisson" and Figure 1, the script skipped both. Added in the
+proposal's order: the Poisson heading (page 5) read and explained (Poisson assumes a dispersion of exactly 1, so
+an average of 100 moves about 10; the system measures the real dispersion), then the line "Figure 1 shows how
+these methods connect" (page 5), then the page 6 banner moved to Figure 1, explained top to bottom. Checked in
+the code: `variance.py` floors the dispersion at 1 ("Never claim less variance than Poisson") and
+`differential.py` uses a quasi-Poisson rate ratio, so at dispersion 1 or lower the test is the Poisson test;
+said as built. FINAL's "reports that the assumption was tested" is not in the code and is not claimed. The
+closing's method summary was shortened, since Figure 1 now gives it. The student's own edits seen the same day:
+the 299-key example removed, the coefficient-of-variation example made part of the main version, "a number for
+its kind" removed from the event-ID line, and the Current Process quote cut to "Today a hardening change is
+verified in two ways." (the PDF has a comma there, so the quote check no longer matches it word for word).
+Result: 3,836 spoken words without [CAN SKIP], 29.5 to 32.0 minutes, over the 30-minute limit at the slow
+estimate; the student was told and offered cuts. Backup: `script-before-poisson-fig1.txt` in this chat's
+scratchpad.
+
+**Then: "do you think they will understand figure 1 with that explanation?"** Answered no: one list sentence,
+no link between the boxes, no meaning for the symbols. At the student's request, replaced by a walk through all
+9 rows, checked against the SVG layout: the three run boxes; the event key; noise floor (phi) on the left, rates
+(lambda zero, lambda one) in the middle and right; the capture check and the one chi-square summary in one box;
+the rate test, fed by the noise-floor arrow that skips row 4; Benjamini-Hochberg to q values; the five classes
+(exact rules left to the diagram); the stripped-field pairs; the map to rules, techniques, impact score and
+report. "Snapshot" is not yet defined at page 6 (Research Design defines it on page 7), so row 1 says "the same
+saved copy of the computer". The Research Design evaluation sentence moved to [CAN SKIP]. Result: 4,001 spoken
+words without [CAN SKIP], 30.8 to 33.3 minutes, over the 30-minute limit at both rate estimates; the time line
+in the script now says so. Backup: `script-before-figure1-rows.txt`.
+
+**Then: a GUI draft from the activity diagrams** (student: "draft the GUI of the system"). Made as a private
+Claude design canvas, https://claude.ai/artifact/XLe5hz48dURJYphcE5bPjX, five clickable screens, one per phase:
+0 setup (register, pin, 5 control runs with the NOT USABLE branch, noise model), 1 pre-change (define the run,
+frozen manifest with the control-hash check, a voided run with its reason), 2 and 3 change and post-change (CIS
+18.9.27.2 as the example change, the eight in-run steps, the run check with the change confirmation), 4 report
+(the seven report parts of FINAL C. Outputs, the four example keys with rates and ranges computed the way
+`differential.py` does), 5 review (the finding lifecycle from Module 5, the two fix kinds, who supplies each).
+Built from FINAL (System Type, Inputs, Features, Modules 4 and 5, Activity Diagram) and the diagram SVGs. Every
+value not in the records is a bracketed placeholder or marked example data. A draft only, not a decision: the
+toolkit is still open (DECISIONS 2026-09-14), and the interface is the first part cut if the schedule slips.
+Source files: this chat's scratchpad, `telos-gui\project\`.
+
+## 2026-10-21 - "Is a blind spot really an attack?" No; the script's definition fixed
+
+Chat 27d2595d, continued. The student questioned the Title line "A security blind spot is an attack that the
+security monitoring can no longer see". Verified against FINAL: a blind spot is a gap, not an attack. Module 4:
+"a technique whose only detection has gone silent has [become a blind spot]"; Limitation 9: "A blind spot can
+exist only where the attack survives the change"; Scale: negative controls lose telemetry but "no blind spot
+exists". Changed at the student's request to: "a gap in the security monitoring: a kind of attack that still
+works after the change, but that the monitoring can no longer detect, because the record it needs is gone or
+changed." The other 7 uses in the script were already correct.
+
+Other places searched (the thesis folder and the repo docs): the old scripts and backups in `prep-local` only
+quote last time's wrong answer ("I agreed that a blind spot is an attack that gets through") or describe the
+situation (rule on, evidence gone); left as they are, being superseded or backups. `RE-PRESENTATION-SCRIPT
+NEW.txt` (superseded) calls a blind spot "a rule that is still turned on", a different imprecision; not changed.
+The Meeting Copilot (chat d3c98910's tool) loads this script (`last_session.json`), and its test session of
+2026-10-21 18:06 repeated the old wrong sentence word for word; its session logs are records and were not
+edited; its rule files have no blind-spot definition. Script now 3,676 spoken words without [CAN SKIP] (28.3
+to 30.6 minutes).
+
+## 2026-10-20 - Re-presentation script: page-turn banners; fitted to the 20 to 30 minute limit
+
+Chat 27d2595d, continued. The student found it hard to keep the teleprompter and the shared PDF on the same
+page. Cause found: 49 page cues for only 22 real page changes ("PAGE 1" seven times in a row), so the cue that
+means "turn now" looked like the rest. Fix, at the student's request: one banner line at each of the 22
+changes (15 NEXT PAGE, 4 JUMP with "type N in the page box", 3 SWITCH between the proposal and the two diagram
+PDFs); page numbers removed from cues that stay on the same page; the setup cue now asks for single-page view.
+The objectives cue was on page 8, but Word puts "Specific Objectives" on page 9; moved, so pages 8, 9, 10 are
+simple turns. Page 3 (the attack-test table) got one spoken line, so it is not silent when the extras are
+skipped. The student's own edit had left "a detection rule" lowercase; capitalized.
+
+The student reported the professor's limit: 20 to 30 minutes. The transcript has no timestamps, so the real
+speaking rate could not be measured; the 120 to 130 words a minute estimate stays. Seven more lines became
+[CAN SKIP] (engineers cannot check by hand; the statistics half of Field paragraph 6; the impact score's four
+factors; the preconditions; the variance-floor question; why an empty control run is a problem; To society),
+and three repeats were cut. Result: 3,482 spoken words without [CAN SKIP] (26.8 to 29.0 minutes, before page
+turns and the panel's web-based answer), 4,295 with them (33 to 36 minutes, over the limit). 41 quotes still
+verified; LF, no long dashes. Backup: this chat's scratchpad, `script-before-banners.txt`.
+
+**Then: "what do you mean 'This builds the map from the sixth method'?"** Verified: the sentence made the
+algorithm look like it builds the index; FINAL says the Phase 0 box builds it from the rule set (page 19,
+Module 4) and the sixth method follows it in Phase 4; the box says "index", the script said "map"; no index
+exists in `src/telos` (its one "index" is the index of dispersion). Fixed at the student's request: row 6 now
+says "The index is a map that links…", and the box line says how it is built (each Wazuh rule lists the fields
+it reads and its technique) and where it is used.
+
+**Then a full sweep, every claim checked** against FINAL, the diagram SVGs, the code, Figure 2's SVG, the
+records and the title-defense transcript. 29 edits. Wrong, now fixed: (1) "you asked me to write [web-based]
+in the document": the transcript has "It's up to you. Much better kung naka-web-based", because the engineer
+might be in another building; now said that way, and the other-building answer is back in the main version
+(the sent email of 2026-10-15 says the panel "asked that it be declared"; already sent, left as is); (2) "My
+lab is now a small Windows domain": DC-01 is not built, now "will be"; (3) the rate test "for every key": only
+keys with at least 30 events before; (4) the index is followed for lost or reduced keys, not lost only; (5)
+the impact score's last term counts other events still observed, not other rules; (6) the event key leaves
+out the log it came from; (7) "the counts still go up and down" stated an unmeasured result, now "can"; (8)
+chi-square on "two tables", now two lists in one comparison; (9) "nobody checks the detection", FINAL says
+informal checks happen; (10) "each run's settings" are hashed, only the ones that must stay the same are; (11)
+the system runs on "a machine beside the SIEM", not necessarily the engineer's own; (12) run inputs leave out
+the snapshot; (13) "sixteen" and "a standard from my lab tests" now match the transcript; (14) "red teams"
+now "ethical hackers and blue teams", as in the transcript; (15) the stripped-field pair can drop more than
+one field; (16) connector A also carries the map, and both profiles reach sheet 2. Vague, now plain: "six
+methods in a row", "it is dead already", "work-ticket systems", the p value and false-discovery wording.
+Checked and correct: 58 tests pass (run today, 10.0 s), 2,892 logons with no network logon, rule 92900 reads
+Sysmon event 10, Figure 2's band and its three keys, the fingerprint as one count per run, the manifest not
+built. The student's own edit to the Box 1 quote ("which are the") no longer matches the diagram word for
+word; left as the student wrote it. Three lines moved to [CAN SKIP] to stay under 30 minutes. Result: 3,535
+spoken words without [CAN SKIP] (27.2 to 29.5 minutes), 4,420 with them; 40 of 41 quotes match (the Box 1
+edit). Backup: `script-before-sweep-3.txt` in this chat's scratchpad.
+
+**Found, not fixed (a design gap, not a script error):** a negative control blocks its own attack test by
+design, but the run check voids any run whose attack tests did not all complete, so a negative control's
+post-change runs could never reach 3 valid runs. OPEN-QUESTIONS 21 notes the same effect for C4 only. Recorded
+the same day, at the student's request, as **OPEN-QUESTIONS 34**, with three ways out and a recommendation
+`(unverified)`.
+
+**Then: diagram boxes missing from the script** (student: "Control runs NOT USABLE…" and "Freeze and hash the
+manifest's parameters…" are not in the script). Every text line of both SVG sheets was listed with its position
+and compared with the script. Missing or only partly covered, now added: sheet 1, the NOT USABLE branch (the
+script had said "the setup stops"; the diagram says "investigate, then capture again"), the freeze-and-hash box
+(read, with thresholds and the Sysmon hash explained), the Phase 1 capture box, the Phase 2 record box (read),
+the Phase 3 run check with the change confirmation (read), the post-change export, and the archive boxes in lane
+3; sheet 2, "investigate the capture, then re-run" for NOT TESTABLE, the one-key chi-square rule, the report
+artifact, who supplies each fix (the Security or Systems Engineer gives a telemetry script; the detection
+engineer writes a compensating rule), and the accepted setup after closing. Also fixed: "hypervisor" was used
+one paragraph before its definition in System Type. Checked: the opening's four names match the transcript
+("Sir Ervin", "Ma'am Jo", "Sir Dan", "Ma'am Joanna", from Samar). Trims: the web-based paragraph shortened with
+the same facts; five lines became [CAN SKIP]. Result: 3,660 spoken words without [CAN SKIP] (28.2 to 30.5
+minutes), 4,640 with them; 43 of 44 quotes match (26 proposal, 17 diagram; the student's Box 1 edit is the one
+that differs). Backup: `script-before-diagram-boxes.txt` in this chat's scratchpad.
+
+## 2026-10-19 - Diagram explainer checked against the submitted proposal and diagram; one error and four gaps fixed
+
+Chat 27d2595d. Asked by the student: does `ACTIVITY-DIAGRAM-EXPLAINED.md` (thesis folder, last edited
+2026-10-08) match the submitted proposal and diagram? Earlier the same day the student also asked whether the
+re-presentation script follows the proposal's order; six mismatches were proposed (Scale of the Experiment's
+paragraph order and thresholds, the algorithm table, a Features cue, the falsifiable claim under Figure 2,
+"Why this topic?" under Reasons for Choice of Project, a teleprompter start line) and not yet applied.
+
+**Checked, read-only:** every text line of both diagram SVGs extracted and compared with the explainer: all
+box, decision, banner and connector quotes are word for word the same. The explainer read in full against FINAL
+(phases, classes and their order, thresholds, rule set, value keying, fixes, built versus designed) and against
+the code: `variance.py` refuses fewer than 3 control runs (`min_runs = 3`); `field_loss_pairs()` is still
+called only by `src/demo.py`; `src/telos` unchanged since `766bd58` (2026-09-28).
+
+**Fixed at the student's request** (backup `ACTIVITY-DIAGRAM-EXPLAINED.2026-10-19.md.bak`):
+1. Section 10 said "a single key too rare to test is reported as not testable". Wrong, and against its own Box
+   19a and `global_gate()`: one key is tested directly, and is INCONCLUSIVE if under 30 events; "not testable"
+   is only for a run with no events. Replaced by a dated correction note.
+2. Box 1 now says how the attack-test list is chosen (from the Wazuh rules' ATT&CK techniques, plus a
+   network-logon test and the negative-control tests, with FINAL's keep conditions).
+3. Box 1 now says "hosts" includes the domain controller (designed, not built), and names the open point in
+   OPEN-QUESTIONS 32 (FINAL's Remote Desktop test uses a domain account).
+4. Section 4's Phase 0 output now includes the stimulus tolerance, as the diagram's datastore box does.
+5. The header names the sheets as Figures 3 and 4 of the proposal.
+6. British spelling changed to American, as in FINAL since 2026-10-12: 16 words; the code name `analyse()` kept
+   4 times.
+
+**Broke and fixed:** the Python step that changed the spelling wrote Windows line endings on all 1,408 lines
+(the file uses Unix ones), so `diff` showed 2,794 changed lines. Git Bash's `grep -c $'\r$'` also misreported
+both files as CRLF. Byte counts showed the truth; the file was converted back to LF, and the diff is now the 62
+intended lines. Document checker over the thesis folder: LIVE hits unchanged at 13 (the explainer's one hit is
+its own quoted "below the noise floor" warning, now line 1145). The same side effect had hit
+`prep-local\RE-PRESENTATION-SCRIPT.txt` on 2026-10-17 (all 929 lines CRLF); converted back to LF, word count
+unchanged. The 22-minute script and the checklist were already LF.
+
+**Then: "does the explainer cover all?"** Checked three ways. All 159 text lines of both diagram sheets are
+covered (151 word for word, 8 in other words: the lane subtitle, the VOID box, "no · re-review", "risk
+accepted"). Every point of FINAL's Activity Diagram section is covered. The panel's main diagram question at
+the title defense (where it starts, who runs it first, where the change comes from, why the old first box said
+"define hardening change") was not: no "change plan", "need to know" or "outside the system" anywhere. Added at
+the student's request, after backup `.2026-10-19b.md.bak`: a section 3 part, "Where the process starts, and
+where the change comes from" (about 250 words), also pointing to the Phase 4 boxes for the panel's
+"algorithms in the system lane" instruction. LF kept; checker LIVE hits unchanged at 13.
+
+**Then: teleprompter text.** Found in `prep-local` that other chats had made three new full scripts on
+2026-10-19 (`RE-PRESENTATION-SCRIPT NEW.txt`, `RE-PRESENTATION-SCRIPT LIVE.txt` by chat 952071be, and
+`Re-presentation Script Detecting Security Blind Spots.docx`, the newest, 19:51), plus `CUE-CARD LIVE.txt`
+and `CHEATSHEET.html`. The student named LIVE and the Word file as the masters and asked for teleprompter
+text. A converter (this chat's scratchpad, `make_teleprompter.py`) wrote `TELEPROMPTER LIVE.txt` (Part 3
+only; 3,169 spoken words outside the [CAN SKIP] lines; one typo fixed, "strudent") and
+`TELEPROMPTER WORD SCRIPT.txt` (sections 1 to 24; 5,159 spoken words; 59 cues from the italic directions,
+checklist codes dropped). Spoken text checked word for word against the sources; LF; no long dashes.
+**Conflicts found between the masters, not resolved:** (1) the Word script says the title has "one small
+change: 'post-hardening' instead of 'post-hardened'", while DECISIONS 2026-09-14 records the panel's wording
+as "Post-Hardening", verbatim; the transcript's "post-hardened" is speech-to-text. A [CHECK] cue was added
+before that line. (2) The Word script says share only the Word window; LIVE and its cue card say share the
+entire screen. The read-quote-then-explain format the student asked about earlier is not applied.
+
+**Then: a new script from scratch**, at the student's request ("ignore the past scripts"; focus on the algorithm
+and the activity diagram; read an important line of the proposal, then explain; 18 to 30 minutes at most).
+A sample (all six methods of Algorithms to be Used, and Phase 0 box by box) was shown first; the student
+asked for natural what-how-why sentences with no spoken labels, and for no term left unexplained ("identical
+runs"), then for the full script, with terms explained only at first use and reused after. Written as
+`prep-local\RE-PRESENTATION SCRIPT (new, read and explain).txt`: 19 sections in the proposal's order; each
+explanation follows a quote with its PDF page and paragraph or table row. All 43 quotes were checked word for
+word, 28 against FINAL and 15 against the diagram SVGs, and all 29 page numbers were found by Word in a copy of
+the submitted file. Three trimming passes brought it from 4,880 spoken words to 3,737 (about 29 to 31 minutes),
+or 3,158 without the [CAN SKIP] parts (about 24 to 26 minutes).
+
+**Then: a sweep for vague wording** (student: "what the hell is saved check???"). The definition "a detection
+rule is a saved check" was replaced by "an instruction: if this attacker behavior appears in the logs, raise an
+alert", with the rule-92900 example. The whole script was then swept: undefined words ("the trial",
+"baseline", "designed", "Remote Desktop", "SQL injection", "change plan", "rule export", "coverage"),
+pictures instead of facts ("on paper", "went blind", "a bigger target", "the before picture", "fires"),
+fragments ("No fix needed:", "Both changed."), and unclear wording ("the key line", "cause losses", "make a
+standard", "not a filter", "important fields"). The clearer text grew to 4,687 words; two compaction passes
+kept every definition but cut repeats, and five low-value extras were deleted (Poisson paragraph, clock
+marker, archive note, program-start example, hash note), the Modules line became a cue. Result: 3,521 spoken
+words without [CAN SKIP] (about 27 to 29 minutes), 3,950 with them. 42 quotes still verified word for word
+(27 proposal, 15 diagram).
+
+**Then: terms used before their definition** (student: "why detection rules is at the first part?"). The
+detection-rule definition moved from the Title to Field and Background, where the proposal first uses the
+term, ordered log, then rule, then SIEM. The same check over the whole script found 13 more: "run" used from
+the algorithms on but defined only in the diagram part; "inconclusive" and the minimum of 30 used at Figure 2
+before the classes; "Phase 2" used before the phases were named; "the engineer" before the role; the attack
+tests never named as in the diagram; "the table" unclear; "identical" explained without being said; the
+detection engineer's role split over two places; "environment" defined twice; "the sixth algorithm" against
+"six methods"; CSV not explained; "domain controller" defined only in a [CAN SKIP] part; "logs" in the title
+before the field section. The student's own removal of "This is the panel's title." was kept. To stay under
+30 minutes, two extras became [CAN SKIP] (the old first box, the chi-square table shape). Result: 3,545 spoken
+words without [CAN SKIP] (27.3 to 29.5 minutes at 130 to 120 words a minute), 4,012 with them; 42 quotes
+still verified; LF, no long dashes.
+
+**Then: the script must follow the proposal's paragraph order** (student: the Field section started at paragraph
+5 and skipped "This study is in cybersecurity", the SIEM and the published baselines). Field and Background now
+goes through paragraphs 1 to 6 in order, each as its key point in the student's own words, with no quote read
+(SIEM, detection rule, Wazuh; detection engineering, ATT&CK; hardening baselines; the bold sentences; adversary
+emulation, Atomic Red Team, statistics). The same backward jump was found and fixed in six more sections:
+Research Design (paragraph 4 was read, then paragraphs 1 to 3 explained), System Type (paragraph 4, the agent,
+came before paragraph 3, web-based; the panel question now comes after paragraph 4), Inputs (B's first part came
+after B's last paragraph; A was skipped), Scale (negative controls now before the trial sentence), Variance Floor
+(paragraph 1 added), Limitations (1, 2 and 4 were said after 3), Importance (To society was said after To the
+security industry). Also: the event key is now explained with the table row that names it; new cues for the
+objectives, Not in scope, Two kinds of test, and Target Users and Similarities (pages 8, 4, 3, 25 and 26, found
+by Word in the copy of the submitted file); "baseline" marked as having a second meaning in Algorithms. The
+aligned text came to 3,905 words (30.0 to 32.5 minutes); repeats were cut and 8 lines moved to [CAN SKIP].
+Result: 3,656 spoken words without [CAN SKIP] (28.1 to 30.5 minutes), 4,313 with them; 41 quotes verified (26
+proposal, 15 diagram); LF, no long dashes. Backups in this chat's scratchpad.
+
 ## 2026-10-16 - Re-presentation set for Thursday 2026-10-22, 3:30 to 5:00 pm; lab checkpoint moved to 2026-10-30
 
 Chat 27d2595d. The student pasted the calendar entry: "Title Proposal Re-presentation", Thursday 2026-10-22,
@@ -30,6 +342,56 @@ move it after the re-presentation and spend the days until 2026-10-22 on practic
 dates, so the old lengths were kept: lab checkpoint 2026-10-30 (six working days from 2026-10-23), spike
 2026-11-07 (eight days later), later checkpoints unchanged. Cost: data collection gets 23 days after the spike
 instead of 30. Updated: DECISIONS (new entry; a note on 2026-09-29), STATUS, OPEN-QUESTIONS 25, PROMPT-new-chat.
+
+**Then: the re-presentation scripts checked and fixed** (`prep-local`, outside git). The 22-minute script was
+read in full and checked against FINAL, the figures, `demo-output.txt` (naive 3 true, 7 false, 0 missed;
+proposed 3, 0, 0) and the record; the full script's answer cards were read and its text searched for the
+same points. Correct: every number, the thresholds, the Figure 2 description (the 4776 version), the diagram
+walk-through, the ten limits, built versus designed. Out of date since the submission, and fixed at the
+student's request, each script backed up first as "(before 2026-10-16 fixes)":
+- The file to share was `FINAL … (updated 2026-10-12)`; now the submitted `Detecting Security Blind Spots
+  Through Pre- and Post-Hardening Events Using Differential Analysis Algorithm.pdf`, with a warning not to
+  share the old PDF.
+- The web-based part said "The panel also said: make it web-based" and "My answer is in Revision 8" (never
+  sent). Now: the student raised the idea, the panel asked that it be declared, the email explained the
+  desktop choice, and the panel is asked for its decision.
+- The diagram cues now open the two full-size PDFs, with a cue to switch back to the proposal.
+- 22-minute script: the seventh precondition (operator-only access with MFA) added. Full script: "the
+  company prepares" seven things changed to "seven things must exist", "eleven questions" removed (as the
+  student had done in the 22-minute script), the domain-controller card rewritten to follow FINAL, and a new
+  card on the schedule (trial in the first week of November, about one week after the Gantt chart).
+- Found: FINAL says the C5 test signs in with a domain account, while OPEN-QUESTIONS 32 point 4 says no
+  positive case needs a domain. Recorded there; not decided.
+
+**Then: every point of the title defense checked against the scripts** (student's request; `prep-local`,
+outside git). The title-defense transcript was read from start to end and listed in a new private file,
+`prep-local\PANEL-QUESTIONS-CHECKLIST.md`: 24 questions (A1 to A24), 28 wrong claims or weak answers (B1 to
+B28) and 11 panel instructions (C1 to C11), each with the answer now and where the script gives it. About
+half were already answered. The rest were added to both scripts as short "Last time ..." corrections, after
+backups named "(before checklist corrections)". Among them: "it catches it at the moment it happens" (it is
+not live monitoring); "I already tested it" (on 2026-08-25 only the readiness checks were done, WORKLOG
+2026-08-20; the lab was built from 2026-08-31); a blind spot as an attack that "gets through"; the port
+example of hardening; the tests "according to MITRE ATT&CK"; chi-square per event type and Poisson; "the
+system runs inside the computer it checks" and the EDR-style agent; a Windows-only system; "I will make a
+standard from my lab and put it in the system"; the "on hand / cycle" answer; "like an antivirus"; "a model of
+standard hardening"; the lab numbers as "valid"; "no research like this". Instructions made explicit: the
+algorithms in the system lane (Phase 4 boxes) and the old first box of the diagram. Four new answer cards:
+program or executable, contribution, what if it does not work (no topic switch; scope reduced in the decided
+order), where the noise level comes from. **Cost:** the 22-minute script is now about 3,780 spoken words,
+about 29 to 31 minutes; seven lower-priority corrections are marked [CAN SKIP], and the shortest version is
+about 26 to 27 minutes. The full script is about 5,200 words.
+
+**2026-10-17, same chat: the script rewritten in the student's own way of speaking** (`prep-local`, outside
+git), at the student's request, from the title-defense transcript. Habits kept: "So," to open and close a
+point, "And then," between steps, the logbook and closed-doors pictures, "po" and "opo", "For example po",
+"Like what I said", narrating a process in order, and the closing "So, that's all po. Thank you." Habits named
+as mistakes and written into the script's notes: reading the document aloud, fillers and restarts, "opo" to a
+wrong summary, saying more than is true, mixing "attack" and "hardening", answering a different question,
+"not sure" with nothing after, and three mispronunciations. Backups "(before personal voice)". The 22-minute
+script was rewritten in full: every correction kept (30 key phrases checked present), 3,973 spoken words,
+about 30 to 32 minutes; the "Why this topic?" story from the transcript added. In the full script, only the
+notes and Part C were rewritten: 41 cards, six of them new (before and after what; offline; what the screen
+does; the algorithms in the paper; Wireshark; only a simulation). Part B of the full script is unchanged.
 
 ## 2026-10-15 - File map of every thesis location; Word tools saved into the repo; revised documentation submitted
 

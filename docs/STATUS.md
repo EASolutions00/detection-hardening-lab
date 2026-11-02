@@ -1,7 +1,7 @@
 # STATUS
 
 Current blockers and dates. This file changes often. CLAUDE.md does not.
-Last updated: 2026-10-16 (chat 27d2595d)
+Last updated: 2026-11-02 (chat 27d2595d)
 
 Every item here must also exist in OPEN-QUESTIONS.md or DECISIONS.md. This file only
 says which ones matter right now. Where every file lives, inside and outside the repo:
@@ -23,6 +23,9 @@ says which ones matter right now. Where every file lives, inside and outside the
   dates: 2026-10-02, 2026-10-07 and 2026-10-12 (`DECISIONS.md` 2026-10-08, overtaken). **The re-presentation
   is Thursday 2026-10-22, 3:30 to 5:00 pm** ("Title Proposal Re-presentation", calendar entry pasted by the
   student 2026-10-16), seven days after the submission.
+  **Held 2026-10-22: accepted on condition** that the document is revised and simplified, then shown to the
+  panel again for full approval. Adviser: Prof. Ervin Moran. Pre-oral panel: Prof. Dan Mercolita (chair), Prof.
+  Joanna Lynn Mabula, Prof. Josephine Casin (guest). DECISIONS 2026-10-22.
   Recommended, not decided: run the full data collection only after the panel approves the diagram.
 
 ## Checkpoints (proposed 2026-09-29, dates are estimates)
@@ -31,8 +34,8 @@ says which ones matter right now. Where every file lives, inside and outside the
 |---|---|
 | 2026-10-09, latest 2026-10-12 | Revised documentation submitted (the panel then sets the re-presentation date). **Done 2026-10-15** (student), three days after the latest date; 2026-10-02, 2026-10-07 and 2026-10-12 were missed |
 | 2026-10-09 | Adviser told of the slip and the January target. **Partly done:** the student told their professor about the delay (by 2026-10-08); the January target is not stated. WORKLOG 2026-10-07: the adviser is named only after the re-presentation |
-| 2026-10-22, 3:30 to 5:00 pm | **Re-presentation** (date set by the panel; student, 2026-10-16) |
-| 2026-10-30 (was 2026-10-23) | DC-01 built, WIN-EP-01 joined, Sysmon `lsass.exe` rule and audit settings in place, value keying coded and tested, network-logon test designed, golden snapshot taken |
+| 2026-10-22, 3:30 to 5:00 pm | **Re-presentation** (date set by the panel; student, 2026-10-16). **Done: accepted on condition of a simplified revision** (DECISIONS 2026-10-22) |
+| 2026-10-30 (was 2026-10-23), **missed: no lab work recorded as of 2026-11-02; new date after the adviser answers OPEN-QUESTIONS 33** | DC-01 built, WIN-EP-01 joined, Sysmon `lsass.exe` rule and audit settings in place, value keying coded and tested, network-logon test designed, golden snapshot taken |
 | 2026-11-07 (was 2026-10-31) | Spike run, six answers recorded, final number of changes set. Both moves: DECISIONS 2026-10-16 |
 | 2026-11-30 | Data collection done |
 | 2026-12-18 | Rest of the system (impact scoring, remediation, reports) and the evaluation done |
@@ -64,13 +67,14 @@ controls), and record the miss in WORKLOG the same day.
    and the panel asked that it be declared; the system stays a desktop application; and asks whether the
    panel accepts this or the system must still be web-based (DECISIONS 2026-10-07, corrected note). Checks
    before sending: WORKLOG 2026-10-15.
-   **Now: the re-presentation, Thursday 2026-10-22, 3:30 to 5:00 pm. Practice.** The scripts are in `prep-local`:
-   `RE-PRESENTATION-SCRIPT 22-MIN.txt` (about 3,100 words) and the full script with 31 answer cards
-   (WORKLOG 2026-10-14). The study plan is `prep-local\STUDY-GUIDE.md`. **When the panel answers the
-   web-based question, record the answer in DECISIONS.** A refusal means a web front end on the same core
-   (DECISIONS 2026-10-07, cost if wrong).
-2. **Tell the adviser** (checkpoint 2026-10-09). Partly done: the student told their professor about the
-   delay. The adviser is named only after the re-presentation (WORKLOG 2026-10-07).
+   **Re-presentation held 2026-10-22: accepted on condition of a simplified revision** (DECISIONS 2026-10-22).
+   **Now: the first online consultation with the adviser, Prof. Ervin Moran.** No word from him as of
+   2026-11-02 (student). Ask: what "simplify" means and
+   the deadline for the revised document; whether the desktop application is accepted (not asked at the
+   re-presentation); which defense January is (OPEN-QUESTIONS 33). Bring the corrections of the answers given on
+   2026-10-22, listed in WORKLOG 2026-10-22, first the "zero blind spots" one.
+2. **Tell the adviser** (checkpoint 2026-10-09). The adviser is now named: Prof. Ervin Moran. Tell him the
+   January 2027 target at the first consultation.
 3. From Friday 2026-10-23, the day after the re-presentation (DECISIONS 2026-10-16): **build DC-01 and join
    WIN-EP-01**; apply the Sysmon rule and the audit settings; code value keying, the control-run check
    (item 24) and pairing (item 30). Checkpoint: 2026-10-30, six working days. Until 2026-10-22, no lab
