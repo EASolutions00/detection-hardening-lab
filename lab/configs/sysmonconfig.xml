@@ -470,7 +470,8 @@
 		<!--DATA: UtcTime, SourceProcessGuid, SourceProcessId, SourceThreadId, SourceImage, TargetProcessGuid, TargetProcessId, TargetImage, GrantedAccess, CallTrace-->
 	<RuleGroup name="" groupRelation="or">
 		<ProcessAccess onmatch="include">
-			<!--NOTE: Using "include" with no rules means nothing in this section will be logged-->
+			<!--TeLoS 2026-11-03 (DECISIONS 2026-09-29, item 18): log access to lsass.exe only, for C3 LSA Protection and Wazuh rule 92900-->
+			<TargetImage condition="is">C:\Windows\system32\lsass.exe</TargetImage>
 		</ProcessAccess>
 	</RuleGroup>
 

@@ -704,6 +704,33 @@ OPEN-QUESTIONS 1b. The helper script's `count` and `show` subcommands take a fil
 **The 120 second drain is not optional.** Measured endpoint-to-archive latency is 1.6 to 1.9
 seconds per event, but the agent buffers and the manager writes on its own schedule.
 
+### 2.11 Before the golden snapshot: Sysmon `lsass.exe` rule and audit settings (2026-11-03)
+
+Decided 2026-09-29 (DECISIONS, items 18 and 20). Run by the student. The VM was started from the host with
+`vmrun -T ws start` on the `$vmx` above; every other command was typed **BY HAND** in an Administrator
+PowerShell inside WIN-EP-01, except the copy, which ran on the host.
+
+| Step | Command | Correct result, as seen on 2026-11-03 |
+|---|---|---|
+| Back up the running config (guest) | `Copy-Item C:\telos\sysmonconfig.xml C:\telos\sysmonconfig.xml.telos-pre-item18` | No output. The backup's SHA256 is the old `055FEBC6...7162` |
+| Copy the new config (host) | `& $vmrun -T ws -gu eli -gp $pw CopyFileFromHostToGuest $vmx "E:\Claude general\lab\configs\sysmonconfig.xml" "C:\telos\sysmonconfig.xml"` | No output |
+| Check the copy (guest) | `Get-FileHash C:\telos\sysmonconfig.xml` | `02C43AC8...B3AD` |
+| Load it (guest) | `C:\telos\Sysmon64.exe -c C:\telos\sysmonconfig.xml` | `Configuration file validated.` then `Configuration updated.` |
+| Prove it (guest) | `C:\telos\Sysmon64.exe -c` | `Config hash: SHA256=02C43AC8...B3AD`; `ProcessAccess onmatch: include`, `TargetImage filter: is value: 'C:\Windows\system32\lsass.exe'` |
+| Read the audit state (guest) | `auditpol /get /subcategory:"Process Creation","Credential Validation"` | Before: both `No Auditing`. After: `Success`, and `Success and Failure` |
+| Process creation (guest) | `auditpol /set /subcategory:"Process Creation" /success:enable` | `The command was successfully executed.` |
+| Credential validation (guest) | `auditpol /set /subcategory:"Credential Validation" /success:enable /failure:enable` | `The command was successfully executed.` |
+| Command lines in 4688 (guest) | `reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit" /v ProcessCreationIncludeCmdLine_Enabled /t REG_DWORD /d 1 /f` | `The operation completed successfully.` Before, `reg query` gave `ERROR: The system was unable to find the specified registry key or value.` |
+| Proof, 4688 (guest) | `Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4688} -MaxEvents 1 \| Format-List TimeCreated, Message` | A 4688 with a `Process Command Line:` line |
+| Proof, Sysmon 10 (guest) | `Get-WinEvent -LogName 'Microsoft-Windows-Sysmon/Operational' -FilterXPath "*[System[EventID=10]]" -MaxEvents 2 \| Format-List TimeCreated, Message` | `svchost.exe` to `lsass.exe`, `GrantedAccess: 0x1000`, background activity |
+
+**Undo.** Sysmon: `C:\telos\Sysmon64.exe -c C:\telos\sysmonconfig.xml.telos-pre-item18`. Audit: the same two
+`auditpol` lines with `disable`, then `reg delete` of the same value with `/f`. All are safe to re-run.
+
+**Not yet checked:** that the new 4688, 4776 and Sysmon 10 events reach the SIEM archive (Part 3.7 counts them
+there). The CIS values (Process Creation: Success; Credential Validation: Success and Failure) are general
+knowledge, to be matched against the benchmark text when the change scripts are written.
+
 ---
 
 ## Part 3: Read-only checks (safe, change nothing)

@@ -486,7 +486,13 @@ too thin to support its precision and recall claims. Both are recoverable only i
 
 ---
 
-## 20. WIN-EP-01 does not audit process creation, and two headline claims depend on it
+## 20. WIN-EP-01 does not audit process creation, and two headline claims depend on it (ANSWERED 2026-11-03 in the guest; the archive check remains)
+
+**Applied 2026-11-03 (chat 27d2595d, run by the student; COMMANDS 2.11).** Before: `auditpol` showed `No
+Auditing` for Process Creation and Credential Validation, and `ProcessCreationIncludeCmdLine_Enabled` did not
+exist. After: `Success`, and `Success and Failure`; the value is 1; the newest 4688 carries a `Process Command
+Line:`. Still to check: that 4688 and 4776 reach the SIEM archive (COMMANDS 3.7). This must be in place before
+the golden snapshot is taken.
 
 **Status:** Open. Raised 2026-09-11, measured while testing item 19. **Decided 2026-09-29: "yes"
 below, plus Credential Validation, on WIN-EP-01 and DC-01, before the golden snapshot**
@@ -646,6 +652,11 @@ a real restriction that the limitations section does not currently state.
 ---
 
 ## 18. Six of the eight class C changes produce a telemetry effect the analyser cannot measure
+
+**2026-11-03, observed in WIN-EP-01** after the `lsass.exe` Sysmon rule was applied (COMMANDS 2.11): with no attack
+running, `svchost.exe` opens `lsass.exe` with `GrantedAccess: 0x1000`. Rule 92900 matches `0x1010` or `0x40`. So
+the `GrantedAccess` value classes must keep `0x1000` apart from the rule's values; otherwise background access and
+attack access fall into one key. How often this background occurs per window is not measured yet.
 
 **Status:** Open. Raised 2026-09-10. It is not a documentation problem. If the answer is bad, the
 experiment produces UNCHANGED for most of the catalogue and the study reports that hardening does

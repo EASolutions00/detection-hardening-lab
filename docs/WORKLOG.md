@@ -42,7 +42,45 @@ NEW keys, `render_analysis()` prints it, and the demo's duplicate printing was r
 first run gave `9 failed, 51 passed`, every failure `ValueError: not a TeLoS event key: 'a'` (older tests use
 plain key names that `parse()` rejects); fixed by pairing only keys in event-key form. Full suite: `60 passed in
 0.66s`; the demo prints one FIELD-LEVEL LOSS section (`PowerShell-4104[Path,ScriptBlockText]` to
-`PowerShell-4104[Path]`, lost field `ScriptBlockText`). CLAUDE.md now expects 60. Not committed yet.
+`PowerShell-4104[Path]`, lost field `ScriptBlockText`). CLAUDE.md now expects 60. Committed and pushed as
+`1fe9532`.
+
+**Then the explainer** (thesis folder, backup `ACTIVITY-DIAGRAM-EXPLAINED.2026-11-03.md.bak`): Box 22's status
+and the built-versus-designed table now say pairing is part of the flow; Box 4's status says half built, the
+"recorded events" check in code and the "completed all its attack tests" check waiting for the harness; the
+not-built list changed to match. LF kept (CR 0).
+
+**Then the lab, first step (student: "yes, lets start the lab").** Pre-flight check passed (0 VMs running,
+`HypervisorPresent: False`, `60 passed`, only WORKLOG uncommitted, VMnet2 `10.20.10.1`). The Sysmon config got one
+`ProcessAccess` rule, `TargetImage is C:\Windows\system32\lsass.exe` (DECISIONS 2026-09-29, item 18).
+**Broke and fixed, twice, both caught in the git diff before anything reached the VM:** the edit tool dropped the
+file's one CRLF (on the `powershell.exe` line, the reason for the old 123,257 versus 123,256 bytes); then a byte
+replacement hit all three copies of the "NOTE: Using include with no rules" comment. Rebuilt from the committed
+blob with a replacement anchored on `<ProcessAccess onmatch="include">`: one line removed, two added, CR 1 kept,
+XML valid, 123,374 bytes, SHA256 `02C43AC8...B3AD`, recorded in the DECISIONS pinned table and the configs README.
+**Applied in WIN-EP-01 by the student** (VM started, old config backed up to
+`C:\telos\sysmonconfig.xml.telos-pre-item18`, new file copied with `vmrun CopyFileFromHostToGuest`):
+`Get-FileHash` gave `02C43AC8...B3AD`; `Sysmon64.exe -c C:\telos\sysmonconfig.xml` gave "Configuration file
+validated." and "Configuration updated."; `Sysmon64.exe -c` reports `Config hash: SHA256=02C43AC8...B3AD` and
+`ProcessAccess onmatch: include … TargetImage filter: is value: 'C:\Windows\system32\lsass.exe'`. The running
+sensor uses the committed file. Not yet checked: that the backup holds the old file (the order of the backup
+and the copy is not visible in the pasted output), and that Event 10 now appears. **Both checked after:** the
+backup's SHA256 is the old `055FEBC6...7162`; Event 10 appears.
+
+**Then the audit settings (item 20), run by the student.** Before: `Process Creation No Auditing`, `Credential
+Validation No Auditing`, and `reg query` of `ProcessCreationIncludeCmdLine_Enabled` gave `ERROR: The system was
+unable to find the specified registry key or value.` Set with two `auditpol /set` lines and one `reg add` (all
+"successfully"). After: `Success`, and `Success and Failure`. Proof: the newest 4688 (`SecurityHealthHost.exe`,
+created by `svchost.exe`) carries `Process Command Line:`; the newest Sysmon 10 events are `svchost.exe` opening
+`lsass.exe` with `GrantedAccess: 0x1000`. Commands and results: COMMANDS 2.11.
+
+**Finding:** normal Windows opens `lsass.exe` with `0x1000` with no attack running. Rule 92900 matches `0x1010` or
+`0x40` (OPEN-QUESTIONS 1), so this background raises no alert, as it should. For value keying (DECISIONS
+2026-09-29, item 18), the classes for `GrantedAccess` must keep `0x1000` apart from the rule's values, or normal
+background and attack access are counted as one key. Not yet recorded in OPEN-QUESTIONS 18.
+
+**Not yet checked:** that 4688, 4776 and Sysmon 10 reach the SIEM archive (COMMANDS 3.7). The VM is still running.
+Nothing committed yet for the lab work.
 
 ## 2026-11-02 - Pending items closed: two missing chat entries, the simplicity rule, the missed lab checkpoint
 

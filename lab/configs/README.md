@@ -21,6 +21,10 @@ Guard, cannot be measured with this file. Adding a rule for `lsass.exe` would ch
 SHA256 and must be recorded in `docs/DECISIONS.md` before the golden snapshot. Not decided yet.
 Found 2026-09-26; `docs/OPEN-QUESTIONS.md` item 18, "Checked before the capture".
 
+**Changed 2026-11-03:** decided 2026-09-29, the `ProcessAccess` section now has one rule, access to
+`C:\Windows\system32\lsass.exe`. New SHA256 `02C43AC8...B3AD`, 123,374 bytes, in the pinned table in
+`docs/DECISIONS.md`. The change was made on the committed bytes, so the one CRLF line is kept.
+
 ## Rule
 
 Record the SHA256 of every file here in `docs/DECISIONS.md`, and re-record it if you ever
