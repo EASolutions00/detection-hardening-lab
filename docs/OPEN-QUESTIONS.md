@@ -1067,7 +1067,50 @@ level 0 rule that hides events, not a detection.
 
 **Still open:** which `GrantedAccess` each usable LSASS test asks for. Needs the trial run.
 
+**Trial part 1, 2026-11-03, LSA Protection on, Defender as it is in WIN-EP-01 (real-time and behavior monitoring
+on).** Run `lsass-trial-on-1`, fences at 12:17:13Z and 12:17:29Z. All three tests stopped before they opened
+`lsass.exe`: ProcDump printed `Access is denied.` and Defender logged a detection on its command line (ThreatID
+2147786200); comsvcs.dll and rdrleakdiag were blocked by AMSI (`This script contains malicious content and has been
+blocked by your antivirus software.`; ThreatIDs 2147793100 and 2147807171). Sysmon recorded **0** event 10 from the
+three tools. So this run measured Defender, not LSA Protection, and gave no `GrantedAccess` value. It also shows that
+in the Config N state (Defender on, runbook Phase 5) these tests produce no lsass telemetry at all.
+
 **Blocks:** the C3 attack tests in the pinned list, and the golden snapshot (their tools must be in the image).
+
+---
+
+## 36. LSA Protection is already on in WIN-EP-01, so C3 changes nothing today
+
+**Status:** Decided 2026-11-03: option 1 (DECISIONS 2026-11-03). Stays open until the golden image is shown to
+boot with no Wininit event 12. Found 2026-11-03 by chat 27d2595d, step 1 of the LSASS trial (item 35), from the
+student's output inside the guest.
+
+**The evidence.** `HKLM\SYSTEM\CurrentControlSet\Control\Lsa`: `RunAsPPL = 2`, `RunAsPPLBoot = 2`. System log,
+Wininit event 12 at 2026-11-03 11:21:54: "LSASS.exe was started as a protected process with level: 4". The record
+holds no command that set either value. Microsoft says added LSA protection is on by default on new Windows 11
+22H2+ installs, with conditions that its pages state differently
+([Configure added LSA protection](https://learn.microsoft.com/en-us/windows-server/security/credentials-protection-and-management/configuring-additional-lsa-protection);
+[Windows 11 security book](https://learn.microsoft.com/en-us/windows/security/book/identity-protection-advanced-credential-protection)).
+WIN-EP-01 is a fresh 24H2 install, so the Windows default is the likely cause `(unverified)`.
+
+**What it means.** C3's "before" state is the same as its "after" state. Every C3 run would compare LSA
+Protection on with LSA Protection on, and find nothing. The `0x1000` background seen on 2026-11-03 (121 Sysmon 10
+events) was also recorded with LSA Protection on.
+
+**Ways out, none decided:**
+1. **Turn LSA Protection off in the golden image** (`RunAsPPL = 0`, reboot, confirm no Wininit event 12), and
+   record it as a stated part of the baseline. C3 turns it back on. Cost: the baseline is weaker than this Windows
+   build's default, and the panel may ask why. Answer: C3 is a CIS item, upgraded machines and machines that do not
+   meet Microsoft's conditions do not get it by default, and the study measures the change, not the default.
+2. **Drop C3**: on this build it is a default, not a hardening change. Cost: only C1 and C5 remain as blind-spot
+   cases, and C3 is the only one with a strong rule (92900, level 12).
+
+**Also found in step 1:** PowerShell's execution policy blocks `Invoke-AtomicRedTeam` from loading
+(`running scripts is disabled on this system`), and the guest has no internet (`Name resolution of github.com
+failed`), as WORKLOG already recorded for the NAT adapter. Tools must be copied in from the host, as Atomic Red
+Team was.
+
+**Blocks:** C3, the LSASS trial (item 35) and the golden snapshot.
 
 ---
 

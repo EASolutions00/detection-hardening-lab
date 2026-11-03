@@ -8,6 +8,69 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-11-03 - C3 is measured with Defender off (Config S); the Defender-on result is reported as a finding
+
+**Status:** decided 2026-11-03. Drafted at the student's request and confirmed by the student ("confirm"), chat
+27d2595d.
+
+**Decision.** C3 (LSA Protection) is measured in Config S, Defender off, as already defined in `lab/blueprint.md`
+section 5 and runbook Phase 5. Config N, Defender on, is kept as planned. Its result for the LSASS tests is
+reported as a finding, not discarded. Defender's state is the same in every run of a configuration: before the
+change, after the change and the control runs.
+
+**Why.** Trial part 1 (OPEN-QUESTIONS 35, run `lsass-trial-on-1`): with Defender on, all three LSASS tests were
+stopped before they opened `lsass.exe`, and Sysmon recorded 0 event 10 from them. Without that event there is
+nothing for C3 to change, so C3 can only be measured with Defender off. Config S and Config N were planned on
+2026-09-02, before this result, so this entry uses the existing design and adds no new component (keep-it-simple
+rule, DECISIONS 2026-10-30).
+
+**What is reported for C3:**
+1. Config S: what LSA Protection changes in the telemetry, and whether rule 92900 loses its events.
+2. Config N: Defender stops these tests before any lsass access is recorded. A blind spot that C3 creates in
+   Config S may therefore matter less on a machine that runs Defender. The thesis says so plainly.
+
+**Limitation, to be stated by the student before the panel asks:** most real Windows endpoints run Defender or
+another antivirus, so the Config S result describes a machine with less protection than usual. The study measures
+what one hardening change does to the telemetry, with other protections held constant; it does not claim the
+attack succeeds on a defended machine.
+
+**Rules that keep the result clean:**
+- Defender's state never differs between the "before" and "after" runs of one comparison. Otherwise Defender, not
+  C3, could explain a change in the counts (a confound).
+- The image stays closed while Defender is off: NAT disconnected (CLAUDE.md, rule 4), no shared folders.
+- The Defender exclusion for `C:\AtomicRedTeam` stays identical in both configurations (DECISIONS 2026-09-02).
+
+**Still open:** whether the full data collection runs in both configurations or only in Config S. The record
+assigns both only to the spike (blueprint Q1). Running both doubles the runs; the spike's wall-clock answer (Q2)
+decides whether that fits.
+
+**Cost if wrong:** if the panel rejects any Defender-off measurement, C3 is reported from Config N only, where it
+shows nothing, and the blind-spot cases fall to C1 and C5.
+
+---
+
+## 2026-11-03 - The baseline turns LSA Protection off, so C3 can be measured
+
+**Decision (student, "option 1"):** the golden image has LSA Protection **off** (`RunAsPPL = 0`), stated as part of
+the baseline. C3 turns it on. Supersedes nothing; answers OPEN-QUESTIONS 36, option 1.
+
+**Why.** WIN-EP-01 already ran with LSA Protection on (`RunAsPPL = 2`, `RunAsPPLBoot = 2`, Wininit event 12 at
+2026-11-03 11:21:54), most likely the Windows 11 default for new installs `(unverified)`. With it on in the baseline,
+C3 compares "on" with "on" and can show nothing. Dropping C3 (option 2) would leave only C1 and C5 as blind-spot
+cases and lose the strongest rule, 92900 (level 12).
+
+**For the defense:** "C3 is a CIS item. Upgraded machines, and machines that do not meet Microsoft's conditions, do
+not get it by default. The study measures the change, not the default." Say this before the panel asks.
+
+**Also decided the same day:** the LSASS trial (OPEN-QUESTIONS 35) uses three tests: ProcDump (1), comsvcs.dll (2)
+and rdrleakdiag (13). NanoDump only if none of them fires rule 92900. ProcDump is copied in from the host, because
+the guest has no internet; pinned by hash in the table below.
+
+**Cost if wrong:** if a panel member holds that the baseline must be the Windows default, C3 is reported as "a
+default on this build" and drops out, as in option 2.
+
+---
+
 ## 2026-10-30 - Default rule: the system and its documentation stay simple
 
 **Decision, by the student, chat 27d2595d:** "make a default rule for this thesis that this system should not
@@ -1852,6 +1915,7 @@ which belonged to T3 and is no longer in scope.
 | **Atomic Red Team commit** | **`cb486d9a888e921fac5902a06c7b46e420bb14a7`** (`redcanaryco/atomic-red-team`, committed 2026-08-28), shallow clone, **1310 files** in the `atomics` folder, 342 technique YAML files | 2026-09-02 |
 | Invoke-AtomicRedTeam commit | `8af478bb9e4637df568ac1e596553b025b16cd1b` (`redcanaryco/invoke-atomicredteam`, committed 2025-09-08), module version `2.1.0`, 74 files | 2026-09-02 |
 | `powershell-yaml` | `0.4.12`, nupkg SHA256 `D4602BC7A4A093766520422D53CA8B09ACDE162286FAE11E2EE6C8EDFEA07810`. Hard dependency of `Invoke-AtomicTest`, which cannot parse the atomics without it. | 2026-09-02 |
+| ProcDump (Atomic T1003.001 test 1) | `12.02`, signed Microsoft Corporation, from `https://download.sysinternals.com/files/Procdump.zip` (zip 1,295,601 bytes, SHA256 `5FE68E81632F13188930AFFFF20A9A9910170BAE654360850D3108CEAD708A2D`). `procdump.exe` 1,374,520 bytes, SHA256 `099FD0CD771B583D283814A225A8FBBDB3FAA47CC8A644568D6201893AD76BD9`. Host copy in `E:\TeLoS-artifacts\procdump`. The URL serves the newest version, so the hash is the pin. | 2026-11-03 |
 | **Windows build number (guest)** | **`10.0.26100.9168`**, Windows 11 **Education**, `DisplayVersion 24H2`. Fully patched: two update passes, the second returned `updates found: 0`. 7 hotfixes: KB5120710, KB5050575, KB5054273, KB5122035, KB5121003, KB5043113, KB5123304. | 2026-09-02 |
 | Wazuh agent version | `4.14.7`, stage `rc1`, commit `8c41e20`, from `wazuh-agent-4.14.7-1.msi` SHA256 `E967F36B75589D6210244FD58239C7021FA53A77C38D92315C3B3BD115002EDE`. Registered as `id=001 name=WIN-EP-01`. Matches the manager exactly. | 2026-09-02 |
 | **WIN-EP-01 agent `ossec.conf`** | **current: SHA256 `CED16E0B41384BF421192317E3754732D0E3155A85BA98F2CEEDFA846B0278B1`, 12,115 bytes**, committed as `lab/configs/wazuh-agent-ossec.conf`. History, each kept in the guest: as installed `4F4531A2...F4D64B` (10,152 bytes) as `ossec.conf.telos-orig`; plus the Sysmon `<localfile>` block `F9541429...C4D82F` (10,409 bytes) as `ossec.conf.telos-pre-item8`; plus `rootcheck`, `sca`, `syscheck`, `syscollector` disabled `1F36416E...8F2658` (11,848 bytes) as `ossec.conf.telos-pre-item12`; current adds `active-response` disabled. | 2026-09-03 |

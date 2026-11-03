@@ -127,6 +127,37 @@ code value-keyed. Tests first, two, both failing on the old code (`Security-4625
 pattern and `_part()` searches with it; the 4625 entry is gone. Full suite `65 passed`; demo unchanged;
 `check_docs.py` 89 hits, unchanged. CLAUDE.md expects 65.
 
+**Then the LSASS trial began** (student: "lets start the trial, im at the vm"). Step 1, read-only checks typed by
+the student in an Administrator PowerShell inside WIN-EP-01:
+- Build `24H2 26100 9168`, matching the pin.
+- **LSA Protection already on**: `RunAsPPL 2`, `RunAsPPLBoot 2`, Wininit event 12 at 11:21:54 "LSASS.exe was
+  started as a protected process with level: 4". No command in the record set it; the Windows 11 default for new
+  installs is the likely cause (unverified). OPEN-QUESTIONS 36, new.
+- Defender: real-time and behavior monitoring `True`, `IsTamperProtected False`, exclusion `{C:\AtomicRedTeam}`, no
+  ASR rules.
+- `rdrleakdiag.exe` present; `ExternalPayloads` did not exist.
+- `Import-Module` failed: `powershell-yaml.psm1 cannot be loaded because running scripts is disabled on this
+  system`. Worked later with `Set-ExecutionPolicy -Scope Process Bypass -Force` (that window only).
+- No internet: `Name resolution of github.com failed`.
+
+The student chose option 1 for C3: the baseline turns LSA Protection off (DECISIONS 2026-11-03). ProcDump `12.02`
+was downloaded on the host into `E:\TeLoS-artifacts\procdump` (`procdump.exe` SHA256 `099FD0CD...6BD9`, signed
+Microsoft Corporation; pinned in the DECISIONS table) and copied in with `vmrun CopyFileFromHostToGuest` to
+`C:\AtomicRedTeam\ExternalPayloads\procdump.exe`. Hash matched inside the VM; `-CheckPrereqs` gave
+`Prerequisites met` for tests 1, 2 and 13. WIN-EP-01 was shut down and a checkpoint taken cold:
+`pre-lsass-trial-2026-11-03` (`Total snapshots: 5`).
+
+**Trial part 1** (`lsass-trial-on-1`, fences 12:17:13Z to 12:17:29Z), LSA Protection on, Defender on. All three
+tests were stopped by Defender: ProcDump `Access is denied.` with a Defender detection on its command line; comsvcs
+and rdrleakdiag `This script contains malicious content and has been blocked by your antivirus software.` Sysmon
+event 10 from the three tools: **0**. No `GrantedAccess` value. Recorded in OPEN-QUESTIONS 35.
+
+The student asked what turning Defender off would cost. Answered as a design question only: it makes C3 measurable;
+it costs realism (most endpoints run antivirus) and needs Defender held the same in every run of a comparison. The
+existing Config S / Config N design covers this. DECISIONS 2026-11-03 "C3 is measured with Defender off (Config S)"
+drafted and confirmed by the student. No Defender change was made in this chat. WIN-EP-01 still runs the trial
+state; it goes back to `pre-lsass-trial-2026-11-03` before anything else.
+
 ## 2026-11-02 - Pending items closed: two missing chat entries, the simplicity rule, the missed lab checkpoint
 
 Chat 27d2595d, continued. The student: "NO Words from prof ervin.; in the mean time, lets finish the pendings".
