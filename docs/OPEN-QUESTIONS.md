@@ -491,8 +491,11 @@ too thin to support its precision and recall claims. Both are recoverable only i
 **Applied 2026-11-03 (chat 27d2595d, run by the student; COMMANDS 2.11).** Before: `auditpol` showed `No
 Auditing` for Process Creation and Credential Validation, and `ProcessCreationIncludeCmdLine_Enabled` did not
 exist. After: `Success`, and `Success and Failure`; the value is 1; the newest 4688 carries a `Process Command
-Line:`. Still to check: that 4688 and 4776 reach the SIEM archive (COMMANDS 3.7). This must be in place before
-the golden snapshot is taken.
+Line:`. **Archive checked the same day** (COMMANDS 3.7, date 2026-11-03): 4688 = 117 and Sysmon 10 = 121 reached
+the archive. 4776 was 0 at first, because the guest had written none: a screen unlock with the password wrote no
+4776. A host `vmrun listProcessesInGuest` then wrote two 4776 in the guest, and the archive count became 2. So
+4776 arrives, but not every password sign-in writes it: the C1 (WDigest) test must use a sign-in that does
+`(unverified which kinds)`. This must be in place before the golden snapshot is taken.
 
 **Status:** Open. Raised 2026-09-11, measured while testing item 19. **Decided 2026-09-29: "yes"
 below, plus Credential Validation, on WIN-EP-01 and DC-01, before the golden snapshot**
@@ -1105,6 +1108,10 @@ demo and not in the product.
 ---
 
 ## 26. The harness's own `vmrun` logons land in the data
+
+**2026-11-03, measured once:** with Credential Validation auditing on, one `vmrun listProcessesInGuest` from the
+host wrote **two 4776 events** in WIN-EP-01 (08:14:19), and both reached the archive. So each harness guest call
+adds 4776 events as well as its batch logon. One sample only; the number per call is not established.
 
 **Status:** Open. Found 2026-09-26 while running the item 21 check.
 

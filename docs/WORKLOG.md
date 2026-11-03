@@ -80,7 +80,23 @@ created by `svchost.exe`) carries `Process Command Line:`; the newest Sysmon 10 
 background and attack access are counted as one key. Not yet recorded in OPEN-QUESTIONS 18.
 
 **Not yet checked:** that 4688, 4776 and Sysmon 10 reach the SIEM archive (COMMANDS 3.7). The VM is still running.
-Nothing committed yet for the lab work.
+Committed and pushed as `f6914af`; git's stored config hashes to `02C43AC8...B3AD`.
+
+**Then the archive check** (student: "check the archive"). SIEM-01 was off (`vmrun list`: only WIN-EP-01), so it was
+started (`vmrun -T ws start ... nogui`). Pattern files `"eventID":"4688"`, `"eventID":"4776"`, `"eventID":"10"` were
+written with LF (CR 0) in this chat's scratchpad: writing them under `data/runs/` was refused by the permission
+settings. The student copied them with `scp` and counted with `telos-archive count ... 2026-11-03`: **4688 = 117,
+Sysmon 10 = 121, 4776 = 0.** One archived event 10 showed `channel Microsoft-Windows-Sysmon/Operational`,
+`targetImage lsass.exe`, `grantedAccess 0x1000`, written 07:49:58 while SIEM-01 was off and archived 08:06:37:
+the agent queued it. **The 4776 zero:** the agent's Security filter (`wazuh-agent-ossec.conf` lines 44 to 47) does
+not exclude 4776, and the guest itself had no 4776 (`No events were found`), although the student unlocked the
+screen with the password. A `vmrun listProcessesInGuest` from the host (`Process list: 135`) then wrote **two 4776 at
+08:14:19** in the guest, and the archive count became **2**. So all three event types reach the archive.
+
+**Findings:** (1) a guest command from the host writes 4776 by itself, two for this one call (one sample), so the
+harness's own `vmrun` calls enter the data, as OPEN-QUESTIONS 26 warned; (2) the screen unlock with the password
+wrote no 4776, so not every password sign-in writes one, which matters for the C1 (WDigest) test. Recorded in
+OPEN-QUESTIONS 26 and 20. Both VMs still running. Not committed yet.
 
 ## 2026-11-02 - Pending items closed: two missing chat entries, the simplicity rule, the missed lab checkpoint
 

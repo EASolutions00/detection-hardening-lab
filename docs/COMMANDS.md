@@ -727,8 +727,11 @@ PowerShell inside WIN-EP-01, except the copy, which ran on the host.
 **Undo.** Sysmon: `C:\telos\Sysmon64.exe -c C:\telos\sysmonconfig.xml.telos-pre-item18`. Audit: the same two
 `auditpol` lines with `disable`, then `reg delete` of the same value with `/f`. All are safe to re-run.
 
-**Not yet checked:** that the new 4688, 4776 and Sysmon 10 events reach the SIEM archive (Part 3.7 counts them
-there). The CIS values (Process Creation: Success; Credential Validation: Success and Failure) are general
+**Archive check, the same day (Part 3.7 method).** SIEM-01 had to be started first (`vmrun -T ws start
+"F:\TeLoS Homelab\SIEM-01\SIEM-01.vmx" nogui`). Pattern files with LF only, copied with `scp`, counted with
+`telos-archive count <file> 2026-11-03`: 4688 `117`, Sysmon 10 `121`, 4776 `0`. The guest had no 4776 even after a
+screen unlock with the password; one host call, `& $vmrun -T ws -gu eli -gp $pw listProcessesInGuest $vmx`, wrote
+two, and the count became `2`. `show <file> 1 <date>` printed one archived event 10 with `lsass.exe`. The CIS values (Process Creation: Success; Credential Validation: Success and Failure) are general
 knowledge, to be matched against the benchmark text when the change scripts are written.
 
 ---
