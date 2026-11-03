@@ -96,7 +96,20 @@ screen with the password. A `vmrun listProcessesInGuest` from the host (`Process
 **Findings:** (1) a guest command from the host writes 4776 by itself, two for this one call (one sample), so the
 harness's own `vmrun` calls enter the data, as OPEN-QUESTIONS 26 warned; (2) the screen unlock with the password
 wrote no 4776, so not every password sign-in writes one, which matters for the C1 (WDigest) test. Recorded in
-OPEN-QUESTIONS 26 and 20. Both VMs still running. Not committed yet.
+OPEN-QUESTIONS 26 and 20. Both VMs still running. Committed and pushed as `5c1938b`.
+
+**Then value keying coded** (student: "code value keying"; DECISIONS 2026-09-29, item 18). Tests first, three:
+the key keeps only the values a rule looks for (`GrantedAccess=0x1010`; `0x1000` and `0x1FFFFF` both become
+`GrantedAccess=other`); a value change is not reported as a lost field; an emptied value-keyed field is named
+without its class. On the old code: two failed as predicted (`Sysmon-10[GrantedAccess,SourceImage,TargetImage]`
+instead of `...=0x1010...`; `('GrantedAccess=other',)` instead of `('GrantedAccess',)`), one passed. Then
+`VALUE_KEYED_FIELDS` and `KeyBuilder._part()` in `eventkey.py`, and field names only in `field_loss_pairs()`.
+Full suite `63 passed`; demo unchanged. `tools/check_docs.py`: the `key-values` explanation now names the
+value-keyed exception, and three line-number pointers (`eventkey.py:113`, `:159`, `differential.py:111`), which
+no longer matched the code, became function names; hit count unchanged at 89. CLAUDE.md expects 63.
+The explainer (thesis folder) now says value keying is built and gives the code's classes (each value a rule looks
+for, plus `other`). **FINAL Module 2 still gives "full or limited access" as example classes**; the code has no
+"limited" class, so the simplified revision should use the code's wording. Not committed yet.
 
 ## 2026-11-02 - Pending items closed: two missing chat entries, the simplicity rule, the missed lab checkpoint
 

@@ -427,6 +427,13 @@ FINAL Module 2, the activity diagram, the diagram explainer, the panel response,
 PROMPT-new-chat section 4; and the `key-values` check in `tools/check_docs.py`, which today flags any key
 defined by values. Not done.
 
+**Built in code 2026-11-03 (chat 27d2595d):** `VALUE_KEYED_FIELDS` in `eventkey.py`: Sysmon 10 `GrantedAccess`
+(0x1010, 0x40, rule 92900), 4624 `LogonType` (2, 10) and `AuthenticationPackageName` (NTLM), 4625 `LogonType` (10).
+Each value a rule looks for is its own class; every other value is `other`, so the 0x1000 background seen in
+WIN-EP-01 does not share a key with rule 92900's values. `field_loss_pairs()` reports dropped field names without
+the class. The `key-values` check in `tools/check_docs.py` now says so. Tested on made-up keys (63 passed); the
+final list still waits for the C3 capture, as decided.
+
 **Still open inside item 18:** which registry key the C3 script sets, Microsoft's direct key or the CIS
 policy key (item 18, consequence 3).
 

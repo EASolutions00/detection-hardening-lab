@@ -76,9 +76,11 @@ CHECKS = [
      r"discriminating field values|field values that detection rules|"
      r"triple of telemetry source",
      "Key defined by field VALUES.",
-     "eventkey.py:113 KeySpec.present holds field NAMES. Keyed on values, "
-     "every distinct command line is its own key, counts fall to 1, and "
-     "MIN_PRE_COUNT=30 is never met."),
+     "eventkey.py, KeyBuilder.build(): KeySpec.present holds field NAMES, plus "
+     "name=class for the few fields in VALUE_KEYED_FIELDS (DECISIONS 2026-09-29), "
+     "where only the values a rule looks for are kept and the rest are 'other'. "
+     "Keyed on every value, each distinct command line is its own key, counts "
+     "fall to 1, and MIN_PRE_COUNT=30 is never met."),
 
     ("key-eventtype",
      # per-event-type added 2026-09-14. The unhyphenated pattern missed it, so
@@ -173,9 +175,9 @@ EXPECTED = [
      # sentence "The system pairs them / automatically, matching a lost key"
      # spans a line break. Excluding the newline made it invisible.
      r"pair\w*[^.]{0,80}(lost|LOST)|field-l(evel|oss)|LOST and NEW",
-     "field_loss_pairs(), eventkey.py:159"),
+     "field_loss_pairs() in eventkey.py, called by analyse() since 2026-11-03"),
     ("global-gate", r"global gate|chi-square|chi square|χ²",
-     "global_gate(), differential.py:111. Reported as a summary since "
+     "global_gate() in differential.py. Reported as a summary since "
      "2026-09-28; it no longer stops the per-key tests"),
 ]
 

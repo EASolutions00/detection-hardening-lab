@@ -660,6 +660,8 @@ a real restriction that the limitations section does not currently state.
 running, `svchost.exe` opens `lsass.exe` with `GrantedAccess: 0x1000`. Rule 92900 matches `0x1010` or `0x40`. So
 the `GrantedAccess` value classes must keep `0x1000` apart from the rule's values; otherwise background access and
 attack access fall into one key. How often this background occurs per window is not measured yet.
+**Coded the same day:** value keying keeps each value a rule looks for and writes `other` for the rest, so `0x1000`
+becomes `GrantedAccess=other` (DECISIONS 2026-09-29, "Built in code").
 
 **Status:** Open. Raised 2026-09-10. It is not a documentation problem. If the answer is bad, the
 experiment produces UNCHANGED for most of the catalogue and the study reports that hardening does

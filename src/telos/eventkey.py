@@ -25,6 +25,13 @@ would give almost every event its own key and make the counts meaningless. A
 field belongs in the key only if some detection rule reads it, because losing a
 field that no rule reads blinds nothing.
 
+**A few fields also keep their value** (VALUE_KEYED_FIELDS). Presence alone misses a
+change that leaves a field filled but changes what it says: LSA Protection keeps
+Sysmon 10 firing with GrantedAccess filled, but with less access granted, and rule
+92900 matches exactly the values that disappear. So for a field that a rule matches
+by value, the key keeps each value a rule looks for and writes "other" for the rest:
+`Sysmon-10[GrantedAccess=0x1010,SourceImage,TargetImage]`.
+
 The map below is a starting point. It is structured so it can later be generated
 from the rule set itself (a Sigma rule names the fields it matches on in its
 detection block), without changing the key format or invalidating stored runs.
@@ -55,6 +62,21 @@ DEFAULT_TRACKED_FIELDS: dict[str, list[str]] = {
     "Sysmon-11": ["Image", "TargetFilename"],
     "Sysmon-13": ["EventType", "TargetObject", "Details"],
 }
+
+# Value keying (DECISIONS 2026-09-29, item 18; list per 2026-10-01). For these few
+# fields a detection rule matches specific values, so the key keeps the value: one
+# class per value a rule looks for, and "other" for every value no rule looks for.
+# Values from the rule table in OPEN-QUESTIONS 1 (Wazuh 4.14.7's shipped rules);
+# to be generated from the rule export later. Compared without regard to case.
+VALUE_KEYED_FIELDS: dict[str, dict[str, list[str]]] = {
+    # Rule 92900 (LSASS memory read). Normal Windows uses 0x1000, which is "other".
+    "Sysmon-10": {"GrantedAccess": ["0x1010", "0x40"]},
+    # Rule 60118 (logon type 2); rules 92653 and 92656 (logon type 10);
+    # rules 92652 and 92657 (authenticationPackageName NTLM).
+    "Security-4624": {"LogonType": ["2", "10"], "AuthenticationPackageName": ["NTLM"]},
+    "Security-4625": {"LogonType": ["10"]},
+}
+OTHER = "other"
 
 
 def is_populated(value: object) -> bool:
@@ -97,10 +119,23 @@ class KeySpec:
 class KeyBuilder:
     """Turns raw event records into analysis keys."""
 
-    def __init__(self, tracked: dict[str, list[str]] | None = None):
+    def __init__(self, tracked: dict[str, list[str]] | None = None,
+                 value_keyed: dict[str, dict[str, list[str]]] | None = None):
         source_map = DEFAULT_TRACKED_FIELDS if tracked is None else tracked
         # Store sorted, so key text is deterministic regardless of config order.
         self._tracked = {k: sorted(v) for k, v in source_map.items()}
+        values = VALUE_KEYED_FIELDS if value_keyed is None else value_keyed
+        # event type -> field -> {lower-case value: value as the rule writes it}
+        self._values = {et: {f: {v.lower(): v for v in vs} for f, vs in fields.items()}
+                        for et, fields in values.items()}
+
+    def _part(self, event_type: str, field: str, value: object) -> str:
+        """The key part for one populated field: the name alone, or name=class for
+        a value-keyed field."""
+        classes = self._values.get(event_type, {}).get(field)
+        if classes is None:
+            return field
+        return f"{field}={classes.get(str(value).strip().lower(), OTHER)}"
 
     def tracked_for(self, event_type: str) -> list[str]:
         """Fields tracked for one event type. Empty list if none configured.
@@ -118,7 +153,8 @@ class KeyBuilder:
         """
         event_type = f"{source}-{event_id}"
         tracked = self.tracked_for(event_type)
-        present = tuple(f for f in tracked if is_populated(fields.get(f)))
+        present = tuple(self._part(event_type, f, fields.get(f))
+                        for f in tracked if is_populated(fields.get(f)))
         return KeySpec(source=source, event_id=str(event_id), present=present)
 
     def build_str(self, source: str, event_id: str | int, fields: dict[str, object]) -> str:
@@ -177,6 +213,7 @@ def field_loss_pairs(lost: list[str], new: list[str]) -> list[tuple[str, str, tu
             lost_set, new_set = set(lost_spec.present), set(new_spec.present)
             # The new key must be a strict subset: same event, fewer fields.
             if new_set < lost_set:
-                dropped = tuple(sorted(lost_set - new_set))
+                # Report field names only: "GrantedAccess", not "GrantedAccess=other".
+                dropped = tuple(sorted(f.split("=", 1)[0] for f in lost_set - new_set))
                 pairs.append((lost_key, str(new_spec), dropped))
     return pairs

@@ -80,7 +80,8 @@ controls), and record the miss in WORKLOG the same day.
    WIN-EP-01**; apply the Sysmon rule and the audit settings; code value keying, the control-run check
    (item 24) and pairing (item 30). **Done 2026-11-03:** items 24 and 30 built; the Sysmon `lsass.exe` rule and
    both audit settings applied and proven in the guest (COMMANDS 2.11); in the archive the same day: 4688 = 117,
-   Sysmon 10 = 121, 4776 = 2 (WORKLOG 2026-11-03). DC-01 waits for its decision; value keying is not coded. Checkpoint: 2026-10-30, six working days. Until 2026-10-22, no lab
+   Sysmon 10 = 121, 4776 = 2 (WORKLOG 2026-11-03). Value keying coded the same day (63 tests). DC-01 waits for its
+   decision. Checkpoint: 2026-10-30, six working days. Until 2026-10-22, no lab
    work: practice only.
    Open question first: does DC-01 still earn its days, now that no positive case needs it (WORKLOG
    2026-10-06)?

@@ -50,6 +50,41 @@ def test_empty_and_placeholder_values_are_not_populated(value):
     assert not is_populated(value)
 
 
+# --------------------------------------------------------------------------
+# Value keying (DECISIONS 2026-09-29, item 18): a few fields keep their value
+# --------------------------------------------------------------------------
+
+def test_value_keyed_field_keeps_only_the_values_a_rule_looks_for():
+    """Rule 92900 matches GrantedAccess 0x1010 or 0x40. Normal Windows opens
+    lsass.exe with 0x1000 (seen in WIN-EP-01, 2026-11-03). That background must
+    not share a key with the access the rule looks for."""
+    kb = KeyBuilder()
+    rule_value = kb.build_str("Sysmon", 10, {
+        "SourceImage": "x.exe", "TargetImage": "lsass.exe", "GrantedAccess": "0x1010"})
+    background = kb.build_str("Sysmon", 10, {
+        "SourceImage": "svchost.exe", "TargetImage": "lsass.exe", "GrantedAccess": "0x1000"})
+    another = kb.build_str("Sysmon", 10, {
+        "SourceImage": "y.exe", "TargetImage": "lsass.exe", "GrantedAccess": "0x1FFFFF"})
+
+    assert rule_value == "Sysmon-10[GrantedAccess=0x1010,SourceImage,TargetImage]"
+    assert background == "Sysmon-10[GrantedAccess=other,SourceImage,TargetImage]"
+    assert another == background   # every value no rule looks for shares one key
+
+
+def test_a_value_change_is_not_reported_as_a_lost_field():
+    """LSA Protection: the event is still written, GrantedAccess is still filled,
+    only its value changes. That is not an emptied field."""
+    before = "Sysmon-10[GrantedAccess=0x1010,SourceImage,TargetImage]"
+    after = "Sysmon-10[GrantedAccess=other,SourceImage,TargetImage]"
+    assert field_loss_pairs([before], [after]) == []
+
+
+def test_an_emptied_value_keyed_field_is_named_without_its_value():
+    before = "Sysmon-10[GrantedAccess=other,SourceImage,TargetImage]"
+    after = "Sysmon-10[SourceImage,TargetImage]"
+    assert field_loss_pairs([before], [after]) == [(before, after, ("GrantedAccess",))]
+
+
 def test_zero_is_populated_not_empty():
     """A numeric zero is a real value, not a missing one.
 
