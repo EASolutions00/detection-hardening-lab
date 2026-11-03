@@ -17,6 +17,33 @@ Next:
 
 ---
 
+## 2026-11-03 - Pre-oral requirements reviewed; OPEN-QUESTIONS 24 built (empty control run refused)
+
+Chat 27d2595d, continued. **The pre-oral requirements** were reviewed from the professor's own words: the
+re-presentation transcript (lines 1439 to 1441: the pre-oral grades Research 1A, chapters 1 to 3 and a 50%
+working prototype) and the Week 12 lecture transcript (`AMA\MAY 2025\RSCH400_CS\Lessons\WEEK 12 - VC -
+RSCH400_CS.txt`, line 359: "a pre-oral defense with 50 working system that you need to demonstrate"; line 371:
+the chapter outline). Gaps found: no chapter is written; Chapter 2 needs at least ten related studies (FINAL
+has five); Chapter 3 asks for a cost-benefit and feasibility analysis, an SDLC model and a use case diagram,
+none of them in the record; the demo needs a real capture, and none exists. The Week 1 lecture (line 313)
+says a CS thesis is evaluated by experiments and benchmarks, usability testing being for the IT Capstone,
+while the Week 12 outline asks for Likert criteria and respondents (OPEN-QUESTIONS 33, point 4). Not yet
+recorded as open questions. The student: "leave sir ervin for a while lets focus on what can we do right now".
+
+**OPEN-QUESTIONS 24 built**, as decided 2026-09-29. Test first: `test_variance_model_rejects_an_empty_control_run`
+(four normal control runs, one empty) run alone on the old code gave `1 failed`, the `ValueError` not raised.
+Then `from_control()` in `src/telos/variance.py` was changed to refuse an empty control repetition and name
+it. Full suite: `59 passed in 1.21s`. `src/demo.py` runs as before. CLAUDE.md now expects 59. Not committed yet.
+
+**Then OPEN-QUESTIONS 30 built** (student: "lets start building"). Test first:
+`test_analysis_and_report_carry_the_field_loss_pair` gave `AttributeError: 'AnalysisResult' object has no
+attribute 'field_losses'`. Then `AnalysisResult` gained `field_losses`, `analyse()` fills it from the LOST and
+NEW keys, `render_analysis()` prints it, and the demo's duplicate printing was removed. **Broke and fixed:** the
+first run gave `9 failed, 51 passed`, every failure `ValueError: not a TeLoS event key: 'a'` (older tests use
+plain key names that `parse()` rejects); fixed by pairing only keys in event-key form. Full suite: `60 passed in
+0.66s`; the demo prints one FIELD-LEVEL LOSS section (`PowerShell-4104[Path,ScriptBlockText]` to
+`PowerShell-4104[Path]`, lost field `ScriptBlockText`). CLAUDE.md now expects 60. Not committed yet.
+
 ## 2026-11-02 - Pending items closed: two missing chat entries, the simplicity rule, the missed lab checkpoint
 
 Chat 27d2595d, continued. The student: "NO Words from prof ervin.; in the mean time, lets finish the pendings".
@@ -42,6 +69,10 @@ each chat's first request and the files it changed; the content of the work is n
   thesis folder.
 - **Chat 03180b88**, 2026-10-16 23:19 to 23:22, folder `New folder (5)`. Read only: "list all the questions in
   the transcript attached, nothing else", on the title-defense transcript. No file changed.
+
+**Then, same day:** the student sent the adviser a follow-up message (drafted in this chat), asking for the
+first consultation and three questions: what to simplify and by when, whether the desktop application is
+accepted, and which defense January is. No reply yet. Not committed yet.
 
 ## 2026-10-22 - Re-presentation held: proposal accepted on condition of a simplified revision; adviser named
 

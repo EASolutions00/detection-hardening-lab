@@ -53,6 +53,16 @@ class VarianceModel:
             raise ValueError(
                 f"variance model needs at least {min_runs} control runs, got {control.n_runs}"
             )
+        # A control run that recorded nothing is a failed capture, not quiet noise.
+        # Left in, it inflates every key's CoV and dispersion, so real losses fall
+        # inside the band and read UNCHANGED. OPEN-QUESTIONS 24; the same check as
+        # capture_problem() makes for the pre- and post-change phases.
+        for i, total in enumerate(control.run_totals(), start=1):
+            if total == 0:
+                raise ValueError(
+                    f"control repetition {i} of {control.n_runs} recorded no events at all. "
+                    f"The control runs are not usable: investigate, then capture again"
+                )
 
         stats: dict[str, KeyVariance] = {}
         for key, counts in control.counts.items():

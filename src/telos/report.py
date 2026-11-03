@@ -84,6 +84,17 @@ def render_analysis(result: AnalysisResult) -> str:
         out.append(f"    why           {f.reason}")
         out.append("")
 
+    if result.field_losses:
+        out.append(f"FIELD-LEVEL LOSS  ({len(result.field_losses)})")
+        out.append("  The event is still written, but a field inside it is now empty, so any")
+        out.append("  detection rule matching on that field is blind.")
+        out.append("")
+        for lost_key, new_key, dropped in result.field_losses:
+            out.append(f"  was  {lost_key}")
+            out.append(f"  now  {new_key}")
+            out.append(f"  lost field(s): {', '.join(dropped)}")
+            out.append("")
+
     incon = result.by_class(Classification.INCONCLUSIVE)
     if incon:
         out.append(f"NOT TESTED, REPORTED AS INCONCLUSIVE  ({len(incon)})")

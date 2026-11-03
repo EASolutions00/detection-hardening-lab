@@ -231,3 +231,25 @@ def test_field_loss_is_caught_by_field_aware_keying():
         [f.key for f in result.by_class(Classification.NEW)],
     )
     assert pairs == [(full, reduced, ("ScriptBlockText",))]
+
+
+def test_analysis_and_report_carry_the_field_loss_pair():
+    """OPEN-QUESTIONS 30. The pairing must happen inside analyse() and reach the
+    report, not only in the demo. Same change as above: ScriptBlockText emptied."""
+    from telos.report import render_analysis
+
+    full = "PowerShell-4104[Path,ScriptBlockText]"
+    reduced = "PowerShell-4104[Path]"
+    vm = VarianceModel.from_control(Phase("control", {
+        full: STABLE, reduced: [0, 0, 0, 0, 0], "anchor": STABLE,
+    }))
+    pre = Phase("pre", {
+        full: [838, 838, 838], reduced: [0, 0, 0], "anchor": [100, 100, 100],
+    })
+    post = Phase("post", {
+        full: [0, 0, 0], reduced: [838, 838, 838], "anchor": [100, 100, 100],
+    })
+
+    result = analyse(pre, post, vm)
+    assert result.field_losses == [(full, reduced, ("ScriptBlockText",))]
+    assert "lost field(s): ScriptBlockText" in render_analysis(result)

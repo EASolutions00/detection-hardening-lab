@@ -58,6 +58,17 @@ def test_variance_model_rejects_too_few_control_runs():
         VarianceModel.from_control(Phase("control", {"a": [1, 2]}))
 
 
+def test_variance_model_rejects_an_empty_control_run():
+    """OPEN-QUESTIONS 24. One control run that recorded nothing inflates every
+    key's noise, so real losses would hide inside the band and read UNCHANGED.
+    Control run 4 here recorded no events at all."""
+    with pytest.raises(ValueError, match="control repetition 4 of 5 recorded no events"):
+        VarianceModel.from_control(Phase("control", {
+            "a": [100, 104, 98, 0, 101],
+            "b": [40, 38, 41, 0, 39],
+        }))
+
+
 # --------------------------------------------------------------------------
 # Classification
 # --------------------------------------------------------------------------

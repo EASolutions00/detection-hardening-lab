@@ -151,6 +151,9 @@ class AnalysisResult:
     gate_p_value: float | None = None
     gate_statistic: float | None = None
     findings: list[Finding] = field(default_factory=list)
+    # (lost key, new key, fields that disappeared): an event still written, but
+    # with fields emptied. OPEN-QUESTIONS 30.
+    field_losses: list[tuple[str, str, tuple[str, ...]]] = field(default_factory=list)
     n_tested: int = 0
     alpha: float = 0.05
 

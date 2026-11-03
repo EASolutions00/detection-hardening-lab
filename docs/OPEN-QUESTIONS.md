@@ -1060,9 +1060,18 @@ phases, so a voided run has to be replaced. Designed, not built.
 
 ---
 
-## 30. Field-loss pairing is built but never called by the analysis or the report
+## 30. Field-loss pairing is built but never called by the analysis or the report (ANSWERED 2026-11-03: connected)
 
-**Status:** Open. Found 2026-09-28 while checking the activity diagram. Given a number the same day so
+**Built 2026-11-03 (chat 27d2595d).** `analyse()` in `differential.py` now calls `field_loss_pairs()` on the
+LOST and NEW keys and carries the result in `AnalysisResult.field_losses`; `render_analysis()` in `report.py`
+prints a FIELD-LEVEL LOSS section; the demo's own copy of that printing was removed. Keys not in event-key
+form (plain names like `a` in older unit tests) are skipped: they have no fields to lose. Test
+`test_analysis_and_report_carry_the_field_loss_pair` failed on the old code (`AttributeError: 'AnalysisResult'
+object has no attribute 'field_losses'`) and passes now; full suite `60 passed`. A first attempt broke 9 old
+tests with `ValueError: not a TeLoS event key: 'a'`, fixed by that skip. Still to update:
+`ACTIVITY-DIAGRAM-EXPLAINED.md` labels pairing "the function only".
+
+**Status before the fix:** Open. Found 2026-09-28 while checking the activity diagram. Given a number the same day so
 `STATUS.md` can point at it. **Decided 2026-09-29: connect it** to `analyse()` and the report before data
 collection; the diagram stays as drawn (`DECISIONS.md` 2026-09-29). Open until built.
 
@@ -1454,9 +1463,15 @@ was collected anyway.
 
 ---
 
-## 24. `VarianceModel.from_control()` accepts a control run that recorded nothing
+## 24. `VarianceModel.from_control()` accepts a control run that recorded nothing (ANSWERED 2026-11-03: built)
 
-**Status:** Open. Found 2026-09-14 while fixing item 16, and deliberately not fixed then because it
+**Built 2026-11-03 (chat 27d2595d).** `from_control()` in `src/telos/variance.py` now raises `ValueError`
+naming the repetition ("control repetition 4 of 5 recorded no events at all. The control runs are not usable:
+investigate, then capture again"), the diagram's NOT USABLE branch. Test
+`test_variance_model_rejects_an_empty_control_run` (four normal runs, one empty) failed on the old code
+(`1 failed`, the error was not raised) and passes on the new; full suite `59 passed`; `src/demo.py` unchanged.
+
+**Status before the fix:** Open. Found 2026-09-14 while fixing item 16, and deliberately not fixed then because it
 is a different function. Recorded as an item before a session was compacted. **Decided 2026-09-29:
 fix it in code before data collection; the diagram keeps the check** (`DECISIONS.md` 2026-09-29). Open
 until built. **2026-09-28:** at the

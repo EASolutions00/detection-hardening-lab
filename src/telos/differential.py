@@ -50,6 +50,7 @@ from dataclasses import dataclass
 import numpy as np
 from scipy import stats
 
+from .eventkey import field_loss_pairs, parse
 from .model import AnalysisResult, Classification, Finding, Phase, ProfileOutcome
 from .variance import VarianceModel
 
@@ -321,6 +322,17 @@ def classify(
             f.reason = "not reported: " + "; ".join(failed)
 
 
+def _is_event_key(key: str) -> bool:
+    """True for a key in event-key form, like 'PowerShell-4104[Path]'. Keys built
+    from real records always are; a plain name such as 'a' in a unit test is not,
+    has no fields, and so cannot lose one."""
+    try:
+        parse(key)
+    except ValueError:
+        return False
+    return True
+
+
 def analyse(
     pre: Phase,
     post: Phase,
@@ -361,6 +373,12 @@ def analyse(
     classify(findings, alpha, max_ratio, noise_sigmas)
     n_tested = sum(1 for f in findings if f.p_value is not None)
     n_found = sum(1 for f in findings if f.is_finding)
+    # Pair LOST and NEW keys of one event type that differ only by dropped fields,
+    # so the report names the field instead of showing two unexplained keys.
+    pairs = field_loss_pairs(
+        [f.key for f in findings if f.classification is Classification.LOST and _is_event_key(f.key)],
+        [f.key for f in findings if f.classification is Classification.NEW and _is_event_key(f.key)],
+    )
 
     if n_found:
         outcome = ProfileOutcome.CHANGED
@@ -378,5 +396,5 @@ def analyse(
     return AnalysisResult(
         outcome=outcome, outcome_reason=reason,
         gate_p_value=gate.p_value, gate_statistic=gate.statistic,
-        findings=findings, n_tested=n_tested, alpha=alpha,
+        findings=findings, field_losses=pairs, n_tested=n_tested, alpha=alpha,
     )

@@ -14,7 +14,6 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from telos import Classification, VarianceModel, analyse, naive_differencing
-from telos.eventkey import field_loss_pairs
 from telos.report import render_analysis, render_comparison, render_variance
 from telos.synth import demo_scenario
 
@@ -41,31 +40,6 @@ def ground_truth(scenario, effects) -> set[str]:
     return truth
 
 
-def render_field_losses(result) -> str:
-    """Pair each LOST key with the NEW key that replaced it, minus fields.
-
-    Without this a reader sees an unexplained LOST beside an unexplained NEW and
-    has to work out the relationship by hand.
-    """
-    lost = [f.key for f in result.by_class(Classification.LOST)]
-    new = [f.key for f in result.by_class(Classification.NEW)]
-    pairs = field_loss_pairs(lost, new)
-    if not pairs:
-        return ""
-
-    out = ["=" * 78, "FIELD-LEVEL LOSS", "=" * 78, ""]
-    out.append("  The event still fires at its normal rate. A field inside it stopped")
-    out.append("  being populated, so any detection rule matching on that field is blind.")
-    out.append("  A profile keyed on event type alone cannot see this.")
-    out.append("")
-    for lost_key, new_key, dropped in pairs:
-        out.append(f"  was  {lost_key}")
-        out.append(f"  now  {new_key}")
-        out.append(f"  lost field(s): {', '.join(dropped)}")
-        out.append("")
-    return "\n".join(out)
-
-
 def main() -> int:
     scenario, effects = demo_scenario(seed=7)
 
@@ -85,12 +59,7 @@ def main() -> int:
 
     # Stages B and C. The comparison.
     result = analyse(pre, post, vm)
-    print(render_analysis(result))
-
-    # The field-level case, stated explicitly.
-    field_report = render_field_losses(result)
-    if field_report:
-        print(field_report)
+    print(render_analysis(result))   # includes the field-level losses, OPEN-QUESTIONS 30
 
     # Stage D. Head to head against the method an engineer would use by hand.
     naive = naive_differencing(pre, post)

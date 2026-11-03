@@ -69,7 +69,8 @@ controls), and record the miss in WORKLOG the same day.
    before sending: WORKLOG 2026-10-15.
    **Re-presentation held 2026-10-22: accepted on condition of a simplified revision** (DECISIONS 2026-10-22).
    **Now: the first online consultation with the adviser, Prof. Ervin Moran.** No word from him as of
-   2026-11-02 (student). Ask: what "simplify" means and
+   2026-11-02 (student). **Follow-up message sent 2026-11-02** (student), asking for the consultation and the
+   three questions below; no reply yet. Ask: what "simplify" means and
    the deadline for the revised document; whether the desktop application is accepted (not asked at the
    re-presentation); which defense January is (OPEN-QUESTIONS 33). Bring the corrections of the answers given on
    2026-10-22, listed in WORKLOG 2026-10-22, first the "zero blind spots" one.
@@ -93,6 +94,7 @@ controls), and record the miss in WORKLOG the same day.
   the Wazuh field-name mapping, whether DC-01 still earns its days). Point 4 should be decided before the lab
   work starts.
 - Items 24 and 30 were decided 2026-09-29: both stay in the design and are built before data collection.
+  **Both built 2026-11-03** (60 tests pass).
 
 ## The spike
 
