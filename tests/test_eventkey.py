@@ -71,6 +71,25 @@ def test_value_keyed_field_keeps_only_the_values_a_rule_looks_for():
     assert another == background   # every value no rule looks for shares one key
 
 
+def test_value_class_follows_the_rule_pattern_not_the_exact_value():
+    """Rule 92900's pattern (0x1010|0x40) has no anchors, so 0x400 fires it and
+    must not fall in "other". Rule 60118's pattern ^2$ is anchored, so logon
+    type 12 does not fire it (OPEN-QUESTIONS 35)."""
+    kb = KeyBuilder()
+    assert kb.build_str("Sysmon", 10, {
+        "SourceImage": "x.exe", "TargetImage": "lsass.exe", "GrantedAccess": "0x400"}) \
+        == "Sysmon-10[GrantedAccess=0x40,SourceImage,TargetImage]"
+    assert kb.build_str("Security", 4624, {"LogonType": "12"}) \
+        == "Security-4624[LogonType=other]"
+
+
+def test_a_field_no_rule_matches_by_value_is_keyed_by_presence():
+    """No shipped rule reads LogonType in event 4625 (Wazuh 4.14.7), so it keeps
+    presence only."""
+    assert KeyBuilder().build_str("Security", 4625, {"LogonType": "10"}) \
+        == "Security-4625[LogonType]"
+
+
 def test_a_value_change_is_not_reported_as_a_lost_field():
     """LSA Protection: the event is still written, GrantedAccess is still filled,
     only its value changes. That is not an emptied field."""

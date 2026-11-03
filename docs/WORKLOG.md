@@ -111,6 +111,22 @@ The explainer (thesis folder) now says value keying is built and gives the code'
 for, plus `other`). **FINAL Module 2 still gives "full or limited access" as example classes**; the code has no
 "limited" class, so the simplified revision should use the code's wording. Not committed yet.
 
+**Then the golden snapshot was asked for, and judged premature** (student: "lets take the golden snapshot"):
+DC-01 is undecided and the attack-test list, with its offline tools, is not in the image. The student: "wait for
+sir ervin, start checking the 14 LSASS tests". **The 14 tests** in `atomics/T1003.001/T1003.001.yaml` at
+`cb486d9` were read (`gh api`): 6 cannot be used (manual steps; a dump file only, no access to `lsass.exe`; a
+download during the test, twice; a large runtime installed into the image, twice), 8 can. Which `GrantedAccess`
+each asks for is unknown, and rule 92900 fires only on `0x1010` or `0x40`, so a trial run is needed before the
+snapshot (OPEN-QUESTIONS 35, new).
+
+**A mismatch found and fixed** (student: "fix the code mismatch first, then commit and push"). Rule 92900's
+pattern `(?i)(0x1010|0x40)` at `v4.14.7` has no anchors, so it fires on `0x400`; the code matched exact values
+only. A search of the 30 Windows rule files also showed that no rule reads `logonType` in event 4625, which the
+code value-keyed. Tests first, two, both failing on the old code (`Security-4625[LogonType=10]` instead of
+`Security-4625[LogonType]`, and `0x400` in `other`). Then each class in `VALUE_KEYED_FIELDS` holds its rule's own
+pattern and `_part()` searches with it; the 4625 entry is gone. Full suite `65 passed`; demo unchanged;
+`check_docs.py` 89 hits, unchanged. CLAUDE.md expects 65.
+
 ## 2026-11-02 - Pending items closed: two missing chat entries, the simplicity rule, the missed lab checkpoint
 
 Chat 27d2595d, continued. The student: "NO Words from prof ervin.; in the mean time, lets finish the pendings".

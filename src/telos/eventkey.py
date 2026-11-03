@@ -39,6 +39,7 @@ detection block), without changing the key format or invalidating stored runs.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field as dc_field
 
 # Provisional. To be generated from the detection rule set; see OPEN-QUESTIONS 1b.
@@ -66,15 +67,18 @@ DEFAULT_TRACKED_FIELDS: dict[str, list[str]] = {
 # Value keying (DECISIONS 2026-09-29, item 18; list per 2026-10-01). For these few
 # fields a detection rule matches specific values, so the key keeps the value: one
 # class per value a rule looks for, and "other" for every value no rule looks for.
-# Values from the rule table in OPEN-QUESTIONS 1 (Wazuh 4.14.7's shipped rules);
-# to be generated from the rule export later. Compared without regard to case.
-VALUE_KEYED_FIELDS: dict[str, dict[str, list[str]]] = {
-    # Rule 92900 (LSASS memory read). Normal Windows uses 0x1000, which is "other".
-    "Sysmon-10": {"GrantedAccess": ["0x1010", "0x40"]},
-    # Rule 60118 (logon type 2); rules 92653 and 92656 (logon type 10);
-    # rules 92652 and 92657 (authenticationPackageName NTLM).
-    "Security-4624": {"LogonType": ["2", "10"], "AuthenticationPackageName": ["NTLM"]},
-    "Security-4625": {"LogonType": ["10"]},
+# Each class holds the pattern its rule uses (Wazuh 4.14.7's shipped rules, read
+# 2026-11-03), so the key and the rule cannot disagree: rule 92900's pattern has no
+# anchors, so 0x400 fires it too (OPEN-QUESTIONS 35). The first class whose pattern
+# matches wins. To be generated from the rule export later.
+VALUE_KEYED_FIELDS: dict[str, dict[str, dict[str, str]]] = {
+    # Rule 92900 (LSASS memory read), pattern (?i)(0x1010|0x40). Normal Windows
+    # uses 0x1000, which is "other".
+    "Sysmon-10": {"GrantedAccess": {"0x1010": r"(?i)0x1010", "0x40": r"(?i)0x40"}},
+    # Rule 60118 (logon type 2, ^2$); rules 92653 (10) and 92656 (^10$), the wider
+    # one kept; rules 92652 and 92657 (authenticationPackageName NTLM).
+    "Security-4624": {"LogonType": {"2": r"^2$", "10": r"10"},
+                      "AuthenticationPackageName": {"NTLM": r"NTLM"}},
 }
 OTHER = "other"
 
@@ -120,13 +124,14 @@ class KeyBuilder:
     """Turns raw event records into analysis keys."""
 
     def __init__(self, tracked: dict[str, list[str]] | None = None,
-                 value_keyed: dict[str, dict[str, list[str]]] | None = None):
+                 value_keyed: dict[str, dict[str, dict[str, str]]] | None = None):
         source_map = DEFAULT_TRACKED_FIELDS if tracked is None else tracked
         # Store sorted, so key text is deterministic regardless of config order.
         self._tracked = {k: sorted(v) for k, v in source_map.items()}
         values = VALUE_KEYED_FIELDS if value_keyed is None else value_keyed
-        # event type -> field -> {lower-case value: value as the rule writes it}
-        self._values = {et: {f: {v.lower(): v for v in vs} for f, vs in fields.items()}
+        # event type -> field -> {class: compiled rule pattern}
+        self._values = {et: {f: {c: re.compile(p) for c, p in classes.items()}
+                             for f, classes in fields.items()}
                         for et, fields in values.items()}
 
     def _part(self, event_type: str, field: str, value: object) -> str:
@@ -135,7 +140,11 @@ class KeyBuilder:
         classes = self._values.get(event_type, {}).get(field)
         if classes is None:
             return field
-        return f"{field}={classes.get(str(value).strip().lower(), OTHER)}"
+        text = str(value).strip()
+        for name, pattern in classes.items():
+            if pattern.search(text):
+                return f"{field}={name}"
+        return f"{field}={OTHER}"
 
     def tracked_for(self, event_type: str) -> list[str]:
         """Fields tracked for one event type. Empty list if none configured.

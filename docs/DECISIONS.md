@@ -433,6 +433,9 @@ Each value a rule looks for is its own class; every other value is `other`, so t
 WIN-EP-01 does not share a key with rule 92900's values. `field_loss_pairs()` reports dropped field names without
 the class. The `key-values` check in `tools/check_docs.py` now says so. Tested on made-up keys (63 passed); the
 final list still waits for the C3 capture, as decided.
+**Corrected the same day (OPEN-QUESTIONS 35):** each class now holds its rule's own pattern, because rule 92900's
+pattern has no anchors and also fires on values such as `0x400`. The 4625 `LogonType` entry was removed: no shipped
+rule reads `logonType` in event 4625. 65 tests pass.
 
 **Still open inside item 18:** which registry key the C3 script sets, Microsoft's direct key or the CIS
 policy key (item 18, consequence 3).

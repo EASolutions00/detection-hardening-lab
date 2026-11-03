@@ -222,7 +222,8 @@ for it there). **Method:** the four rules' `<mitre>` lines read from `wazuh/wazu
    on the list.** Whether "RDP to DomainController" can target the machine C5 hardens, and runs with no one
    at the keyboard, is not checked `(unverified)`.
 3. **C3's tests may need tools downloaded** (ProcDump, Mimikatz). The rule "no internet after the golden
-   snapshot" means they must be fetched before it. Not checked which ones need this.
+   snapshot" means they must be fetched before it. **Checked 2026-11-03 (chat 27d2595d), see item 35:** 6 of
+   the 14 cannot be used; of the 8 left, 3 need nothing downloaded and 5 need a tool fetched before the snapshot.
 
 **Also checked:** the two shipped rules that name 4769 are 60106 (logon success) and 60131 (DC logon
 failure). Neither reads `TicketEncryptionType`, which agrees with the C7 row above.
@@ -1010,6 +1011,63 @@ failure is written down before the data exists, as the thresholds are.
 test that the change blocks on purpose, and the rule is written before the trial.
 
 **Blocks:** the negative controls in the evaluation, and the run-check design (item 22) before the trial.
+
+---
+
+## 35. Which LSASS tests fire rule 92900, and does the event key match the rule?
+
+**Status:** Open. Found 2026-11-03 by chat 27d2595d, reading `atomics/T1003.001/T1003.001.yaml` at the pinned
+commit `cb486d9` and rule 92900 in `0945-sysmon_id_10.xml` at tag `v4.14.7` (both with `gh api`).
+
+**The 14 tests, sorted by what stops them.**
+
+| # | Test | Usable? | Why |
+|---|---|---|---|
+| 5 | Windows Task Manager | No | Manual steps; the harness cannot run it |
+| 6 | Offline Credential Theft With Mimikatz | No | Reads a dump file, never opens `lsass.exe`, so no Sysmon 10; needs test 5 first |
+| 8 | Out-Minidump.ps1 | No | Downloads its script from GitHub `master` during the test |
+| 10 | Powershell Mimikatz | No | Downloads its script during the test |
+| 7 | pypykatz | No | Installs Python 3.10.4 and an unpinned pip package into the image |
+| 11 | createdump.exe from .NET 5 | No | Installs .NET 5 into the image with winget |
+| 2 | comsvcs.dll | Yes | Built into Windows, nothing to download |
+| 13 | rdrleakdiag.exe | Yes, if the file exists on the guest's build | Built into Windows |
+| 1, 9 | ProcDump `-ma`, `-mm` | Yes | One download; the Sysinternals URL serves the latest version, so pin it by SHA256 |
+| 4 | NanoDump | Yes | One download, pinned to a commit in the URL |
+| 14 | Silent Process Exit | Yes | Same NanoDump file; but `WerFault.exe` opens `lsass.exe`, not the tool |
+| 3 | Dumpert | Yes | One download, pinned to a commit |
+| 12 | xordump | Yes, with care | Saved to `C:\Windows\Temp`, outside the guest's Defender exclusion (DECISIONS 2026-09-02) |
+
+Tests 7 and 11 could run, but each adds a large runtime to the image for one test. Excluded under the
+keep-it-simple rule (DECISIONS 2026-10-30).
+
+**The open question.** Rule 92900 fires only when `GrantedAccess` (the access rights the tool asks for when it
+opens `lsass.exe`) matches `0x1010` or `0x40`. Which value each usable test asks for is not known
+`(unverified)`. A test that does not fire 92900 on the unhardened machine has no detection for C3 to take away,
+so it cannot show a C3 blind spot. **If no usable test fires 92900, C3 cannot be shown, and only C1 and C5
+remain.** The only reliable check is to run each candidate once in WIN-EP-01 and read `GrantedAccess` in the
+archive.
+
+**A mismatch in the code.** The rule's pattern `(?i)(0x1010|0x40)` has no anchors, so it fires on any value
+that begins with `0x1010` or `0x40`, for example `0x400`. `KeyBuilder._part()` in `eventkey.py` keeps a class
+only for the exact values `0x1010` and `0x40`. A value such as `0x400` would fire the rule but fall in
+`other`. Whether any test asks for such a value is not known. The trial above answers it.
+
+**Fixed in code 2026-11-03 (same chat):** each class in `VALUE_KEYED_FIELDS` now holds its rule's own pattern,
+and `_part()` searches with it. `0x400` now keys as `GrantedAccess=0x40`; logon type `12` stays `other`
+(rule 60118 is `^2$`). Two tests, both failing on the old code first: 65 passed.
+
+**A second mismatch, fixed the same way.** The code also value-keyed 4625 `LogonType` (10). A search of the 30
+Windows rule files at `v4.14.7` for rules on `logonType`, `grantedAccess` and `authenticationPackageName`
+found no rule that reads `logonType` in a 4625 event: 92653 and 92656 sit under 60106, which is 4624 (logon
+success). The 4625 entry was removed, so 4625 `LogonType` is keyed by presence again.
+
+**Not added:** rule 60200 (level 3, IIS logon) matches 4624 `logonType` `^8$`. No change in the catalogue
+touches logon type 8, so it stays out of the list (keep-it-simple rule). Rule 60232 matches `^5$` but is a
+level 0 rule that hides events, not a detection.
+
+**Still open:** which `GrantedAccess` each usable LSASS test asks for. Needs the trial run.
+
+**Blocks:** the C3 attack tests in the pinned list, and the golden snapshot (their tools must be in the image).
 
 ---
 
