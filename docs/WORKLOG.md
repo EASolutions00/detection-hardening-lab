@@ -17,6 +17,33 @@ Next:
 
 ---
 
+## 2026-11-09 to 2026-11-10 - The adviser asks for a stakeholder interview; interview guide written
+
+**Chat f566e958** (2026-11-09, thesis folder). The student pasted the adviser's reply to "while waiting po sa
+consultation ano2 po ang dapat kong iready?": prepare the data gathering, interview stakeholders as its basis
+(even a superior, if at a company), take a photo of the interview and write a transcript. The chat advised four
+things to prepare (an interview guide, a consent form, 2 to 3 people to interview, a plan for the recording,
+photo and transcript), and treated the interviews as an addition to the lab captures, which stay the main data.
+FINAL's Gantt has no interview row ("Laboratory Build and Telemetry Acquisition" only). No file was written.
+
+**Chat 27d2595d, continued.** Two replies in this chat were stopped by the app's safety check (after the
+Defender question on 2026-11-03, and on 2026-11-09). The student: "why still flagged even I already have cyber
+verification program". Answered that the reason cannot be seen from inside the chat, and that the student can
+report it with the feedback button or ask the program contact. The student is not employed; the only contact is a
+former coworker, now a SOC team leader. **`INTERVIEW-GUIDE.md` written in the thesis folder** (2026-11-09): purpose,
+consent statement, privacy rules (no company or client names), 17 questions grouped by the five problems in
+`thesis/T1/proposal-form-REVISED.md`, steps after the interview, a transcript template, and the limit (one
+interview shows the problem in one team, not how common it is). Recording, photo and transcript stay out of the
+public repo.
+
+A plan in 12 tasks and 4 stages was given (paper, chapters 1 to 3, the 50% system, the final), with the rule that
+the scope is frozen once the panel approves the simplified revision. Started 2026-11-10: this entry, then the
+simplified revision.
+
+**Not confirmed:** whether WIN-EP-01 was returned to `pre-lsass-trial-2026-11-03`. The steps were given on
+2026-11-03; no output was pasted. The VM folder's files changed after 2026-11-03 (`WIN-EP-01-Snapshot5.vmsn` among
+them), which does not show a revert either way.
+
 ## 2026-11-03 - Pre-oral requirements reviewed; OPEN-QUESTIONS 24 built (empty control run refused)
 
 Chat 27d2595d, continued. **The pre-oral requirements** were reviewed from the professor's own words: the
