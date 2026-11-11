@@ -8,6 +8,50 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-11-11 - DC-01 is dropped. The lab is one Windows 11 endpoint and the SIEM (supersedes the DC-01 part of 2026-09-29)
+
+**Status:** decided 2026-11-11 by the student ("yes, drop DC-01"), chat ee84ae3f, after the chat recommended it.
+Answers OPEN-QUESTIONS 32, point 4. Supersedes "Build DC-01, with a test that makes network logons" (2026-09-29),
+which stays below as the record.
+
+**Decision.** No domain controller is built. WIN-EP-01 stays a `WORKGROUP` machine. The network-logon test is not
+designed or added to the pinned list. The C5 test signs in to WIN-EP-01 over Remote Desktop with a local account,
+from the host (`10.20.10.1`).
+
+**Why.**
+1. Under Wazuh's shipped rules (2026-10-01) the only changes that can show a blind spot are C1, C3 and C5. All
+   three are local. DC-01 served only C4, C6 and the negative control B5, and none of them can show a blind spot.
+2. The one conflict, C5's "domain account" in FINAL, was checked on 2026-11-11 against the rule text at tag
+   `v4.14.7` (`ruleset/rules/0840-win_event_channel.xml`, read with `gh api`). Rule 92653 needs only parent 92651
+   and `logonType` 10. Rule 92651 needs only parent 60106 (logon success) and an IPv4 `ipAddress` that is not
+   `127.0.0.1`. Neither rule checks the account's domain. T1078.002 is only a label in the `<mitre>` block. So a
+   local-account RDP sign-in from the host should fire 92653. **Reading of the rule text, not yet tested in the lab.**
+3. Keep-it-simple rule (2026-10-30): add no component the study does not need to prove its claim. DC-01 cost
+   1 to 2 days `(unverified)`, a network-logon test with an unsolved design (C4 needs NTLM before and Kerberos
+   after, OPEN-QUESTIONS 21), and two more open points (items 31 and 32 point 2).
+
+**What it costs.**
+- C4, C6 and B5 have nothing to act on and leave the study. C2 and C7 already had no rule. The comparison with the
+  naive method has fewer test cases.
+- **FINAL, as submitted and accepted on 2026-10-22, says "The laboratory is a small Windows domain" and "The domain
+  is required"** (Scale of the Experiment), and the C5 test row says "with a domain account". The simplified
+  revision must state the change and the reason. FINAL is not edited; it is the submitted record.
+- Item 31 (no host part in the event key) no longer arises: there is one monitored Windows host.
+- Item 32 point 2 (is DC-01 restored each run) no longer arises.
+
+**For the defense:** "The three changes that can create a blind spot under Wazuh's shipped rules are all local to
+the endpoint. The domain served only changes that cannot. I checked the RDP rules: they need a remote logon from an
+IP address, not a domain account."
+
+**Still open:** how the RDP sign-in is driven from the host with no person at the keyboard, and whether Remote
+Desktop is enabled on WIN-EP-01 today. Neither is checked.
+
+**Cost if wrong:** if a panel member holds that the domain was a condition of acceptance, DC-01 is built after all,
+1 to 2 days `(unverified)`, before the golden snapshot. After the golden snapshot it would cost a new snapshot and
+every run before it.
+
+---
+
 ## 2026-11-03 - C3 is measured with Defender off (Config S); the Defender-on result is reported as a finding
 
 **Status:** decided 2026-11-03. Drafted at the student's request and confirmed by the student ("confirm"), chat
@@ -423,6 +467,8 @@ on fewer positive cases and says so, or the date moves toward March. Both are re
 spike runs on time.
 
 ## 2026-09-29 - Build DC-01, with a test that makes network logons (item 21, option 1)
+
+**SUPERSEDED 2026-11-11:** DC-01 is dropped (entry of that date, at the top).
 
 **Note, 2026-10-08:** the "Why" below counted about 7 measurable class C changes. Under Wazuh's shipped
 rules (2026-10-01) the positives are C1, C3 and C5, and none needs a domain. Whether DC-01 still earns its

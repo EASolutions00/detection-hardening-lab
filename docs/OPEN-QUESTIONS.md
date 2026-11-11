@@ -244,6 +244,9 @@ with its own Wazuh agent and a test that makes network logons, before the golden
 (`DECISIONS.md` 2026-09-29). Open until it is built and the test exists. **2026-10-06:** under Wazuh's
 shipped rules (2026-10-01) the three positive cases, C1, C3 and C5, need no domain; DC-01 now serves
 C4 and C6 and the comparison's test cases. Whether that still earns its one to two days is item 32.
+**2026-11-11: DC-01 is dropped** (`DECISIONS.md` 2026-11-11). This item is answered with option 3, re-scope to
+local-only controls (C1, C3, C5), plus option 4, report the restriction. C2, C4, C6, C7 and B5 have nothing to act
+on, and the thesis says so.
 
 **What was verified.**
 
@@ -853,7 +856,8 @@ throwaway VM shows that a snapshot revert clears the firmware variable. **Decide
 ## 31. The event key has no host part, and the lab will have two monitored Windows hosts
 
 **Status:** Open. Found 2026-09-30 by chat 243e446b while writing C4 into `docs/T1-WALKTHROUGH.md`. Not
-decided. Ranked here, beside item 18, because it is also a key-format question, and the key format is cheap
+decided. **2026-11-11: no longer arises while the lab has one monitored Windows host,** because DC-01 is dropped
+(`DECISIONS.md` 2026-11-11). Reopen it if a second Windows host is ever added. Ranked here, beside item 18, because it is also a key-format question, and the key format is cheap
 to change only before real runs (`DECISIONS.md` 2026-09-04 and 2026-09-29).
 
 **What was checked.** `KeySpec` in `src/telos/eventkey.py` has three parts: the source, the event ID, and
@@ -936,6 +940,10 @@ lost. None is decided.
    So, as submitted, C5's test needs DC-01, which contradicts "none needs a domain" above. Either the test
    uses a domain account (DC-01 is needed for a positive case) or a local account from the host (FINAL's
    table changes). The script's answer card now follows FINAL. Not decided.
+   **Answered 2026-11-11: DC-01 is dropped** (`DECISIONS.md` 2026-11-11). The conflict was settled from the rule
+   text at `v4.14.7` (`0840-win_event_channel.xml`): 92653 needs only parent 92651 and `logonType` 10, and 92651
+   needs only logon success and a non-loopback IPv4 address. No domain check. T1078.002 is a label only. So C5 uses a
+   local account from the host. Not yet tested in the lab. Point 2 above no longer arises.
 
 **Also, a wording gap, not a design question:** Sheet 1's Box 1 says it pins "the attack tests, window and
 repeats", while FINAL's run inputs say the thresholds are fixed at the same time. One string in

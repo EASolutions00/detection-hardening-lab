@@ -17,6 +17,42 @@ Next:
 
 ---
 
+## 2026-11-10 to 2026-11-11 - Full sweep and feasibility review; DC-01 dropped
+
+**Chat ee84ae3f** (thesis folder). The student asked for "a full files sweep, evaluate the thesis the doability and
+success rate, things to do to finish the system". Read: STATUS, WORKLOG, OPEN-QUESTIONS, DECISIONS, the runbook's
+Phases 6 and 7, the blueprint, `src/README.md`, `lab/scripts/README.md`, the thesis-folder file list and
+`proposal-form-SIMPLIFIED.md`. Checked on the machine (2026-11-10): `65 passed in 11.74s`; `vmrun -T ws list` gave
+`Total running VMs: 0`; `git status` clean; WIN-EP-01 has 5 snapshots, the current one `pre-lsass-trial-2026-11-03`
+(from `WIN-EP-01.vmsd`, `snapshot.current = "5"`). That points to the revert being done, but `.vmsd` alone does not
+prove the disk state `(unverified)`. A search of F: for files inside `.lck` folders found none.
+
+**Finding:** no harness, no golden snapshot, no change script, no real capture (`data/runs/` holds only
+`.gitkeep`), no impact scoring, no report export, no interface. Five dated checkpoints missed (2026-10-02, 10-07,
+10-12, 10-30, 11-07). Judgement given, not measured: final defense by 2027-01-31 about 25%; finished by 2027-06-04
+about 75% if lab work starts that week. A ten-step shortest path was given (DC-01 decision, revert check, LSASS
+trial part 2, C1 and C5 hand trials, golden snapshot, minimal harness, spike, change scripts and collection, small
+rule index and impact scoring, report export and the smallest interface).
+
+**2026-11-11, the student asked "why drop DC-01?".** Checked the C5 conflict (OPEN-QUESTIONS 32 point 4) at the
+source: rules 92653 and 92651 in `0840-win_event_channel.xml` at tag `v4.14.7`, read with `gh api`. No domain check;
+T1078.002 is only a `<mitre>` label. A first `gh api` read of `0580-win-security_rules.xml` and a `search/code` call
+returned nothing (the rules are not in that file; the search gave no output). **The student: "yes, drop DC-01".**
+DECISIONS 2026-11-11 written; the 2026-09-29 DC-01 entry marked superseded. Updated: OPEN-QUESTIONS 21, 31, 32;
+STATUS; runbook Phase 7; blueprint Tier B and section 7; README; PROMPT-new-chat. Thesis folder:
+`ACTIVITY-DIAGRAM-EXPLAINED.md` (backup `ACTIVITY-DIAGRAM-EXPLAINED.2026-11-11.md.bak`; also removed the audit
+settings from "Designed but not yet built", since they were applied 2026-11-03) and `proposal-form-SIMPLIFIED.md`
+(network-logon test removed; a working note for "Scale of the Experiment"). FINAL, `T1-REVISIONS-LIST.md`,
+`T1-PANEL-RESPONSE.md` and the `prep-local` study files still say the lab is a domain; they are the record of what
+was submitted or studied, and were not changed.
+
+**Not yet checked:** that a local-account RDP sign-in from the host fires 92653; whether Remote Desktop is on in
+WIN-EP-01; how the sign-in is driven with no person at the keyboard. Not committed yet.
+
+**Chat e4a908e3**, 2026-11-10 16:30 to 16:44, thesis folder. Written from the private chat log only (the work itself
+is not checked here): the same first request as above, a second full sweep. It ran the test suite, `vmrun list`
+and a file listing of `F:\TeLoS Homelab`. The log records no file changed.
+
 ## 2026-11-09 to 2026-11-10 - The adviser asks for a stakeholder interview; interview guide written
 
 **Chat f566e958** (2026-11-09, thesis folder). The student pasted the adviser's reply to "while waiting po sa

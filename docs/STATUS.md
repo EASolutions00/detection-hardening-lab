@@ -1,7 +1,8 @@
 # STATUS
 
 Current blockers and dates. This file changes often. CLAUDE.md does not.
-Last updated: 2026-11-02 (chat 27d2595d)
+Last updated: 2026-11-11 (chat ee84ae3f), only for DC-01 being dropped. The rest dates from 2026-11-02 to
+2026-11-03 (chat 27d2595d).
 
 Every item here must also exist in OPEN-QUESTIONS.md or DECISIONS.md. This file only
 says which ones matter right now. Where every file lives, inside and outside the repo:
@@ -35,7 +36,7 @@ says which ones matter right now. Where every file lives, inside and outside the
 | 2026-10-09, latest 2026-10-12 | Revised documentation submitted (the panel then sets the re-presentation date). **Done 2026-10-15** (student), three days after the latest date; 2026-10-02, 2026-10-07 and 2026-10-12 were missed |
 | 2026-10-09 | Adviser told of the slip and the January target. **Partly done:** the student told their professor about the delay (by 2026-10-08); the January target is not stated. WORKLOG 2026-10-07: the adviser is named only after the re-presentation |
 | 2026-10-22, 3:30 to 5:00 pm | **Re-presentation** (date set by the panel; student, 2026-10-16). **Done: accepted on condition of a simplified revision** (DECISIONS 2026-10-22) |
-| 2026-10-30 (was 2026-10-23), **missed: no lab work recorded as of 2026-11-02; new date after the adviser answers OPEN-QUESTIONS 33** | DC-01 built, WIN-EP-01 joined, Sysmon `lsass.exe` rule and audit settings in place, value keying coded and tested, network-logon test designed, golden snapshot taken |
+| 2026-10-30 (was 2026-10-23), **missed: no lab work recorded as of 2026-11-02; new date after the adviser answers OPEN-QUESTIONS 33** | Sysmon `lsass.exe` rule and audit settings in place, value keying coded and tested (all three done 2026-11-03), golden snapshot taken. DC-01, the domain join and the network-logon test were dropped 2026-11-11 (DECISIONS) |
 | 2026-11-07 (was 2026-10-31) | Spike run, six answers recorded, final number of changes set. Both moves: DECISIONS 2026-10-16 |
 | 2026-11-30 | Data collection done |
 | 2026-12-18 | Rest of the system (impact scoring, remediation, reports) and the evaluation done |
@@ -48,7 +49,7 @@ controls), and record the miss in WORKLOG the same day.
 ## Decided 2026-09-29 (details in DECISIONS.md)
 
 1. **Item 21:** build DC-01, with its own Wazuh agent and a test that makes network logons, before the
-   golden snapshot.
+   golden snapshot. **Superseded 2026-11-11: DC-01 is dropped** (DECISIONS 2026-11-11).
 2. **Item 18:** value keying for a short list of fields (final list after the C3 capture); an `lsass.exe`
    rule in the Sysmon config; C3 uses `RunAsPPL = 2`, a stated deviation from CIS 18.9.27.2.
 3. **Item 20:** Process Creation auditing with command line, and Credential Validation auditing, go into
@@ -81,13 +82,15 @@ controls), and record the miss in WORKLOG the same day.
    (item 24) and pairing (item 30). **Done 2026-11-03:** items 24 and 30 built; the Sysmon `lsass.exe` rule and
    both audit settings applied and proven in the guest (COMMANDS 2.11); in the archive the same day: 4688 = 117,
    Sysmon 10 = 121, 4776 = 2 (WORKLOG 2026-11-03). Value keying coded the same day, then corrected to use each rule's own
-   pattern (65 tests, OPEN-QUESTIONS 35). DC-01 waits for Sir Ervin (student, 2026-11-03). LSASS trial part 1 run
+   pattern (65 tests, OPEN-QUESTIONS 35). DC-01 was waiting for Sir Ervin (student, 2026-11-03); **dropped
+   2026-11-11** (DECISIONS 2026-11-11). LSASS trial part 1 run
    the same day: LSA Protection was already on (OPEN-QUESTIONS 36; baseline turns it off, DECISIONS 2026-11-03), and
    Defender stopped all three tests, 0 lsass events (OPEN-QUESTIONS 35). C3 is measured in Config S (DECISIONS
    2026-11-03). WIN-EP-01 must go back to `pre-lsass-trial-2026-11-03` first. Checkpoint: 2026-10-30, six working days. Until 2026-10-22, no lab
    work: practice only.
    Open question first: does DC-01 still earn its days, now that no positive case needs it (WORKLOG
-   2026-10-06)?
+   2026-10-06)? **Answered 2026-11-11: no, dropped.** New open points from that decision: how the C5 RDP sign-in
+   is driven from the host with no person at the keyboard, and whether Remote Desktop is on in WIN-EP-01.
 4. Golden snapshot, a minimal harness, one capture window by hand as a trial, then the spike.
 
 ## Still waiting on the student
@@ -97,8 +100,8 @@ controls), and record the miss in WORKLOG the same day.
 - **Item 33, new 2026-10-12:** from the professor's guidelines, four points to ask or decide. Point 1 first:
   is the January 2027 defense the pre-oral (50% working system) or the final?
 - **Item 32, new 2026-10-08:** four points with no record (window length, whether DC-01 is restored each run,
-  the Wazuh field-name mapping, whether DC-01 still earns its days). Point 4 should be decided before the lab
-  work starts.
+  the Wazuh field-name mapping, whether DC-01 still earns its days). **Point 4 decided 2026-11-11: DC-01 is
+  dropped; point 2 no longer arises.** Points 1 and 3 remain.
 - Items 24 and 30 were decided 2026-09-29: both stay in the design and are built before data collection.
   **Both built 2026-11-03** (60 tests pass).
 
@@ -129,19 +132,23 @@ and with them only C1, C3 and C5 can blind a detection (`DECISIONS.md` 2026-10-0
   as Wininit event 12 must be made inside the guest.
 - Item 23. The spike must run `analyse()` on control-versus-control pairs and find none.
 - Item 22. The stimulus is asserted identical across runs and never verified.
-- Item 31. The event key has no host part; with DC-01, two hosts' events of one key are counted together.
+- Item 31. The event key has no host part. No longer arises with one Windows host (DC-01 dropped 2026-11-11).
 
 ## Lab state
 
 - No lab VM was running on 2026-09-28 (`vmrun -T ws list`: `Total running VMs: 0`). Check with `vmrun`
   rather than trusting this line.
 - Host VMnet2 is at `10.20.10.1` again after a hand repair (item 27). Pre-flight now checks it.
-- DC-01 does not exist yet.
+- DC-01 does not exist and will not be built (DECISIONS 2026-11-11).
 - Both VM folders on F: have a `.vmx.lck` lock folder dated 2026-10-08 13:10, with no record. The VMware logs
   did not change, so probably opened but not powered on (unverified). Check with `vmrun` first
   (FILE-MAP section 6).
 
 ## Recently settled (details in DECISIONS.md)
+
+- 2026-11-11: DC-01 is dropped. The lab is WIN-EP-01 and SIEM-01. C5 signs in over RDP with a local account from
+  the host. C4, C6 and B5 leave the study. FINAL said the domain is required, so the simplified revision states
+  the change.
 
 - 2026-10-07: the system stays a desktop application. Revision 8 answers the panel's instruction to declare
   it web-based (found in the title-defense transcript) and asks the panel to confirm. The interface toolkit

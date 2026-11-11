@@ -69,6 +69,9 @@ makes network logons, before the golden snapshot. The rule above cannot apply to
 capture needs it running, so its activity is part of every run, control runs included. The rule
 still applies to the other Tier B VMs.
 
+**Changed 2026-11-11: DC-01 is dropped** (`docs/DECISIONS.md` 2026-11-11). The three changes that can
+show a blind spot under Wazuh's shipped rules (C1, C3, C5) are all local. No Tier B VM is built.
+
 ### The orchestrator is not a VM
 
 `vmrun` lives on the Windows host. Run the Python harness on the host directly,
@@ -260,9 +263,8 @@ does not finish. This is the hard constraint on T1.
 
 ## 7. The two-week feasibility spike (do this before committing)
 
-Build Tier A, plus DC-01. Do not build the rest of Tier B. DC-01 is the exception since
-2026-09-29: it goes in before the golden snapshot (`docs/DECISIONS.md` 2026-09-29), so
-the spike runs on the domain the study uses. The analysis engine already exists
+Build Tier A only. Do not build Tier B. DC-01 was an exception from 2026-09-29 to
+2026-11-11, when it was dropped (`docs/DECISIONS.md` 2026-11-11). The analysis engine already exists
 (`src/telos/`, built 2026-08-31), so the spike runs real captures through it.
 Run one hardening change and answer the pre-declared questions below: Q1 and Q2
 from the start, Q3 to Q6 added 2026-09-28 because other records assign those

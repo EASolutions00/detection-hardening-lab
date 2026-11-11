@@ -259,8 +259,9 @@ Item 21 — decided 2026-09-29, not built
     Every class C hardening change is an authentication control, and there is no domain
     controller. **The archive count ran 2026-09-26: 4768, 4769 and 4776 are zero on every date,
     and 0 of 2,892 logons were network logons.** **Decided: build DC-01**, with its own Wazuh
-    agent and a test that makes network logons, before the golden snapshot. DC-01 alone is not
-    enough; the network-logon test is not designed yet.
+    agent and a test that makes network logons, before the golden snapshot. **Superseded
+    2026-11-11: DC-01 is dropped.** The lab is WIN-EP-01 and SIEM-01; C5 uses a local account
+    over RDP from the host; C4, C6 and B5 leave the study.
 
 Item 18 — decided 2026-09-29, not built
     The key sees field presence, not value. Six of the eight class C hardening changes state a
@@ -342,13 +343,14 @@ Item 15 — answered 2026-10-15
 
 Item 31 — the event key has no host part
     With DC-01 there are two monitored Windows hosts, and the same key from both is counted
-    together, so a drop on one host can be hidden by a rise on the other. Found 2026-09-30. Not
-    decided.
+    together, so a drop on one host can be hidden by a rise on the other. Found 2026-09-30. No
+    longer arises since DC-01 was dropped (2026-11-11).
 
 Item 32 — four harness and index points with no record
     Whether the capture window has a fixed length or ends when the suite ends; whether DC-01 is
     restored before each run; a mapping from Wazuh field names to the key's field names; and
     whether DC-01 still earns its days now that no positive case needs it. Recorded 2026-10-08.
+    The DC-01 points were decided 2026-11-11: dropped. The window length and the mapping remain.
 
 Item 33 — the professor's guidelines, four open points
     From the Research 1A lectures (paths in the item): is January the pre-oral defense (50% working
@@ -373,7 +375,7 @@ Settled 2026-09-26 and 2026-09-28, so do not reopen these
 
 Settled 2026-09-29, so do not reopen these
     Target: final defense by the end of January 2027, school deadline 4 June 2027. Scope keeps every
-    measurable class C change. Build DC-01 with a network-logon test. Value keying for a short list
+    measurable class C change. Build DC-01 with a network-logon test (dropped 2026-11-11). Value keying for a short list
     of fields, an `lsass.exe` Sysmon rule, `RunAsPPL = 2`. Process creation and credential
     validation auditing in the golden snapshot. All in `REPO\docs\DECISIONS.md`, none built.
 

@@ -90,7 +90,7 @@ Honest state of the work, not a plan.
 | Impact scoring (lost event to affected rules to ATT&CK techniques) | Not built |
 | Graphical interface (not a web application; decided 2026-09-14, kept 2026-10-07 after the panel chair asked for web-based) | Not built |
 | Detection rules: Wazuh 4.14.7's shipped rules (decided 2026-10-01) | Chosen; the rule-to-technique index is not built |
-| Domain controller `DC-01` (decided 2026-09-29) | Not built |
+| Domain controller `DC-01` (decided 2026-09-29, dropped 2026-11-11) | Will not be built |
 | Lab Phase 0, host readiness | **Done** |
 | Lab Phase 1, virtual networks | **Done** |
 | Lab Phase 2, SIEM build (Wazuh 4.14.7) | **Done** 2026-09-02 |
