@@ -8,6 +8,39 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-11-12 - The baseline turns Remote Desktop on with NLA off, so C5 can be measured
+
+**Decision (student, "option a, baseline turns NLA off"), chat ee84ae3f.** Answers OPEN-QUESTIONS 37, point 1, option
+(a). The golden image has Remote Desktop **on** (`fDenyTSConnections = 0`) and NLA **off** (`HKLM\SYSTEM\
+CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp\UserAuthentication = 0`), with the firewall rule
+`Remote Desktop - User Mode (TCP-In)` enabled for `10.20.10.1` only. This is stated as part of the baseline. C5 sets
+`UserAuthentication = 1`. The same pattern as C3 (2026-11-03).
+
+**Why.** On the clean image, Remote Desktop was off and NLA was already on (`UserAuthentication = 1`, no Group Policy
+value; COMMANDS 2.12). With NLA on in the baseline, C5 compares "on" with "on" and can show nothing. Dropping C5
+(option b) would leave only C1 and C3 as blind-spot cases.
+
+**For the defense:** "On this Windows build, NLA is on as soon as Remote Desktop is enabled. The study measures what
+the change does, so the baseline starts without it, and this is stated. Machines set up by hand or upgraded can run
+without it." The last sentence is general knowledge `(unverified)`.
+
+**Why the firewall rule is limited to the host.** Remote Desktop with NLA off is a weaker state. Only the host, which
+runs the C5 test, needs to reach port 3389. The NAT adapter is disconnected for the golden snapshot anyway (CLAUDE.md,
+rule 4).
+
+**Not settled by this entry:**
+- Whether NLA on and NLA off produce different events with the default client: `mstsc` checked the password over the
+  network even with NLA off (OPEN-QUESTIONS 37, point 3). This decision makes C5 measurable in principle. It does not
+  show that C5 has an effect.
+- C5's control ID is still `(unverified)` in the catalogue (`lab/blueprint.md`).
+- Whether TermService starts by itself after a reboot with Remote Desktop on. Check before the golden snapshot.
+
+**Cost if wrong:** if a panel member holds that the baseline must be the Windows default, C5 is reported as "a default
+on this build" and drops out, as in option (b). If NLA on and off give the same events, C5 is reported as a change with
+no measurable effect, which the study allows (`lab/scripts/README.md`, "Expected effect is a prediction").
+
+---
+
 ## 2026-11-11 - DC-01 is dropped. The lab is one Windows 11 endpoint and the SIEM (supersedes the DC-01 part of 2026-09-29)
 
 **Status:** decided 2026-11-11 by the student ("yes, drop DC-01"), chat ee84ae3f, after the chat recommended it.

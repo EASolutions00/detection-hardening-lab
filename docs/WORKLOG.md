@@ -40,7 +40,11 @@ parts, range 25 to 35% `(unverified, weights are judgement)`; 4 of FINAL's 15 fe
 31 working days `(unverified)`.
 
 **State left:** WIN-EP-01 running with Remote Desktop on, NLA off, the firewall rule open to `10.20.10.1`; none of
-it in a snapshot. SIEM-01 running. `/home/eli/c5/p-hostip.txt` on SIEM-01. Not committed yet.
+it in a snapshot. SIEM-01 running. `/home/eli/c5/p-hostip.txt` on SIEM-01. Committed and pushed as `da4dbb7`.
+
+**Then the NLA baseline was decided** (student: "option a, baseline turns NLA off"): the golden image has Remote
+Desktop on, NLA off, and the firewall rule open to `10.20.10.1` only; C5 turns NLA on (DECISIONS 2026-11-12,
+OPEN-QUESTIONS 37 point 1). Not committed yet.
 
 **Chat f36a30a6**, 2026-11-12 10:56 to 11:28, a scratch folder. Written from the private chat log only. First
 request: make every chat end a task by listing what was done, even small steps. It changed one file, the private

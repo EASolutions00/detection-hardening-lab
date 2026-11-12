@@ -1126,7 +1126,8 @@ Team was.
 
 ## 37. The C5 test: NLA is already on, the logon type depends on the session, and the client checks the password first
 
-**Status:** Open. Found 2026-11-12 by chat ee84ae3f, in the C5 RDP test (WORKLOG 2026-11-12, COMMANDS 2.12). The
+**Status:** Open. **Point 1 decided 2026-11-12: option (a)**, the baseline turns Remote Desktop on with NLA off
+(DECISIONS 2026-11-12). Points 2 to 4 stay open. Found 2026-11-12 by chat ee84ae3f, in the C5 RDP test (WORKLOG 2026-11-12, COMMANDS 2.12). The
 test's main question is answered: a local-account RDP sign-in from the host fires rule 92653 (DECISIONS
 2026-11-11). Four facts found on the way change the C5 test design.
 
