@@ -36,7 +36,22 @@ the same as run B. Commands: COMMANDS 2.12. Findings: OPEN-QUESTIONS 37.
 the golden snapshot has no `eli` session.
 
 **State left:** WIN-EP-01 running, NLA on, no `eli` session. The password is stored on the host
-(`cmdkey /delete:TERMSRV/10.20.10.20` removes it). Not committed yet.
+(`cmdkey /delete:TERMSRV/10.20.10.20` removes it). Committed and pushed as `0cff696`.
+
+**Then the session checks** (student: "lets continue", then "can you do all the process"). Claude ran every step
+except the `vmrun` guest call, which uses the guest password; the student ran that one. Two clean restarts with
+`vmrun reset soft` (not refused by the app this time; the restart was proven from the archive, because the Tools state
+never showed it). Check (a), fresh boot: RDP gave type 10 with 92653. Check (b), fresh boot plus one `vmrun` call: type
+10 again. So the revert before each run is enough to end the C5 session, if the golden snapshot is at the sign-in
+screen. **Decided** (student: "Yes, decide it"): DECISIONS 2026-11-13.
+
+**Found on the way.** Item 26 confirmed: one `vmrun` guest call wrote two type 4 logons and two 4648 by `vmtoolsd.exe`,
+and rule 67022 (level 3) fired on each logon. Item 28 seen again: 0 event 6005 and 0 Wininit after the restart.
+**Broke:** the first restart loop never saw Tools stop; the reboot was proven from the archive instead. One archive
+line failed to parse while SIEM-01 was still writing it; the next reads skip such lines.
+
+**State left:** WIN-EP-01 running, NLA on, a disconnected `eli` RDP session from check (b) (the next restart or revert
+removes it). Not committed yet.
 
 ---
 

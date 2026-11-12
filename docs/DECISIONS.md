@@ -8,6 +8,34 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-11-13 - The revert before each run ends the C5 session; the golden snapshot is taken at the sign-in screen
+
+**Decision (student, "Yes, decide it"), chat ee84ae3f.** Answers OPEN-QUESTIONS 37, ending the session. The harness
+adds **no sign-out step** for C5. The revert to the golden snapshot before each run is what ends the RDP session from
+the previous run. Each run makes exactly **one** RDP sign-in (`mstsc /v:10.20.10.20`, with `eli`'s password stored on
+the host by `cmdkey`). **The golden snapshot is taken at the sign-in screen, with no `eli` session.**
+
+**Why.** Tested 2026-11-12 (COMMANDS 2.12, "The session checks"): after a clean restart, and after a restart plus one
+`vmrun` guest call as `eli`, the RDP sign-in gave type 10 with rule 92653 both times. A fresh boot does not sign `eli`
+in, and a `vmrun` call is a batch logon (type 4) with no desktop. A second sign-in without a revert would find the
+first session and write type 7, which fires no 92653 (OPEN-QUESTIONS 37, point 2).
+
+**Other options, not taken.** A sign-out inside the guest (`logoff` through `vmrun`, or a disconnect time limit in
+Group Policy) adds a step or a baseline setting that the study does not need (CLAUDE.md, keep it simple).
+
+**For the defense:** "Every run starts from the same clean snapshot with nobody signed in, so the Remote Desktop
+sign-in always opens a new session. We tested this with and without the harness's own guest calls."
+
+**Cost if wrong:** if a run's guest has an `eli` session before the sign-in, C5's 92653 is missing for a reason that
+has nothing to do with NLA. Guard: the run check confirms a type 10 logon in the window, or the run is voided
+(OPEN-QUESTIONS 22). Not built yet.
+
+**Still open:** the test used restarts, not a snapshot revert `(unverified that they are the same)`; check it once
+the golden snapshot exists. The harness must also count its `vmrun` guest calls, because each adds two type 4 logons
+and two rule 67022 alerts (OPEN-QUESTIONS 26).
+
+---
+
 ## 2026-11-13 - C5 uses the default RDP client; C5 is reported as "the predicted effect was not seen"
 
 **Decision (student, "option A, write it into DECISIONS"), chat ee84ae3f.** Answers OPEN-QUESTIONS 37, point 5.

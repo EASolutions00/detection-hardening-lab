@@ -775,6 +775,19 @@ the sign-in with no person at the keyboard.
 | Clocks | host, Claude | `(Get-Date).ToUniversalTime()`; `ssh ... "date -u"` | Both 19:16:35 |
 | Archive | host, Claude | `telos-archive count` and `show` with `/home/eli/c5/p-hostip.txt` | Count 23 to 33. Each try: two type 3 NTLM (92657), one 4648, two type 10 (92653), the same as run B |
 
+**The session checks (2026-11-12, times UTC).** Purpose: OPEN-QUESTIONS 37, ending the session. Does a fresh boot,
+or a `vmrun` guest call, leave an `eli` session that turns the C5 sign-in into type 7? Claude ran every step except
+the `vmrun` guest call, which uses the guest password.
+
+| Step | Where, by whom | Command | Result seen |
+|---|---|---|---|
+| Restart 1 | host, Claude | `& $vmrun -T ws reset $win soft` | Exit 0 at 19:30:06. Tools state never seen as stopped (5-second checks). Proof from the archive: no WIN-EP-01 lines from 19:30:08 to 19:31:12; Sysmon 1 for `vmtoolsd.exe`, `Sysmon64.exe`, `wazuh-agent.exe` at 19:30:23; after it only type 5 (service) logons by SYSTEM, no `eli` logon |
+| Check (a) | host, Claude | `Start-Process mstsc -ArgumentList '/v:10.20.10.20'` (stored password), then `Stop-Process` | 19:35:29 to 19:35:30: two type 3 NTLM (92657), one 4648, **two type 10 (92653)** |
+| Restart 2 | host, Claude | `& $vmrun -T ws reset $win soft` | Exit 0 at 19:35:56; Sysmon 1 for `wazuh-agent.exe` at 19:36:16 |
+| `vmrun` guest call | host, **student** (uses the password file) | `$pw = Get-Content "$env:USERPROFILE\.telos\WIN-EP-01.pw"; & $vmrun -T ws -gu eli -gp $pw listProcessesInGuest $win \| Select-String -Pattern 'explorer.exe','Process list'` | `Process list: 95`, no `explorer.exe`. Archive: two 4624 **type 4** by `vmtoolsd.exe` (rule **67022**, level 3, "Non network or service local logon."), two 4648 by `vmtoolsd.exe`, 19:42:53 to 19:42:54 |
+| Check (b) | host, Claude | `Start-Process mstsc ...`, then `Stop-Process` | 19:43:34 to 19:43:35: the same as check (a), **two type 10 (92653)** |
+| Boot events | host, Claude | `telos-archive tail 6000`, WIN-EP-01 lines with event time 19:30:09 to 19:35:00 | 457 lines; event 6005: 0; Wininit: 0; System channel: 6 (OPEN-QUESTIONS 28) |
+
 **Undo.** A revert to `pre-lsass-trial-2026-11-03` removes every guest change above, including NLA on. On SIEM-01:
 `rm -r /home/eli/c5`. On the host: `cmdkey /delete:TERMSRV/10.20.10.20` removes the stored password. All steps are
 safe to re-run.

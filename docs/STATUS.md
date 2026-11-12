@@ -146,6 +146,11 @@ and with them only C1, C3 and C5 can blind a detection (`DECISIONS.md` 2026-10-0
 
 ## Recently settled (details in DECISIONS.md)
 
+- 2026-11-12: **tested.** A fresh boot leaves no `eli` session, and a `vmrun` guest call does not create one: the C5
+  sign-in gave type 10 with 92653 both times. **Decided 2026-11-13:** no sign-out step; the revert ends the session;
+  the golden snapshot is taken at the sign-in screen. Also confirmed: each `vmrun` guest call writes two type 4 logons that fire rule 67022
+  (item 26).
+
 - 2026-11-12: **tested.** The C5 sign-in needs no person at the keyboard: with `eli`'s password stored once on the
   host (`cmdkey`), `mstsc /v:10.20.10.20` signed in twice with no box and fired 92653. Ending the session is still
   open; recommended: rely on the revert before each run (item 37).

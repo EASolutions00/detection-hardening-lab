@@ -1129,8 +1129,9 @@ Team was.
 **Status:** Open. **Point 1 decided 2026-11-12: option (a)**, the baseline turns Remote Desktop on with NLA off
 (DECISIONS 2026-11-12). **Points 3 and 4 answered 2026-11-12 by the NLA on test** (below). **Point 5 decided
 2026-11-13: option (a), the default client, C5 reported as "the predicted effect was not seen"** (DECISIONS
-2026-11-13). **The unattended sign-in in point 3 tested 2026-11-12** (below): a stored password works. Point 2
-(ending the session) stays open, with a recommendation. Found 2026-11-12 by chat ee84ae3f, in the C5 RDP test (WORKLOG 2026-11-12, COMMANDS 2.12). The
+2026-11-13). **The unattended sign-in in point 3 tested 2026-11-12** (below): a stored password works. **Point 2
+(ending the session) decided 2026-11-13:** the revert before each run ends it (DECISIONS 2026-11-13). Left open: a
+snapshot revert is assumed to equal the tested restart; check it once the golden snapshot exists. Found 2026-11-12 by chat ee84ae3f, in the C5 RDP test (WORKLOG 2026-11-12, COMMANDS 2.12). The
 test's main question is answered: a local-account RDP sign-in from the host fires rule 92653 (DECISIONS
 2026-11-11). Four facts found on the way change the C5 test design.
 
@@ -1193,6 +1194,16 @@ would take it over as type 7 (point 2). **Recommended, not decided:** add nothin
 the golden snapshot before every run, so each run starts with no `eli` session and needs one sign-in. This holds
 only if (a) the golden snapshot is taken with no `eli` session (at the sign-in screen), and (b) nothing earlier in
 the run signs `eli` in interactively, including the harness's own `vmrun` guest calls (item 26). Neither is checked.
+
+**Both checked 2026-11-12** (COMMANDS 2.12, "The session checks"). (a) After a clean restart, the guest did not sign
+`eli` in by itself (only type 5 SYSTEM logons after boot), and the RDP sign-in gave **type 10** with 92653. (b) After a
+restart and one `vmrun listProcessesInGuest` call as `eli` (two type 4 logons, no `explorer.exe`), the RDP sign-in still
+gave **type 10** with 92653. So a fresh boot plus the harness's guest calls leaves no session for RDP to take over.
+The recommendation stands and is now tested. **Decided 2026-11-13** (DECISIONS 2026-11-13): no sign-out step; the
+revert ends the session; the golden snapshot is taken at the sign-in screen. Two limits: the test was a restart,
+not a snapshot revert, so the golden snapshot must be taken at the sign-in screen with no `eli` session; and
+`OneDrive.exe` in `eli`'s profile ended at 19:30:09 during restart 1, so an `eli` session may have existed before it
+`(unverified)`, which the restart removed.
 
 **4. Every RDP sign-in fires 92657** (level 6, "Successful Remote Logon Detected ... NTLM authentication, possible
 pass-the-hash attack", T1550.002, T1078.002, T1021.001), on the type 3 logons. So the C5 test raises a level 6 alert
@@ -1339,6 +1350,12 @@ group nobody had described:
 fit: 2026-09-02 was the Phase 3 build and check, driven by many `vmrun` calls, and 2026-09-10 was the
 UWF test.
 
+**Cause confirmed 2026-11-12** (COMMANDS 2.12, "The session checks"). One `vmrun listProcessesInGuest` call as `eli`
+wrote **two** 4624 type 4 logons and **two** 4648, all by `vmtoolsd.exe`, at 19:42:53 to 19:42:54. Each type 4 logon
+fired Wazuh rule **67022** (level 3, "Non network or service local logon."). So each guest call adds its own logons
+**and its own alerts** to the capture window. Why one call makes two logons is not known `(unverified)`. Step 2 below
+(count the calls per run) still applies.
+
 **Why it matters.** The harness fires both fences and runs the test suite through `vmrun`. So **the
 measuring tool writes its own events into every capture window**: 4624, and probably 4672 and 4634
 alongside `(unverified)`.
@@ -1447,6 +1464,11 @@ agent config (`lab/configs/wazuh-agent-ossec.conf`) does not set it.
 2. Then either set `<only-future-events>no</only-future-events>` on the System channel, which changes
    the pinned agent config and must be recorded, or keep the default and do boot-time checks in the
    guest. Decide before the golden snapshot.
+
+**Step 1 seen again 2026-11-12** (COMMANDS 2.12, "The session checks"), from the archive only: after a clean restart
+of WIN-EP-01, the archive held **0** event 6005 and **0** Wininit events, but 6 System events and 457 lines with event
+times from 19:30:09 to 19:35:00, including Sysmon events from the restart itself (19:30:09 to 19:30:23). So 6005 is
+missing again, but not every early event is. The guest's own 6005 time was not read, so this is not the full step 1.
 
 **Drawn in the activity diagram on 2026-09-28:** each post-change run confirms inside the host that
 the change took effect, before its window opens, and a run where it was not confirmed is voided.
