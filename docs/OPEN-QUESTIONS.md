@@ -1127,8 +1127,9 @@ Team was.
 ## 37. The C5 test: NLA is already on, the logon type depends on the session, and the client checks the password first
 
 **Status:** Open. **Point 1 decided 2026-11-12: option (a)**, the baseline turns Remote Desktop on with NLA off
-(DECISIONS 2026-11-12). **Points 3 and 4 answered 2026-11-12 by the NLA on test** (below). Point 2, the unattended
-sign-in in point 3, and new point 5 stay open. Found 2026-11-12 by chat ee84ae3f, in the C5 RDP test (WORKLOG 2026-11-12, COMMANDS 2.12). The
+(DECISIONS 2026-11-12). **Points 3 and 4 answered 2026-11-12 by the NLA on test** (below). **Point 5 decided
+2026-11-13: option (a), the default client, C5 reported as "the predicted effect was not seen"** (DECISIONS
+2026-11-13). Point 2 and the unattended sign-in in point 3 stay open. Found 2026-11-12 by chat ee84ae3f, in the C5 RDP test (WORKLOG 2026-11-12, COMMANDS 2.12). The
 test's main question is answered: a local-account RDP sign-in from the host fires rule 92653 (DECISIONS
 2026-11-11). Four facts found on the way change the C5 test design.
 
@@ -1185,7 +1186,8 @@ pass-the-hash attack", T1550.002, T1078.002, T1021.001), on the type 3 logons. S
 in every run. **Answered 2026-11-12:** 92657 comes from the client's password check, not from the NLA setting. It fires
 with the default client whether NLA is on or off, and never with the no-check client.
 
-**5. What C5 shows depends on which client the test uses (open, found 2026-11-12).** With the default client, C5's
+**5. What C5 shows depends on which client the test uses (found 2026-11-12; decided 2026-11-13, DECISIONS
+2026-11-13: the default client; reading (a) holds by `lab/blueprint.md:347`, condition (d)).** With the default client, C5's
 before and after runs are the same, so C5 has no measurable effect. With the no-check client, before = two type 10
 and two 92653 alerts; after = no logon event and no alert, only a Sysmon network event that no rule reads. Two
 readings, not decided:

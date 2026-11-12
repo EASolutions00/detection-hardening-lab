@@ -146,6 +146,10 @@ and with them only C1, C3 and C5 can blind a detection (`DECISIONS.md` 2026-10-0
 
 ## Recently settled (details in DECISIONS.md)
 
+- 2026-11-13: **decided.** C5 uses the default RDP client and is reported as "the predicted effect was not seen".
+  The refused no-check sign-in is prevention, not a blind spot (blueprint condition (d)). Positive cases stay C1 and
+  C3 (item 37, point 5).
+
 - 2026-11-12: **tested.** NLA on and off give the same events with the default client (two type 3 NTLM with 92657,
   then two type 10 with 92653). With a client that skips the password check, NLA off gives type 10 and 92653 only,
   and NLA on refuses the connection with no logon event and no alert. New open point: which client the C5 test uses,

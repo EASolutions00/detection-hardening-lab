@@ -8,6 +8,47 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-11-13 - C5 uses the default RDP client; C5 is reported as "the predicted effect was not seen"
+
+**Decision (student, "option A, write it into DECISIONS"), chat ee84ae3f.** Answers OPEN-QUESTIONS 37, point 5.
+The C5 test signs in with the default client (`mstsc`, which checks the password before the session). C5 stays in
+class C. Its expected result is **no difference** between the before and after runs, and it is reported that way.
+
+**Why.** Measured 2026-11-12 (OPEN-QUESTIONS 37, COMMANDS 2.12): with the default client, NLA off and NLA on wrote the
+same events (two type 3 NTLM with rule 92657, two type 10 with rule 92653). Only a client that skips the password
+check showed a difference, and only because NLA **refused** it. A refused sign-in fails condition (d) of the
+blind-spot rule, "the technique that rule covers is still executable after the change" (`lab/blueprint.md:347`). So
+that difference is prevention, not a blind spot.
+
+**Why this option and not the others.**
+- (B) The no-check client, with C5 moved to class B (negative control). Rejected for now: its "before" run needs a
+  sign-in at the Windows sign-in screen inside the guest with no person at the keyboard (not designed), and the run
+  check that tells "attack refused" from "evidence lost" is not designed either (OPEN-QUESTIONS 22). B1 to B6 already
+  cover negative controls. Can be added later, after item 22 has a design.
+- (C) Both clients. Rejected: the costs of A and B together, and the study does not need it (CLAUDE.md, keep it
+  simple).
+- (D) Call the refused attempt a blind spot. Rejected: it breaks condition (d).
+
+**What C5 still gives the study.** A real change where the analyzer must report no difference. A tool that reports a
+LOST or REDUCED key for C5 is wrong.
+
+**Side note, measured, not a finding of the study.** With NLA on, a client that skips the password check is refused
+(`0xb09`) with no 4624, 4625 or 4648 and no alert. Only Sysmon event 3 records the TCP connection to port 3389, and
+no shipped rule reads it. This is stated as an observation in the thesis, under prevention.
+
+**For the defense:** "With the normal Windows client, NLA changes nothing in the logs: we measured the same four
+logons and four alerts with it off and on. The other client shows a difference only because NLA blocks it, and by our
+own rule a blocked attack is not a blind spot."
+
+**Cost if wrong:** C5 adds no blind spot, so the positive cases are C1 and C3 only. That was already the case since
+2026-10-01 (`lab/blueprint.md:357-360`), so the count of expected blind spots does not drop. If a panel member wants
+the negative-control reading, option B is written above and can be added once the harness exists.
+
+**Still open:** how the default client signs in with no person at the keyboard (stored credentials are one way,
+`(unverified)`); C5's control ID; the test used one run per case, so repeats come from the harness.
+
+---
+
 ## 2026-11-12 - The baseline turns Remote Desktop on with NLA off, so C5 can be measured
 
 **Decision (student, "option a, baseline turns NLA off"), chat ee84ae3f.** Answers OPEN-QUESTIONS 37, point 1, option

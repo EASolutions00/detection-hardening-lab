@@ -37,9 +37,15 @@ is open (item 37, point 5).
 this would hide the newest events. Checked with `count` (23), so nothing was missed here.
 
 **State left:** WIN-EP-01 running with Remote Desktop on, **NLA on**, firewall rule open to `10.20.10.1`; in no
-snapshot. SIEM-01 running. Not committed yet.
+snapshot. SIEM-01 running. Committed and pushed as `bf3ca5f`.
 
-**Next:** decide item 37 point 5 (which client, and how the refused attempt is read); design the unattended sign-in.
+**Then item 37 point 5 was decided, 2026-11-13** (student asked for the best option with pros and cons, then: "option
+A, write it into DECISIONS"). C5 uses the default client and is reported as "the predicted effect was not seen". Run
+C is prevention by blueprint condition (d), not a blind spot. Options B (no-check client as a negative control), C
+(both) and D (call it a blind spot) are written with their reasons in DECISIONS 2026-11-13. Not committed yet.
+
+**Next:** design the unattended sign-in for the default client; revert WIN-EP-01 to drop NLA on before any baseline
+work.
 
 ---
 
