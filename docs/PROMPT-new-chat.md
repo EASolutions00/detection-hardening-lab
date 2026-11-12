@@ -270,8 +270,9 @@ Item 18 — decided 2026-09-29, not built
     pinned Sysmon config records no Event 10 at all, and `RunAsPPL = 1` writes a UEFI firmware
     variable. **Decided:** value keying for a short list of fields (final list after the C3
     capture); an `lsass.exe` Sysmon rule; `RunAsPPL = 2`, a stated deviation, because CIS
-    18.9.27.2 (Windows 11 Enterprise v5.1.0) requires the lock. Until built, **no class C change
-    is measurable on this lab.**
+    18.9.27.2 (Windows 11 Enterprise v5.1.0) requires the lock. **Built 2026-11-03:** the
+    `lsass.exe` Sysmon rule is applied (Sysmon 10 = 121 in the archive that day) and value keying
+    is coded and tested. No class C change has been measured yet: no capture run exists.
 
 Item 22 — blocks the harness design
     The stimulus is asserted identical across the two phases and never verified. A hardening
@@ -280,9 +281,10 @@ Item 22 — blocks the harness design
     cannot be reconstructed after the run.
 
 Item 26 — blocks the harness design
-    The harness's own `vmrun` guest calls most likely each write a batch logon (4624 type 4)
-    inside the window: 2,285 across the archive, 1,641 on 2026-09-02. Unverified cause. The
-    harness must count its calls and record the number.
+    The harness's own `vmrun` guest calls write logons inside the window: 2,285 type 4 across the
+    archive, 1,641 on 2026-09-02. **Cause confirmed 2026-11-12:** one `vmrun` guest call wrote two
+    4624 type 4 logons by `vmtoolsd.exe`, and Wazuh rule 67022 (level 3) fired on each; with
+    Credential Validation on, also two 4776. The harness must count its calls and record the number.
 
 Item 27 — the lab network, cause unknown
     The host's VMware adapters broke on their own twice, 2026-08-31 and before 2026-09-26.
@@ -292,12 +294,11 @@ Item 27 — the lab network, cause unknown
 Item 28 — boot-time evidence
     Events written before the Wazuh agent starts never reach the archive: zero 6005 and zero
     Wininit events on every date. Boot-time checks, such as Wininit event 12 for LSA
-    protection, must be made inside the guest. Cause unverified.
+    protection, must be made inside the guest. Cause unverified. Seen again after a restart on
+    2026-11-12: 0 event 6005, 0 Wininit.
 
-Item 30 — field-level loss works in the demo only
-    `field_loss_pairs()` is built and tested, but `analyse()` and `report.py` never call it; only
-    `src/demo.py` does. The diagram draws pairing inside Phase 4. Found 2026-09-28. **Decided
-    2026-09-29: connect it before data collection.** Not built.
+Item 30 — ANSWERED 2026-11-03, connected
+    `analyse()` now calls `field_loss_pairs()` and `report.py` prints the result (OPEN-QUESTIONS 30).
 
 Item 29 — ANSWERED 2026-09-28, all four fixed by decision
     Chat 4e01d810's four findings all held and are fixed (DECISIONS 2026-09-28): the
@@ -318,10 +319,8 @@ Item 25 — the schedule; target and scope decided 2026-09-29
     pre-change events over 3 runs is about 10 per run, so many keys may be untestable. The spike
     measures it.
 
-Item 24 — blocks trusting any UNCHANGED result
-    `VarianceModel.from_control()` accepts a control run that recorded nothing. That inflates
-    every noise band and pushes real losses toward UNCHANGED. Found 2026-09-14. **Decided
-    2026-09-29: fix it in code before data collection**; the diagram keeps the check. Not built.
+Item 24 — ANSWERED 2026-11-03, built
+    `VarianceModel.from_control()` now refuses a control run that recorded nothing (OPEN-QUESTIONS 24).
 
 Item 23 — reframed 2026-09-28, a spike check
     The alpha half is fixed. The other half, the gate passing on noise, no longer matters: since
@@ -329,11 +328,30 @@ Item 23 — reframed 2026-09-28, a spike check
     at: do the per-key tests produce false findings on real noise? Run `analyse()` on the ten
     control-versus-control pairs from the Phase 7 spike. There should be no findings.
 
-Item 20 — decided 2026-09-29, not applied
-    WIN-EP-01 does not audit process creation. 200 process spawns produced zero `Security-4688`
-    events, so the canonical event key example does not exist on this endpoint. Sysmon Event 1
-    is carrying process creation instead. **Decided:** Process Creation auditing with command
-    line, and Credential Validation auditing, go into the golden snapshot.
+Item 20 — applied 2026-11-03 in the guest
+    Process Creation auditing with command line, and Credential Validation auditing, are on in
+    WIN-EP-01 (COMMANDS 2.11); in the archive the same day, 4688 = 117. The golden snapshot does
+    not exist yet, so they are in no snapshot.
+
+Item 34 — the run check voids every post-change run of a negative control
+    A negative control blocks its own attack test on purpose, and the run check voids any run
+    whose tests did not all complete. Found 2026-10-20. Open.
+
+Item 35 — which LSASS tests fire rule 92900
+    Part 1 of the LSASS trial (2026-11-03): Defender stopped all three tests, 0 lsass events.
+    C3 is measured with Defender off (Config S, DECISIONS 2026-11-03). Part 2 not run. Open.
+
+Item 36 — LSA Protection was already on, decided 2026-11-03
+    The baseline turns it off (`RunAsPPL = 0`); C3 turns it on. Open until the golden image is
+    shown to boot without Wininit event 12.
+
+Item 37 — the C5 test, decided 2026-11-12 and 2026-11-13
+    Baseline: Remote Desktop on, NLA off, firewall open to `10.20.10.1` only. With the default
+    client, NLA on and off write the same events (two type 3 NTLM with 92657, two type 10 with
+    92653), so C5 is reported as "the predicted effect was not seen". The sign-in runs from the
+    host with `eli`'s password stored by `cmdkey`, no box. No sign-out step: the revert ends the
+    session. A second sign-in into an existing session writes type 7 and no 92653. Left open:
+    confirm on the first real revert of the golden snapshot.
 
 Item 15 — answered 2026-10-15
     Submitted 2026-10-15 by email: `DOCS\Detecting … Algorithm.pdf` (made from
@@ -389,6 +407,13 @@ Settled 2026-10-01 to 2026-10-08, so do not reopen these
     Submitted 2026-10-15, after the 2026-10-12 latest date (2026-10-08 entry, overtaken). All in
     `REPO\docs\DECISIONS.md`.
 
+Settled 2026-11-03 to 2026-11-13, so do not reopen these
+    C3 is measured with Defender off; the baseline turns LSA Protection off (both 2026-11-03).
+    DC-01 is dropped; the lab is WIN-EP-01 and SIEM-01 (2026-11-11). The baseline has Remote
+    Desktop on with NLA off (2026-11-12). C5 uses the default client and is reported as "the
+    predicted effect was not seen"; the revert ends the C5 session (both 2026-11-13). All in
+    `REPO\docs\DECISIONS.md`.
+
 Not an item yet — no longer blocks anything (the revisions list was not sent, 2026-10-15)
     The REVISED-to-FINAL diff has never been run. Measured 2026-09-10: FINAL is 6,395 words
     against REVISED's 7,742. **Re-measure rather than quoting these.**
@@ -400,22 +425,21 @@ Not an item yet — no longer blocks anything (the revisions list was not sent, 
 
 Built and tested, in `REPO\src\telos\`:
     `eventkey.py`, `variance.py`, `differential.py`, `baseline.py`, `report.py`, `model.py`,
-    `synth.py`. Two test files in `REPO\tests\`, 58 tests passing.
+    `synth.py`. Two test files in `REPO\tests\`, 65 tests passing (run 2026-11-13). Value keying
+    for the short field list, the control-run check (item 24) and field-loss pairing (item 30)
+    were added 2026-11-03.
 
 Designed only, no code exists:
     the event-key to rule to ATT&CK dependency index, impact scoring, remediation candidate
-    generation, all of Phase 5, and the capture harness that would drive Phases 0 to 3. Also
-    designed only, added to the diagram 2026-09-28: the check on the control runs (the code's
-    `VarianceModel.from_control()` does not check yet, item 24), the per-run check that voids and
-    re-captures a failed run (item 22), and confirming the change on the host (item 28).
-
-Built but not connected:
-    `field_loss_pairs()` in `eventkey.py` is tested, but `analyse()` and `report.py` never call
-    it; only `src/demo.py` does. The diagram draws pairing inside the flow. Checked 2026-09-28,
-    item 30.
+    generation, all of Phase 5, the reader for Wazuh's archive JSON, and the capture harness that
+    would drive Phases 0 to 3. Also designed only, added to the diagram 2026-09-28: the per-run
+    check that voids and re-captures a failed run (item 22), and confirming the change on the host
+    (item 28).
 
 The lab:
-    SIEM-01 and WIN-EP-01 exist. The runbook is partly executed. Read `REPO\docs\WORKLOG.md`
+    SIEM-01 and WIN-EP-01 exist; DC-01 will not be built. The runbook is partly executed: no
+    golden snapshot, no change script and no capture run exist yet (2026-11-13). Read
+    `REPO\docs\STATUS.md` ("Now, as of 2026-11-13" and "Lab state") and `REPO\docs\WORKLOG.md`
     for how far rather than assuming.
 
 T1 is final and there is no fallback (`REPO\docs\DECISIONS.md` 2026-09-26). T2 and T3 were not

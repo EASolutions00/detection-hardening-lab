@@ -10,6 +10,7 @@ experiment can be reconstructed exactly.
 | `sysmonconfig.xml` | Decides which Sysmon events exist at all. A change here is a telemetry change and silently breaks comparison across runs. |
 | `ossec.conf` (relevant blocks) | Must contain `<logall_json>yes</logall_json>`. Without it T1 is impossible. |
 | Wazuh agent `<localfile>` block | Points at `Microsoft-Windows-Sysmon/Operational`. |
+| `c5-client-no-nla.rdp` | **Test file, not a pinned config.** An RDP client file that skips the password check before the session (`enablecredsspsupport:i:0`). Used once, 2026-11-12, in the NLA on test (COMMANDS 2.12). Not used by the harness: C5 uses the default client (DECISIONS 2026-11-13). Holds no password. |
 
 ## What the pinned Sysmon config does not log
 

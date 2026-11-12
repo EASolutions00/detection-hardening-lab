@@ -1130,8 +1130,9 @@ Team was.
 (DECISIONS 2026-11-12). **Points 3 and 4 answered 2026-11-12 by the NLA on test** (below). **Point 5 decided
 2026-11-13: option (a), the default client, C5 reported as "the predicted effect was not seen"** (DECISIONS
 2026-11-13). **The unattended sign-in in point 3 tested 2026-11-12** (below): a stored password works. **Point 2
-(ending the session) decided 2026-11-13:** the revert before each run ends it (DECISIONS 2026-11-13). Left open: a
-snapshot revert is assumed to equal the tested restart; check it once the golden snapshot exists. Found 2026-11-12 by chat ee84ae3f, in the C5 RDP test (WORKLOG 2026-11-12, COMMANDS 2.12). The
+(ending the session) decided 2026-11-13:** the revert before each run ends it (DECISIONS 2026-11-13). Snapshots are
+taken cold (runbook Phase 5), so a revert is a fresh boot, the state that was tested. Left open: confirm it on the
+first real revert of the golden snapshot. Found 2026-11-12 by chat ee84ae3f, in the C5 RDP test (WORKLOG 2026-11-12, COMMANDS 2.12). The
 test's main question is answered: a local-account RDP sign-in from the host fires rule 92653 (DECISIONS
 2026-11-11). Four facts found on the way change the C5 test design.
 

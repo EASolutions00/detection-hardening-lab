@@ -675,6 +675,15 @@ noise into the exact window you are measuring.
       clock. All six `time.synchronize.*` switches are already `FALSE` (OPEN-QUESTIONS 6), so
       Tools will not correct it either, which is the intended behaviour and the reason cold is
       required rather than merely preferred.
+- [ ] **Baseline settings decided after this phase was written** (check each one in the guest before the
+      snapshot):
+      - LSA Protection **off**: `RunAsPPL = 0` (DECISIONS 2026-11-03). C3 turns it on.
+      - Remote Desktop **on**, NLA **off**: `fDenyTSConnections = 0`, `RDP-Tcp\UserAuthentication = 0`; firewall
+        rule `Remote Desktop - User Mode (TCP-In)` enabled with `RemoteAddress 10.20.10.1` only (DECISIONS
+        2026-11-12). C5 turns NLA on. The guest commands are in COMMANDS 2.12.
+      - **No `eli` session at shutdown.** Sign out, then shut down from the sign-in screen, so every revert boots
+        with nobody signed in (DECISIONS 2026-11-13, the C5 session).
+      - On the host, not in the snapshot: `eli`'s password stored as `TERMSRV/10.20.10.20` (`cmdkey`, COMMANDS 2.12).
 - [ ] Take snapshot `golden-base`.
 - [ ] Boot, apply Config S (Defender off, Windows Update off, scheduled tasks disabled),
       **then read the settings back and confirm they actually took effect**, shut down,

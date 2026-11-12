@@ -61,7 +61,7 @@ physical drive (WORKLOG 2026-09-28, sixth), which is why the backups go there.
 | `docs/demo-output.txt` | Output of `src/demo.py` (COMMANDS Part 4 says how to make it) | COPY |
 | `docs/FILE-MAP.md` | This file | SOURCE |
 | `lab/blueprint.md` | Lab design, resource budget, the change catalogue (section 8) | SOURCE |
-| `lab/configs/` | `sysmonconfig.xml`, `wazuh-agent-ossec.conf`, README. Pinned; hash them | SOURCE |
+| `lab/configs/` | `sysmonconfig.xml`, `wazuh-agent-ossec.conf`, README. Pinned; hash them. Also `c5-client-no-nla.rdp`, a test file from 2026-11-12, not pinned | SOURCE |
 | `lab/scripts/README.md` | Rules for the hardening-change scripts. **No change script exists yet** | SOURCE |
 | `lab/scripts/telos-archive` | Helper on SIEM-01 that reads and exports the Wazuh archive (never writes to it), run as root through one sudoers rule | SOURCE |
 | `lab/scripts/telos-fence.cs` | Makes one process, so Sysmon marks the edge of a capture window | SOURCE |
@@ -195,6 +195,11 @@ the lab work starts.
 Four files: a password file for each guest VM, and the SSH key pair for SIEM-01. Commands read them
 into a variable (COMMANDS.md). **Never print, echo, log or commit them.** No backup was found on
 2026-10-15. If the folder is lost, every command that reads it stops working until new ones are made.
+
+**Not in this folder, but private too (added 2026-11-13):** the host's Windows Credential Manager holds `eli`'s
+guest password as `TERMSRV/10.20.10.20`, stored 2026-11-12 with `cmdkey` for the C5 sign-in. List it with
+`cmdkey /list:TERMSRV/10.20.10.20`, remove it with `cmdkey /delete:TERMSRV/10.20.10.20`. On SIEM-01,
+`/home/eli/c5/` holds one pattern file for the archive reads (no secret).
 
 ---
 

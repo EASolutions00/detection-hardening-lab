@@ -1,8 +1,9 @@
 # STATUS
 
 Current blockers and dates. This file changes often. CLAUDE.md does not.
-Last updated: 2026-11-12 (chat ee84ae3f), only for DC-01 being dropped and the C5 tests. The rest dates from
-2026-11-02 to 2026-11-03 (chat 27d2595d).
+Last updated: 2026-11-13 (chat ee84ae3f, end-of-day check): DC-01 dropped, the C5 tests and decisions, "Next, in
+order", "Also open" and "Lab state". The deadline, checkpoint and adviser sections date from 2026-11-02 to 2026-11-03
+(chat 27d2595d).
 
 Every item here must also exist in OPEN-QUESTIONS.md or DECISIONS.md. This file only
 says which ones matter right now. Where every file lives, inside and outside the repo:
@@ -93,6 +94,20 @@ controls), and record the miss in WORKLOG the same day.
    is driven from the host with no person at the keyboard, and whether Remote Desktop is on in WIN-EP-01.
 4. Golden snapshot, a minimal harness, one capture window by hand as a trial, then the spike.
 
+**Now, as of 2026-11-13: the lab steps before the golden snapshot, in order.**
+- **Done:** C5 is designed and tested end to end (DECISIONS 2026-11-12, 2026-11-13 twice; OPEN-QUESTIONS 37): baseline
+  Remote Desktop on with NLA off; the default client; the sign-in from the host with the stored password; no
+  sign-out step, the revert ends the session.
+- **a. LSASS trial part 2** (C3 in Config S, Defender off): revert WIN-EP-01 to `pre-lsass-trial-2026-11-03`, turn
+  Defender off, run the three tests again, look for rule 92900 (OPEN-QUESTIONS 35, 36).
+- **b. The C1 test** (WDigest, rule 60118): not started; its attack test is chosen during lab setup (DECISIONS
+  2026-10-01).
+- **c. The golden snapshot** (runbook Phase 5, taken cold): the baseline now also needs LSA Protection off, Remote
+  Desktop on with NLA off and the firewall rule for `10.20.10.1`, and no `eli` session at shutdown.
+- **d.** Then the minimal harness, one capture window by hand, and the spike. **Checkpoint 2026-11-07 (spike) was
+  missed** (no spike run; first recorded 2026-11-13), and 2026-11-30 (data collection) cannot be met. New dates are
+  not set; the student decides them.
+
 ## Still waiting on the student
 
 - **Item 15 answered 2026-10-15:** the submitted Word file and PDF carry all of FINAL's text and the four
@@ -124,20 +139,29 @@ and with them only C1, C3 and C5 can blind a detection (`DECISIONS.md` 2026-10-0
 
 - Item 1, the catalogue. 14 changes; several control IDs still `(unverified)`. It still blocks data
   collection. The count no longer has to reach 16.
-- Item 26. The harness's own `vmrun` guest calls most likely write a batch logon each, inside every capture
-  window: 1,641 on 2026-09-02. With Credential Validation on, probably a 4776 each too.
+- Item 26. **Cause confirmed 2026-11-12:** each `vmrun` guest call writes two 4624 type 4 logons by `vmtoolsd.exe`,
+  and rule 67022 (level 3) fires on each; with Credential Validation on, also two 4776 (2026-11-03). The harness must
+  count its calls per run.
 - Item 27. The host's VMware network adapters broke twice with no known cause. The harness must check the
   path to SIEM-01 before each run.
 - Item 28. Events written before the Wazuh agent starts never reach the archive, so boot-time checks such
-  as Wininit event 12 must be made inside the guest.
+  as Wininit event 12 must be made inside the guest. Seen again after the 2026-11-12 restart: 0 event 6005, 0
+  Wininit.
 - Item 23. The spike must run `analyse()` on control-versus-control pairs and find none.
 - Item 22. The stimulus is asserted identical across runs and never verified.
 - Item 31. The event key has no host part. No longer arises with one Windows host (DC-01 dropped 2026-11-11).
 
 ## Lab state
 
-- No lab VM was running on 2026-09-28 (`vmrun -T ws list`: `Total running VMs: 0`). Check with `vmrun`
-  rather than trusting this line.
+- **At the end of 2026-11-13 (chat ee84ae3f):** both VMs running (`vmrun -T ws list`: 2). WIN-EP-01 is in **no
+  snapshot**: Remote Desktop on, **NLA on** (from the NLA on test), firewall rule open to `10.20.10.1`, a disconnected
+  `eli` RDP session. A revert to `pre-lsass-trial-2026-11-03` removes all of it; LSASS trial part 2 starts with that
+  revert anyway. Check with `vmrun` rather than trusting this line.
+- **Host state:** `eli`'s guest password is stored in the host's Credential Manager as `TERMSRV/10.20.10.20`
+  (`cmdkey`, 2026-11-12); the C5 harness needs it. `cmdkey /delete:TERMSRV/10.20.10.20` removes it. On SIEM-01:
+  `/home/eli/c5/p-hostip.txt`, the pattern file `"ipAddress":"10.20.10.1"`.
+- **Time sync is off on both VMs.** Suspend a VM and its clock goes stale; shut it down or power-cycle instead
+  (WORKLOG 2026-11-11 to 2026-11-12).
 - Host VMnet2 is at `10.20.10.1` again after a hand repair (item 27). Pre-flight now checks it.
 - DC-01 does not exist and will not be built (DECISIONS 2026-11-11).
 - Both VM folders on F: have a `.vmx.lck` lock folder dated 2026-10-08 13:10, with no record. The VMware logs
@@ -146,18 +170,15 @@ and with them only C1, C3 and C5 can blind a detection (`DECISIONS.md` 2026-10-0
 
 ## Recently settled (details in DECISIONS.md)
 
-- 2026-11-12: **tested.** A fresh boot leaves no `eli` session, and a `vmrun` guest call does not create one: the C5
-  sign-in gave type 10 with 92653 both times. **Decided 2026-11-13:** no sign-out step; the revert ends the session;
-  the golden snapshot is taken at the sign-in screen. Also confirmed: each `vmrun` guest call writes two type 4 logons that fire rule 67022
-  (item 26).
-
-- 2026-11-12: **tested.** The C5 sign-in needs no person at the keyboard: with `eli`'s password stored once on the
-  host (`cmdkey`), `mstsc /v:10.20.10.20` signed in twice with no box and fired 92653. Ending the session is still
-  open; recommended: rely on the revert before each run (item 37).
-
+- 2026-11-13: **decided.** No sign-out step for C5; the revert before each run ends the session; the golden snapshot
+  is taken cold with no `eli` session. Tested 2026-11-12: a fresh boot leaves no `eli` session, and a `vmrun` guest
+  call does not create one (type 10 with 92653 both times). Also confirmed: each `vmrun` guest call writes two type 4
+  logons that fire rule 67022 (item 26).
 - 2026-11-13: **decided.** C5 uses the default RDP client and is reported as "the predicted effect was not seen".
   The refused no-check sign-in is prevention, not a blind spot (blueprint condition (d)). Positive cases stay C1 and
   C3 (item 37, point 5).
+- 2026-11-12: **tested.** The C5 sign-in needs no person at the keyboard: with `eli`'s password stored once on the
+  host (`cmdkey`), `mstsc /v:10.20.10.20` signed in twice with no box and fired 92653.
 
 - 2026-11-12: **tested.** NLA on and off give the same events with the default client (two type 3 NTLM with 92657,
   then two type 10 with 92653). With a client that skips the password check, NLA off gives type 10 and 92653 only,

@@ -34,6 +34,12 @@ has nothing to do with NLA. Guard: the run check confirms a type 10 logon in the
 the golden snapshot exists. The harness must also count its `vmrun` guest calls, because each adds two type 4 logons
 and two rule 67022 alerts (OPEN-QUESTIONS 26).
 
+**Clarified 2026-11-13, same chat, in the end-of-day check.** Runbook Phase 5 requires every snapshot to be taken
+**cold**, with the VM powered off, so a revert boots the guest fresh. "At the sign-in screen" therefore means: shut
+WIN-EP-01 down cleanly with no `eli` session (from the sign-in screen), then take the snapshot powered off. A revert
+then gives the same state as the restarts tested above (a fresh boot, no `eli` logon). The one check left is the
+first real revert.
+
 ---
 
 ## 2026-11-13 - C5 uses the default RDP client; C5 is reported as "the predicted effect was not seen"
@@ -104,6 +110,9 @@ rule 4).
   only a client that skips the password check shows a difference (OPEN-QUESTIONS 37, points 3 and 5).
 - C5's control ID is still `(unverified)` in the catalogue (`lab/blueprint.md`).
 - Whether TermService starts by itself after a reboot with Remote Desktop on. Check before the golden snapshot.
+  **Seen 2026-11-12:** after two clean restarts (`vmrun reset soft`), RDP sign-ins worked 4 and 7 minutes later with no
+  one starting the service (COMMANDS 2.12, "The session checks"). So it starts by itself. Its startup type was not
+  read.
 
 **Cost if wrong:** if a panel member holds that the baseline must be the Windows default, C5 is reported as "a default
 on this build" and drops out, as in option (b). If NLA on and off give the same events, C5 is reported as a change with

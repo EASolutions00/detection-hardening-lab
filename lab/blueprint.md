@@ -374,6 +374,10 @@ have no rule that reads their evidence. Details: OPEN-QUESTIONS 1, "Which change
 number and registry path; its Windows 11 DISA V-ID is not confirmed. C5 to C8 have correct
 settings but **unverified IDs**.
 
+**Measured 2026-11-12, C5:** with the default RDP client, NLA off and NLA on wrote the same events (two type 3 NTLM
+with rule 92657, two type 10 with rule 92653), so the row's "4624 / 4625 distribution shifts" was not seen. C5 stays
+in class C and is reported as "the predicted effect was not seen" (DECISIONS 2026-11-13; OPEN-QUESTIONS 37).
+
 **Corrected 2026-09-14: C2's stated telemetry effect was impossible.** The row said "4776 package
 name changes". Microsoft's reference page for event 4776 states that its Authentication Package
 field is always `MICROSOFT_AUTHENTICATION_PACKAGE_V1_0`, so it cannot change. The NTLM version is

@@ -51,7 +51,27 @@ and rule 67022 (level 3) fired on each logon. Item 28 seen again: 0 event 6005 a
 line failed to parse while SIEM-01 was still writing it; the next reads skip such lines.
 
 **State left:** WIN-EP-01 running, NLA on, a disconnected `eli` RDP session from check (b) (the next restart or revert
-removes it). Not committed yet.
+removes it). Committed and pushed as `4449c13`.
+
+**End-of-day check** (student: "run full check today what we did, update all that needs to update so we can
+completely continue to next session"). `pytest`: 65 passed. `check_docs.py` with the thesis folder: 62 files, 179
+pattern hits, 13 in live documents, all in text from before today and none a real contradiction (for example
+`ACTIVITY-DIAGRAM-EXPLAINED.md:1175` states the correct rule). Found and fixed:
+- **The golden snapshot is cold** (runbook Phase 5), so "at the sign-in screen" means: shut down with no `eli`
+  session, snapshot powered off. A revert is then a fresh boot, the tested state. Note added to DECISIONS 2026-11-13.
+- **TermService starts by itself at boot:** RDP worked after both restarts. Note added to DECISIONS 2026-11-12.
+- **Checkpoint 2026-11-07 (spike) was missed** and had no record; 2026-11-30 (data collection) cannot be met. New
+  dates not set (STATUS).
+- STATUS: "Next, in order" now has the current lab order, plus "Lab state", items 26 and 28, and "Recently settled"
+  in date order. PROMPT-new-chat.md was stale from before today (58 tests, items 24 and 30 "not built", items 34 to
+  37 missing); updated. RUNBOOK Phase 5: a checklist of the baseline settings decided after it was written.
+  FILE-MAP: the stored host credential and `/home/eli/c5/`. `lab/configs/README.md`: the `.rdp` test file.
+  `lab/blueprint.md`: C5's measured result under the catalogue.
+- **Not changed, for the student:** `proposal-form-SIMPLIFIED.md` (thesis folder) line 14 says "the three changes
+  that can create a blind spot are all local". C5 is still local, but it is now reported as "the predicted effect
+  was not seen". Decide the wording when "Scale of the Experiment" is written.
+
+**Next session starts with:** LSASS trial part 2 (STATUS, "Now, as of 2026-11-13", step a).
 
 ---
 
