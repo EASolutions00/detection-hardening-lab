@@ -734,6 +734,26 @@ screen unlock with the password; one host call, `& $vmrun -T ws -gu eli -gp $pw 
 two, and the count became `2`. `show <file> 1 <date>` printed one archived event 10 with `lsass.exe`. The CIS values (Process Creation: Success; Credential Validation: Success and Failure) are general
 knowledge, to be matched against the benchmark text when the change scripts are written.
 
+### 2.12 The C5 RDP test (2026-11-11 to 2026-11-12)
+
+Purpose: prove that a local-account RDP sign-in from the host fires rule 92653 (DECISIONS 2026-11-11). Result and
+findings: OPEN-QUESTIONS 37. `$vmrun`, `$win` and `$siem` are the `vmrun.exe` path and the two `.vmx` files on F:.
+
+| Step | Where, by whom | Command | Result seen |
+|---|---|---|---|
+| Revert (2026-11-11) | host, Claude | `& $vmrun -T ws revertToSnapshot $win pre-lsass-trial-2026-11-03` | Exit 0. The 3.3 GB trial delta `000004.vmdk` gone; new `000006.vmdk`, 10 MB |
+| Start both (2026-11-11) | host, Claude | `& $vmrun -T ws start $siem nogui`, then `& $vmrun -T ws start $win` | `Total running VMs: 2`. Both VMs were later suspended, not shut down |
+| Restart with a correct clock (2026-11-12) | host, **student** (the same command was refused by the app for Claude) | revert `$win` again; `start $siem nogui` (resumes), wait for `checkToolsState` = `running`, `stop $siem soft`, `start $siem nogui`; `start $win` | All exit 0, `vmss left: 0`. SIEM-01 `date -u` 13:22:35Z against host 13:22:36Z |
+| Read RDP state (guest) | guest, student | `Get-ItemProperty` of `fDenyTSConnections` and `RDP-Tcp\UserAuthentication`; `Test-Path` of the policy key; `Get-Service TermService`; `Get-NetFirewallRule -DisplayGroup 'Remote Desktop'`; `Get-NetConnectionProfile` | `1`; `1`; `True`, but `Get-ItemProperty` on it gave no output (empty key); `Stopped`; 3 rules, all `False`; `NAT` and `LAB` both `Public` |
+| Turn RDP on, NLA off (guest) | guest, student | `Set-ItemProperty ... fDenyTSConnections -Value 0`; `Set-ItemProperty ... UserAuthentication -Value 0`; `Get-NetFirewallRule -DisplayName 'Remote Desktop - User Mode (TCP-In)' \| Set-NetFirewallRule -Enabled True -RemoteAddress 10.20.10.1`; `Start-Service TermService` | No output. Checks: `0`, `0`, `RemoteAddress 10.20.10.1`, listening on `0.0.0.0:3389` and `[::]:3389` |
+| Port test | host, Claude | `Test-NetConnection 10.20.10.20 -Port 3389` | `TcpTestSucceeded : True`, source `10.20.10.1` |
+| Sign-in | host, student | `mstsc /v:10.20.10.20`, as `.\eli` | Twice with `eli` signed in at the console (type 7), once after signing out (type 10) |
+| Guest events | guest, student | `Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4624,4625; StartTime=[datetime]'2026-11-12T13:42:00Z'}`, fields read from the event XML | See OPEN-QUESTIONS 37 |
+| Archive | host, Claude | `ssh ... "mkdir -p /home/eli/c5"`; `scp` of the pattern file `"ipAddress":"10.20.10.1"` (LF, 0 CR) to `/home/eli/c5/p-hostip.txt`; `telos-archive show /home/eli/c5/p-hostip.txt 60` | 15 lines; rule ID read from each line's `rule.id`. 92653 on both type 10 lines |
+
+**Undo.** A revert to `pre-lsass-trial-2026-11-03` removes every guest change above. On SIEM-01: `rm -r
+/home/eli/c5`. All steps are safe to re-run.
+
 ---
 
 ## Part 3: Read-only checks (safe, change nothing)

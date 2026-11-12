@@ -944,6 +944,8 @@ lost. None is decided.
    text at `v4.14.7` (`0840-win_event_channel.xml`): 92653 needs only parent 92651 and `logonType` 10, and 92651
    needs only logon success and a non-loopback IPv4 address. No domain check. T1078.002 is a label only. So C5 uses a
    local account from the host. Not yet tested in the lab. Point 2 above no longer arises.
+   **Tested 2026-11-12: a local-account RDP sign-in from the host fired 92653** (two type 10 logons at 14:16:39Z).
+   Details and three new problems for the C5 test: item 37.
 
 **Also, a wording gap, not a design question:** Sheet 1's Box 1 says it pins "the attack tests, window and
 repeats", while FINAL's run inputs say the thresholds are fixed at the same time. One string in
@@ -1119,6 +1121,55 @@ failed`), as WORKLOG already recorded for the NAT adapter. Tools must be copied 
 Team was.
 
 **Blocks:** C3, the LSASS trial (item 35) and the golden snapshot.
+
+---
+
+## 37. The C5 test: NLA is already on, the logon type depends on the session, and the client checks the password first
+
+**Status:** Open. Found 2026-11-12 by chat ee84ae3f, in the C5 RDP test (WORKLOG 2026-11-12, COMMANDS 2.12). The
+test's main question is answered: a local-account RDP sign-in from the host fires rule 92653 (DECISIONS
+2026-11-11). Four facts found on the way change the C5 test design.
+
+**What was measured.** WIN-EP-01 at `pre-lsass-trial-2026-11-03`, Remote Desktop turned on, NLA turned off, firewall
+rule `Remote Desktop - User Mode (TCP-In)` open to `10.20.10.1` only. Sign-ins by the student with `mstsc /v:10.20.10.20`
+as `.\eli`. Events from the archive (`telos-archive show`, pattern `"ipAddress":"10.20.10.1"`):
+
+| Sign-in | `eli` signed in at the console? | 4624 written | Rules |
+|---|---|---|---|
+| 13:44:03Z | Yes | two type 3 (NTLM), then two type 7 | 92657 on each type 3; none on type 7 |
+| 13:45:25Z | Yes | the same | the same |
+| 14:16:36Z | No, signed out first | two type 3 (NTLM), then two type 10 | 92657 on each type 3; **92653 on each type 10** |
+
+Each sign-in also wrote one 4648 (a sign-in with typed credentials), with no rule. No 4625 (failed logon).
+
+**1. NLA is on in the baseline today.** Before any change: `fDenyTSConnections = 1` (Remote Desktop off) and
+`UserAuthentication = 1` (NLA required). No Group Policy value overrides either (the policy key exists and is
+empty). C5 sets `UserAuthentication = 1`, so in today's image C5 changes nothing. This is the same problem as C3
+(item 36). **Ways out, none decided:** (a) the baseline turns Remote Desktop on with NLA off, and C5 turns NLA on;
+cost: a weaker baseline, stated, as for C3; (b) drop C5, which leaves C1 and C3.
+
+**2. The logon type depends on the session.** When `eli` already had a session, RDP took it over and Windows wrote
+type 7, not type 10, so 92653 did not fire. With no session, type 10 and 92653. The reason given (a takeover is
+logged as type 7) is a reading of the result `(unverified)`, but the condition is measured. **The C5 test must run
+with no session of its account on the machine,** and the run check must confirm it, or C5's runs measure the
+session state and not the change.
+
+**3. The client checks the password over the network even with NLA off.** Every sign-in wrote type 3 NTLM logons
+before the session. NLA off means the server does not require this check; `mstsc` did it anyway. So with the
+default client, NLA off and NLA on may produce similar events, and C5's stated effect ("4624 / 4625 distribution
+shifts", blueprint) is not shown. **How to answer:** run the same sign-in with NLA on and compare; a client set not
+to make this check (for example `enablecredsspsupport:i:0` in an `.rdp` file, `(unverified)`) may be needed for the
+"before" side. Also not designed: how the sign-in runs with no person at the keyboard (`mstsc` asks for the password).
+
+**4. Every RDP sign-in fires 92657** (level 6, "Successful Remote Logon Detected ... NTLM authentication, possible
+pass-the-hash attack", T1550.002, T1078.002, T1021.001), on the type 3 logons. So the C5 test raises a level 6 alert
+in every run. Whether C5 also changes 92657 is part of point 3's comparison.
+
+**State left in the VM.** Remote Desktop on, NLA off, the firewall rule open to `10.20.10.1`, TermService running. In
+no snapshot: a revert to `pre-lsass-trial-2026-11-03` removes all of it.
+
+**Blocks:** the C5 attack test in the pinned list, and the golden snapshot (the baseline's NLA and Remote Desktop
+state must be decided first).
 
 ---
 

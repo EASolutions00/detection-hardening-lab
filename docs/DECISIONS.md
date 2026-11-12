@@ -26,6 +26,10 @@ from the host (`10.20.10.1`).
    and `logonType` 10. Rule 92651 needs only parent 60106 (logon success) and an IPv4 `ipAddress` that is not
    `127.0.0.1`. Neither rule checks the account's domain. T1078.002 is only a label in the `<mitre>` block. So a
    local-account RDP sign-in from the host should fire 92653. **Reading of the rule text, not yet tested in the lab.**
+   **Tested 2026-11-12: confirmed** (WORKLOG 2026-11-12, OPEN-QUESTIONS 37). An RDP sign-in from the host as the
+   local account `eli` wrote two 4624 with logon type 10 from `10.20.10.1` at 14:16:39Z, and both fired 92653
+   (level 3, `User: WORKGROUP\eli`) in the archive. Condition found on the way: `eli` must have no session on the
+   machine, or the sign-in writes type 7 and 92653 does not fire.
 3. Keep-it-simple rule (2026-10-30): add no component the study does not need to prove its claim. DC-01 cost
    1 to 2 days `(unverified)`, a network-logon test with an unsolved design (C4 needs NTLM before and Kerberos
    after, OPEN-QUESTIONS 21), and two more open points (items 31 and 32 point 2).
@@ -43,8 +47,9 @@ from the host (`10.20.10.1`).
 the endpoint. The domain served only changes that cannot. I checked the RDP rules: they need a remote logon from an
 IP address, not a domain account."
 
-**Still open:** how the RDP sign-in is driven from the host with no person at the keyboard, and whether Remote
-Desktop is enabled on WIN-EP-01 today. Neither is checked.
+**Still open:** how the RDP sign-in is driven from the host with no person at the keyboard. Not checked.
+**Answered 2026-11-12:** Remote Desktop was off on WIN-EP-01 (`fDenyTSConnections = 1`), and NLA was already on
+(`UserAuthentication = 1`). What that means for C5's baseline is OPEN-QUESTIONS 37.
 
 **Cost if wrong:** if a panel member holds that the domain was a condition of acceptance, DC-01 is built after all,
 1 to 2 days `(unverified)`, before the golden snapshot. After the golden snapshot it would cost a new snapshot and

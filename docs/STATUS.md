@@ -146,6 +146,9 @@ and with them only C1, C3 and C5 can blind a detection (`DECISIONS.md` 2026-10-0
 
 ## Recently settled (details in DECISIONS.md)
 
+- 2026-11-12: **tested.** A local-account RDP sign-in from the host fired rule 92653 (two type 10 logons). WIN-EP-01 was
+  reverted to `pre-lsass-trial-2026-11-03` first. New open item 37: NLA is already on in the baseline (the C3
+  problem again), the sign-in writes type 7 if the account already has a session, and every sign-in also fires 92657.
 - 2026-11-11: DC-01 is dropped. The lab is WIN-EP-01 and SIEM-01. C5 signs in over RDP with a local account from
   the host. C4, C6 and B5 leave the study. FINAL said the domain is required, so the simplified revision states
   the change.

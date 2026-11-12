@@ -17,6 +17,35 @@ Next:
 
 ---
 
+## 2026-11-11 to 2026-11-12 - C5 RDP test: a local-account sign-in fires rule 92653; system at about 31%
+
+**Chat ee84ae3f, continued.** Student: "lets do the C5 RDP test". Every command and result: COMMANDS 2.12. Findings:
+OPEN-QUESTIONS 37.
+
+**Before the test.** Pre-flight passed (`Total running VMs: 0`, `HypervisorPresent False`, `65 passed`, git clean,
+VMnet2 `10.20.10.1`). WIN-EP-01 had **not** been reverted after the LSASS trial: its delta `000004.vmdk` (3.3 GB) was
+last written 2026-11-03 22:49 local time, after the snapshot at 20:10. Reverted on the student's "Yes, revert". Both
+VMs were then left suspended overnight, which stops their clocks (time sync is off, DECISIONS 2026-09-03), so on
+2026-11-12 WIN-EP-01 was reverted again and SIEM-01 power-cycled. **Broke:** Claude's command for this was refused by
+the app's safety check, with no reason given; the student ran the same command, all exit 0.
+
+**Result.** Three RDP sign-ins as `.\eli` from the host. The first two, with `eli` signed in at the console, wrote
+type 3 (NTLM) and type 7, and **no 92653**. The third, after a console sign-out, wrote two type 10 at 14:16:39Z, and
+**both fired 92653** (level 3, `User: WORKGROUP\eli`). Every sign-in's type 3 logons fired 92657 (level 6, "possible
+pass-the-hash"). The archive stores `rule.id` on each line, so rules can be checked from the archive alone.
+
+**Also asked, 2026-11-12** ("evaluate the system and tell me the percentage until completion"): about 31% by weighted
+parts, range 25 to 35% `(unverified, weights are judgement)`; 4 of FINAL's 15 features fully built (27%). The harness
+(weight 25) is at about 5%. No reader of the Wazuh archive JSON exists in `src/`. Remaining work estimated at 21 to
+31 working days `(unverified)`.
+
+**State left:** WIN-EP-01 running with Remote Desktop on, NLA off, the firewall rule open to `10.20.10.1`; none of
+it in a snapshot. SIEM-01 running. `/home/eli/c5/p-hostip.txt` on SIEM-01. Not committed yet.
+
+**Chat f36a30a6**, 2026-11-12 10:56 to 11:28, a scratch folder. Written from the private chat log only. First
+request: make every chat end a task by listing what was done, even small steps. It changed one file, the private
+`~/.claude/CLAUDE.md` (the "END OF A TASK: SHOW MY PROGRESS" rule). No thesis file changed.
+
 ## 2026-11-10 to 2026-11-11 - Full sweep and feasibility review; DC-01 dropped
 
 **Chat ee84ae3f** (thesis folder). The student asked for "a full files sweep, evaluate the thesis the doability and
