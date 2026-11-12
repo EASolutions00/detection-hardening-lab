@@ -734,7 +734,7 @@ screen unlock with the password; one host call, `& $vmrun -T ws -gu eli -gp $pw 
 two, and the count became `2`. `show <file> 1 <date>` printed one archived event 10 with `lsass.exe`. The CIS values (Process Creation: Success; Credential Validation: Success and Failure) are general
 knowledge, to be matched against the benchmark text when the change scripts are written.
 
-### 2.12 The C5 RDP test (2026-11-11 to 2026-11-12)
+### 2.12 The C5 RDP test and the NLA on test (2026-11-11 to 2026-11-12)
 
 Purpose: prove that a local-account RDP sign-in from the host fires rule 92653 (DECISIONS 2026-11-11). Result and
 findings: OPEN-QUESTIONS 37. `$vmrun`, `$win` and `$siem` are the `vmrun.exe` path and the two `.vmx` files on F:.
@@ -751,8 +751,20 @@ findings: OPEN-QUESTIONS 37. `$vmrun`, `$win` and `$siem` are the `vmrun.exe` pa
 | Guest events | guest, student | `Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4624,4625; StartTime=[datetime]'2026-11-12T13:42:00Z'}`, fields read from the event XML | See OPEN-QUESTIONS 37 |
 | Archive | host, Claude | `ssh ... "mkdir -p /home/eli/c5"`; `scp` of the pattern file `"ipAddress":"10.20.10.1"` (LF, 0 CR) to `/home/eli/c5/p-hostip.txt`; `telos-archive show /home/eli/c5/p-hostip.txt 60` | 15 lines; rule ID read from each line's `rule.id`. 92653 on both type 10 lines |
 
-**Undo.** A revert to `pre-lsass-trial-2026-11-03` removes every guest change above. On SIEM-01: `rm -r
-/home/eli/c5`. All steps are safe to re-run.
+**The NLA on test (2026-11-12, all times UTC).** Same VM state as above. Purpose: OPEN-QUESTIONS 37, point 3.
+
+| Step | Where, by whom | Command | Result seen |
+|---|---|---|---|
+| Client file | host, Claude | wrote `lab/configs/c5-client-no-nla.rdp`: `full address:s:10.20.10.20`, `username:s:.\eli`, `enablecredsspsupport:i:0`, `prompt for credentials:i:0` | A client that does not check the password before the session |
+| Run A: NLA off, no-check client | host, student | `mstsc "E:\Claude general\lab\configs\c5-client-no-nla.rdp"` | Clipboard box, then two prompts answered yes; the Windows sign-in screen inside the session; desktop. 14:31:29Z |
+| Turn NLA on | guest, student, Terminal (Admin) | `Set-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name UserAuthentication -Value 1`, then read back | No output, then `1`. TermService **not** restarted. Console signed out |
+| Run B: NLA on, default client | host, student | `mstsc /v:10.20.10.20`, as `.\eli` | Signed in and out. 15:10:20Z to 15:10:24Z |
+| Run C: NLA on, no-check client | host, student | `mstsc "E:\Claude general\lab\configs\c5-client-no-nla.rdp"` | Refused: "The remote computer requires Network Level Authentication, which your computer does not support." `Error code: 0xb09`, `Extended error code: 0x0`, 18:29:42 |
+| Clocks | host, Claude | `(Get-Date).ToUniversalTime()`; `ssh ... "date -u"` | Host 18:30:38, SIEM-01 18:30:37 |
+| Archive | host, Claude | `telos-archive show /home/eli/c5/p-hostip.txt 200`; `telos-archive count /home/eli/c5/p-hostip.txt`; `telos-archive tail 2000`, kept only `agent.name = WIN-EP-01` (filtered on the host) | `count` 23, so `show` returned every match. **`show` returns the first N matches, not the last.** Events per run: OPEN-QUESTIONS 37. Run C: one Sysmon event 3 only |
+
+**Undo.** A revert to `pre-lsass-trial-2026-11-03` removes every guest change above, including NLA on. On SIEM-01:
+`rm -r /home/eli/c5`. All steps are safe to re-run.
 
 ---
 

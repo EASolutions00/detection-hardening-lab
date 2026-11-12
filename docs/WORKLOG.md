@@ -17,6 +17,32 @@ Next:
 
 ---
 
+## 2026-11-12 - NLA on test: NLA changes the events only for a client that skips the password check
+
+**Chat ee84ae3f, continued.** Student: "lets do the NLA on test". Commands: COMMANDS 2.12. Findings: OPEN-QUESTIONS 37,
+points 3 to 5. Times are UTC (the host clock and SIEM-01 matched to 1 second at 18:30).
+
+**Did.** Claude wrote `lab/configs/c5-client-no-nla.rdp`, a client file that turns off the password check before the
+session (`enablecredsspsupport:i:0`). The student ran three sign-ins: A, NLA off with that file (14:31:29Z); then NLA
+on in the guest (`UserAuthentication = 1`, read back `1`, no service restart), B with the default client (15:10:20Z),
+and C with the file again (18:29:42Z).
+
+**Result.** B wrote the same events as the NLA-off run with the default client: two type 3 NTLM (92657), two type 10
+(92653). A wrote only two type 10 (92653), no 92657. C was refused ("requires Network Level Authentication",
+`0xb09`) and wrote no logon event and fired no rule; only a Sysmon event 3 for the TCP connection to 3389, no rule.
+**So C5 shows a difference only with the no-check client.** Whether the refused attempt is prevention or a blind spot
+is open (item 37, point 5).
+
+**Broke / learned.** `telos-archive show PATTERNFILE N` returns the **first** N matches, not the last. With a big day
+this would hide the newest events. Checked with `count` (23), so nothing was missed here.
+
+**State left:** WIN-EP-01 running with Remote Desktop on, **NLA on**, firewall rule open to `10.20.10.1`; in no
+snapshot. SIEM-01 running. Not committed yet.
+
+**Next:** decide item 37 point 5 (which client, and how the refused attempt is read); design the unattended sign-in.
+
+---
+
 ## 2026-11-11 to 2026-11-12 - C5 RDP test: a local-account sign-in fires rule 92653; system at about 31%
 
 **Chat ee84ae3f, continued.** Student: "lets do the C5 RDP test". Every command and result: COMMANDS 2.12. Findings:
@@ -44,7 +70,7 @@ it in a snapshot. SIEM-01 running. `/home/eli/c5/p-hostip.txt` on SIEM-01. Commi
 
 **Then the NLA baseline was decided** (student: "option a, baseline turns NLA off"): the golden image has Remote
 Desktop on, NLA off, and the firewall rule open to `10.20.10.1` only; C5 turns NLA on (DECISIONS 2026-11-12,
-OPEN-QUESTIONS 37 point 1). Not committed yet.
+OPEN-QUESTIONS 37 point 1). Committed and pushed as `6384b64`.
 
 **Chat f36a30a6**, 2026-11-12 10:56 to 11:28, a scratch folder. Written from the private chat log only. First
 request: make every chat end a task by listing what was done, even small steps. It changed one file, the private

@@ -1127,7 +1127,8 @@ Team was.
 ## 37. The C5 test: NLA is already on, the logon type depends on the session, and the client checks the password first
 
 **Status:** Open. **Point 1 decided 2026-11-12: option (a)**, the baseline turns Remote Desktop on with NLA off
-(DECISIONS 2026-11-12). Points 2 to 4 stay open. Found 2026-11-12 by chat ee84ae3f, in the C5 RDP test (WORKLOG 2026-11-12, COMMANDS 2.12). The
+(DECISIONS 2026-11-12). **Points 3 and 4 answered 2026-11-12 by the NLA on test** (below). Point 2, the unattended
+sign-in in point 3, and new point 5 stay open. Found 2026-11-12 by chat ee84ae3f, in the C5 RDP test (WORKLOG 2026-11-12, COMMANDS 2.12). The
 test's main question is answered: a local-account RDP sign-in from the host fires rule 92653 (DECISIONS
 2026-11-11). Four facts found on the way change the C5 test design.
 
@@ -1162,12 +1163,43 @@ shifts", blueprint) is not shown. **How to answer:** run the same sign-in with N
 to make this check (for example `enablecredsspsupport:i:0` in an `.rdp` file, `(unverified)`) may be needed for the
 "before" side. Also not designed: how the sign-in runs with no person at the keyboard (`mstsc` asks for the password).
 
+**Answered 2026-11-12 by the NLA on test** (COMMANDS 2.12). Four sign-ins from the host as `.\eli`, no console
+session, events from the archive:
+
+| Run | NLA | Client | What happened | 4624 written | Rules |
+|---|---|---|---|---|---|
+| 14:16:36Z (above) | off | default (`mstsc /v:`) | signed in | two type 3 NTLM, then two type 10 | 92657 on each type 3, 92653 on each type 10 |
+| B, 15:10:20Z | **on** | default | signed in | the same: two type 3 NTLM, then two type 10 | the same |
+| A, 14:31:29Z | off | no-check (`c5-client-no-nla.rdp`) | signed in at the Windows screen | two type 10 only, **no type 3** | 92653 only, **no 92657** |
+| C, 18:29:42Z | **on** | no-check | **refused** before any sign-in screen, `0xb09` | **none** (no 4624, 4625 or 4648) | **none** |
+
+Runs A, B and the 14:16 run each also wrote one 4648, with no rule. Run C left one WIN-EP-01 line in the archive: a
+Sysmon event 3 (network connection), `10.20.10.1:55451` to `10.20.10.20:3389`, `svchost.exe`, **with no rule**.
+
+So: **with the default client, NLA on and NLA off give the same events.** C5 shows an effect only when the client
+does not check the password first. Also measured: NLA on applied to the next connection without restarting
+TermService.
+
 **4. Every RDP sign-in fires 92657** (level 6, "Successful Remote Logon Detected ... NTLM authentication, possible
 pass-the-hash attack", T1550.002, T1078.002, T1021.001), on the type 3 logons. So the C5 test raises a level 6 alert
-in every run. Whether C5 also changes 92657 is part of point 3's comparison.
+in every run. **Answered 2026-11-12:** 92657 comes from the client's password check, not from the NLA setting. It fires
+with the default client whether NLA is on or off, and never with the no-check client.
 
-**State left in the VM.** Remote Desktop on, NLA off, the firewall rule open to `10.20.10.1`, TermService running. In
-no snapshot: a revert to `pre-lsass-trial-2026-11-03` removes all of it.
+**5. What C5 shows depends on which client the test uses (open, found 2026-11-12).** With the default client, C5's
+before and after runs are the same, so C5 has no measurable effect. With the no-check client, before = two type 10
+and two 92653 alerts; after = no logon event and no alert, only a Sysmon network event that no rule reads. Two
+readings, not decided:
+- **(a) "The attack did not happen"** (item 22): NLA refused the connection, so the 92653 alert is gone because there
+  was nothing to alert on. Prevention, not a blind spot.
+- **(b) A refused attempt is invisible to the alerts:** after C5, a client that tries RDP without the password check
+  leaves no Security event and no alert. Only Sysmon event 3 records it. Whether this counts as a blind spot under the
+  study's own classes is a judgement `(unverified)`.
+
+Also open: whether the C5 test should use the no-check client at all. It is the only client that shows a difference.
+The claim that real attack tools connect this way is general knowledge `(unverified)`.
+
+**State left in the VM.** Remote Desktop on, **NLA on** (since the NLA on test), the firewall rule open to
+`10.20.10.1`, TermService running. In no snapshot: a revert to `pre-lsass-trial-2026-11-03` removes all of it.
 
 **Blocks:** the C5 attack test in the pinned list, and the golden snapshot (the baseline's NLA and Remote Desktop
 state must be decided first).

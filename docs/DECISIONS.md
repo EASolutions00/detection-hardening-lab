@@ -31,7 +31,8 @@ rule 4).
 **Not settled by this entry:**
 - Whether NLA on and NLA off produce different events with the default client: `mstsc` checked the password over the
   network even with NLA off (OPEN-QUESTIONS 37, point 3). This decision makes C5 measurable in principle. It does not
-  show that C5 has an effect.
+  show that C5 has an effect. **Tested 2026-11-12:** with the default client NLA on and off give the same events;
+  only a client that skips the password check shows a difference (OPEN-QUESTIONS 37, points 3 and 5).
 - C5's control ID is still `(unverified)` in the catalogue (`lab/blueprint.md`).
 - Whether TermService starts by itself after a reboot with Remote Desktop on. Check before the golden snapshot.
 

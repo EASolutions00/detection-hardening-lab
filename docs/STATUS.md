@@ -1,8 +1,8 @@
 # STATUS
 
 Current blockers and dates. This file changes often. CLAUDE.md does not.
-Last updated: 2026-11-11 (chat ee84ae3f), only for DC-01 being dropped. The rest dates from 2026-11-02 to
-2026-11-03 (chat 27d2595d).
+Last updated: 2026-11-12 (chat ee84ae3f), only for DC-01 being dropped and the C5 tests. The rest dates from
+2026-11-02 to 2026-11-03 (chat 27d2595d).
 
 Every item here must also exist in OPEN-QUESTIONS.md or DECISIONS.md. This file only
 says which ones matter right now. Where every file lives, inside and outside the repo:
@@ -145,6 +145,11 @@ and with them only C1, C3 and C5 can blind a detection (`DECISIONS.md` 2026-10-0
   (FILE-MAP section 6).
 
 ## Recently settled (details in DECISIONS.md)
+
+- 2026-11-12: **tested.** NLA on and off give the same events with the default client (two type 3 NTLM with 92657,
+  then two type 10 with 92653). With a client that skips the password check, NLA off gives type 10 and 92653 only,
+  and NLA on refuses the connection with no logon event and no alert. New open point: which client the C5 test uses,
+  and whether the refused attempt is prevention or a blind spot (item 37, point 5).
 
 - 2026-11-12: **tested.** A local-account RDP sign-in from the host fired rule 92653 (two type 10 logons). WIN-EP-01 was
   reverted to `pre-lsass-trial-2026-11-03` first. New open item 37: NLA is already on in the baseline (the C3
