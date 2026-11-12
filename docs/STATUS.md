@@ -146,6 +146,10 @@ and with them only C1, C3 and C5 can blind a detection (`DECISIONS.md` 2026-10-0
 
 ## Recently settled (details in DECISIONS.md)
 
+- 2026-11-12: **tested.** The C5 sign-in needs no person at the keyboard: with `eli`'s password stored once on the
+  host (`cmdkey`), `mstsc /v:10.20.10.20` signed in twice with no box and fired 92653. Ending the session is still
+  open; recommended: rely on the revert before each run (item 37).
+
 - 2026-11-13: **decided.** C5 uses the default RDP client and is reported as "the predicted effect was not seen".
   The refused no-check sign-in is prevention, not a blind spot (blueprint condition (d)). Positive cases stay C1 and
   C3 (item 37, point 5).

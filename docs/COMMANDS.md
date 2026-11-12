@@ -763,8 +763,21 @@ findings: OPEN-QUESTIONS 37. `$vmrun`, `$win` and `$siem` are the `vmrun.exe` pa
 | Clocks | host, Claude | `(Get-Date).ToUniversalTime()`; `ssh ... "date -u"` | Host 18:30:38, SIEM-01 18:30:37 |
 | Archive | host, Claude | `telos-archive show /home/eli/c5/p-hostip.txt 200`; `telos-archive count /home/eli/c5/p-hostip.txt`; `telos-archive tail 2000`, kept only `agent.name = WIN-EP-01` (filtered on the host) | `count` 23, so `show` returned every match. **`show` returns the first N matches, not the last.** Events per run: OPEN-QUESTIONS 37. Run C: one Sysmon event 3 only |
 
+**The unattended sign-in test (2026-11-12, times UTC).** Same VM state (NLA on). Purpose: OPEN-QUESTIONS 37, point 3,
+the sign-in with no person at the keyboard.
+
+| Step | Where, by whom | Command | Result seen |
+|---|---|---|---|
+| VMs running | host, Claude | `& $vmrun -T ws list` | `Total running VMs: 2` |
+| Store the password | host, **student** (types the password) | `cmdkey /generic:TERMSRV/10.20.10.20 /user:WIN-EP-01\eli /pass` | Asked for the password, then `CMDKEY: Credential added successfully.` |
+| Check it | host, student | `cmdkey /list:TERMSRV/10.20.10.20` | `Target: TERMSRV/10.20.10.20`, `Type: Generic`, `User: WIN-EP-01\eli` |
+| Two tries | host, student, console signed out first | `mstsc /v:10.20.10.20`, nothing clicked; signed out inside after each | **No box at all on either try** (no password box, no certificate box). 19:03:23Z and 19:05:27Z |
+| Clocks | host, Claude | `(Get-Date).ToUniversalTime()`; `ssh ... "date -u"` | Both 19:16:35 |
+| Archive | host, Claude | `telos-archive count` and `show` with `/home/eli/c5/p-hostip.txt` | Count 23 to 33. Each try: two type 3 NTLM (92657), one 4648, two type 10 (92653), the same as run B |
+
 **Undo.** A revert to `pre-lsass-trial-2026-11-03` removes every guest change above, including NLA on. On SIEM-01:
-`rm -r /home/eli/c5`. All steps are safe to re-run.
+`rm -r /home/eli/c5`. On the host: `cmdkey /delete:TERMSRV/10.20.10.20` removes the stored password. All steps are
+safe to re-run.
 
 ---
 

@@ -1129,7 +1129,8 @@ Team was.
 **Status:** Open. **Point 1 decided 2026-11-12: option (a)**, the baseline turns Remote Desktop on with NLA off
 (DECISIONS 2026-11-12). **Points 3 and 4 answered 2026-11-12 by the NLA on test** (below). **Point 5 decided
 2026-11-13: option (a), the default client, C5 reported as "the predicted effect was not seen"** (DECISIONS
-2026-11-13). Point 2 and the unattended sign-in in point 3 stay open. Found 2026-11-12 by chat ee84ae3f, in the C5 RDP test (WORKLOG 2026-11-12, COMMANDS 2.12). The
+2026-11-13). **The unattended sign-in in point 3 tested 2026-11-12** (below): a stored password works. Point 2
+(ending the session) stays open, with a recommendation. Found 2026-11-12 by chat ee84ae3f, in the C5 RDP test (WORKLOG 2026-11-12, COMMANDS 2.12). The
 test's main question is answered: a local-account RDP sign-in from the host fires rule 92653 (DECISIONS
 2026-11-11). Four facts found on the way change the C5 test design.
 
@@ -1180,6 +1181,18 @@ Sysmon event 3 (network connection), `10.20.10.1:55451` to `10.20.10.20:3389`, `
 So: **with the default client, NLA on and NLA off give the same events.** C5 shows an effect only when the client
 does not check the password first. Also measured: NLA on applied to the next connection without restarting
 TermService.
+
+**The unattended sign-in, tested 2026-11-12** (COMMANDS 2.12). The student stored `eli`'s password once on the host
+with `cmdkey /generic:TERMSRV/10.20.10.20 /user:WIN-EP-01\eli /pass`. Then `mstsc /v:10.20.10.20` signed in twice
+(19:03:23Z, 19:05:27Z) with **no box at all** and wrote the same events as run B: two type 3 NTLM (92657), one 4648,
+two type 10 (92653). So the default client can sign in with no person typing. Why no certificate warning appeared is
+not known `(unverified)`. The password stays on the host in Credential Manager; it must be a lab-only password.
+
+**Still open: ending the session.** Closing the `mstsc` window leaves a disconnected session, and the next sign-in
+would take it over as type 7 (point 2). **Recommended, not decided:** add nothing. The harness reverts WIN-EP-01 to
+the golden snapshot before every run, so each run starts with no `eli` session and needs one sign-in. This holds
+only if (a) the golden snapshot is taken with no `eli` session (at the sign-in screen), and (b) nothing earlier in
+the run signs `eli` in interactively, including the harness's own `vmrun` guest calls (item 26). Neither is checked.
 
 **4. Every RDP sign-in fires 92657** (level 6, "Successful Remote Logon Detected ... NTLM authentication, possible
 pass-the-hash attack", T1550.002, T1078.002, T1021.001), on the type 3 logons. So the C5 test raises a level 6 alert

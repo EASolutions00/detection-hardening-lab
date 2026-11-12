@@ -17,6 +17,29 @@ Next:
 
 ---
 
+## 2026-11-13 - The C5 sign-in works with no person at the keyboard
+
+**Chat ee84ae3f, continued.** Student asked how far the system is ("tell me the progress of the system"): still about
+31% (range 25 to 35%, `unverified`), no analysis code changed since `da4dbb7`; the lab part rose to about 57%. Then
+"if I spend 8-10 hours a day, when it will be done?": early to mid December 2026 for the system and one real run,
+plus 3 to 5 days for the data collection `(unverified)`. Then, if the professor's 50% is right: about 15 to 22
+working days. Noted: STATUS item 33 asks whether "50%" is the pre-oral requirement, not a progress figure. Then "lets
+continue".
+
+**Did.** Both VMs running (`vmrun list`). The student stored `eli`'s password on the host with `cmdkey` and ran
+`mstsc /v:10.20.10.20` twice, signing out inside after each. Times UTC on 2026-11-12, clocks equal at 19:16:35.
+
+**Result.** No box at all on either try. Each try wrote two type 3 NTLM (92657), one 4648 and two type 10 (92653),
+the same as run B. Commands: COMMANDS 2.12. Findings: OPEN-QUESTIONS 37.
+
+**Still open.** Ending the session with no person. Recommended, not decided: rely on the revert before each run, if
+the golden snapshot has no `eli` session.
+
+**State left:** WIN-EP-01 running, NLA on, no `eli` session. The password is stored on the host
+(`cmdkey /delete:TERMSRV/10.20.10.20` removes it). Not committed yet.
+
+---
+
 ## 2026-11-12 - NLA on test: NLA changes the events only for a client that skips the password check
 
 **Chat ee84ae3f, continued.** Student: "lets do the NLA on test". Commands: COMMANDS 2.12. Findings: OPEN-QUESTIONS 37,
@@ -42,7 +65,8 @@ snapshot. SIEM-01 running. Committed and pushed as `bf3ca5f`.
 **Then item 37 point 5 was decided, 2026-11-13** (student asked for the best option with pros and cons, then: "option
 A, write it into DECISIONS"). C5 uses the default client and is reported as "the predicted effect was not seen". Run
 C is prevention by blueprint condition (d), not a blind spot. Options B (no-check client as a negative control), C
-(both) and D (call it a blind spot) are written with their reasons in DECISIONS 2026-11-13. Not committed yet.
+(both) and D (call it a blind spot) are written with their reasons in DECISIONS 2026-11-13. Committed and pushed as
+`9325e4c`.
 
 **Next:** design the unattended sign-in for the default client; revert WIN-EP-01 to drop NLA on before any baseline
 work.
