@@ -945,6 +945,8 @@ lost. None is decided.
    so the window's length follows the suite. If a change makes one test run longer, the window grows and
    counts change for that reason alone. **How to answer:** decide fixed length (pad to a set time) or
    suite-driven with the duration recorded and checked by the run check (item 22).
+   **Decided 2026-11-13: fixed length** (DECISIONS 2026-11-13, "A capture window has a fixed length"); the minutes
+   are set after the spike.
 2. **Is DC-01 restored before each run?** Every capture restores WIN-EP-01's snapshot (D2). Nothing says
    whether DC-01 is restored too. If not, its state drifts across runs (logs, tickets, replication), and
    its events enter every profile. **How to answer:** decide, and take DC-01's snapshot with the golden

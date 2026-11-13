@@ -118,7 +118,11 @@ controls), and record the miss in WORKLOG the same day.
   coverage counts rules that **did fire** after the change). 94 passed. On the C3 trial it marks T1055 blind (92403
   fired before, not after), as seen in the lab. **Done 2026-11-13: report sections** (`report.py`): verdict, ranked
   blind spots with remediation level 1, coverage change; JSON and CSV exports; 101 passed. Not yet: reproducibility
-  record, remediation level 2, Navigator layer. Next candidates: the harness, the interface.
+  record, remediation level 2, Navigator layer. **Done 2026-11-13: the harness code** (`src/telos/harness.py`,
+  12 tests with a fake `vmrun`, 113 passed; fixed-length windows, DECISIONS 2026-11-13). **Not yet run on the lab.**
+  Before its first real run: the `cfg-suppressed` snapshot, the attack list and change scripts, C1's unattended
+  sign-in, a time limit for the C5 `mstsc` host step, how `runProgramInGuest` starts Atomic Red Team, the password
+  file's encoding. Next candidates: those lab steps, then the interface.
 - **c. The golden snapshot** (runbook Phase 5, taken cold): the baseline now also needs LSA Protection off, Remote
   Desktop on with NLA off and the firewall rule for `10.20.10.1`, and no `eli` session at shutdown.
 - **d.** Then the minimal harness, one capture window by hand, and the spike. **Checkpoint 2026-11-07 (spike) was

@@ -730,6 +730,11 @@ what your reproducibility claim needs. Sixteen branching snapshot chains would a
 
 ## Phase 6. The capture harness
 
+**Written 2026-11-13 as `src/telos/harness.py`** (`capture()`), with 12 tests using a fake `vmrun`, `ssh`,
+`scp` and clock; **not yet run against the lab**. The window has a fixed length (DECISIONS 2026-11-13). It records
+what requirement 3 needs but does not yet void on a moved fingerprint (OPEN-QUESTIONS 22). The student runs it: it
+passes the guest password to `vmrun`.
+
 Write this in Python on the host, in `src/`. It runs on the **Windows host, not in a VM**,
 because `vmrun.exe` is local and SIEM-01 is reachable over vmnet2 for the archive export in
 step 10.

@@ -8,6 +8,26 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-11-13 - A capture window has a fixed length
+
+**Decision (student, "A, fixed length"), chat ee84ae3f.** Answers OPEN-QUESTIONS 32, point 1. The harness fires the
+START fence, runs the attack tests, then **waits until the window reaches a fixed length** before it fires the END
+fence. The length is a hashed parameter of the run manifest, the same in every run of a comparison. A run whose tests
+take longer than the window is voided, not stretched. The number of minutes is set after the spike measures how long
+the tests take (runbook Phase 7, Q2); until then it is a setting of the harness.
+
+**Why.** Rates are counted per run (`differential.py`), which is fair only if every window has the same length. And
+the LSASS trial (2026-11-13) showed events that come after the tests end: rdrleakdiag's second injection and its
+alerts 92403 and 61625 came 60 seconds after the last test, after a suite-driven END fence.
+
+**Option not taken.** (B) Suite-driven windows with the duration recorded: shorter, but unequal, and they cut off
+delayed events.
+
+**Cost if wrong:** longer runs. If the spike shows the campaign does not fit, the window is shortened, which is a new
+parameter value and so a new comparison set; earlier runs are not mixed with later ones.
+
+---
+
 ## 2026-11-13 - Surviving coverage counts rules that did fire, not rules that could fire
 
 **Decision (student, "Did fire"), chat ee84ae3f.** Answers OPEN-QUESTIONS 39. In impact ranking (entry below), a

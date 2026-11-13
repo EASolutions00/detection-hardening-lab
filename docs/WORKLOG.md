@@ -119,8 +119,21 @@ comparison. `tests/test_report_sections.py`, 7 tests, failing first (`ImportErro
 'comparison_csv'`); **101 passed**; `src/demo.py` exit 0. On the C3 trial: "BLIND SPOTS FOUND: 1", top `Sysmon-8[]`;
 coverage 5 techniques before, 4 after, T1055 no longer detected. Weakness noted: remediation level 1 lists 15 Sysmon 1
 rules about other programs; correct by FINAL's definition but not useful advice here. Not yet: reproducibility record,
-remediation level 2, Navigator layer. Rule slip: the suite and the demo were run before being explained. Not
-committed yet.
+remediation level 2, Navigator layer. Rule slip: the suite and the demo were run before being explained.
+Committed and pushed as `b2dd1ab`.
+
+**Then the harness** (student: "lets continue", then "A, fixed length" after a review). Decided: a capture window
+has a fixed length, set after the spike (DECISIONS 2026-11-13; OPEN-QUESTIONS 32 point 1 closed). Built
+`src/telos/harness.py` from runbook Phase 6: checks before the run (lab address, SSH, `telos-archive disk`, free
+space), revert-start-settle as one reset function, change before the START fence with a confirm step, fixed window,
+END fence, drain, stop, export of every date the window touched checked against size and SHA256, counts and fired
+rules written for the analyser, and a two-part manifest whose `parameters` are hashed with sorted keys. Guest calls
+are counted; the password is read only at the moment of each call. `tests/test_harness.py`, 12 tests with a fake
+`vmrun`, `ssh`, `scp` and clock, failing first on the missing module (one test helper of Claude's built an invalid
+time and was fixed before the module was written); **113 passed**. **Not run on the lab.** Before the first real
+run: the `cfg-suppressed` snapshot, the attack list and change scripts, C1's unattended sign-in, a time limit for the
+C5 `mstsc` step, how `runProgramInGuest` starts Atomic Red Team, the password file's encoding `(unverified)`. Rule
+slip: the failing test run before being explained. Not committed yet.
 
 ---
 

@@ -56,7 +56,7 @@ because the analyser consumes event counts and does not care where they came fro
 | Stage | Module | Status |
 |---|---|---|
 | 1. Acquisition: reading the archive into counts per window | `archive.py` | done 2026-11-13; checked on real windows |
-| 1. Acquisition: snapshots, stimulus, export (the harness) | not written | **needs the lab** |
+| 1. Acquisition: snapshots, stimulus, export (the harness) | `harness.py` | written 2026-11-13 and tested with a fake `vmrun`, `ssh`, `scp` and clock; **not yet run on the lab** (needs the golden snapshot, the attack list, the change scripts) |
 | 2. Event keying | `eventkey.py` | done |
 | 2. Profiling and variance model | `variance.py` | done |
 | 3. Differential analysis | `differential.py` | done |
@@ -117,9 +117,9 @@ does not support, and would inflate the reported recall.
 
 ## Tests
 
-**101 tests** (2026-11-13): `tests/test_differential.py`, `tests/test_eventkey.py`, 11 in
-`tests/test_archive.py`, 11 in `tests/test_index.py`, 7 in `tests/test_impact.py` and 7 in
-`tests/test_report_sections.py`. (Updated from "58"; the count had not been updated since
+**113 tests** (2026-11-13): `tests/test_differential.py`, `tests/test_eventkey.py`, 11 in
+`tests/test_archive.py`, 11 in `tests/test_index.py`, 7 in `tests/test_impact.py`, 7 in
+`tests/test_report_sections.py` and 12 in `tests/test_harness.py`. (Updated from "58"; the count had not been updated since
 2026-10-15.)
 The three that matter most:
 
