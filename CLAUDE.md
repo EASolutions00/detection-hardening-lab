@@ -95,7 +95,7 @@ Uncertainty goes in `OPEN-QUESTIONS.md`, not in a comment inside a draft.
 
 ```bash
 .venv/Scripts/python.exe src/demo.py          # end to end on synthetic data
-.venv/Scripts/python.exe -m pytest tests -q   # expect: 118 passed (update when tests are added)
+.venv/Scripts/python.exe -m pytest tests -q   # expect: 120 passed (update when tests are added)
 .venv/Scripts/python.exe src/run.py --control <run dirs> --pre <run dirs> --post <run dirs> --rules data/rules/wazuh-4.14.7 --out <dir>   # one comparison from real run folders
 ```
 

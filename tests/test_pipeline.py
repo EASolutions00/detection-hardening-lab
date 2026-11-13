@@ -74,7 +74,26 @@ def test_the_whole_method_runs_and_writes_three_files(tmp_path, rules_dir):
     assert findings["ranked"][0]["key"] == INJECTION
     assert findings["ranked"][0]["classification"] == "LOST"
     assert (tmp_path / "out" / "comparison.csv").read_text(encoding="utf-8").startswith("key,")
+    layer = json.loads((tmp_path / "out" / "navigator_layer.json").read_text(encoding="utf-8"))
+    assert layer["versions"]["layer"] == "4.5" and "T1055" in {t["techniqueID"] for t in layer["techniques"]}
     assert out.ranked[0].key == INJECTION
+
+
+def test_the_report_carries_a_reproducibility_record(tmp_path, rules_dir):
+    """FINAL, Outputs: the manifest and its hash, snapshot, tests, rule set, analyser version, raw counts."""
+    control, pre, post = phases(tmp_path)
+    compare(control, pre, post, rules_dir, tmp_path / "out", analyser_version="abc1234")
+    report = (tmp_path / "out" / "report.txt").read_text(encoding="utf-8")
+    section = report[report.index("REPRODUCIBILITY"):]
+    assert parameters_hash(PARAMS) in section
+    assert "cfg-suppressed" in section and "T1003.001-13" in section
+    assert "abc1234" in section
+    for run_id in ["ctl-0", "pre-2", "post-1"]:
+        assert run_id in section
+    assert "counts.json" in section
+    data = json.loads((tmp_path / "out" / "findings.json").read_text(encoding="utf-8"))
+    assert data["reproducibility"]["parameters_sha256"] == parameters_hash(PARAMS)
+    assert data["reproducibility"]["analyser_version"] == "abc1234"
 
 
 def test_runs_with_different_parameters_are_not_compared(tmp_path, rules_dir):

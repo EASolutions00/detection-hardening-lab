@@ -9,6 +9,7 @@ method, and writes three files:
                      coverage change
     findings.json    the ranked findings, for a ticketing system
     comparison.csv   one row per event key
+    navigator_layer.json   the coverage change as an ATT&CK Navigator layer (format 4.5)
 
 Checks, each a reason the comparison would otherwise be wrong:
 - **Voided runs are left out** and named (the harness voids a run whose tests ran
@@ -29,8 +30,8 @@ from .differential import analyse
 from .impact import ImpactFinding, rank_impact
 from .index import build_index, load_rules
 from .model import AnalysisResult, Phase
-from .report import (comparison_csv, coverage_change, findings_json, render_analysis, render_coverage,
-                     render_impact, render_variance, render_verdict)
+from .report import (comparison_csv, coverage_change, findings_json, navigator_layer, render_analysis,
+                     render_coverage, render_impact, render_reproducibility, render_variance, render_verdict)
 from .variance import VarianceModel
 
 
@@ -100,8 +101,10 @@ def _valid(name: str, runs: list[RunData], min_runs: int) -> list[RunData]:
 
 
 def compare(control_dirs: list, pre_dirs: list, post_dirs: list, rules_dir: str | Path,
-            out_dir: str | Path, min_runs: int = 3) -> ComparisonOutput:
-    """Run the whole method on one comparison and write the report and exports."""
+            out_dir: str | Path, min_runs: int = 3, analyser_version: str = "unknown") -> ComparisonOutput:
+    """Run the whole method on one comparison and write the report and exports.
+
+    `analyser_version` is the git commit of the repository (src/run.py reads it)."""
     groups = {"control": [load_run(d) for d in control_dirs],
               "pre": [load_run(d) for d in pre_dirs],
               "post": [load_run(d) for d in post_dirs]}
@@ -133,11 +136,18 @@ def compare(control_dirs: list, pre_dirs: list, post_dirs: list, rules_dir: str 
     header = [f"Change: {next(iter(changes))}   parameters sha256: {next(iter(hashes))}",
               f"Runs: control {len(valid['control'])}, before {len(valid['pre'])}, after {len(valid['post'])}"
               + (f"   left out (voided): {', '.join(left_out)}" if left_out else ""), ""]
+    repro = {"parameters": params, "parameters_sha256": next(iter(hashes)),
+             "analyser_version": analyser_version,
+             "runs": [{"phase": name, "run_id": r.run_id, "valid": r.valid, "change_id": r.change_id,
+                       "folder": str(r.path)} for name, runs in groups.items() for r in runs]}
     report = "\n".join(header + [render_verdict(result, ranked), render_variance(vm),
                                  render_analysis(result), render_impact(ranked),
-                                 render_coverage(before, after, lost)])
-    files = {"report": out / "report.txt", "findings": out / "findings.json", "csv": out / "comparison.csv"}
+                                 render_coverage(before, after, lost), render_reproducibility(repro)])
+    files = {"report": out / "report.txt", "findings": out / "findings.json", "csv": out / "comparison.csv",
+             "navigator": out / "navigator_layer.json"}
     files["report"].write_text(report, encoding="utf-8")
-    files["findings"].write_text(findings_json(result, ranked, lost), encoding="utf-8")
+    files["findings"].write_text(findings_json(result, ranked, lost, repro), encoding="utf-8")
     files["csv"].write_text(comparison_csv(result), encoding="utf-8")
+    files["navigator"].write_text(navigator_layer(f"TeLoS {next(iter(changes))}", before, after, ranked),
+                                  encoding="utf-8")
     return ComparisonOutput(result=result, ranked=ranked, coverage_lost=lost, files=files, left_out=left_out)

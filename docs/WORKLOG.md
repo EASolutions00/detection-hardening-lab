@@ -140,7 +140,16 @@ automatically commit and push it"; saved as a memory note). Built `src/telos/pip
 `src/run.py`: read run folders, leave out voided runs and name them, need 3 valid runs per phase, refuse runs with
 different `parameters` hashes or after runs of more than one change, then noise floor, `analyse()`, impact ranking,
 coverage change, and `report.txt`, `findings.json`, `comparison.csv`. `tests/test_pipeline.py`, 5 tests, failing
-first (`ModuleNotFoundError`); **118 passed**. Committed and pushed automatically, as asked.
+first (`ModuleNotFoundError`); **118 passed**. Committed and pushed automatically, as asked, as `fe62aac`.
+
+**Then the reproducibility record and the Navigator layer.** The report gains FINAL's sixth section: parameters and
+their hash, analyser version (the repo's git commit, read by `src/run.py` with `git rev-parse --short HEAD`), and
+every run with its folder, used or left out; the JSON carries the same block. The Navigator layer format was read
+from MITRE's specification before writing (`attack-navigator`, `layers/spec/v4.5/layerformat.md`, fetched
+2026-11-13): `name` and `domain` required, `versions.layer` "4.5", `versions.navigator` at least "4.9.0",
+`techniqueID` required. `navigator_layer()` uses only those fields plus `color` and `comment`: red when no alert for
+the technique fired after the change, green when one did. The pipeline writes `navigator_layer.json`. Tests first,
+each failing on the missing function; **120 passed**. Committed and pushed automatically.
 
 ---
 

@@ -193,8 +193,24 @@ def render_coverage(before: set[str], after: set[str], lost: list[str]) -> str:
     return "\n".join(out)
 
 
+def render_reproducibility(repro: dict) -> str:
+    """FINAL's sixth section: everything needed to repeat or check this comparison."""
+    out = [LINE, "REPRODUCIBILITY RECORD", LINE, ""]
+    out.append(f"  parameters sha256   {repro['parameters_sha256']}")
+    out.append(f"  analyser version    {repro['analyser_version']}  (git commit of the repository)")
+    out.append("  parameters (hashed, the same in every run compared):")
+    for k, v in sorted(repro["parameters"].items()):
+        out.append(f"    {k:<22} {json.dumps(v)}")
+    out.append("  runs (raw counts in each run's counts.json, settings in its run_manifest.json):")
+    for r in repro["runs"]:
+        state = "used" if r["valid"] else "LEFT OUT (voided)"
+        out.append(f"    {r['phase']:<8} {r['run_id']:<24} {state:<18} {r['folder']}")
+    out.append("")
+    return "\n".join(out)
+
+
 def findings_json(result: AnalysisResult, ranked: list[ImpactFinding],
-                  lost_techniques: list[str] | None = None) -> str:
+                  lost_techniques: list[str] | None = None, reproducibility: dict | None = None) -> str:
     """The findings as JSON, for a ticketing system (FINAL, Exports)."""
     data = {
         "outcome": result.outcome.value,
@@ -212,7 +228,45 @@ def findings_json(result: AnalysisResult, ranked: list[ImpactFinding],
         } for i, h in enumerate(ranked, 1)],
         "coverage_lost": list(lost_techniques or []),
     }
+    if reproducibility is not None:
+        data["reproducibility"] = reproducibility
     return json.dumps(data, indent=2)
+
+
+NOT_DETECTED = "#e60d0d"
+DETECTED = "#31a354"
+
+
+def navigator_layer(name: str, before: set[str], after: set[str], ranked: list[ImpactFinding]) -> str:
+    """An ATT&CK Navigator layer of the coverage change (FINAL, Exports).
+
+    Format 4.5, from MITRE's specification (attack-navigator, layers/spec/v4.5/layerformat.md,
+    read 2026-11-13). Only verified fields are used: `name` and `domain` (required),
+    `versions.layer` "4.5" and `versions.navigator` at least "4.9.0" (required inside
+    `versions`), and per technique `techniqueID` (required), `color` and `comment`.
+
+    Red: no alert for the technique fired after the change, either because its alerts
+    stopped (coverage change) or because a lost key left it blind (the ranking).
+    Green: an alert for it still fired after the change.
+    """
+    blind = {t for h in ranked for t in h.blind_techniques}
+    techniques = []
+    for t in sorted(before | after | blind):
+        if t in after:
+            color, comment = DETECTED, "an alert for this technique still fired after the change"
+        elif t in blind:
+            color, comment = NOT_DETECTED, "no alert fired after the change; blind after a lost event key"
+        else:
+            color, comment = NOT_DETECTED, "no alert fired after the change; its alerts fired before"
+        techniques.append({"techniqueID": t, "color": color, "comment": comment})
+    layer = {
+        "name": name,
+        "domain": "enterprise-attack",
+        "versions": {"layer": "4.5", "navigator": "4.9.0"},
+        "description": "TeLoS coverage change: red = no alert fired after the change, green = still detected.",
+        "techniques": techniques,
+    }
+    return json.dumps(layer, indent=2)
 
 
 CSV_COLUMNS = ["key", "classification", "pre_total", "post_total", "pre_rate", "post_rate",

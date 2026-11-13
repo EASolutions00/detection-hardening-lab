@@ -18,6 +18,17 @@ sys.path.insert(0, str(Path(__file__).parent))
 from telos.pipeline import PipelineError, compare  # noqa: E402
 
 
+def _git_commit() -> str:
+    """The repository's current commit, recorded as the analyser version (read-only)."""
+    import subprocess
+    try:
+        p = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True,
+                           cwd=Path(__file__).parent.parent)
+        return p.stdout.strip() or "unknown"
+    except OSError:
+        return "unknown"
+
+
 def _expand(patterns: list[str]) -> list[str]:
     out: list[str] = []
     for p in patterns:
@@ -35,7 +46,8 @@ def main() -> int:
     ap.add_argument("--min-runs", type=int, default=3)
     a = ap.parse_args()
     try:
-        out = compare(_expand(a.control), _expand(a.pre), _expand(a.post), a.rules, a.out, a.min_runs)
+        out = compare(_expand(a.control), _expand(a.pre), _expand(a.post), a.rules, a.out, a.min_runs,
+                      analyser_version=_git_commit())
     except PipelineError as exc:
         print(f"cannot compare: {exc}", file=sys.stderr)
         return 2

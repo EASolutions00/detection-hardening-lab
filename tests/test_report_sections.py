@@ -97,6 +97,21 @@ def test_json_export_keeps_the_ranking_and_parses(index):
     assert data["coverage_lost"] == ["T1055"]
 
 
+def test_navigator_layer_uses_the_required_fields_of_format_4_5(index):
+    """MITRE ATT&CK Navigator layer format 4.5 (layers/spec/v4.5/layerformat.md, read 2026-11-13):
+    name and domain required; versions.layer "4.5", versions.navigator at least "4.9.0";
+    techniqueID required per technique."""
+    from telos.report import navigator_layer
+    r = result(Finding(INJECTION, Classification.LOST))
+    ranked = rank_impact(r, post({PROCESS: 5}), index, fired_after={"99001": 1})
+    layer = json.loads(navigator_layer("C3 test", {"T1055", "T1003.001"}, {"T1003.001"}, ranked))
+    assert layer["name"] == "C3 test" and layer["domain"] == "enterprise-attack"
+    assert layer["versions"]["layer"] == "4.5" and layer["versions"]["navigator"] == "4.9.0"
+    by_id = {t["techniqueID"]: t for t in layer["techniques"]}
+    assert by_id["T1055"]["color"] == "#e60d0d" and "no alert" in by_id["T1055"]["comment"]
+    assert by_id["T1003.001"]["color"] == "#31a354"
+
+
 def test_csv_export_has_one_row_per_key_and_blank_for_untested_values():
     r = result(Finding(LSASS_READ, Classification.LOST, pre_total=30, post_total=0, pre_rate=10.0,
                        post_rate=0.0, rate_ratio=0.0, q_value=0.001, cov=0.05, dispersion=1.2),
