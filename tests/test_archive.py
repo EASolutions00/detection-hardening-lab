@@ -155,6 +155,26 @@ def test_two_start_fences_for_one_run_is_an_error():
         count_window(raw, AGENT, "run-a")
 
 
+def test_rules_that_fired_inside_the_window_are_counted():
+    """Wazuh writes the alerting rule on each archive line (rule.id, rule.level).
+    Surviving coverage counts the rules that did fire (DECISIONS 2026-11-13)."""
+    def alert(text: str, rid: str, level: int) -> str:
+        rec = json.loads(text)
+        rec["rule"] = {"id": rid, "level": level}
+        return json.dumps(rec)
+
+    raw = [
+        alert(lsass_access("2026-11-13T08:28:09.0000000Z", "0x1010"), "92900", 12),   # before START
+        fence("START", "run-a", "2026-11-13T08:28:10.0000000Z"),
+        alert(logon_type2("2026-11-13T08:28:11.0000000Z"), "60118", 3),
+        alert(logon_type2("2026-11-13T08:28:11.5000000Z"), "60118", 3),
+        alert(lsass_access("2026-11-13T08:28:12.0000000Z", "0x1000"), "99999", 0),   # level 0: no alert
+        fence("END", "run-a", "2026-11-13T08:28:13.0000000Z"),
+    ]
+    w = count_window(raw, AGENT, "run-a")
+    assert w.fired == {"60118": 2}
+
+
 # --- windows into a phase ---------------------------------------------------
 
 def test_windows_become_a_phase_with_zeros_for_missing_keys():

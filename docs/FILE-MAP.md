@@ -66,8 +66,8 @@ physical drive (WORKLOG 2026-09-28, sixth), which is why the backups go there.
 | `lab/scripts/telos-archive` | Helper on SIEM-01 that reads and exports the Wazuh archive (never writes to it), run as root through one sudoers rule | SOURCE |
 | `lab/scripts/telos-fence.cs` | Makes one process, so Sysmon marks the edge of a capture window | SOURCE |
 | `src/demo.py` | Runs the whole analysis on synthetic data | SOURCE |
-| `src/telos/` | The analysis package: `archive` and `index` (both added 2026-11-13), `eventkey`, `differential`, `variance`, `baseline`, `model`, `report`, `synth`, `__init__` | SOURCE |
-| `tests/` | `test_archive.py`, `test_index.py`, `test_eventkey.py`, `test_differential.py`. 85 passed on 2026-11-13 | SOURCE |
+| `src/telos/` | The analysis package: `archive`, `index` and `impact` (all added 2026-11-13), `eventkey`, `differential`, `variance`, `baseline`, `model`, `report`, `synth`, `__init__` | SOURCE |
+| `tests/` | `test_archive.py`, `test_index.py`, `test_impact.py`, `test_eventkey.py`, `test_differential.py`. 94 passed on 2026-11-13 | SOURCE |
 | `data/rules/` | The Wazuh rule export from SIEM-01 (`wazuh-rules-4.14.7.tar.gz` and its unpacked folder `wazuh-4.14.7/`). **Not in git** (`.gitignore`); folder hash in DECISIONS, pinned table | COPY |
 | `thesis/README.md` | Proposal template and numbering rules | SOURCE |
 | `thesis/T1/README.md` | The thesis summary | SOURCE |

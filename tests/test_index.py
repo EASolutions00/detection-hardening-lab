@@ -164,6 +164,34 @@ def test_event_type_is_inherited_through_parent_rules(index):
     assert "Security-4624" in index.rule("92653").event_types
 
 
+def test_a_rule_testing_non_windows_fields_is_not_placed(tmp_path):
+    """0330-sysmon_rules.xml tests fields such as sysmon.parentImage, which Windows
+    event-channel events never carry, so its rules cannot fire here even though they
+    borrow the group sysmon_event1 (found 2026-11-13 on the real export)."""
+    old = """
+<group name="sysmon,">
+  <rule id="184666" level="12">
+    <if_group>sysmon_event1</if_group>
+    <field name="sysmon.image">svchost.exe</field>
+    <description>Sysmon - Suspicious Process - svchost.exe</description>
+    <mitre><id>T1055</id></mitre>
+  </rule>
+</group>
+"""
+    sysmon1 = SYSMON.replace('<rule id="61610"', """<rule id="61603" level="0">
+    <if_sid>61600</if_sid>
+    <field name="win.system.eventID">^1$</field>
+    <description>Sysmon - Event 1</description>
+    <group>sysmon_event1,</group>
+  </rule>
+  <rule id="61610\"""")
+    for name, text in [("base.xml", BASE), ("sysmon.xml", sysmon1), ("old.xml", old)]:
+        (tmp_path / name).write_text(text, encoding="utf-8")
+    idx = build_index(load_rules(tmp_path))
+    assert "61603" in idx.rules
+    assert "184666" not in idx.rules
+
+
 def test_event_type_is_found_through_a_parent_group(index):
     assert index.rule("92403").event_types == {"Sysmon-8"}
     assert index.rule("92900").event_types == {"Sysmon-10"}

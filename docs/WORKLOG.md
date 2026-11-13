@@ -90,7 +90,26 @@ can fire on this key". `tests/test_index.py`, 10 tests (written before the modul
 the reader's tests); **85 passed**. On the real export: 4,505 rules read, 947 placed (883 alerting) in 25 files, one
 file not parsed; 60118, 92653, 92657, 92900, 92403, 61625, 92213 and 67022 placed as measured in the lab. Found: the
 key map misses fields the rules read (OPEN-QUESTIONS 32); generic group rules attach to every 4624 key, unchecked.
-Not committed yet.
+Committed and pushed as `6d2790e`.
+
+**Then impact ranking** (student: "lets continue", then "Ranking, no weights" after a review). FINAL and Box 24 name
+four terms but no formula; decided: rank by blind techniques, then highest severity, then number of rules (DECISIONS
+2026-11-13). `tests/test_impact.py`, 6 tests, run first and failing (`ModuleNotFoundError`); then
+`src/telos/impact.py`; 91 passed. Chained on the C3 trial (one run each side, illustration only): lost `Sysmon-8[]`
+ranked first (rules 92400 to 92403, level 12). **Two findings.** (1) A bug in the index: the old syslog-format Sysmon
+rules (`0330`, testing `sysmon.*` fields) were counted as covering T1055; fixed with a failing test first, so rules
+testing fields outside `win.*` are not placed; 92 passed; the index now places 923 rules (870 alerting) in 24 files,
+not 947 / 883 / 25 as first recorded. (2) "Could fire" surviving coverage keeps almost every technique covered when a
+broad event type such as Sysmon 1 survives: new OPEN-QUESTIONS 39, "did fire" recommended, not decided. Rule slip: one
+read-only `pytest` run before explaining it.
+
+**Then "did fire"** (student: "which is best", then "Did fire"): surviving coverage counts alerting rules that fired
+at least once in the "after" runs, from each archive line's `rule.id` (DECISIONS 2026-11-13; item 39 closed). Tests
+changed first and failing (8 failed: no `fired`, no `fired_after`); then `archive.py` collects fired rules per window
+(level 1 and above), `index.py` gains `raw()`, `impact.py` uses fired rules and keeps "could fire" as context. **94
+passed.** C3 trial again: fired before {67027: 21, 92027: 4, 92032: 1, 92052: 2, 92213: 5, 92403: 1}, after the same
+without 92403; `Sysmon-8[]` now shows T1055, T1055.003 and T1055.012 blind, 15 rules as "could fire" context. Not
+committed yet.
 
 ---
 

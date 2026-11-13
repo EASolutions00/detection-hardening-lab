@@ -23,6 +23,10 @@ Three rules shape it.
 
 The fence events themselves fall inside the window and are counted. They are the
 same in every run, so they cancel out.
+
+Each window also records which rules fired (`fired`). Wazuh writes the alerting
+rule on each archive line (`rule.id`, `rule.level`); only level 1 and above
+count. Impact ranking uses these as surviving coverage (DECISIONS 2026-11-13).
 """
 
 from __future__ import annotations
@@ -139,6 +143,7 @@ class WindowCounts:
     start: str                 # the START fence's systemTime, as Windows wrote it
     end: str                   # the END fence's systemTime
     counts: dict[str, int] = field(default_factory=dict)
+    fired: dict[str, int] = field(default_factory=dict)   # alerting rule id -> alerts in the window
     broken_lines: int = 0      # lines that were not valid JSON, in the whole input
 
     @property
@@ -161,13 +166,18 @@ def count_window(lines: Iterable[str], agent: str, run_id: str,
         raise ValueError(f"run {run_id!r}: END fence ({end_text}) is before START ({start_text})")
 
     counts: dict[str, int] = {}
+    fired: dict[str, int] = {}
     for rec in mine:
         t = event_time(rec["data"]["win"]["system"]["systemTime"])
         if start <= t <= end:
             k = key_for(rec, builder)
             counts[k] = counts.get(k, 0) + 1
+            rule = rec.get("rule") or {}
+            if rule.get("id") and int(rule.get("level", 0) or 0) >= 1:
+                rid = str(rule["id"])
+                fired[rid] = fired.get(rid, 0) + 1
     return WindowCounts(run_id=run_id, agent=agent, start=start_text, end=end_text,
-                        counts=counts, broken_lines=broken)
+                        counts=counts, fired=fired, broken_lines=broken)
 
 
 def to_phase(name: str, windows: list[WindowCounts], window_minutes: float) -> Phase:

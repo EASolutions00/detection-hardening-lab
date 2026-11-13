@@ -8,6 +8,62 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-11-13 - Surviving coverage counts rules that did fire, not rules that could fire
+
+**Decision (student, "Did fire"), chat ee84ae3f.** Answers OPEN-QUESTIONS 39. In impact ranking (entry below), a
+technique counts as **still covered** if **any alerting rule with that technique fired at least once in the "after"
+runs** of the comparison, read from the `rule.id` that Wazuh writes on each archive line. Otherwise it is a **blind
+technique**. The rules that *could* fire (a rule for the technique reads an event type still observed after the
+change, from the index) are shown beside a blind technique as context, not counted.
+
+**Why.** Both sides of a comparison run the same attack tests, so an alert that fired after the change is a measured
+sign that detection of the technique still works. "Could fire" kept almost every technique covered whenever a broad
+event type such as Sysmon 1 survived: on the C3 trial, 15 Sysmon 1 rules "covered" T1055 and none of them fired.
+
+**Changes FINAL's wording.** FINAL defines surviving coverage as "other event types still observed after the change
+that also support detection of the same technique". The thesis must say "alerts for the same technique that still
+fired after the change".
+
+**Cost if wrong:** the count depends on the attack tests. A rule that would catch a real attacker but is not
+triggered by the test list makes its technique look blind. The "could fire" context in the report shows that case.
+
+**For the defense:** "We count a technique as still detected only if an alert for it actually fired after the change,
+under the same attacks. A rule that might fire is shown, but not counted."
+
+---
+
+## 2026-11-13 - Impact is a ranking by three measured numbers, not a weighted score
+
+**Decision (student, "Ranking, no weights"), chat ee84ae3f.** Module 4's impact scoring (FINAL Module 4; activity
+diagram Box 24) ranks each LOST or REDUCED event key by three numbers, in this order, and reports all three:
+1. **Blind techniques**: ATT&CK techniques of the affected rules that have **no surviving coverage**, meaning no
+   alerting rule covering the same technique can still fire on an event type that is still observed after the change.
+   "Other event types still observed" is FINAL's own wording for surviving coverage.
+2. **Highest severity**: the highest Wazuh level among the affected rules (0 to 15).
+3. **Number of affected rules.**
+
+A key that no alerting rule reads is listed with zero rules and ranked last: "affects no detection" (2026-10-01).
+
+**Why.** FINAL names four terms (severity, number of rules, tactic-level significance, surviving coverage) and calls
+the result "a weighted impact score", but no formula or weights were ever written down. Any weights would be invented,
+and "why this weight?" has no measured answer. A ranking uses only measured facts: rule levels, counts and which event
+types survived. Surviving coverage goes first because FINAL says it is the term that changes the ranking most.
+
+**Dropped, as future work:** the tactic-level significance term. It needs ATT&CK's technique-to-tactic data, a new
+download and a new component (CLAUDE.md, keep it simple).
+
+**What changes in the documents.** FINAL says "a weighted impact score" and lists tactic-level significance. The
+simplified proposal and the chapters must say "a ranking by blind techniques, highest severity and number of rules".
+`proposal-form-SIMPLIFIED.md` is not changed by this entry; the student updates it when Module 4 is written there.
+
+**For the defense:** "We do not add up weights we cannot justify. We rank by what matters most first: is any detection
+of this technique still working? Then by how severe the lost alerts were, then by how many."
+
+**Cost if wrong:** if the panel insists on one number, a score can be computed later from the same three numbers; the
+data does not change.
+
+---
+
 ## 2026-11-13 - C3's lost level-12 alerts are prevention, not a blind spot
 
 **Decision (student, "A, prevention"), chat ee84ae3f.** Answers OPEN-QUESTIONS 35, point 2. In LSASS trial part 2

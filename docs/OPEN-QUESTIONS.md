@@ -957,8 +957,11 @@ lost. None is decided.
    the first letter to reach the key map's name. This held for every field seen on 2026-11-13; Wazuh does not
    document it. The index side (rule field names to key names) is still not built.
    **Index side built 2026-11-13** (`src/telos/index.py`, read on the rule export, COMMANDS 2.15):
-   `win.eventdata.logonType` becomes `LogonType` by the same rule. On the real export: 4,505 rules read, 947 placed
-   on a Windows event type (883 alerting) in 25 files; one file not parsed (`0910-ms-exchange-proxylogon_rules.xml`).
+   `win.eventdata.logonType` becomes `LogonType` by the same rule. On the real export: 4,505 rules read, **923**
+   placed on a Windows event type (**870** alerting) in **24** files; one file not parsed
+   (`0910-ms-exchange-proxylogon_rules.xml`). (First run, committed in `6d2790e`: 947, 883 and 25. Corrected the same
+   day: the old syslog-format Sysmon rules in `0330-sysmon_rules.xml` test `sysmon.*` fields, which event-channel
+   events never carry, so they cannot fire here; they are no longer placed.)
    **Found:** the rules read fields the key map does not track, on 23 event types; for 4624 these are `IpAddress`,
    `TargetUserSid` and `WorkstationName` (60118 reads `WorkstationName`, 92651 to 92657 read `IpAddress`).
    DECISIONS 2026-10-01 says the key map changes when the index is built; **not changed yet, for the student**,
@@ -1356,6 +1359,31 @@ a labeled set) is done: there would be no positive label.
 
 **Not to be confused with** the "zero blind spots" answer corrected after the re-presentation (WORKLOG 2026-10-22):
 that was about re-running until nothing is found; this is a measured result.
+
+---
+
+## 39. Surviving coverage: rules that could fire, or rules that did fire?
+
+**Status:** Open. Found 2026-11-13 by chat ee84ae3f, building impact ranking (DECISIONS 2026-11-13, "Impact is a
+ranking"). **For the student.**
+
+**What was found.** `src/telos/impact.py` follows FINAL's wording: a technique is still covered if an alerting rule
+for it reads an event type still observed after the change. On the C3 trial (`lsass-trial-off-1` before,
+`lsass-trial-on-2` after, one run each, an illustration only), the lost key `Sysmon-8[]` (rules 92400 to 92403, level
+12) kept T1055 "covered" by 15 rules, such as 61618 to 61640, which are Sysmon 1 rules about specific processes. They
+count because Sysmon 1 events were still observed, and the key cannot tell which process an event was about. So a
+broad event type keeps almost every technique covered, and the first ranking number (blind techniques) is almost
+always 0.
+
+**Ways out:**
+1. **Keep "could fire"** (FINAL's wording). Cost: the blind-technique count rarely moves.
+2. **Use "did fire":** count only rules that actually fired in the "after" runs, read from each archive line's
+   `rule.id`. Under the same attack suite, this measures whether detection of the technique still works. Cost: a
+   change from FINAL's wording, and the reader must collect fired rules per window (small).
+
+**Recommendation (Claude):** 2, because it is measured, not inferred. **Decided 2026-11-13: 2, "did fire"**
+(DECISIONS 2026-11-13, "Surviving coverage counts rules that did fire"); the "could fire" rules stay in the report as
+context.
 
 ---
 

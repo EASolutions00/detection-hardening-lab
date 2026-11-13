@@ -17,6 +17,10 @@ How a rule is placed.
    child also reads its parent's fields (92653 reads IpAddress through 92651).
    Inherited only through a single `if_sid` parent; group parents carry only the
    event ID.
+4. **Rules that test a field outside `win.*` are not placed**, nor their children.
+   The old syslog-format Sysmon rules (0330-sysmon_rules.xml) test `sysmon.image`
+   and similar, which Windows event-channel events never carry, so they cannot fire
+   here even though they borrow groups such as `sysmon_event1` (found 2026-11-13).
 3. **Field names** are turned into the key map's names the same way the archive
    reader does: `win.eventdata.logonType` becomes `LogonType`.
 
@@ -110,6 +114,7 @@ class Rule:
     channel: str | None = None          # raw pattern on win.system.channel
     event_ids: str | None = None        # raw pattern on win.system.eventID
     conditions: tuple[Condition, ...] = ()
+    foreign: bool = False               # tests a field outside win.* (cannot fire on event-channel events)
 
 
 @dataclass
@@ -137,8 +142,12 @@ def _read_file(path: Path) -> list[Rule]:
                 own_groups |= set(_split(g.text))
             channel = event_ids = None
             conds: list[Condition] = []
+            foreign = False
             for f in el.findall("field"):
                 name, raw = f.get("name", ""), (f.text or "")
+                if not name.startswith("win."):
+                    foreign = True
+                    continue
                 pcre2 = f.get("type", "") == "pcre2"
                 negate = f.get("negate", "no") == "yes"
                 if name == "win.system.channel" and not negate:
@@ -154,7 +163,7 @@ def _read_file(path: Path) -> list[Rule]:
                 description=(el.findtext("description") or "").strip(), file=path.name,
                 mitre=tuple(i.text.strip() for i in el.findall("mitre/id") if i.text),
                 if_sid=parents, if_group=pgroups, groups=frozenset(outer | own_groups),
-                channel=channel, event_ids=event_ids, conditions=tuple(conds)))
+                channel=channel, event_ids=event_ids, conditions=tuple(conds), foreign=foreign))
     return rules
 
 
@@ -214,7 +223,7 @@ class RuleIndex:
         if rid in self._memo:
             return self._memo[rid]
         r = self._raw.get(rid)
-        if r is None or rid in seen:
+        if r is None or rid in seen or r.foreign:
             return set(), []
         seen = seen | {rid}
 
@@ -248,6 +257,10 @@ class RuleIndex:
 
     def rule(self, rid: str) -> IndexedRule:
         return self.rules[rid]
+
+    def raw(self, rid: str) -> Rule | None:
+        """Any rule as read from the files, placed or not (for its level and techniques)."""
+        return self._raw.get(rid)
 
     def rules_reading(self, key: str, builder: KeyBuilder | None = None) -> list[IndexedRule]:
         """Alerting rules that can fire on events with this key."""
