@@ -116,7 +116,9 @@ controls), and record the miss in WORKLOG the same day.
   `IpAddress`, `TargetUserSid`, `WorkstationName`); adding them changes the keys (OPEN-QUESTIONS 32). **Done
   2026-11-13: impact ranking** (`src/telos/impact.py`; DECISIONS 2026-11-13: a ranking, no weights; surviving
   coverage counts rules that **did fire** after the change). 94 passed. On the C3 trial it marks T1055 blind (92403
-  fired before, not after), as seen in the lab. Next candidates: the harness, reports, the interface.
+  fired before, not after), as seen in the lab. **Done 2026-11-13: report sections** (`report.py`): verdict, ranked
+  blind spots with remediation level 1, coverage change; JSON and CSV exports; 101 passed. Not yet: reproducibility
+  record, remediation level 2, Navigator layer. Next candidates: the harness, the interface.
 - **c. The golden snapshot** (runbook Phase 5, taken cold): the baseline now also needs LSA Protection off, Remote
   Desktop on with NLA off and the firewall rule for `10.20.10.1`, and no `eli` session at shutdown.
 - **d.** Then the minimal harness, one capture window by hand, and the spike. **Checkpoint 2026-11-07 (spike) was

@@ -108,7 +108,18 @@ at least once in the "after" runs, from each archive line's `rule.id` (DECISIONS
 changed first and failing (8 failed: no `fired`, no `fired_after`); then `archive.py` collects fired rules per window
 (level 1 and above), `index.py` gains `raw()`, `impact.py` uses fired rules and keeps "could fire" as context. **94
 passed.** C3 trial again: fired before {67027: 21, 92027: 4, 92032: 1, 92052: 2, 92213: 5, 92403: 1}, after the same
-without 92403; `Sysmon-8[]` now shows T1055, T1055.003 and T1055.012 blind, 15 rules as "could fire" context. Not
+without 92403; `Sysmon-8[]` now shows T1055, T1055.003 and T1055.012 blind, 15 rules as "could fire" context. Committed and
+pushed as `1c3141e`.
+
+**Then the report sections** (student: "lets continue"; Claude chose the report because it needs no decision, while
+the harness waits on items 22 and 32). FINAL's Outputs table lists seven sections and four exports; the code had two
+sections. Added to `report.py`: verdict, ranked blind spots with remediation level 1 (the "could fire" rules),
+coverage change (techniques whose alerts fired before and not after), JSON export of findings, CSV export of the
+comparison. `tests/test_report_sections.py`, 7 tests, failing first (`ImportError: cannot import name
+'comparison_csv'`); **101 passed**; `src/demo.py` exit 0. On the C3 trial: "BLIND SPOTS FOUND: 1", top `Sysmon-8[]`;
+coverage 5 techniques before, 4 after, T1055 no longer detected. Weakness noted: remediation level 1 lists 15 Sysmon 1
+rules about other programs; correct by FINAL's definition but not useful advice here. Not yet: reproducibility record,
+remediation level 2, Navigator layer. Rule slip: the suite and the demo were run before being explained. Not
 committed yet.
 
 ---

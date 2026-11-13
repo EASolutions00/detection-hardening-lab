@@ -435,8 +435,10 @@ Built and tested, in `REPO\src\telos\`:
     `index.py` (which Wazuh rules read an event key, from the rule export in `REPO\data\rules\`,
     not in git; added 2026-11-13), `impact.py` (ranks lost keys by blind techniques, highest
     severity, number of rules; DECISIONS 2026-11-13; added 2026-11-13), `eventkey.py`,
-    `variance.py`, `differential.py`, `baseline.py`, `report.py`, `model.py`, `synth.py`. Five test
-    files in `REPO\tests\`, 94 tests passing (run 2026-11-13). Surviving coverage counts rules
+    `variance.py`, `differential.py`, `baseline.py`, `report.py` (verdict, comparison, ranked
+    blind spots with remediation level 1, coverage change, evaluation; JSON and CSV exports;
+    2026-11-13), `model.py`, `synth.py`. Six test files in `REPO\tests\`, 101 tests passing (run
+    2026-11-13). Surviving coverage counts rules
     that did fire after the change (DECISIONS 2026-11-13). Value keying
     for the short field list, the control-run check (item 24) and field-loss pairing (item 30)
     were added 2026-11-03.

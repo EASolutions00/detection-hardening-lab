@@ -6,7 +6,14 @@ own before any other presentation layer is considered.
 
 from __future__ import annotations
 
+import csv
+import io
+import json
+from collections.abc import Mapping
+
 from .baseline import BaselineFinding
+from .impact import ImpactFinding
+from .index import RuleIndex
 from .model import AnalysisResult, Classification, ProfileOutcome
 from .variance import VarianceModel
 
@@ -103,6 +110,129 @@ def render_analysis(result: AnalysisResult) -> str:
             out.append(f"    {f.key:<34} {f.pre_total} occurrences before the change")
         out.append("")
     return "\n".join(out)
+
+
+PREVENTION_NOTE = ("A blind technique can also mean the change stopped the attack itself (prevention, as\n"
+                   "  ruled for C3 and C5); the per-run check must tell the two apart (OPEN-QUESTIONS 22).")
+
+
+def render_verdict(result: AnalysisResult, ranked: list[ImpactFinding]) -> str:
+    """FINAL's first section: no blind spot, blind spots with count and the top one, or not testable."""
+    out = [LINE, "VERDICT", LINE, ""]
+    if result.outcome is ProfileOutcome.NOT_TESTABLE:
+        out.append("  NOT TESTABLE: the capture did not record enough to compare.")
+        out.append(f"  why: {result.outcome_reason}")
+        return "\n".join(out) + "\n"
+    blind = [h for h in ranked if h.blind_techniques]
+    if not blind:
+        out.append("  NO BLIND SPOT FOUND")
+        out.append(f"  {len(ranked)} lost or reduced key(s); none left an ATT&CK technique with no alert firing after")
+        out.append("  the change.")
+    else:
+        top = blind[0]
+        out.append(f"  BLIND SPOTS FOUND: {len(blind)}")
+        out.append(f"  top: {top.key}")
+        out.append(f"       blind techniques {len(top.blind_techniques)}   highest level {top.max_level}"
+                   f"   rules {len(top.rules)}")
+        out.append("")
+        out.append("  " + PREVENTION_NOTE)
+    return "\n".join(out) + "\n"
+
+
+def render_impact(ranked: list[ImpactFinding]) -> str:
+    """FINAL's third section, with remediation level 1 under each finding.
+
+    Ranked by blind techniques, highest level, number of rules (DECISIONS 2026-11-13).
+    Remediation level 1 (FINAL Module 5): rules that read events still observed after
+    the change and cover the blind technique, but did not fire.
+    """
+    out = [LINE, "RANKED BLIND SPOTS  (blind techniques, then highest level, then number of rules)", LINE, ""]
+    if not ranked:
+        out.append("  no lost or reduced key")
+    for i, h in enumerate(ranked, 1):
+        out.append(f"  {i}. {h.classification.value:<8} {h.key}")
+        out.append(f"     blind techniques {len(h.blind_techniques)}   highest level {h.max_level}   rules {len(h.rules)}")
+        if not h.rules:
+            out.append("     no alerting rule reads this key: it affects no detection")
+            out.append("")
+            continue
+        out.append(f"     rules that read it: {', '.join(h.rules)}")
+        out.append(f"     techniques: {', '.join(h.techniques) or '(none named in the rules)'}")
+        if h.blind_techniques:
+            out.append(f"     BLIND (no alert for it fired after the change): {', '.join(h.blind_techniques)}")
+        for t, rules in h.surviving.items():
+            out.append(f"     still detected: {t} by {', '.join(rules)}")
+        for t, rules in h.could_fire.items():
+            out.append(f"     remediation (level 1) for {t}: rules that read still-observed events but did not")
+            out.append(f"       fire: {', '.join(rules)}")
+        out.append("")
+    return "\n".join(out)
+
+
+def coverage_change(fired_before: Mapping[str, int], fired_after: Mapping[str, int],
+                    index: RuleIndex) -> tuple[set[str], set[str], list[str]]:
+    """Techniques whose alerts fired before, after, and the ones that stopped firing."""
+    def techniques(fired: Mapping[str, int]) -> set[str]:
+        out: set[str] = set()
+        for rid, n in fired.items():
+            rule = index.raw(rid)
+            if n > 0 and rule is not None and rule.level >= 1:
+                out |= set(rule.mitre)
+        return out
+    before, after = techniques(fired_before), techniques(fired_after)
+    return before, after, sorted(before - after)
+
+
+def render_coverage(before: set[str], after: set[str], lost: list[str]) -> str:
+    """FINAL's fourth section: techniques covered by an alert that fired, before and after."""
+    out = [LINE, "COVERAGE CHANGE  (techniques with at least one alert that fired)", LINE, ""]
+    out.append(f"  before the change   {len(before)}: {', '.join(sorted(before)) or '-'}")
+    out.append(f"  after the change    {len(after)}: {', '.join(sorted(after)) or '-'}")
+    out.append(f"  no longer detected  {len(lost)}: {', '.join(lost) or '-'}")
+    out.append("")
+    return "\n".join(out)
+
+
+def findings_json(result: AnalysisResult, ranked: list[ImpactFinding],
+                  lost_techniques: list[str] | None = None) -> str:
+    """The findings as JSON, for a ticketing system (FINAL, Exports)."""
+    data = {
+        "outcome": result.outcome.value,
+        "outcome_reason": result.outcome_reason,
+        "ranked": [{
+            "rank": i,
+            "key": h.key,
+            "classification": h.classification.value,
+            "blind_techniques": h.blind_techniques,
+            "highest_level": h.max_level,
+            "rules": h.rules,
+            "techniques": h.techniques,
+            "still_detected_by": h.surviving,
+            "remediation_level_1": h.could_fire,
+        } for i, h in enumerate(ranked, 1)],
+        "coverage_lost": list(lost_techniques or []),
+    }
+    return json.dumps(data, indent=2)
+
+
+CSV_COLUMNS = ["key", "classification", "pre_total", "post_total", "pre_rate", "post_rate",
+               "rate_ratio", "ci_low", "ci_high", "q_value", "cov", "dispersion", "reason"]
+
+
+def comparison_csv(result: AnalysisResult) -> str:
+    """One row per event key: the telemetry comparison (FINAL, Exports). Blank = not computed."""
+    buf = io.StringIO()
+    w = csv.writer(buf, lineterminator="\n")
+    w.writerow(CSV_COLUMNS)
+    for f in result.findings:
+        row = []
+        for col in CSV_COLUMNS:
+            v = getattr(f, col)
+            if col == "classification":
+                v = v.value
+            row.append("" if v is None else v)
+        w.writerow(row)
+    return buf.getvalue()
 
 
 def render_comparison(result: AnalysisResult, naive: list[BaselineFinding],
