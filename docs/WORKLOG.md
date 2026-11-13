@@ -133,7 +133,14 @@ are counted; the password is read only at the moment of each call. `tests/test_h
 time and was fixed before the module was written); **113 passed**. **Not run on the lab.** Before the first real
 run: the `cfg-suppressed` snapshot, the attack list and change scripts, C1's unattended sign-in, a time limit for the
 C5 `mstsc` step, how `runProgramInGuest` starts Atomic Red Team, the password file's encoding `(unverified)`. Rule
-slip: the failing test run before being explained. Not committed yet.
+slip: the failing test run before being explained. Committed and pushed as `b1d4529`.
+
+**Then the pipeline** (student: "lets continue up to 100% then lets make GUI after reaching 100%. every big change
+automatically commit and push it"; saved as a memory note). Built `src/telos/pipeline.py` and the command
+`src/run.py`: read run folders, leave out voided runs and name them, need 3 valid runs per phase, refuse runs with
+different `parameters` hashes or after runs of more than one change, then noise floor, `analyse()`, impact ranking,
+coverage change, and `report.txt`, `findings.json`, `comparison.csv`. `tests/test_pipeline.py`, 5 tests, failing
+first (`ModuleNotFoundError`); **118 passed**. Committed and pushed automatically, as asked.
 
 ---
 

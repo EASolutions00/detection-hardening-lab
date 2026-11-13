@@ -438,8 +438,9 @@ Built and tested, in `REPO\src\telos\`:
     `variance.py`, `differential.py`, `baseline.py`, `report.py` (verdict, comparison, ranked
     blind spots with remediation level 1, coverage change, evaluation; JSON and CSV exports;
     2026-11-13), `harness.py` (runbook Phase 6, fixed-length windows; tested with a fake
-    `vmrun`, **not yet run on the lab**; 2026-11-13), `model.py`, `synth.py`. Seven test files in
-    `REPO\tests\`, 113 tests passing (run 2026-11-13). Surviving coverage counts rules
+    `vmrun`, **not yet run on the lab**; 2026-11-13), `pipeline.py` with the command `src/run.py`
+    (run folders to report, JSON and CSV; 2026-11-13), `model.py`, `synth.py`. Eight test files in
+    `REPO\tests\`, 118 tests passing (run 2026-11-13). Surviving coverage counts rules
     that did fire after the change (DECISIONS 2026-11-13). Value keying
     for the short field list, the control-run check (item 24) and field-loss pairing (item 30)
     were added 2026-11-03.

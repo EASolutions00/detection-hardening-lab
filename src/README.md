@@ -63,6 +63,7 @@ because the analyser consumes event counts and does not care where they came fro
 | 4. Rule-to-key index (which Wazuh rules read a key) | `index.py` | done 2026-11-13; checked on the real rule export |
 | 4. Impact ranking (blind techniques, highest severity, number of rules) | `impact.py` | done 2026-11-13; surviving coverage counts rules that did fire after the change (DECISIONS 2026-11-13) |
 | 5. Reporting | `report.py` | text sections: verdict, telemetry comparison, ranked blind spots with remediation level 1, coverage change, evaluation (2026-11-13). Exports: JSON of findings, CSV of the comparison. **Not yet:** reproducibility record (needs the harness manifest), remediation level 2, ATT&CK Navigator layer |
+| Pipeline: run folders to report and exports | `pipeline.py`, command `src/run.py` | done 2026-11-13: checks the runs belong together (one parameters hash, one change, at least 3 valid runs per phase, voided runs left out), runs the whole method, writes `report.txt`, `findings.json`, `comparison.csv` |
 | Baseline for comparison | `baseline.py` | done |
 | Data shapes | `model.py` | done |
 | Synthetic data for testing | `synth.py` | done |
@@ -117,9 +118,9 @@ does not support, and would inflate the reported recall.
 
 ## Tests
 
-**113 tests** (2026-11-13): `tests/test_differential.py`, `tests/test_eventkey.py`, 11 in
+**118 tests** (2026-11-13): `tests/test_differential.py`, `tests/test_eventkey.py`, 11 in
 `tests/test_archive.py`, 11 in `tests/test_index.py`, 7 in `tests/test_impact.py`, 7 in
-`tests/test_report_sections.py` and 12 in `tests/test_harness.py`. (Updated from "58"; the count had not been updated since
+`tests/test_report_sections.py`, 12 in `tests/test_harness.py` and 5 in `tests/test_pipeline.py`. (Updated from "58"; the count had not been updated since
 2026-10-15.)
 The three that matter most:
 

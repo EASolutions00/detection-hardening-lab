@@ -122,7 +122,10 @@ controls), and record the miss in WORKLOG the same day.
   12 tests with a fake `vmrun`, 113 passed; fixed-length windows, DECISIONS 2026-11-13). **Not yet run on the lab.**
   Before its first real run: the `cfg-suppressed` snapshot, the attack list and change scripts, C1's unattended
   sign-in, a time limit for the C5 `mstsc` host step, how `runProgramInGuest` starts Atomic Red Team, the password
-  file's encoding. Next candidates: those lab steps, then the interface.
+  file's encoding. **Done 2026-11-13: the pipeline** (`src/telos/pipeline.py`, command `src/run.py`, 5 tests,
+  118 passed): run folders to report, JSON and CSV. **Student's plan (2026-11-13): reach 100% of the system, then
+  the GUI; commit and push every big change.** Left before the GUI: reproducibility record, Navigator layer,
+  remediation level 2, and the lab steps for the first real harness run.
 - **c. The golden snapshot** (runbook Phase 5, taken cold): the baseline now also needs LSA Protection off, Remote
   Desktop on with NLA off and the firewall rule for `10.20.10.1`, and no `eli` session at shutdown.
 - **d.** Then the minimal harness, one capture window by hand, and the spike. **Checkpoint 2026-11-07 (spike) was
