@@ -8,6 +8,47 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-11-13 - C3's lost level-12 alerts are prevention, not a blind spot
+
+**Decision (student, "A, prevention"), chat ee84ae3f.** Answers OPEN-QUESTIONS 35, point 2. In LSASS trial part 2
+(Config S, Defender off; COMMANDS 2.13), test 13 (rdrleakdiag) fired rule 92403 twice and rule 61625 once, both
+level 12, with LSA Protection off, and none with it on. These lost alerts are reported as **prevention**: with LSA
+Protection on, the tool could not inject into or open `lsass.exe`, so the dump did not happen and there was nothing
+for those rules to see. C3 is not counted as a blind spot for tests 1, 2 and 13.
+
+**Why.**
+- Blueprint condition (d): a blind-spot candidate needs "the technique that rule covers is still executable after the
+  change" (`lab/blueprint.md:347`). With LSA Protection on, no tool reached `lsass.exe` (0 Sysmon 8, 0 Sysmon 10 from
+  the tools).
+- The study's own definition: a blind spot is "a place where an attack can no longer be seen"
+  (`proposal-form-SIMPLIFIED.md`, Field and Background). After C3 the attempt is still seen: rules 92032 (level 3)
+  and 92027 (level 4) fired on the test commands in both runs.
+- The same reading as C5 (DECISIONS 2026-11-13, "C5 uses the default RDP client"), where a refused attempt with no
+  alert at all was ruled prevention. Calling C3 a blind spot would contradict that.
+
+**Option not taken.** (B) "Reduced detection": the attempt goes on and only its level-12 alerts are lost, so count C3
+as a blind spot. Rejected: it breaks condition (d) and conflicts with C5.
+
+**Reported, not dropped.** The drop in alert level, from 12 (92403, 61625) to 3 and 4 (92032, 92027), is stated as a
+finding in the discussion: an analyst who filters on high-level alerts would not see the attempt after C3.
+
+**What this costs.**
+- **C1 is now the only candidate positive case, and it is untested.** If C1 also shows no blind spot, the study reports
+  that its candidate changes created no blind spot under Wazuh 4.14.7's shipped rules. The student is to tell the
+  adviser.
+- **The system cannot yet tell "attack blocked" from "evidence lost" for C3.** C3 removes Sysmon 8 and Sysmon 10 keys
+  that rule 92403 reads, so the scorer would flag it. The tests' exit codes do not show the failure: comsvcs and
+  rdrleakdiag returned 0 with LSA Protection on (OPEN-QUESTIONS 22).
+
+**For the defense:** "With LSA Protection on, the dump never reached LSASS, so the alerts for it had nothing to report.
+The attempt itself was still alerted, at a lower level. By our definition that is protection working, not a blind
+spot, and it is the same rule we applied to Remote Desktop."
+
+**Would change this:** a test that gets past LSA Protection (the "documented bypasses" in the blueprint's C3 row) and
+loses the alerts while the dump succeeds. None of the usable Atomic Red Team tests is known to be one `(unverified)`.
+
+---
+
 ## 2026-11-13 - The revert before each run ends the C5 session; the golden snapshot is taken at the sign-in screen
 
 **Decision (student, "Yes, decide it"), chat ee84ae3f.** Answers OPEN-QUESTIONS 37, ending the session. The harness

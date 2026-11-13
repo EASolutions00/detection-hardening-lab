@@ -378,6 +378,11 @@ settings but **unverified IDs**.
 with rule 92657, two type 10 with rule 92653), so the row's "4624 / 4625 distribution shifts" was not seen. C5 stays
 in class C and is reported as "the predicted effect was not seen" (DECISIONS 2026-11-13; OPEN-QUESTIONS 37).
 
+**Measured 2026-11-13, C3** (Config S, Defender off): with LSA Protection on, the LSASS tests 1, 2 and 13 never reached
+`lsass.exe`, and test 13's level-12 alerts 92403 and 61625 were gone; 92900 fired on no test tool in either state.
+Decided: these lost alerts are **prevention**, not a blind spot, by condition (d) (DECISIONS 2026-11-13). So the
+row's "Why the attack survives" does not hold for these tests. C1 is the only candidate positive case left.
+
 **Corrected 2026-09-14: C2's stated telemetry effect was impossible.** The row said "4776 package
 name changes". Microsoft's reference page for event 4776 states that its Authentication Package
 field is always `MICROSOFT_AUTHENTICATION_PACKAGE_V1_0`, so it cannot change. The NTLM version is

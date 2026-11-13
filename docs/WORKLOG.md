@@ -17,6 +17,48 @@ Next:
 
 ---
 
+## 2026-11-13 (afternoon, local) - LSASS trial part 2: rule 92900 fires on no test tool
+
+**Chat ee84ae3f, continued, another sitting.** Student: "another day. lets continue". Next in STATUS was LSASS trial
+part 2. Commands and results: COMMANDS 2.13. Findings: OPEN-QUESTIONS 35 and 36.
+
+**Did.** Both VMs were off; SIEM-01 was **suspended** (its `.vmss` from 04:49 local), so Claude power-cycled it for a
+correct clock (07:55:32 on both). Claude reverted WIN-EP-01 to `pre-lsass-trial-2026-11-03`, started it and
+disconnected its NAT adapter. The student turned Defender off and ran trial 1's three tests (ProcDump, comsvcs.dll,
+rdrleakdiag) twice: `lsass-trial-on-2` with LSA Protection on, then `RunAsPPL = 0`, restart, `lsass-trial-off-1`.
+
+**Result.** LSA Protection on: the tools never opened `lsass.exe` (0 Sysmon 10). Off: they did (`0x1fffff`, `0x1410`,
+`0x10147a`), and ProcDump wrote a 79 MB dump. **Rule 92900 fired on none of them.** It fired 14 times on Defender's
+engine and `svchost.exe` (`0x101000`, `0x1010`), because its pattern has no anchors. Process-start rules 92052, 92032
+and 92027 fired in both runs.
+
+**Corrected the same day.** Claude first wrote that these tests give C3 "no detection to lose". That was wrong: the
+first query listed only Sysmon 10 and 1. Test 13 (rdrleakdiag) started threads inside `lsass.exe` (Sysmon 8) at
+08:28:12 and 08:29:12, firing **92403 twice and 61625 once, both level 12**, with LSA Protection off; with it on,
+none. So C3 removes three alerts. Blind spot or prevention is not decided (the C5 question again). The second
+injection came after the END marker. Test 13 also left a second `lsass.exe` (PID 1840) running.
+
+**Test 9** (student: "Yes, run test 9"), run `lsass-trial-off-t9`: ProcDump `Multiple processes match the specified
+name.`, never opened `lsass.exe`, because of that second `lsass.exe`. Test order matters.
+
+**Broke / learned.** After the restart, `Set-MpPreference` had no effect until it was run again 20 seconds later,
+although the stored values were already `True` (runbook Phase 5 note added). `RunAsPPLBoot` went from 2 to 0 by
+itself. Rule slips by Claude: two read-only commands were run before being explained (`vmrun list` with the host time
+and snapshot list, and a file search for the trial-1 transcript).
+
+**State left:** both VMs running; WIN-EP-01 in no snapshot, LSA Protection off, Defender off, NAT disconnected. Not
+committed yet.
+
+**Then C3 was decided** (student: "Decide C3 first", then "A, prevention", after a review with the option of
+calling it a blind spot): the lost alerts are prevention, the same rule as C5 (DECISIONS 2026-11-13). Cost, recorded:
+C1 is the only candidate positive case left, untested; and the exit codes cannot show that the attack was blocked
+(comsvcs and rdrleakdiag returned 0), which is item 22 with real data.
+
+**Next:** the C1 test (the positive case now rests on it). Optional: test 9 on a fresh boot; tests 3, 4, 12, 14. Tell
+the adviser about C1.
+
+---
+
 ## 2026-11-13 - The C5 sign-in works with no person at the keyboard
 
 **Chat ee84ae3f, continued.** Student asked how far the system is ("tell me the progress of the system"): still about

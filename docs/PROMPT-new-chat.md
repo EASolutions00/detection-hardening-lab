@@ -339,7 +339,11 @@ Item 34 — the run check voids every post-change run of a negative control
 
 Item 35 — which LSASS tests fire rule 92900
     Part 1 of the LSASS trial (2026-11-03): Defender stopped all three tests, 0 lsass events.
-    C3 is measured with Defender off (Config S, DECISIONS 2026-11-03). Part 2 not run. Open.
+    Part 2 (2026-11-13, Defender off): tests 1, 2 and 13 never fire 92900 (it fires only on
+    Defender's and svchost's own access). Test 13 fires 92403 and 61625 (level 12) with LSA
+    Protection off, none with it on: **decided as prevention, not a blind spot** (DECISIONS
+    2026-11-13). Test 13 leaves a second `lsass.exe` running, so it must run last. Tests 3, 4,
+    9 (fresh boot), 12 and 14 not run.
 
 Item 36 — LSA Protection was already on, decided 2026-11-03
     The baseline turns it off (`RunAsPPL = 0`); C3 turns it on. Open until the golden image is
@@ -411,8 +415,9 @@ Settled 2026-11-03 to 2026-11-13, so do not reopen these
     C3 is measured with Defender off; the baseline turns LSA Protection off (both 2026-11-03).
     DC-01 is dropped; the lab is WIN-EP-01 and SIEM-01 (2026-11-11). The baseline has Remote
     Desktop on with NLA off (2026-11-12). C5 uses the default client and is reported as "the
-    predicted effect was not seen"; the revert ends the C5 session (both 2026-11-13). All in
-    `REPO\docs\DECISIONS.md`.
+    predicted effect was not seen"; the revert ends the C5 session (both 2026-11-13). C3's lost
+    level-12 alerts are prevention, not a blind spot (2026-11-13), so **C1 is the only candidate
+    positive case left, and it is untested**. All in `REPO\docs\DECISIONS.md`.
 
 Not an item yet — no longer blocks anything (the revisions list was not sent, 2026-10-15)
     The REVISED-to-FINAL diff has never been run. Measured 2026-09-10: FINAL is 6,395 words

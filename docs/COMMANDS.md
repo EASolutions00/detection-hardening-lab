@@ -794,6 +794,37 @@ safe to re-run.
 
 ---
 
+### 2.13 LSASS trial part 2, Defender off (2026-11-13, times UTC)
+
+Purpose: OPEN-QUESTIONS 35, which `GrantedAccess` each LSASS test asks for and whether rule 92900 fires, in Config S
+(DECISIONS 2026-11-03). Two runs: `lsass-trial-on-2` (LSA Protection on, C3's "after") and `lsass-trial-off-1` (LSA
+Protection off, the decided baseline, C3's "before"). Claude ran the host steps; the student ran the guest steps in an
+Administrator PowerShell in the VM window. Trial part 1's commands were taken from chat 27d2595d's transcript.
+
+| Step | Where, by whom | Command | Result seen |
+|---|---|---|---|
+| Find state | host, Claude | `vmrun -T ws list`; `Get-ChildItem ... -Filter *.vmss` | `Total running VMs: 0`; SIEM-01 **suspended** (`SIEM-01-2be98078.vmss`, 04:49 local) |
+| Power-cycle SIEM-01 | host, Claude | `vmrun start $siem nogui` (resume), wait for Tools, `vmrun stop $siem soft`, `vmrun start $siem nogui` | All exit 0; SIEM-01 07:55:32 = host 07:55:32; no `.vmss` left |
+| Revert and start | host, Claude | `vmrun revertToSnapshot $win pre-lsass-trial-2026-11-03`; `vmrun start $win gui`; `vmrun disconnectNamedDevice $win ethernet0` | All exit 0. Guest: `NAT Disconnected`, `LAB Up` |
+| Agent check | host, Claude | `telos-archive tail 2000`, WIN-EP-01 lines | 383 lines, newest 07:55:42 |
+| Starting state | guest, student | `(Get-ItemProperty HKLM:\SYSTEM\CurrentControlSet\Control\Lsa).RunAsPPL`; `Get-WinEvent` Wininit 12, newest | `2`; event 12 at 07:54:40, "protected process with level: 4" |
+| Defender off | guest, student | `Set-MpPreference -DisableRealtimeMonitoring $true -DisableBehaviorMonitoring $true -DisableScriptScanning $true -DisableIOAVProtection $true`; `Get-MpComputerStatus \| Select-Object RealTimeProtectionEnabled, BehaviorMonitorEnabled, IoavProtectionEnabled, IsTamperProtected` | `False False False False` |
+| Run `on-2` | guest, student | `Set-ExecutionPolicy -Scope Process Bypass -Force; Import-Module C:\AtomicRedTeam\invoke-atomicredteam\Invoke-AtomicRedTeam.psd1 -Force`, then `C:\telos\telos-fence.exe START lsass-trial-on-2; Invoke-AtomicTest T1003.001 -TestNumbers 1,2,13 -PathToAtomicsFolder C:\AtomicRedTeam\atomics; Invoke-AtomicTest ... -Cleanup; C:\telos\telos-fence.exe END lsass-trial-on-2` | Fences 07:58:35.60Z to 07:58:41.82Z. ProcDump `Error opening lsass.exe (896): Access is denied.`; comsvcs exit 0; rdrleakdiag "Minidump file ... can be found" |
+| LSA off | guest, student | `Set-ItemProperty HKLM:\SYSTEM\CurrentControlSet\Control\Lsa -Name RunAsPPL -Value 0; Restart-Computer` | Boot 08:25:52. Then `RunAsPPL 0`, **`RunAsPPLBoot 0`** (was 2; changed by itself); newest event 12 still 07:54:40, so none at this boot |
+| Defender off again | guest, student | the same `Set-MpPreference` line, then `Get-MpComputerStatus` | **`True True True False`**: no effect. `Get-MpPreference` showed all four `Disable...` values `True`. After `Start-Sleep 20`, the same `Set-MpPreference`, `Start-Sleep 5`: `False False False False` |
+| Run `off-1` | guest, student | the same two lines with `lsass-trial-off-1` | Fences 08:28:10.16Z to 08:28:13.81Z. ProcDump "Dump 1 complete: 79 MB written in 0.4 seconds"; comsvcs exit 0; rdrleakdiag "Minidump file ... can be found" |
+| Archive | host, Claude | `telos-archive tail 3000` to `8000`, WIN-EP-01 lines filtered by event time on the host | Results in OPEN-QUESTIONS 35, "Trial part 2". The first read listed only Sysmon 10 and 1 and missed Sysmon 8 (rule 92403); corrected the same day |
+| Defender check | guest, student | `Get-MpComputerStatus \| Select-Object ...` | `False False False False` |
+| Test 9 prereqs | guest, student | `Invoke-AtomicTest T1003.001 -TestNumbers 9 -CheckPrereqs -PathToAtomicsFolder C:\AtomicRedTeam\atomics` | `Prerequisites met: T1003.001-9 Create Mini Dump of LSASS.exe using ProcDump` |
+| Run `off-t9` | guest, student | `C:\telos\telos-fence.exe START lsass-trial-off-t9; Invoke-AtomicTest T1003.001 -TestNumbers 9 ...; ... -Cleanup; C:\telos\telos-fence.exe END lsass-trial-off-t9` | Fences 08:32:23.69Z to 08:32:24.26Z. `Multiple processes match the specified name.`, exit code -2. Archive: `procdump.exe -accepteula -mm lsass.exe ...` started, no access to `lsass.exe` |
+| Count `lsass.exe` | guest, student | `Get-Process lsass \| Select-Object Id, StartTime, Path` | Two: PID 904 (08:25:56, boot) and PID 1840 (08:29:12). Archive: 1840 started by `lsass.exe` 904, rule 61625 |
+
+**Undo.** A revert to `pre-lsass-trial-2026-11-03` removes every guest change (LSA off, Defender off, the console
+session); `vmrun connectNamedDevice $win ethernet0` reconnects NAT. The tests' dumps were deleted by `-Cleanup`. All
+steps are safe to re-run.
+
+---
+
 ## Part 3: Read-only checks (safe, change nothing)
 
 ### 3.1 Hardware and Windows state

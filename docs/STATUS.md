@@ -98,8 +98,12 @@ controls), and record the miss in WORKLOG the same day.
 - **Done:** C5 is designed and tested end to end (DECISIONS 2026-11-12, 2026-11-13 twice; OPEN-QUESTIONS 37): baseline
   Remote Desktop on with NLA off; the default client; the sign-in from the host with the stored password; no
   sign-out step, the revert ends the session.
-- **a. LSASS trial part 2** (C3 in Config S, Defender off): revert WIN-EP-01 to `pre-lsass-trial-2026-11-03`, turn
-  Defender off, run the three tests again, look for rule 92900 (OPEN-QUESTIONS 35, 36).
+- **a. LSASS trial part 2** (C3 in Config S, Defender off). **Done 2026-11-13** (COMMANDS 2.13): tests 1, 2 and 13
+  never fire rule 92900 (it fired only on Defender's and `svchost.exe`'s own access), **but test 13 fires 92403 (×2)
+  and 61625 (×1), both level 12, with LSA Protection off and neither with it on.** **Decided 2026-11-13: prevention**, as for
+  C5 (DECISIONS 2026-11-13). **C1 is now the only candidate positive case**, untested: the C1 test moves up. Still
+  optional: rerun test 9 on a fresh boot; try tests 3, 4, 12, 14 (OPEN-QUESTIONS 35).
+- **Tell the adviser:** with C5 and C3 read as prevention, the study's positive case rests on C1 alone.
 - **b. The C1 test** (WDigest, rule 60118): not started; its attack test is chosen during lab setup (DECISIONS
   2026-10-01).
 - **c. The golden snapshot** (runbook Phase 5, taken cold): the baseline now also needs LSA Protection off, Remote
@@ -153,10 +157,10 @@ and with them only C1, C3 and C5 can blind a detection (`DECISIONS.md` 2026-10-0
 
 ## Lab state
 
-- **At the end of 2026-11-13 (chat ee84ae3f):** both VMs running (`vmrun -T ws list`: 2). WIN-EP-01 is in **no
-  snapshot**: Remote Desktop on, **NLA on** (from the NLA on test), firewall rule open to `10.20.10.1`, a disconnected
-  `eli` RDP session. A revert to `pre-lsass-trial-2026-11-03` removes all of it; LSASS trial part 2 starts with that
-  revert anyway. Check with `vmrun` rather than trusting this line.
+- **After LSASS trial part 2, 2026-11-13 08:30 UTC (chat ee84ae3f):** both VMs running. WIN-EP-01 was reverted to
+  `pre-lsass-trial-2026-11-03` and is in **no snapshot**: LSA Protection **off**, Defender **off**, NAT adapter
+  **disconnected**, `eli` signed in at the console. A revert removes all of it. SIEM-01 was power-cycled at 07:54 (it
+  had been suspended). Check with `vmrun` rather than trusting this line.
 - **Host state:** `eli`'s guest password is stored in the host's Credential Manager as `TERMSRV/10.20.10.20`
   (`cmdkey`, 2026-11-12); the C5 harness needs it. `cmdkey /delete:TERMSRV/10.20.10.20` removes it. On SIEM-01:
   `/home/eli/c5/p-hostip.txt`, the pattern file `"ipAddress":"10.20.10.1"`.
@@ -169,6 +173,18 @@ and with them only C1, C3 and C5 can blind a detection (`DECISIONS.md` 2026-10-0
   (FILE-MAP section 6).
 
 ## Recently settled (details in DECISIONS.md)
+
+- 2026-11-13: **decided.** C3's lost level-12 alerts (92403, 61625 on test 13) are prevention, not a blind spot:
+  with LSA Protection on the dump never reached `lsass.exe`, and the attempt still raised level-3 and level-4
+  alerts. Same rule as C5. C1 is the only candidate positive case left. Exit codes cannot show the blocked attack
+  (item 22).
+
+- 2026-11-13: **tested.** LSASS trial part 2, Defender off: with LSA Protection on, the tools could not open
+  `lsass.exe` (0 Sysmon 10); with it off, they could (`0x1fffff`, `0x1410`, `0x10147a`), but **rule 92900 fired on
+  none of them**. All 14 hits of 92900 were Defender's and `svchost.exe`'s own access (`0x101000`, `0x1010`).
+  **Corrected the same day:** test 13 (rdrleakdiag) fired 92403 twice and 61625 once (level 12) with LSA Protection
+  off, and none with it on. So C3 does remove three alerts; blind spot or prevention is not decided (item 35).
+  Test 9 failed: test 13 leaves a second `lsass.exe` running, so test order matters.
 
 - 2026-11-13: **decided.** No sign-out step for C5; the revert before each run ends the session; the golden snapshot
   is taken cold with no `eli` session. Tested 2026-11-12: a fresh boot leaves no `eli` session, and a `vmrun` guest

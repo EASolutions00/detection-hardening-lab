@@ -688,6 +688,9 @@ noise into the exact window you are measuring.
 - [ ] Boot, apply Config S (Defender off, Windows Update off, scheduled tasks disabled),
       **then read the settings back and confirm they actually took effect**, shut down,
       snapshot `cfg-suppressed`. Never assume a `Set-MpPreference` succeeded.
+      **Seen 2026-11-13 (COMMANDS 2.13):** right after a restart, `Set-MpPreference` left real-time, behavior and
+      download scanning on although the stored values were `True`; the same command 20 seconds later worked. So read
+      the live state with `Get-MpComputerStatus` after **every** boot, not only once.
 - [ ] Revert to `golden-base`. Boot, leave defaults on, shut down, snapshot `cfg-natural`.
 
 Tree you should end with:

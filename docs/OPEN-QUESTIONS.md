@@ -1085,6 +1085,63 @@ blocked by your antivirus software.`; ThreatIDs 2147793100 and 2147807171). Sysm
 three tools. So this run measured Defender, not LSA Protection, and gave no `GrantedAccess` value. It also shows that
 in the Config N state (Defender on, runbook Phase 5) these tests produce no lsass telemetry at all.
 
+**Trial part 2, 2026-11-13, Defender off (Config S)** (COMMANDS 2.13). Sysmon event 10 to `lsass.exe` between the
+fences, from the archive:
+
+| Run | LSA Protection | Tool access to `lsass.exe` (`GrantedAccess`) | Rule 92900 on a tool |
+|---|---|---|---|
+| `lsass-trial-on-2` | on (`RunAsPPL 2`) | **none**: no Sysmon 10 from `procdump.exe`, `rundll32.exe` or `rdrleakdiag.exe`. ProcDump printed `Access is denied` | none |
+| `lsass-trial-off-1` | off (`RunAsPPL 0`) | `procdump.exe` `0x1fffff`; `ProcDump64.exe` `0x1fffff` (2); `rundll32.exe` (comsvcs) `0x1410` and `0x1fffff`; `rdrleakdiag.exe` `0x10147a` and `0x1410` | **none** |
+
+**Rule 92900 fired 14 times from 07:54 to 08:28, all on background programs, none on a test tool:** `MsMpEng.exe`
+(Defender's engine) with `0x101000` (7) and `0x1010` (3), and `svchost.exe` with `0x101000` (4). It fires on
+`0x101000` because its pattern `(?i)(0x1010|0x40)` has no anchors, the mismatch predicted above, now seen. The most
+common lsass access, `svchost.exe` `0x1000` (375 since 07:54), fires nothing.
+
+**Corrected the same day: two more level-12 rules fire on test 13, and C3 removes them.** The first reading above
+looked only at Sysmon 10 and missed Sysmon 8 (a thread started inside another process). From the archive, 07:54 to
+08:30:
+
+| Run | Sysmon 8 into `lsass.exe` | 92403 (level 12, "LSASS process was accessed by ... rdrleakdiag.exe, possible code injection for credential dumping") | 61625 (level 12, "Sysmon - Suspicious Process - lsass") |
+|---|---|---|---|
+| `on-2`, LSA Protection on | **none** | 0 | 0 |
+| `off-1`, LSA Protection off | `rdrleakdiag.exe` at 08:28:12.851 and 08:29:12.861 | 2 | 1, at 08:29:12.864: `lsass.exe` (PID 904) started a copy of itself (PID 1840) |
+
+The second injection came 60 seconds after the first, **after the END marker** (08:28:13.81), so a window that ends
+at the marker loses it; the 120-second drain (CLAUDE.md rule 5) would keep it. The copy of `lsass.exe` stayed
+running (`Get-Process lsass`: PIDs 904 and 1840), and that later broke test 9 (below). Reading it as process
+reflection (Windows cloning a process to dump it) is general knowledge `(unverified)`.
+
+**What it means.**
+1. **Tests 1, 2 and 13 never fire 92900**, with LSA Protection on or off.
+2. **But test 13 fires 92403 twice and 61625 once with LSA Protection off, and neither with it on.** So C3 removes
+   three level-12 alerts. Whether that is a blind spot or prevention is the same question as C5's (item 37, point 5,
+   decided for C5 as prevention by blueprint condition (d)): with LSA Protection on, the injection into `lsass.exe`
+   did not happen, while the attempt itself still raised process-start alerts (point 6). **Decided 2026-11-13:
+   prevention** (DECISIONS 2026-11-13, "C3's lost level-12 alerts are prevention").
+3. The other usable tests (3 Dumpert, 4 NanoDump, 12 xordump, 14 Silent Process Exit) are not run. Test 9 ran but
+   did not reach `lsass.exe` (below).
+4. **C3 also removes the tools' Sysmon 10 events** (7 events become 0 in one run each; LOST under the method if it
+   holds over 3 runs). No rule read those.
+5. **Rule 92900 fires on Defender's own scans of `lsass.exe`**, so in the shipped rules it is mostly a background
+   alert in this lab. Whether that holds outside the trial windows is not measured.
+6. The process-start rules still fired on the test commands in both runs: 92052 (level 4, "Windows command prompt
+   started by an abnormal process"), 92032 (level 3, "Suspicious Windows cmd shell execution", on `procdump.exe`) and
+   92027 (level 4, "Powershell process spawned powershell instance"). C3 does not touch them.
+
+**Also seen.** After a restart, `Set-MpPreference` had no effect at first: the stored values were `True`, but
+`Get-MpComputerStatus` showed real-time, behavior and download scanning on. The same command 20 seconds later
+worked. Why is not known `(unverified)`. Runbook Phase 5 already says to read it back; the harness must do so after
+every boot.
+
+**Test 9 (ProcDump `-mm`), run `lsass-trial-off-t9`, 08:32:23Z to 08:32:24Z, LSA Protection off, Defender off.**
+ProcDump stopped with `Multiple processes match the specified name.` (exit code -2) and never opened `lsass.exe`: the
+copy left by test 13 also matches the name `lsass.exe`. So **test order matters**: a test that names `lsass.exe` must
+run before test 13, or after a revert. The harness reverts before each run, so a fixed order with 13 last is enough.
+
+**Still open, for the student:** run test 9 again on a fresh boot, and try tests 3, 4, 12 and 14 (3, 4 and 14 need
+downloads)? Under the 2026-11-13 decision these can change C3's reading only if one gets past LSA Protection.
+
 **Blocks:** the C3 attack tests in the pinned list, and the golden snapshot (their tools must be in the image).
 
 ---
@@ -1092,7 +1149,9 @@ in the Config N state (Defender on, runbook Phase 5) these tests produce no lsas
 ## 36. LSA Protection is already on in WIN-EP-01, so C3 changes nothing today
 
 **Status:** Decided 2026-11-03: option 1 (DECISIONS 2026-11-03). Stays open until the golden image is shown to
-boot with no Wininit event 12. Found 2026-11-03 by chat 27d2595d, step 1 of the LSASS trial (item 35), from the
+boot with no Wininit event 12. **Shown on the trial image 2026-11-13** (COMMANDS 2.13): `RunAsPPL = 0` and a restart
+gave no event 12 at the 08:25:52 boot, and the tools could open `lsass.exe`. `RunAsPPLBoot` changed from 2 to 0 by
+itself. The golden image still needs the same check. Found 2026-11-03 by chat 27d2595d, step 1 of the LSASS trial (item 35), from the
 student's output inside the guest.
 
 **The evidence.** `HKLM\SYSTEM\CurrentControlSet\Control\Lsa`: `RunAsPPL = 2`, `RunAsPPLBoot = 2`. System log,
@@ -1237,6 +1296,14 @@ state must be decided first).
 
 **Status:** Open. Raised 2026-09-12. **This one contaminates results rather than reducing them**,
 so it ranks with item 18 rather than with the cleanup items.
+
+**First real case, 2026-11-13** (LSASS trial part 2, COMMANDS 2.13; DECISIONS 2026-11-13, C3). With LSA Protection on,
+all three LSASS tests failed to reach `lsass.exe`, so the tools' Sysmon 8 and Sysmon 10 events and three level-12
+alerts were gone. That is "the attack did not happen", ruled prevention. But **the exit codes do not show it**:
+ProcDump returned -2 in both states (with "Access is denied" only when blocked), and comsvcs.dll and rdrleakdiag
+returned **0 when blocked**. So a run check based on exit status alone would pass these runs, and the analyser would
+report the lost keys as a blind spot. The check needs another signal, for example whether the test's dump file was
+written `(unverified as a design)`.
 
 **Where the claim is made.** `T1-PANEL-RESPONSE.md:513` answers panel question Q6 with three
 mechanisms for making two runs comparable, and calls the run manifest "the single strongest answer
