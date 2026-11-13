@@ -109,6 +109,9 @@ controls), and record the miss in WORKLOG the same day.
   same events with WDigest caching on and off; 60118 fired twice both times. **So no candidate change shows a blind
   spot** (OPEN-QUESTIONS 38). **Next, before more lab work: the student and the adviser decide the way forward
   (item 38).**
+- **System work that does not wait for item 38** (student, 2026-11-13: build the system now). **Done 2026-11-13:
+  the archive reader** (`src/telos/archive.py`, 10 tests, 75 passed), checked on three real windows of today's
+  export. Next candidates: the harness, the rule-to-key index, impact scoring, reports, the interface.
 - **c. The golden snapshot** (runbook Phase 5, taken cold): the baseline now also needs LSA Protection off, Remote
   Desktop on with NLA off and the firewall rule for `10.20.10.1`, and no `eli` session at shutdown.
 - **d.** Then the minimal harness, one capture window by hand, and the spike. **Checkpoint 2026-11-07 (spike) was

@@ -952,6 +952,10 @@ lost. None is decided.
 3. **The index needs a field-name mapping.** Wazuh rules name fields like `win.eventdata.grantedAccess`; the
    event key uses `GrantedAccess`. No mapping is designed, so the index cannot yet link a rule to a key.
    **How to answer:** a table in the index module, tested on the 454 rules, with any unmapped field listed.
+   **Half answered 2026-11-13** (`src/telos/archive.py`): in the archive, Wazuh writes each Windows field name
+   with a small first letter (`logonType`, `grantedAccess`, `sourceImage`, `ipAddress`), so the reader raises
+   the first letter to reach the key map's name. This held for every field seen on 2026-11-13; Wazuh does not
+   document it. The index side (rule field names to key names) is still not built.
 4. **Does DC-01 still earn its one to two days?** It was decided when about 7 positive cases were expected
    (`DECISIONS.md` 2026-09-29). Under Wazuh's shipped rules the positives are C1, C3 and C5, and none needs a
    domain (C1 and C3 are local; C5's RDP can come from the host, item 21). DC-01 still gives C4 and C6

@@ -55,7 +55,8 @@ because the analyser consumes event counts and does not care where they came fro
 
 | Stage | Module | Status |
 |---|---|---|
-| 1. Acquisition (snapshots, stimulus, event retrieval) | not written | **needs the lab** |
+| 1. Acquisition: reading the archive into counts per window | `archive.py` | done 2026-11-13; checked on real windows |
+| 1. Acquisition: snapshots, stimulus, export (the harness) | not written | **needs the lab** |
 | 2. Event keying | `eventkey.py` | done |
 | 2. Profiling and variance model | `variance.py` | done |
 | 3. Differential analysis | `differential.py` | done |
@@ -115,7 +116,8 @@ does not support, and would inflate the reported recall.
 
 ## Tests
 
-**58 tests**, 29 in `tests/test_differential.py` and 29 in `tests/test_eventkey.py`.
+**75 tests** (2026-11-13): `tests/test_differential.py`, `tests/test_eventkey.py`, and 10 in
+`tests/test_archive.py`. (Updated from "58"; the count had not been updated since 2026-10-15.)
 The three that matter most:
 
 - `test_drop_inside_the_noise_band_is_not_reported`

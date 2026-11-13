@@ -66,6 +66,19 @@ under the shipped rules (item 38). Not committed yet.
 
 **Next:** the student and the adviser decide item 38 before more lab work. How C1 is reported is not decided.
 
+**Then the archive reader** (student: "why I need to write my adviser ... I am thinking of finishing off the entire
+system as soon as possible without his knowledge", then "yes, start the archive reader"). Answered first: telling the
+adviser was Claude's recommendation, not a rule; the record says consultations are required and the pre-oral grades
+chapters 1 to 3 plus a 50% working prototype (DECISIONS 2026-10-22), which also explains the professor's "50%"; the
+student decides. Built `src/telos/archive.py`: reads archive lines, cuts one window between the `telos-fence` START
+and END events by the events' own time, raises the first letter of Wazuh's field names to reach the key map, counts
+keys, and joins windows into a `Phase`. Tests first: `tests/test_archive.py`, 10 tests, failing before the module
+existed (`ModuleNotFoundError`); then **75 passed**. Checked on today's export (`telos-archive export 2026-11-13`,
+5,636 lines, SHA256 `b2794dfb...aeba` on both sides): `on-2` 2 Sysmon 10 and 0 Sysmon 8; `off-1` 27 Sysmon 10 and 1
+Sysmon 8; `off-t9` 10 Sysmon 10. These match the hand readings; for `off-1` the hand count of 29 included two events
+just after the END fence's event time, so the reader's 27 is the correct one. CLAUDE.md, `src/README.md` (it still
+said 58 tests), FILE-MAP, PROMPT-new-chat, STATUS and OPEN-QUESTIONS 32 point 3 updated. Not committed yet.
+
 ---
 
 ## 2026-11-13 - The C5 sign-in works with no person at the keyboard
