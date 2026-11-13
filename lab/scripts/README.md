@@ -25,6 +25,9 @@ not a hardening change: it turns Defender's live scanning off and reads it back 
 harness runs it after every boot (`LabConfig.after_boot`). All must be copied to `C:\telos\` in the guest
 before the golden snapshot.
 
+`baseline-golden.ps1` (2026-11-13) sets the golden image's decided baseline and prints a 20-row check; exit
+code 0 only when every row passes. Run it once to set, restart, then with `-Verify` (runbook Phase 5).
+
 ## Every script must carry its source
 
 At the top of each script, in a comment. The example uses C1, whose control ID is verified:

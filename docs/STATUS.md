@@ -182,10 +182,12 @@ and with them only C1, C3 and C5 can blind a detection (`DECISIONS.md` 2026-10-0
 
 ## Lab state
 
-- **After LSASS trial part 2, 2026-11-13 08:30 UTC (chat ee84ae3f):** both VMs running. WIN-EP-01 was reverted to
-  `pre-lsass-trial-2026-11-03` and is in **no snapshot**: LSA Protection **off**, Defender **off**, NAT adapter
-  **disconnected**, `eli` signed in at the console. A revert removes all of it. SIEM-01 was power-cycled at 07:54 (it
-  had been suspended). Check with `vmrun` rather than trusting this line.
+- **End of 2026-11-13 (chat ee84ae3f):** WIN-EP-01 was reverted to `pre-lsass-trial-2026-11-03` at 13:01 UTC for the
+  golden snapshot; **no baseline step was done** (the student stopped there). The student shuts both VMs down.
+  **Next session starts with the golden snapshot:** the student chooses C1's baseline (`-WDigest On`, recommended, or
+  `Default`), copies the 5 scripts into `C:\telos\`, runs `baseline-golden.ps1`, restarts, verifies 20 of 20, signs
+  out, shuts down, disconnects NAT in the VM settings; then Claude takes `golden-base` cold. Check with `vmrun`
+  rather than trusting this line.
 - **Host state:** `eli`'s guest password is stored in the host's Credential Manager as `TERMSRV/10.20.10.20`
   (`cmdkey`, 2026-11-12); the C5 harness needs it. `cmdkey /delete:TERMSRV/10.20.10.20` removes it. On SIEM-01:
   `/home/eli/c5/p-hostip.txt`, the pattern file `"ipAddress":"10.20.10.1"`.

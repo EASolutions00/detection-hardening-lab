@@ -165,7 +165,17 @@ for Wininit event 12 since the last boot), `change-C5-rdp-nla.ps1`, each with it
 comment, and `config-S-defender-off.ps1`, which sets Defender off and reads it back for up to a minute, because of
 the 2026-11-13 restart finding. The harness gained `LabConfig.after_boot`: those steps run after the reset and after
 a change's reboot, and a failure voids the run. Tests first (2 failing); **125 passed**. None of the scripts has run
-in the guest yet. Committed and pushed automatically.
+in the guest yet. Committed and pushed automatically as `326a94b`.
+
+**Then the golden snapshot was started** (student: "which is impportant?", answered: the first real harness run and
+item 38, in parallel; then "lets start the golden snapshot"). Claude wrote `lab/scripts/baseline-golden.ps1`: it sets
+the decided baseline (RunAsPPL 0; Remote Desktop on, NLA off, firewall rule to `10.20.10.1`; WDigest by a required
+`-WDigest On|Default` switch) and prints a 20-row check (audit settings, pinned hashes of the Sysmon config, the fence
+tool and ProcDump, Tamper Protection, the Defender exclusion, the 4 scripts present, no Wininit event 12 since boot,
+TermService running). All 5 guest scripts parse with 0 errors (a first parse check was broken and is not counted;
+rule slip: it was run before being explained). WIN-EP-01 was reverted to `pre-lsass-trial-2026-11-03` and started at
+13:01 UTC, NAT disconnected. **The student stopped before the first step** ("i did not do anything for now. ill
+shutdown"). Open: C1's baseline choice (`On` recommended, consistent with C3 and C5). Committed and pushed.
 
 ---
 
