@@ -115,6 +115,9 @@ class LabConfig:
     window_s: int = 600                # fixed window length; set after the spike
     tools_timeout_s: int = 300
     min_free_bytes: int = 1_000_000_000
+    # Guest steps run after every boot (after the reset and after a change's reboot), for
+    # example Config S's Defender-off script; exit code 0 = in force, otherwise the run is voided.
+    after_boot: tuple[GuestStep, ...] = ()
 
 
 def parameters_hash(parameters: dict) -> str:
@@ -225,7 +228,17 @@ def capture(lab: Lab, run_id: str, phase: str, stimulus: list[Step], parameters:
     lab.guest_calls = 0
     reasons: list[str] = []
 
+    after_boot: list[dict] = []
+
+    def run_after_boot() -> None:
+        for step in cfg.after_boot:
+            code = lab.guest(step).returncode
+            after_boot.append({"name": step.name, "exit_code": code})
+            if code != 0:
+                reasons.append(f"after-boot step {step.name} failed (exit code {code})")
+
     lab.reset_to_known_state()
+    run_after_boot()
 
     confirmed = None
     if change is not None:                                   # step 4, before the fence (D2)
@@ -233,6 +246,7 @@ def capture(lab: Lab, run_id: str, phase: str, stimulus: list[Step], parameters:
             lab.guest(step)
         if change.reboot:
             lab.reboot_and_settle()
+            run_after_boot()
         confirmed = lab.guest(change.verify).returncode == 0
         if not confirmed:
             reasons.append(f"change {change.change_id} not confirmed in the guest")
@@ -275,7 +289,7 @@ def capture(lab: Lab, run_id: str, phase: str, stimulus: list[Step], parameters:
 
     params = {**parameters, "window_s": cfg.window_s, "settle_s": cfg.settle_s, "drain_s": cfg.drain_s,
               "snapshot": cfg.snapshot, "agent": cfg.agent,
-              "stimulus": [s.name for s in stimulus]}
+              "stimulus": [s.name for s in stimulus], "after_boot": [s.name for s in cfg.after_boot]}
     manifest = {
         "parameters": params,
         "parameters_sha256": parameters_hash(params),
@@ -285,7 +299,7 @@ def capture(lab: Lab, run_id: str, phase: str, stimulus: list[Step], parameters:
             "change_script_sha256": change.script_sha256 if change else None,
             "change_confirmed": confirmed,
             "start_fence_host_utc": t_start.isoformat(), "end_fence_host_utc": t_end.isoformat(),
-            "stimulus": steps, "guest_calls": lab.guest_calls,
+            "after_boot": after_boot, "stimulus": steps, "guest_calls": lab.guest_calls,
             "exports": exports, "window": window, "checks": checks,
             "void_reasons": reasons, "valid": not reasons,
         },

@@ -211,6 +211,33 @@ def test_a_change_not_confirmed_in_the_guest_voids_the_run(tmp_path):
     assert any("not confirmed" in r for r in m["record"]["void_reasons"])
 
 
+CONFIG_S = (GuestStep("config-S", "config-S-defender-off.ps1"),)
+
+
+def test_after_boot_steps_run_after_the_reset_and_again_after_a_change_reboot(tmp_path):
+    """Config S must hold after every boot: Defender ignored its stored setting right after a
+    restart on 2026-11-13 (COMMANDS 2.13)."""
+    lab, runner, _ = make(tmp_path)
+    lab.cfg.after_boot = CONFIG_S
+    change = Change("C3", apply=(GuestStep("set", "reg.exe"),), verify=GuestStep("check", "check.exe"),
+                    reboot=True)
+    m = capture(lab, "run-1", "post", ATTACK, PARAMS, change=change)
+    ops = runner.vmrun_ops()
+    config_runs = [i for i, op in enumerate(ops) if op == "guest:config-S-defender-off.ps1"]
+    assert len(config_runs) == 2
+    assert config_runs[0] < ops.index("guest:reg.exe") < ops.index("reset") < config_runs[1] < ops.index("guest:check.exe")
+    assert [s["exit_code"] for s in m["record"]["after_boot"]] == [0, 0]
+    assert m["record"]["valid"] is True
+
+
+def test_a_failed_after_boot_step_voids_the_run(tmp_path):
+    lab, _, _ = make(tmp_path, program_results={"config-S-defender-off.ps1": (1, 60.0)})
+    lab.cfg.after_boot = CONFIG_S
+    m = capture(lab, "run-1", "pre", ATTACK, PARAMS)
+    assert m["record"]["valid"] is False
+    assert any("config-S" in r for r in m["record"]["void_reasons"])
+
+
 def test_a_window_across_midnight_exports_both_dates(tmp_path):
     start = datetime(2026, 11, 20, 23, 50, 0)
     archive = {"2026-11-20": [fence("START", "run-1", "2026-11-20T23:53:05.0000000Z")],

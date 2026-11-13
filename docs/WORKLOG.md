@@ -157,7 +157,15 @@ whole-change entry) and `render_remediation2()` in `report.py`; the pipeline and
 source and status "suggested from a lab measurement, not tested": C3 (the attempt still fires 92032 and 92027 at
 levels 3 to 4) and C5 (the refused attempt leaves only Sysmon 3 to port 3389, read by no rule). No advice was written
 that the lab did not measure; the student curates the file. Tests first; **123 passed**. All of FINAL's sections and
-exports now exist in code. Committed and pushed automatically.
+exports now exist in code. Committed and pushed automatically as `ff6922a`.
+
+**Then the change scripts and after-boot steps.** `lab/scripts/` held no change script. Written:
+`change-C1-disable-wdigest.ps1`, `change-C3-lsa-protection.ps1` (RunAsPPL 2, a stated deviation; `-Verify` looks
+for Wininit event 12 since the last boot), `change-C5-rdp-nla.ps1`, each with its source and measured result in a
+comment, and `config-S-defender-off.ps1`, which sets Defender off and reads it back for up to a minute, because of
+the 2026-11-13 restart finding. The harness gained `LabConfig.after_boot`: those steps run after the reset and after
+a change's reboot, and a failure voids the run. Tests first (2 failing); **125 passed**. None of the scripts has run
+in the guest yet. Committed and pushed automatically.
 
 ---
 

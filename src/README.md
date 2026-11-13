@@ -121,7 +121,8 @@ does not support, and would inflate the reported recall.
 **118 tests** (2026-11-13): `tests/test_differential.py`, `tests/test_eventkey.py`, 11 in
 `tests/test_archive.py`, 11 in `tests/test_index.py`, 7 in `tests/test_impact.py`, 7 in
 `tests/test_report_sections.py`, 12 in `tests/test_harness.py` and 5 in `tests/test_pipeline.py`.
-(123 on 2026-11-13, after the reproducibility record, the Navigator layer and remediation level 2.) (Updated from "58"; the count had not been updated since
+(125 on 2026-11-13, after the reproducibility record, the Navigator layer, remediation level 2 and the
+harness's after-boot steps.) (Updated from "58"; the count had not been updated since
 2026-10-15.)
 The three that matter most:
 

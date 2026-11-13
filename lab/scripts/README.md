@@ -15,7 +15,15 @@ fill F:.
 ## Naming
 
 `change-ID-short-name.ps1`, for example `change-C1-disable-wdigest.ps1`. The ID matches the
-catalogue in `../blueprint.md` section 8 (C1 to C8, B1 to B6). **No change script exists yet.**
+catalogue in `../blueprint.md` section 8 (C1 to C8, B1 to B6).
+
+**Written 2026-11-13, not yet run by the harness:** `change-C1-disable-wdigest.ps1`,
+`change-C3-lsa-protection.ps1`, `change-C5-rdp-nla.ps1`. Each sets its value, and `-Verify` exits 0 only
+when the change is in effect inside the guest (runbook requirement 11); C3's check is Wininit event 12
+since the last boot, which never reaches the archive (OPEN-QUESTIONS 28). Also `config-S-defender-off.ps1`,
+not a hardening change: it turns Defender's live scanning off and reads it back until it is off, and the
+harness runs it after every boot (`LabConfig.after_boot`). All must be copied to `C:\telos\` in the guest
+before the golden snapshot.
 
 ## Every script must carry its source
 
