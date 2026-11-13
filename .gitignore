@@ -3,6 +3,10 @@
 data/runs/*
 !data/runs/.gitkeep
 
+# The Wazuh rule export from SIEM-01 (third-party files, GPL). Kept on this disk only;
+# its SHA256 and the export command are in docs/DECISIONS.md and docs/COMMANDS.md.
+data/rules/*
+
 # Secrets. Wazuh API credentials, guest passwords, SSH keys.
 .env
 *.key

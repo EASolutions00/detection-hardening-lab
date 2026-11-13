@@ -110,8 +110,11 @@ controls), and record the miss in WORKLOG the same day.
   spot** (OPEN-QUESTIONS 38). **Next, before more lab work: the student and the adviser decide the way forward
   (item 38).**
 - **System work that does not wait for item 38** (student, 2026-11-13: build the system now). **Done 2026-11-13:
-  the archive reader** (`src/telos/archive.py`, 10 tests, 75 passed), checked on three real windows of today's
-  export. Next candidates: the harness, the rule-to-key index, impact scoring, reports, the interface.
+  the archive reader** (`src/telos/archive.py`, 10 tests), checked on three real windows of today's export. **Done
+  2026-11-13: the rule-to-key index** (`src/telos/index.py`, 10 tests, 85 passed), read on the rule export from
+  SIEM-01 (COMMANDS 2.15). **For the student:** the index shows the key map misses fields rules read (4624:
+  `IpAddress`, `TargetUserSid`, `WorkstationName`); adding them changes the keys (OPEN-QUESTIONS 32). Next
+  candidates: impact scoring, the harness, reports, the interface.
 - **c. The golden snapshot** (runbook Phase 5, taken cold): the baseline now also needs LSA Protection off, Remote
   Desktop on with NLA off and the firewall rule for `10.20.10.1`, and no `eli` session at shutdown.
 - **d.** Then the minimal harness, one capture window by hand, and the spike. **Checkpoint 2026-11-07 (spike) was

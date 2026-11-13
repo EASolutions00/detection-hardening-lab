@@ -77,7 +77,20 @@ existed (`ModuleNotFoundError`); then **75 passed**. Checked on today's export (
 5,636 lines, SHA256 `b2794dfb...aeba` on both sides): `on-2` 2 Sysmon 10 and 0 Sysmon 8; `off-1` 27 Sysmon 10 and 1
 Sysmon 8; `off-t9` 10 Sysmon 10. These match the hand readings; for `off-1` the hand count of 29 included two events
 just after the END fence's event time, so the reader's 27 is the correct one. CLAUDE.md, `src/README.md` (it still
-said 58 tests), FILE-MAP, PROMPT-new-chat, STATUS and OPEN-QUESTIONS 32 point 3 updated. Not committed yet.
+said 58 tests), FILE-MAP, PROMPT-new-chat, STATUS and OPEN-QUESTIONS 32 point 3 updated. Committed and pushed as
+`9ce6e82`.
+
+**Then the rule-to-key index** (student: "lets continue"). SIEM-01 had been **suspended again**; Claude power-cycled it
+(clocks 11:30:03 and 11:30:04). `eli` cannot read `/var/ossec` (`drwxr-x--- root wazuh`), so the student packed the
+rules with `sudo tar` (COMMANDS 2.15); Claude copied them (SHA256 matched; a first `scp` failed on a quoting slip) to
+`data/rules/`, now in `.gitignore`. Folder hash `a3f9749e...2939` in the pinned table. Built `src/telos/index.py`:
+reads the rule files, places each rule on its event types by following `if_sid` and `if_group` parents to a Windows
+event ID, inherits single-parent conditions, translates OS_Regex `\.` and `\p`, and answers "which alerting rules
+can fire on this key". `tests/test_index.py`, 10 tests (written before the module, but **not run before it**, unlike
+the reader's tests); **85 passed**. On the real export: 4,505 rules read, 947 placed (883 alerting) in 25 files, one
+file not parsed; 60118, 92653, 92657, 92900, 92403, 61625, 92213 and 67022 placed as measured in the lab. Found: the
+key map misses fields the rules read (OPEN-QUESTIONS 32); generic group rules attach to every 4624 key, unchecked.
+Not committed yet.
 
 ---
 

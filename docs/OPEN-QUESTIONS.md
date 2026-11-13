@@ -956,6 +956,15 @@ lost. None is decided.
    with a small first letter (`logonType`, `grantedAccess`, `sourceImage`, `ipAddress`), so the reader raises
    the first letter to reach the key map's name. This held for every field seen on 2026-11-13; Wazuh does not
    document it. The index side (rule field names to key names) is still not built.
+   **Index side built 2026-11-13** (`src/telos/index.py`, read on the rule export, COMMANDS 2.15):
+   `win.eventdata.logonType` becomes `LogonType` by the same rule. On the real export: 4,505 rules read, 947 placed
+   on a Windows event type (883 alerting) in 25 files; one file not parsed (`0910-ms-exchange-proxylogon_rules.xml`).
+   **Found:** the rules read fields the key map does not track, on 23 event types; for 4624 these are `IpAddress`,
+   `TargetUserSid` and `WorkstationName` (60118 reads `WorkstationName`, 92651 to 92657 read `IpAddress`).
+   DECISIONS 2026-10-01 says the key map changes when the index is built; **not changed yet, for the student**,
+   because it changes the keys. **Not checked:** generic rules (10100, 17101, 40101, 40501 at level 15, 99920 and
+   others) attach to every 4624 key through shared groups such as `authentication_success`; many are frequency
+   rules, and whether any fires on these events alone is `(unverified)`.
 4. **Does DC-01 still earn its one to two days?** It was decided when about 7 positive cases were expected
    (`DECISIONS.md` 2026-09-29). Under Wazuh's shipped rules the positives are C1, C3 and C5, and none needs a
    domain (C1 and C3 are local; C5's RDP can come from the host, item 21). DC-01 still gives C4 and C6

@@ -844,6 +844,22 @@ UseLogonCredential`, or a revert to `pre-lsass-trial-2026-11-03`. Safe to re-run
 
 ---
 
+### 2.15 Export the Wazuh rules from SIEM-01 (2026-11-13)
+
+Purpose: the rule export DECISIONS 2026-10-01 asks for, read by the rule-to-key index (`src/telos/index.py`).
+
+| Step | Where, by whom | Command | Result seen |
+|---|---|---|---|
+| Power-cycle SIEM-01 | host, Claude | `vmrun start` (resume), `vmrun stop soft`, `vmrun start` | It had been **suspended again** (`.vmss` 17:13 local). All exit 0; SIEM-01 11:30:03 against host 11:30:04 |
+| Read access | host, Claude | `ssh ... "ls -ld /var/ossec ..."` | `drwxr-x--- 20 root wazuh ... /var/ossec`; `ls: cannot access '/var/ossec/ruleset': Permission denied`. So `sudo` is needed. (One slip: `\$(...)` inside the command was run by PowerShell on the host; it failed with "Could not find a part of the path 'E:\dev\null'" and changed nothing.) |
+| Pack the rules | host terminal, **student** (types the SIEM-01 password) | `ssh -t -i "$env:USERPROFILE\.telos\siem01_ed25519" eli@10.20.10.10 "sudo tar czf /home/eli/wazuh-rules-4.14.7.tar.gz -C /var/ossec ruleset/rules etc/rules && sudo chown eli:eli /home/eli/wazuh-rules-4.14.7.tar.gz && ls -l /home/eli/wazuh-rules-4.14.7.tar.gz && sha256sum /home/eli/wazuh-rules-4.14.7.tar.gz"` | `-rw-r--r-- 1 eli eli 205080 Nov 13 11:31 ...`; `6fca773be3ffb59ee5745f92ee75e4a94b8f321093aab6bedc35bac3e09267ae` |
+| Copy and unpack | host, Claude | `scp ... eli@10.20.10.10:/home/eli/wazuh-rules-4.14.7.tar.gz "E:\Claude general\data\rules\wazuh-rules-4.14.7.tar.gz"`; `Get-FileHash`; `tar -xzf ... -C "E:\Claude general\data\rules\wazuh-4.14.7"` | Same SHA256; 169 files (168 in `ruleset/rules`, 1 in `etc/rules`). The first `scp` failed: a target ending in `\"` lost its closing quote in PowerShell 5.1; the full file name worked |
+| Folder hash | host, Claude | SHA256 over the sorted lines "file SHA256, two spaces, relative path" | `a3f9749e...2939` (DECISIONS, pinned table) |
+
+**Undo.** On SIEM-01: `rm /home/eli/wazuh-rules-4.14.7.tar.gz`. On the host: delete `data\rules\`. Safe to re-run.
+
+---
+
 ## Part 3: Read-only checks (safe, change nothing)
 
 ### 3.1 Hardware and Windows state

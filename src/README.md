@@ -60,7 +60,8 @@ because the analyser consumes event counts and does not care where they came fro
 | 2. Event keying | `eventkey.py` | done |
 | 2. Profiling and variance model | `variance.py` | done |
 | 3. Differential analysis | `differential.py` | done |
-| 4. Impact scoring and coverage mapping | not written | needs the dependency index |
+| 4. Rule-to-key index (which Wazuh rules read a key) | `index.py` | done 2026-11-13; checked on the real rule export |
+| 4. Impact scoring and coverage mapping | not written | the index now exists |
 | 5. Reporting | `report.py` | text only. No CSV, JSON or Navigator export yet |
 | Baseline for comparison | `baseline.py` | done |
 | Data shapes | `model.py` | done |
@@ -116,8 +117,9 @@ does not support, and would inflate the reported recall.
 
 ## Tests
 
-**75 tests** (2026-11-13): `tests/test_differential.py`, `tests/test_eventkey.py`, and 10 in
-`tests/test_archive.py`. (Updated from "58"; the count had not been updated since 2026-10-15.)
+**85 tests** (2026-11-13): `tests/test_differential.py`, `tests/test_eventkey.py`, 10 in
+`tests/test_archive.py` and 10 in `tests/test_index.py`. (Updated from "58"; the count had not been updated since
+2026-10-15.)
 The three that matter most:
 
 - `test_drop_inside_the_noise_band_is_not_reported`
