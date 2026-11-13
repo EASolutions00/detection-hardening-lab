@@ -199,6 +199,31 @@ class B included, so it is affected less.
 the index once it is built. FINAL "Scale of the Experiment" and `T1-REVISIONS-LIST.md:141` were changed the
 same day to say "about three" (`DECISIONS.md` 2026-10-01).
 
+### The C1 trial, 2026-11-13: WDigest changes nothing in a console sign-in
+
+Measured (COMMANDS 2.14), one sign-in each, the same guest state (LSA Protection off, Defender off):
+
+| Run | `UseLogonCredential` | 4624 type 2 for `eli` | Rule 60118 | 4624 fields |
+|---|---|---|---|---|
+| `wdigest-on`, 08:44:44 | 1 | 2 | 2 | `logonProcessName=User32`, `authenticationPackageName=Negotiate`, `keyLength=0`, `ipAddress=127.0.0.1`, ... |
+| `wdigest-off` (C1), 08:46:23 | 0 | 2 | 2 | **identical** to the line above |
+
+The counts in the 30 seconds after each sign-in differed (290 against 227 events), but every extra event in the `on`
+window came from something else: services starting (type 5), the sign-in screen after the sign-out (`UMFD-3`,
+`DWM-3`, rule 67022), PowerShell's own `__PSScriptPolicyTest_*.ps1` file when the Terminal was opened (rule 92213,
+level 15), and 4 DCOM errors 10010 (rule 61102, level 5). **So C1 changed no sign-in event and no rule.** The row
+above, "Yes, if the catalogue's stated effect holds", is answered: the stated effect ("4624 logon-type distribution
+shifts", blueprint) was not seen. That fits how WDigest works: the setting decides whether the password is kept in
+plain text inside `lsass.exe`, which no event records (general knowledge `(unverified)`).
+
+**Limits.** One sign-in per state. Whether the value applies without a restart is not known `(unverified)`; but the
+4624 event has no field that could show WDigest's state, so a restart run is unlikely to change the result
+`(unverified)`.
+
+**Side findings.** Turning WDigest caching **on** (`UseLogonCredential = 1`, a known attacker step to collect plain-text
+passwords, general knowledge `(unverified)`) was recorded by Sysmon event 13 but **fired no Wazuh rule**. Rule 92213
+(level 15) fires each time PowerShell writes its policy test file, so it is background noise in this lab.
+
 ### Does Atomic Red Team have a test for each of those techniques? Checked 2026-10-07
 
 Found by chat 5e235b74 while adding the attack-test list to FINAL's Area of Investigation (the panel asked
@@ -1289,6 +1314,35 @@ The claim that real attack tools connect this way is general knowledge `(unverif
 
 **Blocks:** the C5 attack test in the pinned list, and the golden snapshot (the baseline's NLA and Remote Desktop
 state must be decided first).
+
+---
+
+## 38. All three candidate changes show no blind spot under the shipped rules
+
+**Status:** Open. Found 2026-11-13 by chat ee84ae3f, after the C1 trial. **For the student and the adviser.**
+
+**The facts, each measured once in the lab:**
+- **C5** (RDP NLA): with the default client, no change in events or alerts; reported as "the predicted effect was not
+  seen" (DECISIONS 2026-11-13).
+- **C3** (LSA Protection): the dump stopped reaching `lsass.exe`, and three level-12 alerts went with it; ruled
+  prevention, not a blind spot (DECISIONS 2026-11-13).
+- **C1** (WDigest): no change in sign-in events or rule 60118 (item 1, "The C1 trial"). Not yet decided how it is
+  reported; "the predicted effect was not seen", as for C5, would be the consistent reading.
+
+**What it means.** Under Wazuh 4.14.7's shipped rules (DECISIONS 2026-10-01, choice 1), the study's three candidate
+positive cases produce no hardening-induced blind spot in this lab. If that holds over the real runs, the study's
+result on its main question is **zero blind spots** for this catalogue. That is a measured negative result, not a
+failure of the method, but it changes what the thesis can claim and how the evaluation (precision and recall against
+a labeled set) is done: there would be no positive label.
+
+**Ways forward, none decided:**
+1. Keep the study as it is and report the negative result, with the method's evidence (LOST keys, prevention
+   correctly told apart) as the contribution.
+2. Revisit choice 1 of 2026-10-01 (shipped rules only), which narrowed the candidates from about seven to three.
+3. Look for other benchmark controls whose effect removes evidence while the attack still works (condition (d)).
+
+**Not to be confused with** the "zero blind spots" answer corrected after the re-presentation (WORKLOG 2026-10-22):
+that was about re-running until nothing is found; this is a measured result.
 
 ---
 

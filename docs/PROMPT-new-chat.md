@@ -416,8 +416,10 @@ Settled 2026-11-03 to 2026-11-13, so do not reopen these
     DC-01 is dropped; the lab is WIN-EP-01 and SIEM-01 (2026-11-11). The baseline has Remote
     Desktop on with NLA off (2026-11-12). C5 uses the default client and is reported as "the
     predicted effect was not seen"; the revert ends the C5 session (both 2026-11-13). C3's lost
-    level-12 alerts are prevention, not a blind spot (2026-11-13), so **C1 is the only candidate
-    positive case left, and it is untested**. All in `REPO\docs\DECISIONS.md`.
+    level-12 alerts are prevention, not a blind spot (2026-11-13). All in `REPO\docs\DECISIONS.md`.
+    **Measured the same day, not yet decided:** the C1 trial changed no sign-in event, so no
+    candidate change shows a blind spot under the shipped rules (`REPO\docs\OPEN-QUESTIONS.md`
+    item 38, for the student and the adviser).
 
 Not an item yet — no longer blocks anything (the revisions list was not sent, 2026-10-15)
     The REVISED-to-FINAL diff has never been run. Measured 2026-09-10: FINAL is 6,395 words

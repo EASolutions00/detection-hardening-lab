@@ -54,8 +54,17 @@ calling it a blind spot): the lost alerts are prevention, the same rule as C5 (D
 C1 is the only candidate positive case left, untested; and the exit codes cannot show that the attack was blocked
 (comsvcs and rdrleakdiag returned 0), which is item 22 with real data.
 
-**Next:** the C1 test (the positive case now rests on it). Optional: test 9 on a fresh boot; tests 3, 4, 12, 14. Tell
-the adviser about C1.
+**Then the C1 trial** (student: "lets continue"). Rule 60118 was found firing on each console sign-in (two type 2
+logons each). The student set `UseLogonCredential` to 1, signed out and in, set it to 0, signed out and in (a first
+try had no sign-in between the two settings; caught from Sysmon 13 times). Result: identical 4624 events, 60118 twice
+both times. The extra events in the first window were services, the sign-in screen, PowerShell's policy test file
+(rule 92213, level 15) and DCOM errors. Commands: COMMANDS 2.14. Findings: OPEN-QUESTIONS 1 ("The C1 trial") and new
+item 38. Side finding: turning WDigest caching on fired no rule.
+
+**Where this leaves the study:** C5 no effect, C3 prevention, C1 no effect: no candidate change shows a blind spot
+under the shipped rules (item 38). Not committed yet.
+
+**Next:** the student and the adviser decide item 38 before more lab work. How C1 is reported is not decided.
 
 ---
 

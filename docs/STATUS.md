@@ -103,9 +103,12 @@ controls), and record the miss in WORKLOG the same day.
   and 61625 (×1), both level 12, with LSA Protection off and neither with it on.** **Decided 2026-11-13: prevention**, as for
   C5 (DECISIONS 2026-11-13). **C1 is now the only candidate positive case**, untested: the C1 test moves up. Still
   optional: rerun test 9 on a fresh boot; try tests 3, 4, 12, 14 (OPEN-QUESTIONS 35).
-- **Tell the adviser:** with C5 and C3 read as prevention, the study's positive case rests on C1 alone.
-- **b. The C1 test** (WDigest, rule 60118): not started; its attack test is chosen during lab setup (DECISIONS
-  2026-10-01).
+- **Tell the adviser:** with C5 and C3 read as prevention and C1 showing no change, the study has no candidate
+  positive case under the shipped rules (OPEN-QUESTIONS 38).
+- **b. The C1 test** (WDigest, rule 60118). **Trial done 2026-11-13** (COMMANDS 2.14): a console sign-in wrote the
+  same events with WDigest caching on and off; 60118 fired twice both times. **So no candidate change shows a blind
+  spot** (OPEN-QUESTIONS 38). **Next, before more lab work: the student and the adviser decide the way forward
+  (item 38).**
 - **c. The golden snapshot** (runbook Phase 5, taken cold): the baseline now also needs LSA Protection off, Remote
   Desktop on with NLA off and the firewall rule for `10.20.10.1`, and no `eli` session at shutdown.
 - **d.** Then the minimal harness, one capture window by hand, and the spike. **Checkpoint 2026-11-07 (spike) was
@@ -173,6 +176,10 @@ and with them only C1, C3 and C5 can blind a detection (`DECISIONS.md` 2026-10-0
   (FILE-MAP section 6).
 
 ## Recently settled (details in DECISIONS.md)
+
+- 2026-11-13: **tested.** C1 trial: WDigest caching on or off, a console sign-in wrote identical 4624 type 2 events
+  and fired 60118 twice. The stated effect was not seen. With C3 and C5, no candidate change shows a blind spot under
+  the shipped rules: **new item 38, for the student and the adviser.**
 
 - 2026-11-13: **decided.** C3's lost level-12 alerts (92403, 61625 on test 13) are prevention, not a blind spot:
   with LSA Protection on the dump never reached `lsass.exe`, and the attempt still raised level-3 and level-4

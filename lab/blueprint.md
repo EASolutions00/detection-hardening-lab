@@ -383,6 +383,10 @@ in class C and is reported as "the predicted effect was not seen" (DECISIONS 202
 Decided: these lost alerts are **prevention**, not a blind spot, by condition (d) (DECISIONS 2026-11-13). So the
 row's "Why the attack survives" does not hold for these tests. C1 is the only candidate positive case left.
 
+**Measured 2026-11-13, C1:** a console sign-in wrote identical 4624 type 2 events, and rule 60118 fired twice, with
+`UseLogonCredential` 1 and 0. The row's "4624 logon-type distribution shifts" was not seen (OPEN-QUESTIONS 1, "The
+C1 trial"). With C3 and C5 above, no candidate change shows a blind spot (OPEN-QUESTIONS 38).
+
 **Corrected 2026-09-14: C2's stated telemetry effect was impossible.** The row said "4776 package
 name changes". Microsoft's reference page for event 4776 states that its Authentication Package
 field is always `MICROSOFT_AUTHENTICATION_PACKAGE_V1_0`, so it cannot change. The NTLM version is

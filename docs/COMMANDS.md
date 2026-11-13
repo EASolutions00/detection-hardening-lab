@@ -825,6 +825,25 @@ steps are safe to re-run.
 
 ---
 
+### 2.14 The C1 trial, WDigest (2026-11-13, times UTC)
+
+Purpose: does C1 (`UseLogonCredential = 0`) change what a console sign-in writes, and rule 60118? Same guest state as
+2.13 (LSA Protection off, Defender off). The student did every guest step and sign-in; Claude read the archive.
+
+| Step | Where, by whom | Command | Result seen |
+|---|---|---|---|
+| Rule 60118 today | host, Claude | archive, WIN-EP-01 since 07:54 | Fired on each console sign-in: two 4624 type 2 per sign-in (07:57:09, 08:26:04), level 3, "Windows Workstation Logon Success", T1078 |
+| Read the value | guest, student | `Get-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest' -ErrorAction SilentlyContinue \| Select-Object UseLogonCredential` | Empty: the value did not exist |
+| First try | guest, student | `New-ItemProperty ... -Name UseLogonCredential -PropertyType DWord -Value 1 -Force`, then `Set-ItemProperty ... -Value 0` | `1`, then `0`, 8 seconds apart (Sysmon 13 at 08:42:04 and 08:42:12) with **no sign-in between**: nothing measured |
+| `wdigest-on` | guest, student | `Set-ItemProperty ... -Value 1`; sign out; sign in | Value set 08:43:49.754; sign-in 08:44:44.207 |
+| `wdigest-off` (C1) | guest, student | `Set-ItemProperty ... -Value 0` in a new Terminal; sign out; sign in | Value set 08:45:01.985; sign-in 08:46:23.693 |
+| Compare | host, Claude | archive, 30 seconds after each sign-in, counted by event ID and channel; every field of the first 4624 | Results in OPEN-QUESTIONS 1, "The C1 trial" |
+
+**Undo.** `Remove-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest' -Name
+UseLogonCredential`, or a revert to `pre-lsass-trial-2026-11-03`. Safe to re-run.
+
+---
+
 ## Part 3: Read-only checks (safe, change nothing)
 
 ### 3.1 Hardware and Windows state
