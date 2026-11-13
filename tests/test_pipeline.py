@@ -96,6 +96,16 @@ def test_the_report_carries_a_reproducibility_record(tmp_path, rules_dir):
     assert data["reproducibility"]["analyser_version"] == "abc1234"
 
 
+def test_the_curated_list_gives_remediation_level_2_for_the_change(tmp_path, rules_dir):
+    control, pre, post = phases(tmp_path)
+    kb = Path(__file__).parent.parent / "lab" / "knowledge" / "compensating-controls.json"
+    compare(control, pre, post, rules_dir, tmp_path / "out", controls_path=kb)
+    report = (tmp_path / "out" / "report.txt").read_text(encoding="utf-8")
+    assert "REMEDIATION CANDIDATES, LEVEL 2" in report and "92032" in report
+    data = json.loads((tmp_path / "out" / "findings.json").read_text(encoding="utf-8"))
+    assert data["remediation_level_2"][0]["change_id"] == "C3"
+
+
 def test_runs_with_different_parameters_are_not_compared(tmp_path, rules_dir):
     control, pre, post = phases(tmp_path)
     other = dict(PARAMS, window_s=300)

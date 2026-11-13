@@ -30,8 +30,9 @@ from .differential import analyse
 from .impact import ImpactFinding, rank_impact
 from .index import build_index, load_rules
 from .model import AnalysisResult, Phase
-from .report import (comparison_csv, coverage_change, findings_json, navigator_layer, render_analysis,
-                     render_coverage, render_impact, render_reproducibility, render_variance, render_verdict)
+from .report import (comparison_csv, coverage_change, findings_json, load_controls, navigator_layer,
+                     remediation_level2, render_analysis, render_coverage, render_impact, render_remediation2,
+                     render_reproducibility, render_variance, render_verdict)
 from .variance import VarianceModel
 
 
@@ -101,10 +102,13 @@ def _valid(name: str, runs: list[RunData], min_runs: int) -> list[RunData]:
 
 
 def compare(control_dirs: list, pre_dirs: list, post_dirs: list, rules_dir: str | Path,
-            out_dir: str | Path, min_runs: int = 3, analyser_version: str = "unknown") -> ComparisonOutput:
+            out_dir: str | Path, min_runs: int = 3, analyser_version: str = "unknown",
+            controls_path: str | Path | None = None) -> ComparisonOutput:
     """Run the whole method on one comparison and write the report and exports.
 
-    `analyser_version` is the git commit of the repository (src/run.py reads it)."""
+    `analyser_version` is the git commit of the repository (src/run.py reads it).
+    `controls_path` is the curated list for remediation level 2
+    (lab/knowledge/compensating-controls.json); without it the level is left out."""
     groups = {"control": [load_run(d) for d in control_dirs],
               "pre": [load_run(d) for d in pre_dirs],
               "post": [load_run(d) for d in post_dirs]}
@@ -140,13 +144,23 @@ def compare(control_dirs: list, pre_dirs: list, post_dirs: list, rules_dir: str 
              "analyser_version": analyser_version,
              "runs": [{"phase": name, "run_id": r.run_id, "valid": r.valid, "change_id": r.change_id,
                        "folder": str(r.path)} for name, runs in groups.items() for r in runs]}
-    report = "\n".join(header + [render_verdict(result, ranked), render_variance(vm),
-                                 render_analysis(result), render_impact(ranked),
-                                 render_coverage(before, after, lost), render_reproducibility(repro)])
+    sections = [render_verdict(result, ranked), render_variance(vm), render_analysis(result),
+                render_impact(ranked), render_coverage(before, after, lost)]
+    level2: list[dict] = []
+    if controls_path is not None:
+        blind = {t for h in ranked for t in h.blind_techniques} | set(lost)
+        level2 = remediation_level2(load_controls(controls_path), next(iter(changes)), blind)
+        sections.append(render_remediation2(next(iter(changes)), level2))
+        repro["controls_file"] = str(controls_path)
+    sections.append(render_reproducibility(repro))
+    report = "\n".join(header + sections)
     files = {"report": out / "report.txt", "findings": out / "findings.json", "csv": out / "comparison.csv",
              "navigator": out / "navigator_layer.json"}
     files["report"].write_text(report, encoding="utf-8")
-    files["findings"].write_text(findings_json(result, ranked, lost, repro), encoding="utf-8")
+    data = json.loads(findings_json(result, ranked, lost, repro))
+    if controls_path is not None:
+        data["remediation_level_2"] = level2
+    files["findings"].write_text(json.dumps(data, indent=2), encoding="utf-8")
     files["csv"].write_text(comparison_csv(result), encoding="utf-8")
     files["navigator"].write_text(navigator_layer(f"TeLoS {next(iter(changes))}", before, after, ranked),
                                   encoding="utf-8")

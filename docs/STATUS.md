@@ -125,8 +125,9 @@ controls), and record the miss in WORKLOG the same day.
   file's encoding. **Done 2026-11-13: the pipeline** (`src/telos/pipeline.py`, command `src/run.py`, 5 tests,
   118 passed): run folders to report, JSON and CSV. **Student's plan (2026-11-13): reach 100% of the system, then
   the GUI; commit and push every big change.** **Done 2026-11-13:** reproducibility record, Navigator layer
-  (format 4.5, checked against MITRE's specification); 120 passed. Left before the GUI: remediation level 2, and
-  the lab steps for the first real harness run.
+  (format 4.5, checked against MITRE's specification), remediation level 2 (curated list, two entries from lab
+  measurements, not tested); 123 passed. **All of FINAL's report sections and exports now exist in code.** Left
+  before the GUI: the lab steps for the first real harness run, and the runs themselves.
 - **c. The golden snapshot** (runbook Phase 5, taken cold): the baseline now also needs LSA Protection off, Remote
   Desktop on with NLA off and the firewall rule for `10.20.10.1`, and no `eli` session at shutdown.
 - **d.** Then the minimal harness, one capture window by hand, and the spike. **Checkpoint 2026-11-07 (spike) was

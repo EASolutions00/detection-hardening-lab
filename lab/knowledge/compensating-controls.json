@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "about": "Remediation level 2 (FINAL Module 5): curated compensating controls per hardening change. Each entry comes from a lab measurement in this repository, names its source, and is a suggestion until tested. The student curates this file; order is the ranking. Match: change_id equal, and technique one of the blind techniques or null for the whole change.",
+  "controls": [
+    {
+      "change_id": "C3",
+      "technique": "T1055",
+      "control": "The LSASS dump attempt is still seen at process start after LSA Protection: rule 92032 (level 3, procdump.exe) and rule 92027 (level 4, PowerShell spawning PowerShell) fired in both LSASS trial runs. Candidate: raise the alert level for process starts whose command line targets lsass.exe (procdump, comsvcs.dll MiniDump, rdrleakdiag), so the attempt is not left at level 3 to 4.",
+      "source": "COMMANDS 2.13; OPEN-QUESTIONS 35, trial part 2; DECISIONS 2026-11-13 (C3 is prevention)",
+      "status": "suggested from a lab measurement, not tested"
+    },
+    {
+      "change_id": "C5",
+      "technique": "T1021.001",
+      "control": "With NLA on, a client that skips the password check is refused with no logon event and no alert; only Sysmon event 3 (TCP to port 3389) records it, and no shipped rule reads it. Candidate: alert on inbound connections to port 3389 from hosts not expected to use Remote Desktop.",
+      "source": "OPEN-QUESTIONS 37, run C; COMMANDS 2.12",
+      "status": "suggested from a lab measurement, not tested"
+    }
+  ]
+}

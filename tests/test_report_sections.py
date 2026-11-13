@@ -112,6 +112,32 @@ def test_navigator_layer_uses_the_required_fields_of_format_4_5(index):
     assert by_id["T1003.001"]["color"] == "#31a354"
 
 
+KB = {"version": 1, "controls": [
+    {"change_id": "C3", "technique": "T1055", "control": "Raise the level of 92032", "source": "COMMANDS 2.13",
+     "status": "suggested, not tested"},
+    {"change_id": "C3", "technique": None, "control": "Any C3 entry", "source": "x", "status": "suggested"},
+    {"change_id": "C5", "technique": "T1021.001", "control": "C5 only", "source": "y", "status": "suggested"},
+]}
+
+
+def test_remediation_level_2_matches_the_change_and_the_blind_techniques(tmp_path):
+    from telos.report import load_controls, remediation_level2
+    path = tmp_path / "kb.json"
+    path.write_text(json.dumps(KB), encoding="utf-8")
+    kb = load_controls(path)
+    hits = remediation_level2(kb, "C3", {"T1055"})
+    assert [h["control"] for h in hits] == ["Raise the level of 92032", "Any C3 entry"]
+    assert remediation_level2(kb, "C3", {"T1003.001"}) == [KB["controls"][1]]
+    assert remediation_level2(kb, "C1", {"T1055"}) == []
+
+
+def test_remediation_level_2_section_shows_source_and_status():
+    from telos.report import render_remediation2
+    text = render_remediation2("C3", KB["controls"][:1])
+    assert "Raise the level of 92032" in text and "COMMANDS 2.13" in text and "not tested" in text
+    assert "no entry" in render_remediation2("C1", [])
+
+
 def test_csv_export_has_one_row_per_key_and_blank_for_untested_values():
     r = result(Finding(LSASS_READ, Classification.LOST, pre_total=30, post_total=0, pre_rate=10.0,
                        post_rate=0.0, rate_ratio=0.0, q_value=0.001, cov=0.05, dispersion=1.2),

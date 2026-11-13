@@ -44,10 +44,13 @@ def main() -> int:
     ap.add_argument("--rules", required=True, help="the unpacked Wazuh rule export")
     ap.add_argument("--out", required=True)
     ap.add_argument("--min-runs", type=int, default=3)
+    default_kb = Path(__file__).parent.parent / "lab" / "knowledge" / "compensating-controls.json"
+    ap.add_argument("--controls", default=str(default_kb) if default_kb.exists() else None,
+                    help="curated compensating controls for remediation level 2")
     a = ap.parse_args()
     try:
         out = compare(_expand(a.control), _expand(a.pre), _expand(a.post), a.rules, a.out, a.min_runs,
-                      analyser_version=_git_commit())
+                      analyser_version=_git_commit(), controls_path=a.controls)
     except PipelineError as exc:
         print(f"cannot compare: {exc}", file=sys.stderr)
         return 2

@@ -149,7 +149,15 @@ from MITRE's specification before writing (`attack-navigator`, `layers/spec/v4.5
 2026-11-13): `name` and `domain` required, `versions.layer` "4.5", `versions.navigator` at least "4.9.0",
 `techniqueID` required. `navigator_layer()` uses only those fields plus `color` and `comment`: red when no alert for
 the technique fired after the change, green when one did. The pipeline writes `navigator_layer.json`. Tests first,
-each failing on the missing function; **120 passed**. Committed and pushed automatically.
+each failing on the missing function; **120 passed**. Committed and pushed automatically as `a5562a2`.
+
+**Then remediation level 2.** `load_controls()`, `remediation_level2()` (match by change and blind technique, or a
+whole-change entry) and `render_remediation2()` in `report.py`; the pipeline and `src/run.py` take the curated file
+`lab/knowledge/compensating-controls.json`. Its first two entries come only from this week's measurements, each with
+source and status "suggested from a lab measurement, not tested": C3 (the attempt still fires 92032 and 92027 at
+levels 3 to 4) and C5 (the refused attempt leaves only Sysmon 3 to port 3389, read by no rule). No advice was written
+that the lab did not measure; the student curates the file. Tests first; **123 passed**. All of FINAL's sections and
+exports now exist in code. Committed and pushed automatically.
 
 ---
 

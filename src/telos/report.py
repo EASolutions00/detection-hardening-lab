@@ -233,6 +233,37 @@ def findings_json(result: AnalysisResult, ranked: list[ImpactFinding],
     return json.dumps(data, indent=2)
 
 
+def load_controls(path) -> list[dict]:
+    """The curated list of compensating controls (lab/knowledge/compensating-controls.json)."""
+    from pathlib import Path
+    data = json.loads(Path(path).read_text(encoding="utf-8"))
+    return list(data.get("controls", []))
+
+
+def remediation_level2(controls: list[dict], change_id: str | None, techniques: set[str]) -> list[dict]:
+    """Remediation level 2 (FINAL Module 5): curated entries for this change.
+
+    An entry matches when its change_id is this change and its technique is one of the
+    blind techniques, or the entry names no technique (it applies to the whole change).
+    The list's order is kept: it is the curator's ranking.
+    """
+    return [c for c in controls
+            if c.get("change_id") == change_id and (c.get("technique") is None or c["technique"] in techniques)]
+
+
+def render_remediation2(change_id: str | None, entries: list[dict]) -> str:
+    """The second level of FINAL's remediation candidates, with each entry's source and status."""
+    out = [LINE, f"REMEDIATION CANDIDATES, LEVEL 2  (curated compensating controls for {change_id})", LINE, ""]
+    if not entries:
+        out.append("  no entry in the curated list for this change and these techniques")
+    for i, c in enumerate(entries, 1):
+        tech = c.get("technique") or "the whole change"
+        out.append(f"  {i}. {c['control']}")
+        out.append(f"     for: {tech}   status: {c.get('status', '?')}   source: {c.get('source', '?')}")
+    out.append("")
+    return "\n".join(out)
+
+
 NOT_DETECTED = "#e60d0d"
 DETECTED = "#31a354"
 
