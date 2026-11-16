@@ -77,7 +77,35 @@ per control run, Q6 the reboot runs against 3 control runs, and the C3 compariso
 says when valid runs are too few. 2 tests failing first; **140 passed**. Smoke test on today's data (into the
 scratchpad): every answer "not enough valid runs". Committed and pushed automatically.
 
-**Next:** the student starts `src/spike.py`; then `src/spike.py --analyse`.
+**Then the spike ran** (student: "Starting it now", then "spike done"). `src\spike.py` started at 09:12:58 UTC, run by
+the student; Claude only read the run folders while it ran. **19 of 19 runs valid.** Claude ran `src\spike.py
+--analyse`. Answers, all from `data/summaries/spike_answers.txt` and `cov_control_runs.csv`:
+- **Q1** (noise, 5 runs each): 20 keys in Config S and 20 in Config N; median CoV 0%, 5 of 20 keys above 5% CoV in
+  each (Application 1001, 16384, 16394 at 137%; the short Sysmon-1 key 52 to 59%; Security-4688 8 to 9%). The equal
+  summary numbers for S and N were checked: the keys and counts differ (N has `Application-15[]` 4 per run, S has
+  `Sysmon-5[]`; Sysmon-10 is 81.8 in N and 72.8 in S); the summaries match by chance.
+- **Q2:** 9.8 minutes per run on average (516 s plain, 749 s with a reboot); **16.5 hours for 101 runs**, against the
+  67 hours first estimated.
+- **Q3** (item 23): **0 false findings** in the 10 control-versus-control pairs.
+- **Q4** (item 25): 11 of 20 keys testable (55%). **`Sysmon-8[]`, the key behind C3's lost alerts, is not**: 2 per run,
+  6 in 3 runs, under 30.
+- **Q5** (item 22): Sysmon 1 per control run 37, 43, 44, 38, 38 (mean 40, CoV 8.1%). **It did not move under C3**
+  (38 before in the 2 runs read, 39, 37, 38 after), so it cannot tell C3's blocked attack from lost evidence.
+- **Q6:** 3 runs with an extra reboot against 3 control runs: 0 LOST, 0 REDUCED, 0 NEW.
+- **C3 comparison** (5 control, 3 before, 3 after): one finding, **REDUCED `Sysmon-10[GrantedAccess=other,...]`**, 73.3
+  to 26.3 per run (ratio 0.359, q 6.4e-14); T1055 no longer detected; 9 keys INCONCLUSIVE. Alerts 92403 (2 per run)
+  and 61625 (1) fired in every run before and in none after, as in the LSASS trial. The system flags it as a blind
+  spot; by DECISIONS 2026-11-13 (C3 is prevention) it is not one, which that entry predicted.
+
+**Fixed:** the C3 report said "analyser version unknown"; `analyse_spike()` now takes the git commit from `src/spike.py`
+(failing test first, **141 passed**, `452f591`), and the rerun recorded `452f591` with the same answers.
+
+**Also asked** (student, about selling the Ryzen host and moving to a Dell OptiPlex 3000, i5-12500T, 40 GB): Claude
+recommended not selling before the Dell passes a test run and a repeat of the spike, because every run of the study must
+come from one host kept until the defense. The VMs need 12 vCPU and 24 GB together (`.vmx` files). **Not decided.**
+
+**Next:** the student's decisions from the spike (run count and Q4, item 22's void rule, the host); then the full
+data collection.
 
 ---
 

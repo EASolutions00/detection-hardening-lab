@@ -881,6 +881,11 @@ before a run stops it. **Analysis:** `src/spike.py --analyse` answers Q1 to Q6 f
 `data/summaries/C3/`. Q3 uses all 5 control runs for the noise model and one run on each side of each pair; Q5's
 fingerprint is the number of Sysmon 1 events in the window; Q6 compares the 3 reboot runs with the first 3 control runs.
 
+**Result, 2026-11-16 (chat ee84ae3f):** 19 of 19 runs valid. Q1 median CoV 0%, 5 of 20 keys above 5% (S and N);
+Q2 9.8 min per run, 16.5 h for 101 runs; Q3 0 false findings; Q4 11 of 20 keys testable; Q5 37 to 44 Sysmon 1 per
+run, unchanged under C3; Q6 no key moved. C3: `Sysmon-10` REDUCED, T1055 lost, ruled prevention. Details: WORKLOG
+2026-11-16; OPEN-QUESTIONS 22, 23, 25, 38.
+
 > **Since 2026-09-26 there is no fallback topic** (`docs/DECISIONS.md` 2026-09-26). The spike still
 > answers Q1 and Q2 below. A bad answer now means cutting scope (OPEN-QUESTIONS 25), not switching
 > topic.

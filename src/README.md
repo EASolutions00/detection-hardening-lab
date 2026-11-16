@@ -126,7 +126,8 @@ does not support, and would inflate the reported recall.
 (125 on 2026-11-13, after the reproducibility record, the Navigator layer, remediation level 2 and the
 harness's after-boot steps; 130 on 2026-11-16 with 5 in `tests/test_catalog.py`; 133 after the first real run:
 the reader now accepts vmrun's quoted fence arguments, and `harness.recount()` re-reads a saved run; 138 with
-the spike plan, `extra_reboot` and run timing; 140 with the spike analysis.) (Updated from "58"; the count had not been updated since
+the spike plan, `extra_reboot` and run timing; 140 with the spike analysis; 141 after the first real spike, when the C3
+report gained the analyser version.) (Updated from "58"; the count had not been updated since
 2026-10-15.)
 The three that matter most:
 

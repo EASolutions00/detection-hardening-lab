@@ -513,6 +513,17 @@ infrastructure. Record the measured share either way.
 **What a bad answer means:** the study runs out of time mid-campaign, or finishes with an evaluation
 too thin to support its precision and recall claims. Both are recoverable only if decided early.
 
+### Spike answers, 2026-11-16 (chat ee84ae3f)
+
+- **Time (Q2):** 9.8 minutes per run on average over 19 valid runs (516 s without a reboot, 749 s with one). 101 runs
+  take about **16.5 hours**, not 67. The campaign fits.
+- **Power (Q4):** **11 of 20 keys (55%)** reach 30 events in 3 runs. The 9 that do not are rare stimulus or system
+  events. **The one that matters is `Sysmon-8[]`**, which carries C3's lost alerts 92403 and 61625: 2 events per run.
+  Raising the pre-change runs from 3 to 5 gives 10, still under 30; it would need 15 runs. So more repetitions alone
+  do not make it testable.
+- **Still open, for the student:** the number of runs per phase, and whether a key like `Sysmon-8[]` is left
+  INCONCLUSIVE (reported, not cleared) or the threshold or stimulus is changed. None decided.
+
 ---
 
 ## 20. WIN-EP-01 does not audit process creation, and two headline claims depend on it (ANSWERED 2026-11-03 in the guest; the archive check remains)
@@ -1361,6 +1372,12 @@ a labeled set) is done: there would be no positive label.
 2. Revisit choice 1 of 2026-10-01 (shipped rules only), which narrowed the candidates from about seven to three.
 3. Look for other benchmark controls whose effect removes evidence while the attack still works (condition (d)).
 
+**C3 confirmed by the spike, 2026-11-16** (3 runs before, 3 after, through the whole pipeline): the system reports one
+REDUCED key, `Sysmon-10[GrantedAccess=other,...]`, 73.3 to 26.3 per run, and T1055 no longer detected, ranked as a
+blind spot (`data/summaries/C3/report.txt`). Alerts 92403 and 61625 fired in all 3 runs before and none after. By the
+2026-11-13 decision this is prevention, so the count of blind spots stays zero; the report prints that caveat. The
+automatic report and the decision disagree until item 22's run check can mark it.
+
 **Not to be confused with** the "zero blind spots" answer corrected after the re-presentation (WORKLOG 2026-10-22):
 that was about re-running until nothing is found; this is a measured result.
 
@@ -1403,6 +1420,13 @@ ProcDump returned -2 in both states (with "Access is denied" only when blocked),
 returned **0 when blocked**. So a run check based on exit status alone would pass these runs, and the analyser would
 report the lost keys as a blind spot. The check needs another signal, for example whether the test's dump file was
 written `(unverified as a design)`.
+
+**Spike measurement, 2026-11-16 (chat ee84ae3f).** The planned fingerprint, Sysmon 1 events per window, was 37, 43, 44,
+38 and 38 in the 5 control runs (mean 40, CoV 8.1%; `spike_answers.txt`, Q5). **It did not move under C3**: 38 in the
+two "before" runs read, and 39, 37 and 38 in the three "after" runs, while the dump was blocked. The test programs still
+start; they only fail to reach `lsass.exe`. So **this fingerprint cannot tell C3's blocked attack from lost evidence**.
+It still catches a run where the tests did not start. The tolerance (for example the control mean plus or minus three
+standard deviations, 30 to 50) and a second signal for "the attack worked" are **not decided**.
 
 **Where the claim is made.** `T1-PANEL-RESPONSE.md:513` answers panel question Q6 with three
 mechanisms for making two runs comparable, and calls the run manifest "the single strongest answer
@@ -1811,7 +1835,11 @@ sentence to defend than the fix is to write.
 
 ---
 
-## 23. `global_gate()` ignores the alpha it is given, and is the only stage with no noise model
+## 23. `global_gate()` ignores the alpha it is given, and is the only stage with no noise model (ANSWERED 2026-11-16 by the spike)
+
+**Answered 2026-11-16 (spike, chat ee84ae3f).** The 10 control-versus-control pairs from the 5 Config S control runs,
+one run on each side, gave **0 LOST or REDUCED keys** (`data/summaries/spike_answers.txt`, Q3). On real lab noise,
+testing every key with Benjamini-Hochberg produced no false finding. The text below is the record of the question.
 
 **Status:** **Half answered, and the other half reframed on 2026-09-28.** Defect one, the alpha, was
 **fixed 2026-09-14**: `global_gate()` now takes `alpha`, `analyse()` passes it, and

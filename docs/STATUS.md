@@ -1,7 +1,8 @@
 # STATUS
 
 Current blockers and dates. This file changes often. CLAUDE.md does not.
-Last updated: 2026-11-13 (chat ee84ae3f, end-of-day check): DC-01 dropped, the C5 tests and decisions, "Next, in
+Last updated: 2026-11-16 (chat ee84ae3f): the spike results in "The spike", "Also open" and "Lab state".
+Before that: 2026-11-13 (chat ee84ae3f, end-of-day check): DC-01 dropped, the C5 tests and decisions, "Next, in
 order", "Also open" and "Lab state". The deadline, checkpoint and adviser sections date from 2026-11-02 to 2026-11-03
 (chat 27d2595d).
 
@@ -152,7 +153,14 @@ controls), and record the miss in WORKLOG the same day.
 
 ## The spike
 
-T1 is approved and final. There is **no fallback** (DECISIONS.md 2026-09-26). The spike has not run. It
+**Ran 2026-11-16, 19 of 19 runs valid** (chat ee84ae3f; WORKLOG 2026-11-16; `data/summaries/spike_answers.txt`):
+Q1 median CoV 0%, 5 of 20 keys above 5% in both configs; Q2 9.8 min per run, 16.5 h for 101 runs; Q3 0 false
+findings in 10 pairs (item 23 answered); Q4 11 of 20 keys testable, not `Sysmon-8[]` (item 25); Q5 Sysmon 1 per run
+37 to 44, and it did not move under C3 (item 22); Q6 an extra reboot moved no key. C3 through the pipeline: one
+REDUCED key (`Sysmon-10`), T1055 lost, ruled prevention (item 38). **Open from it, for the student:** runs per phase,
+item 22's void rule, and the study host (the Ryzen or the Dell, not decided).
+
+Original text: T1 is approved and final. There is **no fallback** (DECISIONS.md 2026-09-26). The spike has not run. It
 answers six questions (runbook Phase 7): run-to-run variance, wall clock, zero findings on
 control-versus-control pairs, how many keys reach 30 events, the stimulus fingerprint's spread, and the
 extra reboot's effect. Its result sets the number of changes (DECISIONS.md 2026-09-29).
@@ -177,8 +185,9 @@ and with them only C1, C3 and C5 can blind a detection (`DECISIONS.md` 2026-10-0
 - Item 28. Events written before the Wazuh agent starts never reach the archive, so boot-time checks such
   as Wininit event 12 must be made inside the guest. Seen again after the 2026-11-12 restart: 0 event 6005, 0
   Wininit.
-- Item 23. The spike must run `analyse()` on control-versus-control pairs and find none.
-- Item 22. The stimulus is asserted identical across runs and never verified.
+- Item 23. **Answered 2026-11-16:** 0 false findings in the spike's 10 control-versus-control pairs.
+- Item 22. The stimulus is asserted identical across runs and never verified. **2026-11-16:** the Sysmon 1 fingerprint
+  (37 to 44 per run) did not move under C3, so it cannot mark C3's blocked attack; void rule not decided.
 - Item 31. The event key has no host part. No longer arises with one Windows host (DC-01 dropped 2026-11-11).
 
 ## Lab state
@@ -188,10 +197,9 @@ and with them only C1, C3 and C5 can blind a detection (`DECISIONS.md` 2026-10-0
   from that test boot (in no snapshot; the next revert drops it); SIEM-01 running. **Decided:** no `cfg-suppressed`
   or `cfg-natural` snapshot (DECISIONS 2026-11-16). **The first real harness run, `test-pre-1`, is valid** (COMMANDS
   2.17): every lab step worked; one reader fix (vmrun quotes the fence arguments) and a recount. Its fixed 180 s window
-  caught both rdrleakdiag injections (92403 ×2, 61625). **Next: the spike** (runbook Phase 7): the plan and the batch
-  command exist (`src/spike.py`, 19 runs, about 3 hours, the student starts it), and so does the analysis
-  (`src/spike.py --analyse`, Q1 to Q6 and the C3 comparison). **Not started as of 2026-11-16:** only `test-pre-1` is in
-  `data/runs/`. Check with `vmrun` rather than trusting this line.
+  caught both rdrleakdiag injections (92403 ×2, 61625). **The spike ran 2026-11-16: 19 runs in `data/runs/spike-*`,
+  all valid** (see "The spike" above). VM power state after the batch is not checked; check with `vmrun` rather than
+  trusting this line.
 - **Host state:** `eli`'s guest password is stored in the host's Credential Manager as `TERMSRV/10.20.10.20`
   (`cmdkey`, 2026-11-12); the C5 harness needs it. `cmdkey /delete:TERMSRV/10.20.10.20` removes it. On SIEM-01:
   `/home/eli/c5/p-hostip.txt`, the pattern file `"ipAddress":"10.20.10.1"`.
