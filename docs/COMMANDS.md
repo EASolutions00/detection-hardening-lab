@@ -860,6 +860,25 @@ Purpose: the rule export DECISIONS 2026-10-01 asks for, read by the rule-to-key 
 
 ---
 
+### 2.16 The golden snapshot `golden-base` (2026-11-13 to 2026-11-16, times UTC)
+
+Purpose: runbook Phase 5, the state every capture run reverts to (DECISIONS 2026-11-16).
+
+| Step | Where, by whom | Command | Result seen |
+|---|---|---|---|
+| Write the baseline | host, Claude | `lab/scripts/baseline-golden.ps1` (sets the decided baseline, prints a 20-row check) | All 5 guest scripts parse with 0 errors |
+| VMs (2026-11-16) | host, Claude | `vmrun list`; `.vmss` check | Both off, no `.vmss` |
+| Start, clean revert | host, Claude | `vmrun start $siem nogui`; `vmrun revertToSnapshot $win pre-lsass-trial-2026-11-03`; `vmrun start $win gui`; `checkToolsState`; `disconnectNamedDevice $win ethernet0` | All exit 0; `vmrun start ... gui` hung in the command (the VM did start) and the command was stopped; the rest was run separately. SIEM-01 06:52:27 against host 06:52:28 |
+| Copy scripts in | host, **student** (guest password) | `vmrun -gu eli -gp $pw CopyFileFromHostToGuest` for the 5 scripts into `C:\telos\` | 5 lines `exit 0` |
+| Set the baseline | guest, student, Terminal (Admin) | `powershell -NoProfile -ExecutionPolicy Bypass -File C:\telos\baseline-golden.ps1 -WDigest On` | **19 of 20**: every row True except "Wininit event 12 since this boot" (`yes`, LSA Protection still active until the restart). All three pinned hashes matched |
+| Restart and verify | guest, student | `Restart-Computer`; the same script with `-Verify -WDigest On` | Reported "done"; **output not seen** |
+| Sign out, shut down, NAT | guest and VMware settings, student | Sign out; Shut down from the sign-in screen; VM Settings, NAT adapter: untick Connected and Connect at power on | `.vmx`: `ethernet0.startConnected = "FALSE"`; WIN-EP-01 off, no `.vmss` |
+| Snapshot | host, Claude | `vmrun -T ws snapshot $win golden-base`; `vmrun -T ws listSnapshots $win` | Exit 0 at 06:59:45; `Total snapshots: 6`, `golden-base` last |
+
+**Undo.** `vmrun -T ws deleteSnapshot $win golden-base`. Do not take a second snapshot with the same name.
+
+---
+
 ## Part 3: Read-only checks (safe, change nothing)
 
 ### 3.1 Hardware and Windows state

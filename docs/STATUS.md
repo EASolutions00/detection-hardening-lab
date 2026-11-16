@@ -131,7 +131,8 @@ controls), and record the miss in WORKLOG the same day.
   steps (125 passed). Left before the GUI, **all needing the student:** the decisions (C1 baseline, the pinned attack
   list, C1's unattended sign-in, item 38), copying the scripts into the guest, the golden snapshot, and the first
   real harness run.
-- **c. The golden snapshot** (runbook Phase 5, taken cold): the baseline now also needs LSA Protection off, Remote
+- **c. The golden snapshot. Done 2026-11-16: `golden-base`** (see "Lab state"). Original note:
+  (runbook Phase 5, taken cold): the baseline now also needs LSA Protection off, Remote
   Desktop on with NLA off and the firewall rule for `10.20.10.1`, and no `eli` session at shutdown.
 - **d.** Then the minimal harness, one capture window by hand, and the spike. **Checkpoint 2026-11-07 (spike) was
   missed** (no spike run; first recorded 2026-11-13), and 2026-11-30 (data collection) cannot be met. New dates are
@@ -182,12 +183,11 @@ and with them only C1, C3 and C5 can blind a detection (`DECISIONS.md` 2026-10-0
 
 ## Lab state
 
-- **End of 2026-11-13 (chat ee84ae3f):** WIN-EP-01 was reverted to `pre-lsass-trial-2026-11-03` at 13:01 UTC for the
-  golden snapshot; **no baseline step was done** (the student stopped there). The student shuts both VMs down.
-  **Next session starts with the golden snapshot:** the student chooses C1's baseline (`-WDigest On`, recommended, or
-  `Default`), copies the 5 scripts into `C:\telos\`, runs `baseline-golden.ps1`, restarts, verifies 20 of 20, signs
-  out, shuts down, disconnects NAT in the VM settings; then Claude takes `golden-base` cold. Check with `vmrun`
-  rather than trusting this line.
+- **2026-11-16 07:00 UTC (chat ee84ae3f): `golden-base` exists** (cold, DECISIONS 2026-11-16, COMMANDS 2.16).
+  WIN-EP-01 off; SIEM-01 running. **Next:** a test boot of `golden-base` that runs `baseline-golden.ps1 -Verify -WDigest
+  On` (the after-restart check was not seen) and confirms no `eli` session (`query user`); then decide whether the
+  runbook's `cfg-suppressed` snapshot is still needed now that `config-S-defender-off.ps1` runs after every boot; then
+  the first real harness run. Check with `vmrun` rather than trusting this line.
 - **Host state:** `eli`'s guest password is stored in the host's Credential Manager as `TERMSRV/10.20.10.20`
   (`cmdkey`, 2026-11-12); the C5 harness needs it. `cmdkey /delete:TERMSRV/10.20.10.20` removes it. On SIEM-01:
   `/home/eli/c5/p-hostip.txt`, the pattern file `"ipAddress":"10.20.10.1"`.

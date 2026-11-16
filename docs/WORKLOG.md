@@ -17,6 +17,29 @@ Next:
 
 ---
 
+## 2026-11-16 - The golden snapshot golden-base is taken
+
+**Chat ee84ae3f, continued, a new sitting.** Student: "lets continue", then "done, take the snapshot". Commands:
+COMMANDS 2.16. Decision: DECISIONS 2026-11-16.
+
+**Did.** Both VMs were off with no `.vmss`. Claude started SIEM-01, reverted WIN-EP-01 to `pre-lsass-trial-2026-11-03`
+and started it (the `vmrun start ... gui` call hung inside the command, though the VM started; the command was
+stopped and the rest run separately), and disconnected NAT; clocks 06:52:27 and 06:52:28. The student copied the 5
+scripts into `C:\telos\` (5 × exit 0), ran `baseline-golden.ps1 -WDigest On` (**19 of 20**, only the after-restart
+row missing; all pinned hashes matched), restarted and verified, signed out, shut down from the sign-in screen, and
+set NAT not to connect. Claude checked from the host (WIN-EP-01 off, no `.vmss`, `ethernet0.startConnected =
+"FALSE"`) and took **`golden-base`** cold at 06:59:45 UTC (`Total snapshots: 6`).
+
+**Decided:** C1's baseline is WDigest caching on (`-WDigest On`), the same pattern as C3 and C5.
+
+**Not seen:** the after-restart check (expected 20 of 20); reported as "done" by the student. A test boot of
+`golden-base` will run it again.
+
+**Next:** a test boot of `golden-base` with the check and `query user`; the `cfg-suppressed` question; then the first
+real harness run. Committed and pushed automatically.
+
+---
+
 ## 2026-11-13 (afternoon, local) - LSASS trial part 2: rule 92900 fires on no test tool
 
 **Chat ee84ae3f, continued, another sitting.** Student: "another day. lets continue". Next in STATUS was LSASS trial

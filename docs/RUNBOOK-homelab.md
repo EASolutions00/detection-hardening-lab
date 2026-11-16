@@ -684,7 +684,7 @@ noise into the exact window you are measuring.
       - **No `eli` session at shutdown.** Sign out, then shut down from the sign-in screen, so every revert boots
         with nobody signed in (DECISIONS 2026-11-13, the C5 session).
       - On the host, not in the snapshot: `eli`'s password stored as `TERMSRV/10.20.10.20` (`cmdkey`, COMMANDS 2.12).
-- [ ] Take snapshot `golden-base`.
+- [x] Take snapshot `golden-base`. **Done 2026-11-16 06:59:45 UTC** (COMMANDS 2.16, DECISIONS 2026-11-16).
 - [ ] Boot, apply Config S (Defender off, Windows Update off, scheduled tasks disabled),
       **then read the settings back and confirm they actually took effect**, shut down,
       snapshot `cfg-suppressed`. Never assume a `Set-MpPreference` succeeded.
