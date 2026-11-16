@@ -33,10 +33,16 @@ set NAT not to connect. Claude checked from the host (WIN-EP-01 off, no `.vmss`,
 **Decided:** C1's baseline is WDigest caching on (`-WDigest On`), the same pattern as C3 and C5.
 
 **Not seen:** the after-restart check (expected 20 of 20); reported as "done" by the student. A test boot of
-`golden-base` will run it again.
+`golden-base` will run it again. Committed and pushed automatically as `6f4c424`.
 
-**Next:** a test boot of `golden-base` with the check and `query user`; the `cfg-suppressed` question; then the first
-real harness run. Committed and pushed automatically.
+**Then the test boot** (student: "Yes, test boot"). Claude reverted to `golden-base` and started it without waiting on
+`vmrun start ... gui` (Tools running 16 s after the start). The student ran the check: **20 of 20**; `query user`: only
+`eli` on the console, signed in 07:08; `NAT Disconnected`, `LAB Up`. Claude read the archive: 694 lines since the
+boot, and the only `eli` logons were the student's two type 2 logons at 07:08:06 (rule 60118). Closed: the unseen
+after-restart check (DECISIONS 2026-11-16), "confirm on the first real revert" (DECISIONS 2026-11-13; OPEN-QUESTIONS
+37), and item 36's condition (no Wininit event 12 in the golden image). Committed and pushed automatically.
+
+**Next:** the `cfg-suppressed` question; then the first real harness run.
 
 ---
 

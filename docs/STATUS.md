@@ -183,9 +183,9 @@ and with them only C1, C3 and C5 can blind a detection (`DECISIONS.md` 2026-10-0
 
 ## Lab state
 
-- **2026-11-16 07:00 UTC (chat ee84ae3f): `golden-base` exists** (cold, DECISIONS 2026-11-16, COMMANDS 2.16).
-  WIN-EP-01 off; SIEM-01 running. **Next:** a test boot of `golden-base` that runs `baseline-golden.ps1 -Verify -WDigest
-  On` (the after-restart check was not seen) and confirms no `eli` session (`query user`); then decide whether the
+- **2026-11-16 (chat ee84ae3f): `golden-base` exists and is checked** (cold, DECISIONS 2026-11-16, COMMANDS 2.16).
+  A test boot gave 20 of 20, no `eli` session before the student's sign-in, NAT disconnected. WIN-EP-01 is now running
+  from that test boot (in no snapshot; the next revert drops it); SIEM-01 running. **Next:** decide whether the
   runbook's `cfg-suppressed` snapshot is still needed now that `config-S-defender-off.ps1` runs after every boot; then
   the first real harness run. Check with `vmrun` rather than trusting this line.
 - **Host state:** `eli`'s guest password is stored in the host's Credential Manager as `TERMSRV/10.20.10.20`

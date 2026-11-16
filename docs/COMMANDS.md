@@ -875,6 +875,14 @@ Purpose: runbook Phase 5, the state every capture run reverts to (DECISIONS 2026
 | Sign out, shut down, NAT | guest and VMware settings, student | Sign out; Shut down from the sign-in screen; VM Settings, NAT adapter: untick Connected and Connect at power on | `.vmx`: `ethernet0.startConnected = "FALSE"`; WIN-EP-01 off, no `.vmss` |
 | Snapshot | host, Claude | `vmrun -T ws snapshot $win golden-base`; `vmrun -T ws listSnapshots $win` | Exit 0 at 06:59:45; `Total snapshots: 6`, `golden-base` last |
 
+**Test boot of `golden-base` (2026-11-16):**
+
+| Step | Where, by whom | Command | Result seen |
+|---|---|---|---|
+| Revert and start | host, Claude | `vmrun revertToSnapshot $win golden-base`; `Start-Process vmrun -ArgumentList '-T','ws','start',$win,'gui'` (not waited on, because `start ... gui` hung inside a command before); `checkToolsState` | Revert exit 0; start 07:02:06; Tools running 07:02:22 |
+| Check | guest, student, Terminal (Admin) | `baseline-golden.ps1 -Verify -WDigest On`; `query user`; `Get-NetAdapter \| Select-Object Name, Status` | **`checks passed: 20 of 20`** (Wininit event 12 since boot: `none`); `eli console 1 Active ... 7:08 AM` only; `NAT Disconnected`, `LAB Up` |
+| Archive | host, Claude | `telos-archive tail 6000`, WIN-EP-01 lines since 07:02:06, 4624 for `eli` | 694 lines from 07:02:22; the only `eli` logons are two type 2 at 07:08:06 (rule 60118), the student's sign-in. Nothing signed `eli` in at boot |
+
 **Undo.** `vmrun -T ws deleteSnapshot $win golden-base`. Do not take a second snapshot with the same name.
 
 ---

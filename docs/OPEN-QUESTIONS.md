@@ -1194,7 +1194,9 @@ downloads)? Under the 2026-11-13 decision these can change C3's reading only if 
 **Status:** Decided 2026-11-03: option 1 (DECISIONS 2026-11-03). Stays open until the golden image is shown to
 boot with no Wininit event 12. **Shown on the trial image 2026-11-13** (COMMANDS 2.13): `RunAsPPL = 0` and a restart
 gave no event 12 at the 08:25:52 boot, and the tools could open `lsass.exe`. `RunAsPPLBoot` changed from 2 to 0 by
-itself. The golden image still needs the same check. Found 2026-11-03 by chat 27d2595d, step 1 of the LSASS trial (item 35), from the
+itself. The golden image still needs the same check. **Done 2026-11-16:** a test boot of `golden-base` showed no
+Wininit event 12 since boot and `RunAsPPL 0` (COMMANDS 2.16). The condition of this item is met; C3's baseline is in
+the golden image. Found 2026-11-03 by chat 27d2595d, step 1 of the LSASS trial (item 35), from the
 student's output inside the guest.
 
 **The evidence.** `HKLM\SYSTEM\CurrentControlSet\Control\Lsa`: `RunAsPPL = 2`, `RunAsPPLBoot = 2`. System log,
@@ -1233,8 +1235,8 @@ Team was.
 2026-11-13: option (a), the default client, C5 reported as "the predicted effect was not seen"** (DECISIONS
 2026-11-13). **The unattended sign-in in point 3 tested 2026-11-12** (below): a stored password works. **Point 2
 (ending the session) decided 2026-11-13:** the revert before each run ends it (DECISIONS 2026-11-13). Snapshots are
-taken cold (runbook Phase 5), so a revert is a fresh boot, the state that was tested. Left open: confirm it on the
-first real revert of the golden snapshot. Found 2026-11-12 by chat ee84ae3f, in the C5 RDP test (WORKLOG 2026-11-12, COMMANDS 2.12). The
+taken cold (runbook Phase 5), so a revert is a fresh boot, the state that was tested. **Confirmed 2026-11-16** on
+the first revert of `golden-base`: no `eli` logon from the boot until the student's own sign-in (COMMANDS 2.16). Found 2026-11-12 by chat ee84ae3f, in the C5 RDP test (WORKLOG 2026-11-12, COMMANDS 2.12). The
 test's main question is answered: a local-account RDP sign-in from the host fires rule 92653 (DECISIONS
 2026-11-11). Four facts found on the way change the C5 test design.
 

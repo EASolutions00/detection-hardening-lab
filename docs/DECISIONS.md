@@ -20,7 +20,8 @@ which means caching is off (general knowledge `(unverified)`).
 Built from `pre-lsass-trial-2026-11-03` by `lab/scripts/baseline-golden.ps1 -WDigest On`; its check gave 19 of 20
 before the restart, the only miss being "Wininit event 12 since this boot", which needs the restart (COMMANDS 2.16).
 The check after the restart (20 of 20 expected) was done by the student and reported as "done", **its output not
-seen**. Then: signed out, shut down from the sign-in screen (no `eli` session), NAT adapter set not to connect
+seen**. **Seen on a test boot of `golden-base` the same morning: 20 of 20**, with no Wininit event 12 since boot,
+`query user` showing only the student's console session, and NAT disconnected (COMMANDS 2.16). Then: signed out, shut down from the sign-in screen (no `eli` session), NAT adapter set not to connect
 (`ethernet0.startConnected = "FALSE"`, read in the `.vmx`).
 
 **Cost if wrong:** if C1 should be measured against the Windows default, retake the snapshot with `-WDigest Default`
@@ -175,7 +176,8 @@ and two rule 67022 alerts (OPEN-QUESTIONS 26).
 **cold**, with the VM powered off, so a revert boots the guest fresh. "At the sign-in screen" therefore means: shut
 WIN-EP-01 down cleanly with no `eli` session (from the sign-in screen), then take the snapshot powered off. A revert
 then gives the same state as the restarts tested above (a fresh boot, no `eli` logon). The one check left is the
-first real revert.
+first real revert. **Done 2026-11-16:** on a revert to `golden-base`, the archive showed no `eli` logon from the boot
+(07:02:06 UTC) until the student's own sign-in at 07:08:06 (COMMANDS 2.16).
 
 ---
 
