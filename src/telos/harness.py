@@ -265,9 +265,13 @@ def recount(run_dir: str | Path, agent: str = "WIN-EP-01", now: Callable[[], dat
 
 
 def capture(lab: Lab, run_id: str, phase: str, stimulus: list[Step], parameters: dict,
-            change: Change | None = None) -> dict:
-    """Run one capture window and write its folder. Returns the manifest."""
+            change: Change | None = None, extra_reboot: bool = False) -> dict:
+    """Run one capture window and write its folder. Returns the manifest.
+
+    `extra_reboot` adds one reboot and settle before the START fence with no change,
+    for the spike's Q6 (does a post-change run's extra reboot leave a trace?)."""
     cfg = lab.cfg
+    run_started = lab.now()
     checks = lab.preflight()
     lab.guest_calls = 0
     reasons: list[str] = []
@@ -294,6 +298,9 @@ def capture(lab: Lab, run_id: str, phase: str, stimulus: list[Step], parameters:
         confirmed = lab.guest(change.verify).returncode == 0
         if not confirmed:
             reasons.append(f"change {change.change_id} not confirmed in the guest")
+    if extra_reboot:                                         # spike Q6, before the fence like D2
+        lab.reboot_and_settle()
+        run_after_boot()
 
     t_start = lab.now()
     lab.fence("START", run_id)                               # step 5
@@ -322,6 +329,7 @@ def capture(lab: Lab, run_id: str, phase: str, stimulus: list[Step], parameters:
     if problem:
         reasons.append(problem)
 
+    run_finished = lab.now()
     params = {**parameters, "window_s": cfg.window_s, "settle_s": cfg.settle_s, "drain_s": cfg.drain_s,
               "snapshot": cfg.snapshot, "agent": cfg.agent,
               "stimulus": [s.name for s in stimulus], "after_boot": [s.name for s in cfg.after_boot]}
@@ -332,7 +340,9 @@ def capture(lab: Lab, run_id: str, phase: str, stimulus: list[Step], parameters:
             "run_id": run_id, "phase": phase,
             "change_id": change.change_id if change else None,
             "change_script_sha256": change.script_sha256 if change else None,
-            "change_confirmed": confirmed,
+            "change_confirmed": confirmed, "extra_reboot": extra_reboot,
+            "run_started_host_utc": run_started.isoformat(), "run_finished_host_utc": run_finished.isoformat(),
+            "run_seconds": (run_finished - run_started).total_seconds(),
             "start_fence_host_utc": t_start.isoformat(), "end_fence_host_utc": t_end.isoformat(),
             "after_boot": after_boot, "stimulus": steps, "guest_calls": lab.guest_calls,
             "exports": exports, "window": window, "checks": checks,

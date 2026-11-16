@@ -64,6 +64,7 @@ because the analyser consumes event counts and does not care where they came fro
 | 4. Impact ranking (blind techniques, highest severity, number of rules) | `impact.py` | done 2026-11-13; surviving coverage counts rules that did fire after the change (DECISIONS 2026-11-13) |
 | 5. Reporting | `report.py` | text sections: verdict, telemetry comparison, ranked blind spots with remediation level 1, coverage change, evaluation (2026-11-13). Exports: JSON of findings, CSV of the comparison. **Added later 2026-11-13:** the reproducibility record (parameters and hash, analyser version = git commit, every run and its folder) and the ATT&CK Navigator layer (format 4.5, checked against MITRE's specification) and remediation level 2 (curated list `lab/knowledge/compensating-controls.json`, matched by change and blind technique; two first entries from lab measurements, not tested). All seven of FINAL's sections and four exports now exist |
 | Lab catalogue and capture command | `catalog.py`, command `src/capture.py` | done 2026-11-16: the changes C1, C3, C5 (scripts in `C:\telos\`, `-Verify`, script SHA256), Config S after every boot, the trial stimulus (T1003.001 tests 1, 2, 13 last, cleanup), the pinned parameters; `capture.py` runs one window on the real lab. **The student runs it** |
+| Spike plan and batch runner | `spike.py`, command `src/spike.py` | done 2026-11-16: 19 runs (runbook Phase 7), resumable; the harness gained `extra_reboot` (Q6) and each run's start, end and duration (Q2). The spike analysis is not written yet |
 | Pipeline: run folders to report and exports | `pipeline.py`, command `src/run.py` | done 2026-11-13: checks the runs belong together (one parameters hash, one change, at least 3 valid runs per phase, voided runs left out), runs the whole method, writes `report.txt`, `findings.json`, `comparison.csv` |
 | Baseline for comparison | `baseline.py` | done |
 | Data shapes | `model.py` | done |
@@ -124,7 +125,8 @@ does not support, and would inflate the reported recall.
 `tests/test_report_sections.py`, 12 in `tests/test_harness.py` and 5 in `tests/test_pipeline.py`.
 (125 on 2026-11-13, after the reproducibility record, the Navigator layer, remediation level 2 and the
 harness's after-boot steps; 130 on 2026-11-16 with 5 in `tests/test_catalog.py`; 133 after the first real run:
-the reader now accepts vmrun's quoted fence arguments, and `harness.recount()` re-reads a saved run.) (Updated from "58"; the count had not been updated since
+the reader now accepts vmrun's quoted fence arguments, and `harness.recount()` re-reads a saved run; 138 with
+the spike plan, `extra_reboot` and run timing.) (Updated from "58"; the count had not been updated since
 2026-10-15.)
 The three that matter most:
 

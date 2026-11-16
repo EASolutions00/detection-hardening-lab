@@ -266,6 +266,28 @@ def test_recount_keeps_other_void_reasons(tmp_path):
     assert any("not confirmed" in r for r in after["record"]["void_reasons"])
 
 
+def test_an_extra_reboot_comes_before_the_start_fence_and_is_recorded(tmp_path):
+    """Spike Q6: a control run with one extra reboot and settle, as a post-change run has (D2)."""
+    lab, runner, _ = make(tmp_path)
+    lab.cfg.after_boot = CONFIG_S
+    m = capture(lab, "run-1", "control", ATTACK, PARAMS, extra_reboot=True)
+    ops = runner.vmrun_ops()
+    assert ops.index("reset") < ops.index("guest:telos-fence.exe START run-1")
+    assert len([op for op in ops if op == "guest:config-S-defender-off.ps1"]) == 2
+    assert m["record"]["extra_reboot"] is True
+
+
+def test_the_record_has_the_runs_own_start_and_end_time(tmp_path):
+    """Spike Q2: the real time per run, from before the checks to after the export."""
+    lab, _, clock = make(tmp_path)
+    start = clock.now()
+    m = capture(lab, "run-1", "pre", ATTACK, PARAMS)
+    began = datetime.fromisoformat(m["record"]["run_started_host_utc"])
+    ended = datetime.fromisoformat(m["record"]["run_finished_host_utc"])
+    assert began == start and ended > began
+    assert m["record"]["run_seconds"] == (ended - began).total_seconds()
+
+
 def test_a_window_across_midnight_exports_both_dates(tmp_path):
     start = datetime(2026, 11, 20, 23, 50, 0)
     archive = {"2026-11-20": [fence("START", "run-1", "2026-11-20T23:53:05.0000000Z")],

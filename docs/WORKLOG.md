@@ -60,7 +60,14 @@ verdict"), so the student ran the read-only look into the run's archive: **vmrun
 short window had lost the second injection. Also seen: a `conhost.exe` per guest call and each program logged twice
 (Sysmon 1 and 4688), noted in item 26. Committed and pushed automatically.
 
-**Next:** the spike (runbook Phase 7).
+**Then the spike plan** (student: "Yes, plan the spike"). From runbook Phase 7 and blueprint section 7: 19 runs (5
+control in Config S for Q1 to Q5, 5 in Config N for Q1, 3 control with an extra reboot for Q6, 3 before and 3 after
+C3 for the first real comparison). The harness gained `extra_reboot` and each run's start, end and duration
+(failing tests first); `src/telos/spike.py` holds the plan and a resumable batch runner, `src/spike.py` runs it
+(the student does; guest password). 3 tests in `tests/test_spike.py`, written together with the module, not seen
+failing first. **138 passed.** Committed and pushed automatically.
+
+**Next:** the student starts `src/spike.py`; Claude writes the spike analysis meanwhile.
 
 ---
 
