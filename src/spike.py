@@ -36,7 +36,9 @@ def main() -> int:
     ap.add_argument("--out", default=str(REPO / "data" / "summaries"), help="where --analyse writes")
     a = ap.parse_args()
     if a.analyse:
-        answers = analyse_spike(REPO / "data" / "runs", a.out, REPO / "data" / "rules" / "wazuh-4.14.7")
+        from run import _git_commit
+        answers = analyse_spike(REPO / "data" / "runs", a.out, REPO / "data" / "rules" / "wazuh-4.14.7",
+                                analyser_version=_git_commit())
         for q, v in answers.items():
             if q == "Q3" and isinstance(v, dict):
                 v = {k: x for k, x in v.items() if k != "per_pair"}

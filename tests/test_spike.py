@@ -90,6 +90,23 @@ def test_spike_answers_are_written_from_the_runs(tmp_path):
     assert "Q1" in (out / "spike_answers.txt").read_text(encoding="utf-8")
 
 
+def test_the_c3_comparison_records_the_analyser_version(tmp_path, monkeypatch):
+    # Found on the first real spike (2026-11-16): the C3 report said "analyser version unknown".
+    import telos.pipeline
+    from telos.spike import analyse_spike
+    runs, out = tmp_path / "runs", tmp_path / "summaries"
+    spike_runs(runs, groups=("S-ctl", "C3-pre", "C3-post"))
+    seen = {}
+
+    def fake_compare(*args, **kwargs):
+        seen.update(kwargs)
+        raise telos.pipeline.PipelineError("stop here")
+
+    monkeypatch.setattr(telos.pipeline, "compare", fake_compare)
+    analyse_spike(runs, out, rules_dir=tmp_path, analyser_version="abc1234")
+    assert seen.get("analyser_version") == "abc1234"
+
+
 def test_a_partial_spike_says_what_is_missing(tmp_path):
     from telos.spike import analyse_spike
     runs, out = tmp_path / "runs", tmp_path / "summaries"

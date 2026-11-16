@@ -61,8 +61,11 @@ def _not_enough(have: int, of: int) -> str:
     return f"not enough valid runs ({have} of {of})"
 
 
-def analyse_spike(runs_dir: str | Path, out_dir: str | Path, rules_dir: str | Path | None) -> dict:
+def analyse_spike(runs_dir: str | Path, out_dir: str | Path, rules_dir: str | Path | None,
+                  analyser_version: str = "unknown") -> dict:
     """Answer the spike's Q1 to Q6 from the run folders, and run the C3 comparison.
+
+    `analyser_version` is the git commit, written into the C3 reproducibility record.
 
     Writes, into out_dir: cov_control_runs.csv (Q1), run_timings.csv (Q2) and
     spike_answers.txt (all answers), plus the C3 report in out_dir/C3 when its runs exist.
@@ -169,7 +172,7 @@ def analyse_spike(runs_dir: str | Path, out_dir: str | Path, rules_dir: str | Pa
         answers["C3"] = "no rule export given"
     else:
         try:
-            res = compare(s_dirs, pre_d, post_d, rules_dir, out / "C3")
+            res = compare(s_dirs, pre_d, post_d, rules_dir, out / "C3", analyser_version=analyser_version)
             answers["C3"] = {"report": str(res.files["report"]), "ranked": [h.key for h in res.ranked],
                              "coverage_lost": res.coverage_lost}
         except PipelineError as exc:
