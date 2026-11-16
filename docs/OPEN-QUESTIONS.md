@@ -1517,6 +1517,11 @@ group nobody had described:
 fit: 2026-09-02 was the Phase 3 build and check, driven by many `vmrun` calls, and 2026-09-10 was the
 UWF test.
 
+**Seen 2026-11-16 in the first harness run** (COMMANDS 2.17): each `vmrun` guest call also starts a
+`conhost.exe 0xffffffff -ForceV1` in the guest, and each program it starts is logged twice (Sysmon 1 and 4688, since
+process creation auditing is on). Equal in every run with the same calls, so they cancel out; one more reason to
+count the calls (step 2 below).
+
 **Cause confirmed 2026-11-12** (COMMANDS 2.12, "The session checks"). One `vmrun listProcessesInGuest` call as `eli`
 wrote **two** 4624 type 4 logons and **two** 4648, all by `vmtoolsd.exe`, at 19:42:53 to 19:42:54. Each type 4 logon
 fired Wazuh rule **67022** (level 3, "Non network or service local logon."). So each guest call adds its own logons

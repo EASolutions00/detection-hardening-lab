@@ -120,7 +120,10 @@ def _fences(records: list[dict], word: str, run_id: str) -> list[dict]:
             continue
         data = rec["data"]["win"].get("eventdata", {}) or {}
         image = str(data.get("image", "")).replace("\\", "/").lower()
-        if image.endswith(FENCE_IMAGE) and tail.search(str(data.get("commandLine", ""))):
+        # vmrun quotes every argument ("START" "run-id"), a hand-run fence does not; drop
+        # the quotes before matching (first real harness run, test-pre-1, 2026-11-16).
+        command = str(data.get("commandLine", "")).replace('\\"', " ").replace('"', " ")
+        if image.endswith(FENCE_IMAGE) and tail.search(command):
             found.append(rec)
     return found
 

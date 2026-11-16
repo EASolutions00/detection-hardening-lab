@@ -887,6 +887,19 @@ Purpose: runbook Phase 5, the state every capture run reverts to (DECISIONS 2026
 
 ---
 
+### 2.17 The first real harness run, `test-pre-1` (2026-11-16, times UTC)
+
+| Step | Where, by whom | Command | Result seen |
+|---|---|---|---|
+| Capture | host, **student** (the harness passes the guest password) | `cd "E:\Claude general"; .\.venv\Scripts\python.exe src\capture.py --run-id test-pre-1 --phase pre` | Every lab step worked: `after-boot: config-S exit 0`; tests 1, 2, 13 and cleanup each exit 0 in about 5 s; `guest calls: 7`; export of 2026-11-16, 6,775 lines, hash checked. **`valid: False`**: `window not readable: no START fence for run 'test-pre-1'` |
+| Find the cause | host, student (Claude's command checker was failing) | `python -c` reading `data\runs\test-pre-1\archive-2026-11-16.json.gz` for `telos-fence` | Command line `"C:\telos\telos-fence.exe" "START" "test-pre-1"`: **vmrun quotes every argument**. START 07:32:45.26, END 07:35:45.30 (180 s). Each fence also appears as a 4688, and a `conhost.exe 0xffffffff -ForceV1` starts with each guest call |
+| Fix | host, Claude | `archive.py` drops quotes before matching; test with the real line, failing first with the same error | 131 passed |
+| Recount | host, Claude | `harness.recount()` (tests failing first; 133 passed); `.\.venv\Scripts\python.exe src\capture.py --run-id test-pre-1 --recount` | `valid True`; window 07:32:45.2599503Z to 07:35:45.2974529Z, 284 events, 19 keys, 0 broken lines; Sysmon-8 2, Sysmon-10 75; fired 92403 ×2, 61625 ×1, 92027 ×4, 92032 ×1, 92052 ×2 |
+
+**Undo.** Delete `data\runs\test-pre-1\` (not in git). A recount can be run again; it adds a note each time.
+
+---
+
 ## Part 3: Read-only checks (safe, change nothing)
 
 ### 3.1 Hardware and Windows state

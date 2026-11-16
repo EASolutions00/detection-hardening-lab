@@ -50,7 +50,17 @@ student runs. `tests/test_catalog.py`, 5 tests, failing first; **130 passed**. R
 `capture.py` (help, and a refused argument) run before being explained; neither touched the lab. Committed and pushed
 automatically.
 
-**Next:** the first real harness run, by the student.
+**Then the first real harness run** (student: "am i going to signin?", answered no; then the run). `src\capture.py
+--run-id test-pre-1 --phase pre`: every lab step worked (Config S exit 0, tests 1, 2, 13 and cleanup exit 0, 7 guest
+calls, export hash checked), but **voided**: "no START fence". Claude's command checker failed for a while ("no
+verdict"), so the student ran the read-only look into the run's archive: **vmrun quotes every argument**
+(`"START" "test-pre-1"`); the window was exactly 180 s. Fixed in `archive.py` with the real line as a failing test
+(131 passed), added `harness.recount()` and `capture.py --recount` (failing tests first, 133 passed), and recounted:
+**`test-pre-1` valid**, 284 events, 19 keys; Sysmon-8 2 and 92403 ×2 and 61625 inside the window, where the hand trial's
+short window had lost the second injection. Also seen: a `conhost.exe` per guest call and each program logged twice
+(Sysmon 1 and 4688), noted in item 26. Committed and pushed automatically.
+
+**Next:** the spike (runbook Phase 7).
 
 ---
 

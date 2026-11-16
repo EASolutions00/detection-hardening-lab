@@ -19,7 +19,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from telos.catalog import CHANGES, CONFIG_S, parameters, trial_stimulus  # noqa: E402
-from telos.harness import HarnessError, Lab, LabConfig, capture  # noqa: E402
+from telos.harness import HarnessError, Lab, LabConfig, capture, recount  # noqa: E402
 
 REPO = Path(__file__).resolve().parent.parent
 HOME = Path(os.environ["USERPROFILE"])
@@ -28,12 +28,22 @@ HOME = Path(os.environ["USERPROFILE"])
 def main() -> int:
     ap = argparse.ArgumentParser(description="One capture window on the TeLoS lab.")
     ap.add_argument("--run-id", required=True)
-    ap.add_argument("--phase", required=True, choices=["control", "pre", "post"])
+    ap.add_argument("--phase", choices=["control", "pre", "post"], help="required unless --recount")
+    ap.add_argument("--recount", action="store_true",
+                    help="read a finished run's saved archive again (no VM, no password)")
     ap.add_argument("--change", choices=sorted(CHANGES), help="required for --phase post, refused otherwise")
     ap.add_argument("--config", default="S", choices=["S", "N"], help="S: Defender off after every boot")
     ap.add_argument("--window-s", type=int, default=180, help="fixed window; the spike sets the final value")
     ap.add_argument("--backup-dir", default=None, help="a folder on a second drive (runbook requirement 8)")
     a = ap.parse_args()
+    if a.recount:
+        m = recount(REPO / "data" / "runs" / a.run_id)
+        r = m["record"]
+        print(f"recounted {a.run_id}: valid {r['valid']}   void reasons: {r['void_reasons'] or '-'}")
+        print(f"window: {r['window']}")
+        return 0 if r["valid"] else 1
+    if a.phase is None:
+        ap.error("--phase is required unless --recount")
     if (a.phase == "post") != (a.change is not None):
         ap.error("--change is required for --phase post and refused for the other phases")
 

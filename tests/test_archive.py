@@ -130,6 +130,22 @@ def test_a_window_uses_event_time_not_line_order():
     assert w.counts["Sysmon-10[GrantedAccess=other,SourceImage,TargetImage]"] == 1
 
 
+def test_a_fence_started_by_vmrun_has_every_argument_in_quotes():
+    """Real line from the first harness run, test-pre-1 (2026-11-16): vmrun quotes each argument,
+    so the command line is "...telos-fence.exe" "START" "test-pre-1"."""
+    def vmrun_fence(word: str, time: str) -> str:
+        return line(SYSMON, "1", time, {
+            "image": "C:\\\\telos\\\\telos-fence.exe",
+            "commandLine": f'\\"C:\\\\telos\\\\telos-fence.exe\\" \\"{word}\\" \\"test-pre-1\\"',
+        })
+    raw = [vmrun_fence("START", "2026-11-16T07:32:45.2599503Z"),
+           lsass_access("2026-11-16T07:33:00.0000000Z", "0x1fffff"),
+           vmrun_fence("END", "2026-11-16T07:35:45.2974529Z")]
+    w = count_window(raw, AGENT, "test-pre-1")
+    assert w.start == "2026-11-16T07:32:45.2599503Z" and w.end == "2026-11-16T07:35:45.2974529Z"
+    assert w.counts["Sysmon-10[GrantedAccess=other,SourceImage,TargetImage]"] == 1
+
+
 def test_another_runs_fences_do_not_open_this_window():
     raw = [
         fence("START", "run-a-2", "2026-11-13T08:28:10.0000000Z"),

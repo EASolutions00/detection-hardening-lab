@@ -238,6 +238,34 @@ def test_a_failed_after_boot_step_voids_the_run(tmp_path):
     assert any("config-S" in r for r in m["record"]["void_reasons"])
 
 
+def test_recount_rereads_a_run_whose_window_was_unreadable(tmp_path):
+    """test-pre-1 (2026-11-16) was voided only because the reader missed vmrun's quoted fences.
+    A recount reads the saved archive again; it adds a note and leaves the parameters alone."""
+    from telos.harness import recount
+    lab, _, _ = make(tmp_path)
+    m = capture(lab, "run-1", "pre", ATTACK, PARAMS)
+    run_dir = tmp_path / "runs" / "run-1"
+    (run_dir / "counts.json").unlink()
+    m["record"]["void_reasons"] = ["window not readable: no START fence for run 'run-1'"]
+    m["record"]["valid"] = False
+    (run_dir / "run_manifest.json").write_text(json.dumps(m))
+    after = recount(run_dir)
+    assert after["record"]["valid"] is True and after["record"]["void_reasons"] == []
+    assert after["record"]["recounts"][0]["reasons_before"] == ["window not readable: no START fence for run 'run-1'"]
+    assert after["parameters_sha256"] == m["parameters_sha256"]
+    assert (run_dir / "counts.json").exists()
+
+
+def test_recount_keeps_other_void_reasons(tmp_path):
+    from telos.harness import recount
+    lab, _, _ = make(tmp_path, program_results={"check.exe": (1, 1.0)})
+    change = Change("C3", apply=(GuestStep("set", "reg.exe"),), verify=GuestStep("check", "check.exe"))
+    capture(lab, "run-1", "post", ATTACK, PARAMS, change=change)
+    after = recount(tmp_path / "runs" / "run-1")
+    assert after["record"]["valid"] is False
+    assert any("not confirmed" in r for r in after["record"]["void_reasons"])
+
+
 def test_a_window_across_midnight_exports_both_dates(tmp_path):
     start = datetime(2026, 11, 20, 23, 50, 0)
     archive = {"2026-11-20": [fence("START", "run-1", "2026-11-20T23:53:05.0000000Z")],

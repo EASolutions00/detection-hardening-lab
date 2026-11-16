@@ -220,6 +220,50 @@ class Lab:
                 "lines": int(lines.group(1)) if lines else None}
 
 
+WINDOW_PROBLEM = "window not readable"
+
+
+def _count_into(run_dir: Path, run_id: str, agent: str, exports: list[dict]) -> tuple[dict | None, str | None]:
+    """Read the run's exported archive files, cut its window, write counts.json.
+    Returns (window summary, None), or (None, the reason the window could not be read)."""
+    lines: list[str] = []
+    for e in exports:
+        with gzip.open(run_dir / e["file"], "rt", encoding="utf-8") as fh:
+            lines.extend(fh.readlines())
+    try:
+        w = count_window(lines, agent, run_id)
+    except ValueError as exc:
+        return None, f"{WINDOW_PROBLEM}: {exc}"
+    window = {"start": w.start, "end": w.end, "n_events": w.n_events, "broken_lines": w.broken_lines}
+    (run_dir / "counts.json").write_text(json.dumps(
+        {"run_id": run_id, "counts": w.counts, "fired": w.fired, **window}, indent=2, sort_keys=True))
+    return window, None
+
+
+def recount(run_dir: str | Path, agent: str = "WIN-EP-01", now: Callable[[], datetime] = _utcnow) -> dict:
+    """Read a finished run's saved archive again, for example after a reader fix.
+
+    Only the window is recounted. Every other void reason stays. The `parameters` and
+    their hash are not touched; the `record` gets a note of the recount and the reasons
+    it had before. First used for test-pre-1 (2026-11-16), voided because the reader
+    missed vmrun's quoted fence arguments.
+    """
+    run_dir = Path(run_dir)
+    manifest = json.loads((run_dir / "run_manifest.json").read_text(encoding="utf-8"))
+    rec = manifest["record"]
+    before = list(rec.get("void_reasons", []))
+    reasons = [r for r in before if not r.startswith(WINDOW_PROBLEM)]
+    window, problem = _count_into(run_dir, rec["run_id"], agent, rec.get("exports", []))
+    if problem:
+        reasons.append(problem)
+    rec["window"] = window
+    rec.setdefault("recounts", []).append({"at": now().isoformat(), "reasons_before": before})
+    rec["void_reasons"] = reasons
+    rec["valid"] = not reasons
+    (run_dir / "run_manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True))
+    return manifest
+
+
 def capture(lab: Lab, run_id: str, phase: str, stimulus: list[Step], parameters: dict,
             change: Change | None = None) -> dict:
     """Run one capture window and write its folder. Returns the manifest."""
@@ -274,18 +318,9 @@ def capture(lab: Lab, run_id: str, phase: str, stimulus: list[Step], parameters:
     dates = sorted({t_start.strftime("%Y-%m-%d"), t_end.strftime("%Y-%m-%d")})
     exports = [lab.export(d, run_dir) for d in dates]        # step 10
 
-    lines: list[str] = []
-    for e in exports:
-        with gzip.open(run_dir / e["file"], "rt", encoding="utf-8") as fh:
-            lines.extend(fh.readlines())
-    window = None
-    try:                                                     # requirement 2: the END fence arrived
-        w = count_window(lines, cfg.agent, run_id)
-        window = {"start": w.start, "end": w.end, "n_events": w.n_events, "broken_lines": w.broken_lines}
-        (run_dir / "counts.json").write_text(json.dumps(
-            {"run_id": run_id, "counts": w.counts, "fired": w.fired, **window}, indent=2, sort_keys=True))
-    except ValueError as exc:
-        reasons.append(f"window not readable: {exc}")
+    window, problem = _count_into(run_dir, run_id, cfg.agent, exports)   # requirement 2: END fence arrived
+    if problem:
+        reasons.append(problem)
 
     params = {**parameters, "window_s": cfg.window_s, "settle_s": cfg.settle_s, "drain_s": cfg.drain_s,
               "snapshot": cfg.snapshot, "agent": cfg.agent,

@@ -56,7 +56,7 @@ because the analyser consumes event counts and does not care where they came fro
 | Stage | Module | Status |
 |---|---|---|
 | 1. Acquisition: reading the archive into counts per window | `archive.py` | done 2026-11-13; checked on real windows |
-| 1. Acquisition: snapshots, stimulus, export (the harness) | `harness.py` | written 2026-11-13 and tested with a fake `vmrun`, `ssh`, `scp` and clock; **not yet run on the lab** (needs the golden snapshot, the attack list, the change scripts) |
+| 1. Acquisition: snapshots, stimulus, export (the harness) | `harness.py` | written 2026-11-13, tested with a fake `vmrun`; **first real run 2026-11-16** (`test-pre-1`, valid after one reader fix, COMMANDS 2.17) |
 | 2. Event keying | `eventkey.py` | done |
 | 2. Profiling and variance model | `variance.py` | done |
 | 3. Differential analysis | `differential.py` | done |
@@ -123,7 +123,8 @@ does not support, and would inflate the reported recall.
 `tests/test_archive.py`, 11 in `tests/test_index.py`, 7 in `tests/test_impact.py`, 7 in
 `tests/test_report_sections.py`, 12 in `tests/test_harness.py` and 5 in `tests/test_pipeline.py`.
 (125 on 2026-11-13, after the reproducibility record, the Navigator layer, remediation level 2 and the
-harness's after-boot steps; 130 on 2026-11-16 with 5 in `tests/test_catalog.py`.) (Updated from "58"; the count had not been updated since
+harness's after-boot steps; 130 on 2026-11-16 with 5 in `tests/test_catalog.py`; 133 after the first real run:
+the reader now accepts vmrun's quoted fence arguments, and `harness.recount()` re-reads a saved run.) (Updated from "58"; the count had not been updated since
 2026-10-15.)
 The three that matter most:
 
