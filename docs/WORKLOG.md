@@ -67,7 +67,17 @@ C3 for the first real comparison). The harness gained `extra_reboot` and each ru
 (the student does; guest password). 3 tests in `tests/test_spike.py`, written together with the module, not seen
 failing first. **138 passed.** Committed and pushed automatically.
 
-**Next:** the student starts `src/spike.py`; Claude writes the spike analysis meanwhile.
+**Then a progress report** (student: "report the entire progress of the system"): about 74% by the 2026-11-12 weights
+`(unverified)`, from about 31%; only `test-pre-1` in `data/runs/`, so the spike had not started.
+
+**Then the spike analysis** (student: "lets continue"). `analyse_spike()` in `src/telos/spike.py` and `src/spike.py
+--analyse`: Q1 CoV per key in Config S and N (`cov_control_runs.csv`), Q2 time per run and for 101 runs
+(`run_timings.csv`), Q3 the 10 control-versus-control pairs, Q4 keys reaching 30 events in 3 runs, Q5 Sysmon 1 count
+per control run, Q6 the reboot runs against 3 control runs, and the C3 comparison through `compare()`; each answer
+says when valid runs are too few. 2 tests failing first; **140 passed**. Smoke test on today's data (into the
+scratchpad): every answer "not enough valid runs". Committed and pushed automatically.
+
+**Next:** the student starts `src/spike.py`; then `src/spike.py --analyse`.
 
 ---
 

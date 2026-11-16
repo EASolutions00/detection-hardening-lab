@@ -876,7 +876,10 @@ copied archive matches the `sha256_gz` the export printed.
 harness, window 180 s, about 10 minutes each. 5 control runs in Config S (Q1 to Q5), 5 in Config N (Q1), 3 control
 runs with one extra reboot (Q6), and 3 before plus 3 after C3 in Config S (the first real comparison through
 `src/run.py`). Runs already in `data/runs/` are skipped; a voided run is recorded and the batch goes on; a failed check
-before a run stops it.
+before a run stops it. **Analysis:** `src/spike.py --analyse` answers Q1 to Q6 from the valid runs and writes
+`data/summaries/cov_control_runs.csv`, `run_timings.csv` and `spike_answers.txt`, plus the C3 report in
+`data/summaries/C3/`. Q3 uses all 5 control runs for the noise model and one run on each side of each pair; Q5's
+fingerprint is the number of Sysmon 1 events in the window; Q6 compares the 3 reboot runs with the first 3 control runs.
 
 > **Since 2026-09-26 there is no fallback topic** (`docs/DECISIONS.md` 2026-09-26). The spike still
 > answers Q1 and Q2 below. A bad answer now means cutting scope (OPEN-QUESTIONS 25), not switching

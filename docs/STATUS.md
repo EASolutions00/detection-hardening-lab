@@ -189,8 +189,9 @@ and with them only C1, C3 and C5 can blind a detection (`DECISIONS.md` 2026-10-0
   or `cfg-natural` snapshot (DECISIONS 2026-11-16). **The first real harness run, `test-pre-1`, is valid** (COMMANDS
   2.17): every lab step worked; one reader fix (vmrun quotes the fence arguments) and a recount. Its fixed 180 s window
   caught both rdrleakdiag injections (92403 ×2, 61625). **Next: the spike** (runbook Phase 7): the plan and the batch
-  command exist (`src/spike.py`, 19 runs, about 3 hours, the student starts it). Then Claude writes the spike analysis
-  (Q1 to Q6). Check with `vmrun` rather than trusting this line.
+  command exist (`src/spike.py`, 19 runs, about 3 hours, the student starts it), and so does the analysis
+  (`src/spike.py --analyse`, Q1 to Q6 and the C3 comparison). **Not started as of 2026-11-16:** only `test-pre-1` is in
+  `data/runs/`. Check with `vmrun` rather than trusting this line.
 - **Host state:** `eli`'s guest password is stored in the host's Credential Manager as `TERMSRV/10.20.10.20`
   (`cmdkey`, 2026-11-12); the C5 harness needs it. `cmdkey /delete:TERMSRV/10.20.10.20` removes it. On SIEM-01:
   `/home/eli/c5/p-hostip.txt`, the pattern file `"ipAddress":"10.20.10.1"`.

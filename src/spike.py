@@ -3,6 +3,7 @@ the guest password to vmrun. About 19 runs of about 10 minutes, unattended.
 
     .venv/Scripts/python.exe src/spike.py
     .venv/Scripts/python.exe src/spike.py --groups S-ctl N-ctl      (only some groups)
+    .venv/Scripts/python.exe src/spike.py --analyse                 (answers Q1 to Q6; no VM, no password)
 
 Runs already in data/runs/ are skipped, so it can be started again after an
 interruption. See src/telos/spike.py for the plan.
@@ -19,7 +20,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from telos.catalog import CHANGES, CONFIG_S, parameters, trial_stimulus  # noqa: E402
 from telos.harness import Lab, LabConfig, capture  # noqa: E402
-from telos.spike import PlannedRun, run_batch, spike_plan  # noqa: E402
+from telos.spike import PlannedRun, analyse_spike, run_batch, spike_plan  # noqa: E402
 
 REPO = Path(__file__).resolve().parent.parent
 HOME = Path(os.environ["USERPROFILE"])
@@ -30,7 +31,18 @@ def main() -> int:
     ap.add_argument("--groups", nargs="+", choices=["S-ctl", "N-ctl", "reboot", "C3-pre", "C3-post"])
     ap.add_argument("--window-s", type=int, default=180)
     ap.add_argument("--backup-dir", default=None)
+    ap.add_argument("--analyse", action="store_true",
+                    help="answer Q1 to Q6 from the runs already captured (no VM, no password)")
+    ap.add_argument("--out", default=str(REPO / "data" / "summaries"), help="where --analyse writes")
     a = ap.parse_args()
+    if a.analyse:
+        answers = analyse_spike(REPO / "data" / "runs", a.out, REPO / "data" / "rules" / "wazuh-4.14.7")
+        for q, v in answers.items():
+            if q == "Q3" and isinstance(v, dict):
+                v = {k: x for k, x in v.items() if k != "per_pair"}
+            print(f"{q}: {v}")
+        print(f"written to {a.out}")
+        return 0
     plan = [r for r in spike_plan() if not a.groups or r.group in a.groups]
 
     def capture_one(run: PlannedRun) -> dict:

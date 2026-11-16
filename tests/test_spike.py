@@ -47,6 +47,59 @@ def test_existing_runs_are_skipped_and_voided_runs_do_not_stop_the_batch(tmp_pat
     assert [s["status"] for s in summary] == ["skipped (exists)", "VOID", "valid"]
 
 
+PARAMS = {"config": "S", "window_s": 180}
+STEADY = "Sysmon-1[CommandLine,Hashes,Image,OriginalFileName,ParentImage]"
+NOISY = "Sysmon-13[Details,EventType,TargetObject]"
+RARE = "Security-4624[AuthenticationPackageName=other,LogonType=2,TargetUserName]"
+
+
+def write_run(root, run_id, counts, seconds=600.0, valid=True, params=PARAMS):
+    from telos.harness import parameters_hash
+    d = root / run_id
+    d.mkdir(parents=True)
+    (d / "counts.json").write_text(json.dumps({"run_id": run_id, "counts": counts, "fired": {}}))
+    (d / "run_manifest.json").write_text(json.dumps({
+        "parameters": params, "parameters_sha256": parameters_hash(params),
+        "record": {"run_id": run_id, "valid": valid, "void_reasons": [], "run_seconds": seconds,
+                   "change_id": "C3" if "post" in run_id else None}}))
+
+
+def spike_runs(root, *, groups=("S-ctl", "N-ctl", "reboot")):
+    for r in spike_plan():
+        if r.group not in groups:
+            continue
+        i = int(r.run_id.rsplit("-", 1)[1])
+        params = dict(PARAMS, config=r.config)
+        write_run(root, r.run_id, {STEADY: 100 + i, NOISY: [40, 80, 20, 70, 30][i - 1], RARE: 2},
+                  seconds=550.0 + 10 * i, params=params)
+
+
+def test_spike_answers_are_written_from_the_runs(tmp_path):
+    from telos.spike import analyse_spike
+    runs, out = tmp_path / "runs", tmp_path / "summaries"
+    spike_runs(runs)
+    answers = analyse_spike(runs, out, rules_dir=None)
+    cov = (out / "cov_control_runs.csv").read_text(encoding="utf-8")
+    assert cov.startswith("config,key,") and "S," in cov and "N," in cov
+    assert "run_id" in (out / "run_timings.csv").read_text(encoding="utf-8")
+    assert answers["Q2"]["runs"] == 13 and 9.0 < answers["Q2"]["mean_minutes"] < 10.5
+    assert answers["Q3"]["pairs"] == 10
+    assert answers["Q4"]["testable"] == 2 and answers["Q4"]["keys"] == 3      # RARE: 2 per run, under 30 in 3
+    assert answers["Q5"]["min"] == 101 and answers["Q5"]["max"] == 105
+    assert answers["Q6"]["runs"] == 3
+    assert "Q1" in (out / "spike_answers.txt").read_text(encoding="utf-8")
+
+
+def test_a_partial_spike_says_what_is_missing(tmp_path):
+    from telos.spike import analyse_spike
+    runs, out = tmp_path / "runs", tmp_path / "summaries"
+    spike_runs(runs, groups=("S-ctl",))
+    answers = analyse_spike(runs, out, rules_dir=None)
+    assert answers["Q1"]["N"] == "not enough valid runs (0 of 5)"
+    assert answers["Q6"] == "not enough valid runs (0 of 3)"
+    assert answers["C3"] == "not enough valid runs (C3-pre 0 of 3, C3-post 0 of 3)"
+
+
 def test_a_failed_check_before_a_run_stops_the_batch(tmp_path):
     plan = spike_plan()[:3]
 
