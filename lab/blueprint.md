@@ -173,7 +173,8 @@ requires, and avoids 16 branching delta chains on F:.
 
 Each capture window, driven by the host harness:
 
-1. `vmrun revertToSnapshot <vmx> cfg-suppressed`
+1. `vmrun revertToSnapshot <vmx> cfg-suppressed` **(since 2026-11-16: `golden-base`, with Config S applied after
+   every boot by a script; DECISIONS 2026-11-16)**
 2. `vmrun start <vmx> nogui`
 3. Poll for VMware Tools ready, then **settle 180 s** (let boot-time event storm
    drain and stop counting it)

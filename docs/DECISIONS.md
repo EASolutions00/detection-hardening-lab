@@ -8,6 +8,29 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-11-16 - No cfg-suppressed or cfg-natural snapshot: runs revert to golden-base, Config S by an after-boot script
+
+**Decision (student, "Yes, drop it"), chat ee84ae3f.** Changes runbook Phase 5's snapshot tree. Every capture run
+reverts to **`golden-base`**. **Config S** (Defender off) is made by `lab/scripts/config-S-defender-off.ps1`, which the
+harness runs after every boot (`LabConfig.after_boot`) and which reads Defender back until it is off; a run where it
+fails is voided. **Config N** is `golden-base` with no after-boot script. The snapshots `cfg-suppressed` and
+`cfg-natural` are not taken.
+
+**Why.** Measured 2026-11-13 (COMMANDS 2.13): right after a boot, Defender ignored its stored "off" setting until the
+command was run again. So a `cfg-suppressed` snapshot alone would not keep Defender off; the after-boot script is
+needed in any case, and with it the snapshot adds nothing. Windows Update cannot download, because NAT is not
+connected (`golden-base`). The runbook's "scheduled tasks disabled" names no task, so there is nothing defined to
+apply. Fewer snapshots, the same result (CLAUDE.md, keep it simple).
+
+**Cost if wrong:** Windows Update or scheduled tasks may still start inside a capture window and write events
+`(unverified)`. The spike's control runs measure that noise; if it is large, a snapshot with them disabled is added
+then, and it is a new parameter value.
+
+**Supersedes in part:** runbook Phase 5's tree `golden-base > cfg-suppressed, cfg-natural`, and blueprint section 6
+step 1 (`revertToSnapshot <vmx> cfg-suppressed`).
+
+---
+
 ## 2026-11-16 - The golden image has WDigest caching on; golden-base is taken
 
 **Decision (student, chose `-WDigest On` when running `baseline-golden.ps1`), chat ee84ae3f.** The golden image has

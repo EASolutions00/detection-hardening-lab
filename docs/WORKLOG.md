@@ -42,7 +42,15 @@ boot, and the only `eli` logons were the student's two type 2 logons at 07:08:06
 after-restart check (DECISIONS 2026-11-16), "confirm on the first real revert" (DECISIONS 2026-11-13; OPEN-QUESTIONS
 37), and item 36's condition (no Wininit event 12 in the golden image). Committed and pushed automatically.
 
-**Next:** the `cfg-suppressed` question; then the first real harness run.
+**Then** (student: "Yes, drop it"): no `cfg-suppressed` or `cfg-natural` snapshot; runs revert to `golden-base`,
+Config S by the after-boot script (DECISIONS 2026-11-16; runbook Phase 5 and blueprint section 6 marked). Built
+`src/telos/catalog.py` (the changes with their scripts, `-Verify` and script SHA256; Config S; the trial stimulus
+T1003.001 tests 1, 2, 13 last, then cleanup; the pinned parameters) and the command `src/capture.py`, which the
+student runs. `tests/test_catalog.py`, 5 tests, failing first; **130 passed**. Rule slip: two command-line checks of
+`capture.py` (help, and a refused argument) run before being explained; neither touched the lab. Committed and pushed
+automatically.
+
+**Next:** the first real harness run, by the student.
 
 ---
 
