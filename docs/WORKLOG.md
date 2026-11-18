@@ -24,7 +24,14 @@ runs on the current PC or on the Dell OptiPlex 3000 (WORKLOG 2026-11-16, "Also a
 2026-11-18: every run of the study comes from the current host, which is kept until the defense. STATUS updated.
 No command run on the lab; the VM folders on F: show changes since 2026-11-16 20:34 (the session hook), not checked.
 
-**Next:** the student's two spike decisions: runs per phase (Q4, `Sysmon-8[]`) and item 22's void rule.
+**Then the order of the open decisions** (student: "which decision should take", then "do recommendation"). Claude
+recommended the pinned attack list first: Q4 and Q5 were measured with the trial stimulus only, and every run uses one
+pinned list (DECISIONS 2026-09-28). Drafted as **OPEN-QUESTIONS 40**: the RDP sign-in from the host, then T1003.001
+tests 1, 2, 13 and cleanup; C1 has no Atomic test, three ways written, Claude recommends reusing the RDP sign-in.
+Read only, no command run.
+
+**Next:** the student decides item 40 (the list and C1's way); then 5 new control runs with it, then item 22's void
+rule and the runs per phase.
 
 ---
 

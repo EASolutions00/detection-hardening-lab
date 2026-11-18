@@ -1408,6 +1408,53 @@ context.
 
 ---
 
+## 40. The pinned attack list: a draft for the student
+
+**Status:** Open. Drafted 2026-11-18 by chat ee84ae3f (student: "do recommendation"). **For the student.** It blocks
+item 22's void rule and the number of runs per phase: the spike measured both with the trial stimulus only (LSASS
+tests 1, 2, 13), and the study uses one pinned list in every run (DECISIONS 2026-09-28).
+
+**The rule that chooses the tests** (DECISIONS 2026-10-01): each test covers the ATT&CK technique of a shipped Wazuh
+rule that reads the evidence of a kept change (C1, C3, C5), runs with no one at the keyboard, needs no internet after
+`golden-base`, and the list is short.
+
+**Draft, in run order:**
+
+| # | Step | Where | For | Rules it fires (measured) |
+|---|---|---|---|---|
+| 1 | Remote Desktop sign-in as `eli`: `mstsc /v:10.20.10.20` with the `cmdkey` credential, closed after a fixed time | host (`HostStep`) | C5; C1 (see below) | 92653 (type 10), 92657 (NTLM), 2 of each (item 37) |
+| 2 | T1003.001 test 1, ProcDump | guest | C3 | 92032 |
+| 3 | T1003.001 test 2, comsvcs.dll | guest | C3 | 92052, 92027 |
+| 4 | T1003.001 test 13, rdrleakdiag, last of the LSASS tests | guest | C3 | 92403 ×2, 61625 |
+| 5 | T1003.001 cleanup | guest | | |
+
+Rows 2 to 5 are the spike's stimulus, unchanged. Row 1 comes first because test 13 leaves a second `lsass.exe`
+running, and its effect on a sign-in is not known `(unverified)`. The rule mapping per test in rows 2 and 3 is from
+the trial's record (item 35, point 6) and is approximate `(unverified per test)`.
+
+**Not on the list, and why:** T1003.001 test 9 (the same tool as test 1, and it failed after test 13); tests 3, 4, 12,
+14 (downloads, never run, and they matter only if one gets past LSA Protection); T1021.001 "Disable NLA for RDP"
+(it reverses C5 itself); the network-logon test (dropped with DC-01, DECISIONS 2026-11-11).
+
+**C1 has no Atomic test** (item 1, 2026-10-07): rule 60118 needs a console sign-in (logon type 2). Three ways:
+- **(a) Reuse row 1** for C1. No new step. Cost: rule 60118 is not exercised, so C1 can be checked only for a change
+  in the type 10 sign-in's events. The C1 trial already showed the type 2 events do not change (item 1).
+- **(b) Add a type 2 sign-in inside the guest** (for example `runas` or `Start-Process -Credential`). Cost: a password
+  inside the guest at run time, which would show in Sysmon command lines unless designed around; that it gives type 2
+  and fires 60118 is `(unverified)`; and it needs the golden image changed or a new script, so a new environment.
+- **(c) Leave C1 out of the runs** and report the hand trial only. Cost: C1 has one measurement, not 3 before and 3
+  after.
+
+**Recommendation (Claude): (a).** It adds nothing to build, and the trial already answered the type 2 question. Say
+plainly in the thesis that 60118 is not exercised in the runs.
+
+**What the list costs.** Its hash changes the hashed parameters, so the spike's runs cannot be compared with the new
+ones. The full collection starts with 5 new control runs with this list; Q4 (testable keys) and Q5 (the fingerprint)
+are read again from those, and then item 22's tolerance and the runs per phase are set. Row 1 also needs a step in
+`catalog.py` and a time limit for `mstsc`, both small; the student runs the batch, as now.
+
+---
+
 ## 22. The stimulus is asserted identical and never verified
 
 **Status:** Open. Raised 2026-09-12. **This one contaminates results rather than reducing them**,
