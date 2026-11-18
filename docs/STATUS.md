@@ -1,7 +1,8 @@
 # STATUS
 
 Current blockers and dates. This file changes often. CLAUDE.md does not.
-Last updated: 2026-11-16 (chat ee84ae3f): the spike results in "The spike", "Also open" and "Lab state".
+Last updated: 2026-11-18 (chat ee84ae3f): the study host decision in "The spike". 2026-11-16: the spike results in
+"The spike", "Also open" and "Lab state".
 Before that: 2026-11-13 (chat ee84ae3f, end-of-day check): DC-01 dropped, the C5 tests and decisions, "Next, in
 order", "Also open" and "Lab state". The deadline, checkpoint and adviser sections date from 2026-11-02 to 2026-11-03
 (chat 27d2595d).
@@ -157,8 +158,9 @@ controls), and record the miss in WORKLOG the same day.
 Q1 median CoV 0%, 5 of 20 keys above 5% in both configs; Q2 9.8 min per run, 16.5 h for 101 runs; Q3 0 false
 findings in 10 pairs (item 23 answered); Q4 11 of 20 keys testable, not `Sysmon-8[]` (item 25); Q5 Sysmon 1 per run
 37 to 44, and it did not move under C3 (item 22); Q6 an extra reboot moved no key. C3 through the pipeline: one
-REDUCED key (`Sysmon-10`), T1055 lost, ruled prevention (item 38). **Open from it, for the student:** runs per phase,
-item 22's void rule, and the study host (the Ryzen or the Dell, not decided).
+REDUCED key (`Sysmon-10`), T1055 lost, ruled prevention (item 38). **Open from it, for the student:** runs per phase
+and item 22's void rule. **Decided 2026-11-18:** the study host stays the current Ryzen PC, kept until the defense
+(DECISIONS 2026-11-18).
 
 Original text: T1 is approved and final. There is **no fallback** (DECISIONS.md 2026-09-26). The spike has not run. It
 answers six questions (runbook Phase 7): run-to-run variance, wall clock, zero findings on

@@ -17,6 +17,17 @@ Next:
 
 ---
 
+## 2026-11-18 - The study host stays the Ryzen PC
+
+**Chat ee84ae3f, continued, a new sitting.** Student: "Stay on the Ryzen", answering whether the full data collection
+runs on the current PC or on the Dell OptiPlex 3000 (WORKLOG 2026-11-16, "Also asked"). Recorded as DECISIONS
+2026-11-18: every run of the study comes from the current host, which is kept until the defense. STATUS updated.
+No command run on the lab; the VM folders on F: show changes since 2026-11-16 20:34 (the session hook), not checked.
+
+**Next:** the student's two spike decisions: runs per phase (Q4, `Sysmon-8[]`) and item 22's void rule.
+
+---
+
 ## 2026-11-16 - The golden snapshot golden-base is taken
 
 **Chat ee84ae3f, continued, a new sitting.** Student: "lets continue", then "done, take the snapshot". Commands:

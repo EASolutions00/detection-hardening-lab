@@ -8,6 +8,34 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-11-18 - The whole study runs on the current Ryzen host; it is not sold before the defense
+
+**Decision (student, "Stay on the Ryzen"), chat ee84ae3f.** Every capture run of the study (the spike of 2026-11-16,
+the full data collection, and any rerun asked for later) comes from the current host PC, the one with `F:\TeLoS
+Homelab` and the spike's 19 runs. The lab is **not** moved to the Dell OptiPlex 3000 (i5-12500T, 40 GB). The Ryzen
+is kept until the defense is over.
+
+**Why.**
+- The noise floor holds only for the host that measured it. The spike's control runs were measured on this PC, so
+  pre and post runs from another CPU could differ because of the hardware, not the change.
+- The spike already passed here: 19 of 19 runs valid, 9.8 minutes per run (WORKLOG 2026-11-16). Moving would mean
+  rebuilding VMnet2, a test run and the spike again, about one day of work, with the adapter risk of item 27.
+- A rerun asked for by the adviser (item 38) or the panel must come from the same host. Keeping the Ryzen until the
+  defense makes that possible.
+
+**Option not taken.** (B) Move to the Dell now and repeat the spike there, then sell the Ryzen. The Dell has enough
+RAM for the VMs' 24 GB and exactly 12 threads for their 12 vCPU (Intel's specification, general knowledge), but it
+is a 35 W part and slower `(unverified)`, and it costs the day of work above.
+
+**Cost if wrong:** the Ryzen cannot be sold until after the defense (target end of January 2027, STATUS). If it
+fails before then, the lab must be moved and the spike's control runs captured again on the new host; runs from the
+two hosts are never mixed in one comparison.
+
+**For the defense:** "Every run in the study comes from one machine, the same one that measured the noise. A
+different machine would add a difference we did not measure."
+
+---
+
 ## 2026-11-16 - No cfg-suppressed or cfg-natural snapshot: runs revert to golden-base, Config S by an after-boot script
 
 **Decision (student, "Yes, drop it"), chat ee84ae3f.** Changes runbook Phase 5's snapshot tree. Every capture run
