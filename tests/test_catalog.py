@@ -41,6 +41,28 @@ def test_trial_stimulus_runs_test_13_last_then_cleans_up():
     assert "-TestNumbers 13 " in trial_stimulus()[2].args[-1]
 
 
+def test_pinned_stimulus_signs_in_over_rdp_first_then_runs_the_lsass_tests():
+    """The pinned list (DECISIONS 2026-11-18, OPEN-QUESTIONS 40): the Remote Desktop
+    sign-in from the host first, then the trial's LSASS tests with 13 last."""
+    from telos.catalog import pinned_stimulus
+    from telos.harness import GuestStep, HostStep
+    steps = pinned_stimulus()
+    assert [s.name for s in steps] == ["rdp-signin-30s", "T1003.001-1", "T1003.001-2", "T1003.001-13",
+                                       "T1003.001-cleanup"]
+    assert isinstance(steps[0], HostStep) and all(isinstance(s, GuestStep) for s in steps[1:])
+
+
+def test_rdp_signin_uses_the_stored_credential_and_fails_if_mstsc_closed_early():
+    from telos.catalog import rdp_signin
+    step = rdp_signin()
+    script = step.args[-1]
+    assert step.args[0] == POWERSHELL
+    assert "/v:10.20.10.20" in script and "Start-Sleep -Seconds 30" in script and "Stop-Process" in script
+    assert "HasExited" in script and "exit 1" in script
+    # No password anywhere in the step: mstsc reads the cmdkey credential (COMMANDS 2.12).
+    assert not any(re.search(r"(?i)password|-gp\b|cmdkey|/pass|\.pw\b", a) for a in step.args)
+
+
 def test_parameters_carry_the_pinned_versions_and_the_config():
     p = parameters(config="S")
     assert p["art_commit"] == "cb486d9a888e921fac5902a06c7b46e420bb14a7"

@@ -5,7 +5,8 @@ guest password to vmrun.
     .venv/Scripts/python.exe src/capture.py --run-id test-post-1 --phase post --change C3
 
 It reverts WIN-EP-01 to golden-base, applies the change for an "after" run,
-fires the fences, runs the trial stimulus, waits out the fixed window, exports
+fires the fences, runs the pinned attack list (or the spike's with --stimulus trial; the
+pinned list opens a Remote Desktop window on the host for 30 s), waits out the fixed window, exports
 the archive from SIEM-01, and writes data/runs/<run-id>/ (runbook Phase 6).
 """
 
@@ -18,7 +19,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from telos.catalog import CHANGES, CONFIG_S, parameters, trial_stimulus  # noqa: E402
+from telos.catalog import CHANGES, CONFIG_S, parameters, pinned_stimulus, trial_stimulus  # noqa: E402
 from telos.harness import HarnessError, Lab, LabConfig, capture, recount  # noqa: E402
 
 REPO = Path(__file__).resolve().parent.parent
@@ -35,6 +36,8 @@ def main() -> int:
     ap.add_argument("--config", default="S", choices=["S", "N"], help="S: Defender off after every boot")
     ap.add_argument("--window-s", type=int, default=180, help="fixed window; the spike sets the final value")
     ap.add_argument("--backup-dir", default=None, help="a folder on a second drive (runbook requirement 8)")
+    ap.add_argument("--stimulus", default="pinned", choices=["pinned", "trial"],
+                    help="pinned: the study's list (RDP sign-in, then the LSASS tests); trial: the spike's")
     a = ap.parse_args()
     if a.recount:
         m = recount(REPO / "data" / "runs" / a.run_id)
@@ -61,9 +64,11 @@ def main() -> int:
     )
     lab = Lab(cfg)
     change = CHANGES[a.change] if a.change else None
-    print(f"run {a.run_id}: phase {a.phase}, change {a.change or '-'}, config {a.config}, window {a.window_s} s")
+    stimulus = pinned_stimulus() if a.stimulus == "pinned" else trial_stimulus()
+    print(f"run {a.run_id}: phase {a.phase}, change {a.change or '-'}, config {a.config}, window {a.window_s} s, "
+          f"stimulus {a.stimulus}")
     try:
-        m = capture(lab, a.run_id, a.phase, trial_stimulus(), parameters(a.config), change=change)
+        m = capture(lab, a.run_id, a.phase, stimulus, parameters(a.config), change=change)
     except HarnessError as exc:
         print(f"STOPPED before producing data: {exc}", file=sys.stderr)
         return 2

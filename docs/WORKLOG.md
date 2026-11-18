@@ -30,8 +30,12 @@ pinned list (DECISIONS 2026-09-28). Drafted as **OPEN-QUESTIONS 40**: the RDP si
 tests 1, 2, 13 and cleanup; C1 has no Atomic test, three ways written, Claude recommends reusing the RDP sign-in.
 Read only, no command run.
 
-**Next:** the student decides item 40 (the list and C1's way); then 5 new control runs with it, then item 22's void
-rule and the runs per phase.
+**Then decided and built** (student: "do recommendation. make it done. do which best"): item 40 as drafted, C1 option
+(a) (DECISIONS 2026-11-18). `catalog.rdp_signin()` (host step: `mstsc` with the stored credential, closed after 30 s,
+exit 1 if it closed early, no password in the step) and `catalog.pinned_stimulus()`; `src/capture.py --stimulus
+pinned|trial`, default pinned. 2 tests failing first; **143 passed**; `capture.py --help` loads. Not run on the lab.
+
+**Next:** the student runs 5 control runs with the pinned list; then item 22's void rule and the runs per phase.
 
 ---
 

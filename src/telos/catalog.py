@@ -5,8 +5,9 @@ Everything here points at files already in the golden image (`golden-base`,
 DECISIONS 2026-11-16): the scripts in `C:\\telos\\` (copied 2026-11-16) and Atomic
 Red Team at its pinned commit in `C:\\AtomicRedTeam\\`.
 
-The final attack-test list is the student's decision (STATUS). `trial_stimulus()`
-is the LSASS trial's tests, enough to prove the harness on the real lab.
+`pinned_stimulus()` is the study's one attack list (DECISIONS 2026-11-18): the Remote
+Desktop sign-in from the host, then the LSASS trial's tests. `trial_stimulus()` alone
+is what the spike of 2026-11-16 used.
 """
 
 from __future__ import annotations
@@ -14,7 +15,7 @@ from __future__ import annotations
 import hashlib
 from pathlib import Path
 
-from .harness import Change, GuestStep
+from .harness import Change, GuestStep, HostStep, Step
 
 POWERSHELL = r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
 SCRIPTS = Path(__file__).resolve().parents[2] / "lab" / "scripts"
@@ -66,6 +67,30 @@ def trial_stimulus() -> list[GuestStep]:
     lsass.exe running, which breaks a later test that names lsass.exe (OPEN-QUESTIONS 35)."""
     return [atomic("T1003.001", 1), atomic("T1003.001", 2), atomic("T1003.001", 13),
             atomic_cleanup("T1003.001", [1, 2, 13])]
+
+
+RDP_TARGET = "10.20.10.20"
+RDP_SECONDS = 30
+
+
+def rdp_signin(seconds: int = RDP_SECONDS) -> HostStep:
+    """The Remote Desktop sign-in from the host, for C5 (and C1, DECISIONS 2026-11-18).
+
+    mstsc signs in with `eli`'s credential stored on the host by `cmdkey` (COMMANDS 2.12):
+    no password passes through this step. The client is closed after a fixed time; the
+    revert before the next run ends the session (DECISIONS 2026-11-13). Exit code 1 if
+    mstsc closed by itself before the time, which would mean the sign-in did not hold.
+    The time is in the step's name, so it is part of the hashed parameters."""
+    script = (f"$p = Start-Process mstsc -ArgumentList '/v:{RDP_TARGET}' -PassThru; "
+              f"Start-Sleep -Seconds {seconds}; "
+              "if ($p.HasExited) { exit 1 }; Stop-Process -Id $p.Id; exit 0")
+    return HostStep(f"rdp-signin-{seconds}s", (POWERSHELL, "-NoProfile", "-Command", script))
+
+
+def pinned_stimulus() -> list[Step]:
+    """The one attack list for every run of the study (DECISIONS 2026-11-18; OPEN-QUESTIONS 40).
+    The sign-in runs first, because test 13 leaves a second lsass.exe running."""
+    return [rdp_signin(), *trial_stimulus()]
 
 
 def parameters(config: str) -> dict:

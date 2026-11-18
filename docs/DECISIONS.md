@@ -8,6 +8,39 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-11-18 - The pinned attack list: a Remote Desktop sign-in, then LSASS tests 1, 2, 13; C1 reuses the sign-in
+
+**Decision (student, "do recommendation. make it done. do which best"), chat ee84ae3f.** Answers OPEN-QUESTIONS 40
+with Claude's recommendation, option (a). Every run of the study (control, pre and post, every change) uses this
+list, in this order (`catalog.pinned_stimulus()`):
+1. **`rdp-signin-30s`**, on the host: `mstsc /v:10.20.10.20` with the `cmdkey` credential, closed after 30 seconds;
+   exit code 1 if the client closed by itself first. For C5 (rules 92653, 92657) and C1.
+2. **T1003.001 tests 1, 2 and 13**, then cleanup, in the guest, unchanged from the spike. For C3.
+
+**Why.** The rule of 2026-10-01: each test covers the technique of a shipped rule that reads a kept change's evidence,
+runs unattended, and the list is short. The LSASS tests were proven in 19 spike runs. The sign-in was proven
+unattended on 2026-11-12 (COMMANDS 2.12): no prompt, two type 10 logons with 92653. It runs first because test 13
+leaves a second `lsass.exe` running.
+
+**C1, option (a).** C1 has no Atomic test, and rule 60118 needs a console sign-in (type 2). C1 reuses the Remote
+Desktop sign-in. **Cost, stated in the thesis:** rule 60118 is not exercised in the runs, so the runs check C1 only
+for a change in the type 10 sign-in's events. The console sign-in was checked by hand on 2026-11-13 and did not change
+(OPEN-QUESTIONS 1, "The C1 trial"). Options not taken: (b) a console sign-in inside the guest (a password in the guest
+at run time, unverified that it fires 60118, and a new environment); (c) C1 left out of the runs (one measurement).
+
+**The 30 seconds.** Chosen, not measured: the 2026-11-12 checks wrote the logons within 1 to 2 seconds of the start.
+It is in the step's name, so it is hashed. **(unverified)** that 30 s is enough on every run; a run where the client
+closed early exits 1. Whether a missing sign-in voids the run is part of item 22's void rule, not decided.
+
+**What it costs.** The stimulus names are hashed, so the spike's runs and the new runs are never compared. The full
+collection starts with 5 new control runs with this list; Q4 and Q5 are read again from them. Each run opens a Remote
+Desktop window on the host for 30 seconds, so the host must be signed in and unlocked while the batch runs.
+
+**For the defense:** "Every window runs the same five steps: one Remote Desktop sign-in and three ways to dump LSASS.
+Each was chosen because a shipped Wazuh rule watches for it and one of our changes touches that evidence."
+
+---
+
 ## 2026-11-18 - The whole study runs on the current Ryzen host; it is not sold before the defense
 
 **Decision (student, "Stay on the Ryzen"), chat ee84ae3f.** Every capture run of the study (the spike of 2026-11-16,

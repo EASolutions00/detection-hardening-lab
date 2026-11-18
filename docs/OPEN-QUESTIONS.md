@@ -1408,9 +1408,13 @@ context.
 
 ---
 
-## 40. The pinned attack list: a draft for the student
+## 40. The pinned attack list: a draft for the student (DECIDED 2026-11-18: the draft, C1 option (a))
 
-**Status:** Open. Drafted 2026-11-18 by chat ee84ae3f (student: "do recommendation"). **For the student.** It blocks
+**Decided 2026-11-18** (student: "do recommendation. make it done. do which best"): the draft below, with C1 option
+(a). DECISIONS 2026-11-18, "The pinned attack list". Built as `catalog.pinned_stimulus()`, the default of
+`src/capture.py`. The text below is the record of the draft.
+
+**Status:** Drafted 2026-11-18 by chat ee84ae3f (student: "do recommendation"). **For the student.** It blocks
 item 22's void rule and the number of runs per phase: the spike measured both with the trial stimulus only (LSASS
 tests 1, 2, 13), and the study uses one pinned list in every run (DECISIONS 2026-09-28).
 

@@ -159,8 +159,9 @@ Q1 median CoV 0%, 5 of 20 keys above 5% in both configs; Q2 9.8 min per run, 16.
 findings in 10 pairs (item 23 answered); Q4 11 of 20 keys testable, not `Sysmon-8[]` (item 25); Q5 Sysmon 1 per run
 37 to 44, and it did not move under C3 (item 22); Q6 an extra reboot moved no key. C3 through the pipeline: one
 REDUCED key (`Sysmon-10`), T1055 lost, ruled prevention (item 38). **Open from it, for the student:** runs per phase
-and item 22's void rule. Both wait for the pinned attack list, **drafted 2026-11-18 for the student (OPEN-QUESTIONS
-40)**, because the spike measured them with the trial stimulus only. **Decided 2026-11-18:** the study host stays the current Ryzen PC, kept until the defense
+and item 22's void rule. Both are read again from **5 new control runs with the pinned attack list**, decided and
+built 2026-11-18 (DECISIONS 2026-11-18; `catalog.pinned_stimulus()`: RDP sign-in, then LSASS tests 1, 2, 13), because
+the spike measured them with the trial stimulus only. **Next: the student runs those 5 control runs.** **Decided 2026-11-18:** the study host stays the current Ryzen PC, kept until the defense
 (DECISIONS 2026-11-18).
 
 Original text: T1 is approved and final. There is **no fallback** (DECISIONS.md 2026-09-26). The spike has not run. It
