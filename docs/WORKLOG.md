@@ -17,6 +17,21 @@ Next:
 
 ---
 
+## 2026-11-23 - Notes for the first consultation with Sir Ervin (10:00)
+
+**Chat ee84ae3f, continued.** Student: "did we do atmic red runs before?" (answered: 20 harness runs and the hand
+trials, all LSASS tests; no pinned-list run yet, `data/runs/` has no `pinned-*` folder). Then: "today 10am is the
+consultation with sir ervin". Claude wrote `CONSULTATION-2026-11-23.md` in the thesis folder from STATUS, WORKLOG,
+DECISIONS and OPEN-QUESTIONS 33 and 38: progress (lab, harness, spike 19 of 19, 143 tests), the item 38 result and
+its three ways forward, the changes from FINAL (no DC-01, ranking not weighted score, "did fire", C1 via the RDP
+sign-in, desktop application), the questions (which defense is in January, the simplified revision and its
+deadline, the stakeholder interview, the preprint, usability evaluation), and the missed checkpoints. Found while
+writing: `proposal-form-SIMPLIFIED.md` has only its title section drafted; no stakeholder interview is recorded.
+
+**Next:** the student brings the adviser's answers; they go into DECISIONS.
+
+---
+
 ## 2026-11-18 - The study host stays the Ryzen PC
 
 **Chat ee84ae3f, continued, a new sitting.** Student: "Stay on the Ryzen", answering whether the full data collection
