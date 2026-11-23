@@ -1025,6 +1025,8 @@ fixed, because each needs the adviser or the student.
    **Partly answered 2026-10-22** (DECISIONS 2026-10-22): the panel confirmed both defenses, a pre-oral
    (chapters 1 to 3, a 50% working prototype, the Research 1A grade) and a final (100% working, complete
    chapters). Which one is in January is still open; the adviser is now named, Prof. Ervin Moran.
+   **Answered in part 2026-11-23** (DECISIONS 2026-11-23): the next defense is the pre-oral, a 50% working system and
+   chapters 1 to 3 up to software evaluation. Its date was not stated.
 2. **Related study 2 is an arXiv preprint.** The lecture asks for "published research works" within five
    years. Studies 1, 3, 4 and 5 are journal or conference papers (2022 to 2025); study 2 (RAM, 2025) is listed
    as a preprint, and study 5's journal indexing is not confirmed. Whether the school accepts a preprint is not
@@ -1037,6 +1039,8 @@ fixed, because each needs the adviser or the student.
    performance testing only (precision, recall, F1, false positive rate against a baseline). The Week 1 lecture
    says user studies are needed "if applicable". **Decide before Chapter 3**: add a small ISO 25010 evaluation of
    the interface, or state why it does not apply.
+   **Answered 2026-11-23** (DECISIONS 2026-11-23): yes. The form gets an evaluation objective with a software quality
+   model and the target users as respondents; security engineers evaluate the system for the final defense.
 
 **Blocks:** point 1 blocks the schedule; points 2 to 4 block the manuscript, not this submission.
 
@@ -1381,6 +1385,9 @@ automatic report and the decision disagree until item 22's run check can mark it
 **Not to be confused with** the "zero blind spots" answer corrected after the re-presentation (WORKLOG 2026-10-22):
 that was about re-running until nothing is found; this is a measured result.
 
+**2026-11-23, first consultation: not decided.** The student said only that no blind spot has been found so far; the
+adviser did not take it up. Raise it again with the first page of the revised form (DECISIONS 2026-11-23).
+
 ---
 
 ## 39. Surviving coverage: rules that could fire, or rules that did fire?
@@ -1456,6 +1463,43 @@ plainly in the thesis that 60118 is not exercised in the runs.
 ones. The full collection starts with 5 new control runs with this list; Q4 (testable keys) and Q5 (the fingerprint)
 are read again from those, and then item 22's tolerance and the runs per phase are set. Row 1 also needs a step in
 `catalog.py` and a time limit for `mstsc`, both small; the student runs the batch, as now.
+
+---
+
+## 41. The adviser does not accept "differential analysis algorithm" as written: define it as an original algorithm, or use a known one?
+
+**Status:** Open. Raised 2026-11-23 by the adviser at the first consultation (DECISIONS 2026-11-23, point 3). **For
+the student, then the adviser.** It blocks the revised form: the title, the general objective, objectives 1 and 4, and
+the end of the area of investigation all name the algorithm.
+
+**The problem.** FINAL's "Algorithms to be Used" (lines 99 to 134) is a table of six methods (alignment, coefficient
+of variation, chi-square, rate ratio, Benjamini-Hochberg, graph traversal). It gives no single algorithm with numbered
+steps, an input and an output. He read the methods as statistical tools and asked for either a known algorithm or an
+original one with a concrete definition.
+
+**What the code already does, in order** (`src/telos/pipeline.py`, `compare`). Either way is written from these steps:
+1. Check the runs: voided runs left out; at least 3 valid runs per phase; one parameters hash; one change.
+2. Line up the counts: one count per event key per run, with zeros where a key is missing (`differential.align`).
+3. Measure each key's normal variation from the control runs: the noise floor (`VarianceModel.from_control`).
+4. Compare before and after for each key: rate ratio, Benjamini-Hochberg correction, and the three conditions for
+   REDUCED; one chi-square summary of the whole profile (`differential.analyse`).
+5. Find the rules that read each lost or reduced key, following each rule's parents (`index.build_index`).
+6. Rank the losses: blind techniques, then highest level, then number of rules (`impact.rank_impact`).
+7. Write the report and the exports (`report.txt`, `findings.json`, `comparison.csv`, the Navigator layer).
+
+**Ways, none decided:**
+- **(a) An original algorithm**, keeping the name: the seven steps written with an input, an output and one worked
+  example (C3: `Sysmon-10[GrantedAccess=other,...]` from 73.3 to 26.3 per run, T1055 lost). The statistical tools stay
+  as named parts of steps 3 and 4, explained in chapter 3. Cost: he asked for a thorough definition, and the panel may
+  still say "this is statistics". No code changes.
+- **(b) Known algorithms, named per step:** step 5 is a graph traversal (following parent links), step 4 uses the
+  Benjamini-Hochberg step-up procedure, step 6 is a sort on three keys. Cost: no single known algorithm does the whole
+  task, so the study's own part becomes harder to name.
+- **(c) Wait for the adviser's suggestion.** Cost: time; the form cannot be finished until then.
+
+**Recommendation (Claude): (a), sent to him as a one-page draft first**, asking whether it is acceptable or whether he
+has a named algorithm in mind. It describes what the code already does, the student can explain each step, and the
+adviser named an original algorithm as one of the two accepted ways. Not decided.
 
 ---
 

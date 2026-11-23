@@ -103,6 +103,9 @@ from `/var/ossec/logs/archives/`. Whether those archives are still on SIEM-01's 
 |---|---|---|
 | `proposal-form-FINAL.md` | The revised proposal text | SOURCE, LIVE |
 | `proposal-form-FINAL-for-Word.html` | Paste-ready copy. `tools/word/final_to_html_v2.py` | COPY |
+| `proposal-form-SIMPLIFIED.md` | The simplified revision the panel asked for (2026-10-22). Only the title section is drafted (2026-11-23); the adviser's instructions are in DECISIONS 2026-11-23 | SOURCE, LIVE |
+| `INTERVIEW-GUIDE.md` | Questions for the stakeholder interview the adviser asked for (2026-11-09). No interview recorded | LIVE, not submitted |
+| `CONSULTATION-2026-11-23.md`, `CONSULTATION-2026-11-23-TAGLISH.md` | Notes for the first consultation with the adviser, in English and in Taglish. The results are in DECISIONS 2026-11-23 | FROZEN |
 | `T1-REVISIONS-LIST.md` | What changed after the title defense, by revision. **Not submitted** (not required, 2026-10-15) | SOURCE |
 | `T1-REVISIONS-LIST-for-Word.html` | Paste-ready copy. `tools/word/revisions_to_html.py` | COPY |
 | `Detecting … Algorithm.docx` | **The submitted Word file.** Built 2026-10-12 by `tools/word/build_docx.py` as `FINAL … (updated 2026-10-12).docx`; saved under this name by the student 2026-10-15 with the Title and Author properties fixed. Text and pictures unchanged. The source of the submitted text | SOURCE, SUBMITTED |

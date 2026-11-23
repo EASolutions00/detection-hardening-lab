@@ -8,6 +8,74 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-11-23 - First consultation with the adviser: the next defense is the pre-oral; the proposal form is revised first, starting with the algorithm
+
+**Decision (adviser, Prof. Ervin Moran), at the first online consultation, 2026-11-23 10:00. Recorded in chat
+ee84ae3f.** Source: the student's recording, as a speech-to-text transcript pasted into the chat (garbled in places;
+the adviser said he would send the recording). Points marked "reading" are Claude's reading of the transcript, to be
+confirmed with him.
+
+1. **The next defense is the pre-oral** (CS Design Project 1): a 50% working system and chapters 1 to 3, "up to
+   software evaluation". The title is not defended again; the changes are revisions. No date was stated
+   (OPEN-QUESTIONS 33, point 1).
+2. **The proposal form is revised first.** "Simplify" means: write each section directly, to the point. Much of the
+   form is chapter-level detail; it moves to chapter 1 (the research design to chapter 3). It is kept, not deleted.
+   He then takes the revised form to the panel for approval; after that, chapters 1 and 2 begin, then chapter 3. No
+   deadline was stated.
+3. **"Differential analysis algorithm" is not recognized as an algorithm as written.** The coefficient of variation and
+   the chi-square test are statistical tools; they belong in the methodology (chapter 3). Two ways: a known algorithm,
+   or several combined, that does the task; or an original algorithm with a concrete definition (what it is, what it
+   does, how the system uses it), discussed thoroughly. He offered to suggest a named algorithm. Reading: he suggested
+   removing "Using Differential Analysis Algorithm" from the title while it has no definition; the title and the
+   objectives are revised once the algorithm is settled (OPEN-QUESTIONS 41).
+4. **Area of investigation:** the field (cybersecurity, the SIEM, ATT&CK) in brief; whether the system is generic or
+   for one kind of organization; the current process, step by step if possible (how security engineers harden and
+   check today, by hand); the problems it causes; and last, the algorithm and how it helps. Scope: Windows PCs
+   (Windows 11), not macOS, Linux or mobile devices.
+5. **Statement of the problems:** problem 1 says "manual hardening"; problem 2: find out how OpenSCAP works (does it
+   scan the PC or read a file, and what its result shows); problem 3 is reworded: the before-and-after comparison is
+   not done at operational scale because doing it by hand is too slow; problems 4 and 5: say who does it and with
+   which tool, and fix or drop a problem that does not hold.
+6. **Objectives:** simplify each. Objective 1 must say whether the algorithm is new or existing. Objective 4 must not
+   call the statistical tools algorithms. The comparison and the impact scoring become one objective: generate the
+   report. **A new objective: the evaluation**, with a software quality model and the target users as respondents
+   (works as intended, easy to use, reliable results). Security engineers the student knows use the system and answer
+   the evaluation form; this is required at the final defense (OPEN-QUESTIONS 33, point 4).
+7. **Target users:** one direct user, "Security Engineers" (detection engineers and systems engineers). SOC analysts
+   and the SOC manager are indirect users: they receive copies of the reports, a step outside the system. The use
+   case diagram has one actor; the activity diagram shows the copy step outside the system.
+8. **The demo:** a Windows 11 virtual machine, for simulation, is accepted; real-world use goes into the
+   recommendations. List the hardening changes and the expected results before the demo. Show the SIEM before and
+   after; try OpenSCAP before and after for compliance.
+9. **Features and capabilities:** review them; remove, reword or overhaul what the system does not need.
+10. **The interface he pictures:** a window, an upload button for the file, "Run analysis", a loading step, then the
+    generated report.
+
+**Not decided at this consultation:** item 38 (the student said only that no blind spot has been found so far), the
+changes from FINAL (no DC-01, the ranking), the stakeholder interview, the preprint (item 33, point 2), the deadline.
+
+**Two statements in the meeting do not match the record. To correct with the adviser:**
+- He asked which application produces the file the system imports, and suggested the SIEM; the student said no. The
+  system reads the SIEM's own exports: Wazuh's event archive (`archives.json`, `src/telos/archive.py`) and the rule
+  files exported from SIEM-01 (`src/telos/index.py`). No hardening tool produces a file the system reads.
+- The student said the impact score is a percentage. The design is a ranking by three measured numbers, with no
+  weights (DECISIONS 2026-11-13).
+
+**Checked the same day:** OpenSCAP's README says its Windows support is void from 2022-02-01, and its
+`docs/windows.md` names 1.3.4 as the last release that somewhat works on Windows (github.com/OpenSCAP/openscap). For
+the Windows 11 STIG, NIST's National Checklist Program lists DISA's SCAP benchmark, with content for DISA's SCAP
+Compliance Checker (SCC); that SCC runs in this lab is `(unverified)`. Any scanner stays out of `golden-base`: a new
+program changes the baseline the noise floor was measured on.
+
+**Why it matters.** None of chapters 1 to 3 can start before the panel approves the revised form, and the pre-oral
+needs all three. Reading: the results of the data collection belong to chapter 4, after the pre-oral, so the form
+comes before the lab runs (recommended, not decided).
+
+**Cost if this record is wrong:** the student revises the wrong thing. The transcript is speech-to-text; the readings
+are confirmed with the adviser when the revised form, or its first page, is sent.
+
+---
+
 ## 2026-11-18 - The pinned attack list: a Remote Desktop sign-in, then LSASS tests 1, 2, 13; C1 reuses the sign-in
 
 **Decision (student, "do recommendation. make it done. do which best"), chat ee84ae3f.** Answers OPEN-QUESTIONS 40

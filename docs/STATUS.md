@@ -1,8 +1,10 @@
 # STATUS
 
 Current blockers and dates. This file changes often. CLAUDE.md does not.
-Last updated: 2026-11-18 (chat ee84ae3f): the study host decision in "The spike". 2026-11-16: the spike results in
-"The spike", "Also open" and "Lab state".
+Last updated: 2026-11-23 (chat ee84ae3f): the first consultation with the adviser, in the new section "Now, as of
+2026-11-23", and in "Deadline and target", "Next, in order", "Still waiting on the student" and "The spike".
+2026-11-18: the study host decision in "The spike". 2026-11-16: the spike results in "The spike", "Also open" and
+"Lab state".
 Before that: 2026-11-13 (chat ee84ae3f, end-of-day check): DC-01 dropped, the C5 tests and decisions, "Next, in
 order", "Also open" and "Lab state". The deadline, checkpoint and adviser sections date from 2026-11-02 to 2026-11-03
 (chat 27d2595d).
@@ -13,12 +15,37 @@ says which ones matter right now. Where every file lives, inside and outside the
 
 ---
 
+## Now, as of 2026-11-23: the revised proposal form comes first
+
+**The first consultation was held 2026-11-23** (DECISIONS 2026-11-23). The next defense is the **pre-oral**: a 50%
+working system and chapters 1 to 3, up to software evaluation; no date was stated. The adviser takes the revised form
+to the panel; chapters 1 and 2 start only after the panel approves it.
+
+In order:
+1. **Item 41, the algorithm** (the student, then the adviser). Recommended: an original algorithm in seven steps,
+   sent to him as one page first.
+2. **Tell the adviser the corrections** (DECISIONS 2026-11-23): the file comes from the SIEM; the impact is a ranking,
+   not a percentage; OpenSCAP no longer supports Windows; item 38 is still open.
+3. **The facts he asked for:** how engineers harden and check Windows today, who notices a telemetry change, and
+   with which tool (problems 2, 4 and 5). The stakeholder interview answers these (`INTERVIEW-GUIDE.md` in the
+   thesis folder); none is recorded.
+4. **The revised form, section by section**, with every cut kept in a reserve file for the chapters.
+5. **The demo scenario list:** C1, C3 and C5, what each change does, and the expected result.
+
+Recommended, not decided: the 5 pinned control runs wait until the form is sent, because the pre-oral needs chapters
+1 to 3, not the results (Claude's reading). Not decided: when the GUI is built. The adviser pictures the system as a
+window (upload the file, "Run analysis", the report); the current plan builds the GUI last.
+
+---
+
 ## Deadline and target
 
 - **School deadline for the final thesis: 4 June 2027** (stated by the student 2026-09-29).
 - **Target: final defense by the end of January 2027** (DECISIONS.md 2026-09-29). March 2027 was
   recommended; January was chosen, with the risk stated: four months, the same length as the Gantt plan
   that slipped, with more work in it. One missed checkpoint moves the defense to February or later.
+  **2026-11-23:** the adviser is preparing the student for the pre-oral (DECISIONS 2026-11-23); whether January 2027
+  is the pre-oral's date was not stated.
 - The earlier target, a final defense in December 2026 (FINAL's Gantt), slipped at its first lab rows:
   no capture run exists.
 - **The re-presentation:** the panel said it will focus on the **activity diagram** (student, 2026-09-29).
@@ -78,6 +105,7 @@ controls), and record the miss in WORKLOG the same day.
    the deadline for the revised document; whether the desktop application is accepted (not asked at the
    re-presentation); which defense January is (OPEN-QUESTIONS 33). Bring the corrections of the answers given on
    2026-10-22, listed in WORKLOG 2026-10-22, first the "zero blind spots" one.
+   **Held 2026-11-23:** see "Now, as of 2026-11-23" and DECISIONS 2026-11-23.
 2. **Tell the adviser** (checkpoint 2026-10-09). The adviser is now named: Prof. Ervin Moran. Tell him the
    January 2027 target at the first consultation.
 3. From Friday 2026-10-23, the day after the re-presentation (DECISIONS 2026-10-16): **build DC-01 and join
@@ -145,7 +173,8 @@ controls), and record the miss in WORKLOG the same day.
 - **Item 15 answered 2026-10-15:** the submitted Word file and PDF carry all of FINAL's text and the four
   current figures (OPEN-QUESTIONS, Answered section).
 - **Item 33, new 2026-10-12:** from the professor's guidelines, four points to ask or decide. Point 1 first:
-  is the January 2027 defense the pre-oral (50% working system) or the final?
+  is the January 2027 defense the pre-oral (50% working system) or the final? **2026-11-23:** the next defense is
+  the pre-oral (date not stated); point 4 is answered: the form gets an evaluation objective.
 - **Item 32, new 2026-10-08:** four points with no record (window length, whether DC-01 is restored each run,
   the Wazuh field-name mapping, whether DC-01 still earns its days). **Point 4 decided 2026-11-11: DC-01 is
   dropped; point 2 no longer arises.** Points 1 and 3 remain.
@@ -161,7 +190,8 @@ findings in 10 pairs (item 23 answered); Q4 11 of 20 keys testable, not `Sysmon-
 REDUCED key (`Sysmon-10`), T1055 lost, ruled prevention (item 38). **Open from it, for the student:** runs per phase
 and item 22's void rule. Both are read again from **5 new control runs with the pinned attack list**, decided and
 built 2026-11-18 (DECISIONS 2026-11-18; `catalog.pinned_stimulus()`: RDP sign-in, then LSASS tests 1, 2, 13), because
-the spike measured them with the trial stimulus only. **Next: the student runs those 5 control runs.** **Decided 2026-11-18:** the study host stays the current Ryzen PC, kept until the defense
+the spike measured them with the trial stimulus only. **Next: the student runs those 5 control runs** (2026-11-23:
+recommended to wait until the revised form is sent; see "Now, as of 2026-11-23"). **Decided 2026-11-18:** the study host stays the current Ryzen PC, kept until the defense
 (DECISIONS 2026-11-18).
 
 Original text: T1 is approved and final. There is **no fallback** (DECISIONS.md 2026-09-26). The spike has not run. It

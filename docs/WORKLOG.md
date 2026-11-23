@@ -17,6 +17,28 @@ Next:
 
 ---
 
+## 2026-11-23 - The first consultation with Sir Ervin: what he asked for
+
+**Chat ee84ae3f, continued.** Student: "give me taglish notes". Claude wrote `CONSULTATION-2026-11-23-TAGLISH.md` in the
+thesis folder: the same notes in Taglish, plus a ready answer to "so your claim is wrong?". After the meeting the
+student pasted the speech-to-text transcript: "Summarize and tell me you plans to comply sir ervin's instructions".
+
+**Recorded:** DECISIONS 2026-11-23 (the next defense is the pre-oral; revise the form first; the algorithm must be
+defined or replaced; his instructions on the area of investigation, problems, objectives, users and demo); new
+OPEN-QUESTIONS 41 (the algorithm, three ways, Claude recommends an original algorithm in seven steps); items 33 (points
+1 and 4) and 38 updated; STATUS "Now, as of 2026-11-23"; FILE-MAP rows for four thesis-folder files.
+
+**Checked:** the system reads the SIEM's exports (`archive.py`, `index.py`); the seven steps of `pipeline.compare`;
+OpenSCAP's Windows support is void from 2022-02-01 (its README on GitHub). Commands: `git status --short` and
+`git log -1`, read only; the 4 untracked files are `data/summaries/`, still not committed. No lab command.
+
+**Found:** two statements in the meeting differ from the record: the imported file comes from the SIEM (the student
+said no when the adviser suggested it), and the impact is a ranking, not a percentage.
+
+**Next:** the student decides item 41; then the one-page algorithm draft and the message to the adviser.
+
+---
+
 ## 2026-11-23 - Notes for the first consultation with Sir Ervin (10:00)
 
 **Chat ee84ae3f, continued.** Student: "did we do atmic red runs before?" (answered: 20 harness runs and the hand
