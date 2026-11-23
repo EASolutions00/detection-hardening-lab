@@ -1501,6 +1501,40 @@ original one with a concrete definition.
 has a named algorithm in mind. It describes what the code already does, the student can explain each step, and the
 adviser named an original algorithm as one of the two accepted ways. Not decided.
 
+**Update 2026-11-23 (chat ee84ae3f): the adviser's own suggestion.** After the meeting he sent a list and asked
+whether the exported file fits it. Main algorithm: **Myers' diff**. Supporting: SHA-256, merge sort. Data structure:
+hash map. Mathematical: set difference, set intersection, weighted risk scoring. Computational: rule-based assessment,
+conditional evaluation, data normalization. Statistical: frequency, percentage, mean, standard deviation, precision,
+recall, F1, weighted mean. He wants a core algorithm that is clearly an algorithm.
+
+**Check run on the real C3 data** (`tools/myers_check.py`, a textbook Myers 1986 diff plus a merge sort; it reads the
+runs' `counts.json` and changes nothing). Each run becomes a sorted list of event keys, one entry per event.
+- The raw `archives.json` lines cannot be diffed as they are: every line carries its own `systemTime`, so no line of
+  one run equals a line of another. After normalization (the event key, `eventkey.py`) and sorting, they can.
+- C3 before-1 against after-1: 268 and 223 events, edit distance D = 59. Deleted: 6 keys, led by
+  `Sysmon-10[GrantedAccess=other,...]` with 44 events (the same key the analyser reports REDUCED, 73.3 to 26.3 per run).
+  The other 5 deleted keys have 1 to 3 events each.
+- No change, control 2 against control 4: D = 24, **8 keys deleted (23 events)**. Control 1 against 2: D = 23, 8 keys
+  inserted. So Myers alone reports noise as loss. The noise floor from the control runs is still needed after it.
+- In all 5 pairs Myers gave exactly the same result as subtracting the counts per key. On sorted lists that is
+  expected. A panel may ask why Myers is needed; the answer is that it is the established, citable algorithm for
+  "what was removed", and D gives one number for the size of the change.
+
+**How his list maps to the system:**
+- Already in the code: hash map (the counts per key), sorting (Python's sort is Timsort, a merge sort variant),
+  SHA-256 (archive download check `harness.py:217`, parameters hash, script hashes), set difference (rules that fired
+  before but not after, `report.py:183`), data normalization (`eventkey.py`, field names in `archive.py`), rule-based
+  assessment (the rule index, a depth-first search over rule parents, `index.py`), conditional evaluation (the three
+  conditions for REDUCED), mean and standard deviation (the CoV is SD divided by mean).
+- New: Myers' diff as the named comparison step (it would replace the plain union in step 2 and report deletions).
+- Conflicts with the record: **percentage, weighted risk scoring and weighted mean**. DECISIONS 2026-11-13 chose a
+  ranking, not a percentage. Keep the ranking, or ask him which weights he means. Not decided.
+- For the evaluation objective: **precision, recall and F1** need a list of expected results per change (which keys
+  each change should remove). He asked for that list for the demo anyway.
+
+**Recommendation (Claude), replacing the one above if he agrees:** Myers' diff as the core algorithm, with the noise
+floor as a filter after it and the depth-first rule search after that. Not decided.
+
 ---
 
 ## 22. The stimulus is asserted identical and never verified

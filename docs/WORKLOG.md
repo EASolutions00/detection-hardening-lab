@@ -17,6 +17,23 @@ Next:
 
 ---
 
+## 2026-11-23 - Sir Ervin's algorithm list: Myers' diff checked on the real C3 data
+
+**Chat:** ee84ae3f (Claude Code).
+
+**Asked:** the adviser sent a list (Myers' diff as the main algorithm, plus SHA-256, merge sort, hash map, set
+operations, weighted scoring and statistics) and asked whether the exported file fits it.
+
+**Done:** wrote `tools/myers_check.py` (Myers 1986 diff plus merge sort; reads `counts.json`, writes nothing) and ran
+it on 5 pairs of real runs. Recorded in OPEN-QUESTIONS 41, "Update 2026-11-23".
+
+**Found:** the export fits Myers after normalization and sorting, not as raw lines. C3 before-1 against after-1 deleted
+44 `Sysmon-10[GrantedAccess=other,...]` events, the same key the analyser reports. Control 2 against control 4 (no
+change) deleted 8 keys, so the noise floor is still needed after Myers. His percentage and weighted scoring conflict with
+the ranking (DECISIONS 2026-11-13). Not decided.
+
+---
+
 ## 2026-11-23 - The first consultation with Sir Ervin: what he asked for
 
 **Chat ee84ae3f, continued.** Student: "give me taglish notes". Claude wrote `CONSULTATION-2026-11-23-TAGLISH.md` in the
