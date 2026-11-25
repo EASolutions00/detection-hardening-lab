@@ -116,7 +116,8 @@ than the drop being reported.
 
 **INCONCLUSIVE is reported, not folded into UNCHANGED.** An event type seen too few
 times cannot be tested. Calling it unchanged would claim it survived, which the data
-does not support, and would inflate the reported recall.
+does not support, and would inflate the reported recall. The exception is a key that
+disappears completely: it gets the exact test whatever its count (DECISIONS 2026-11-26).
 
 ## Tests
 

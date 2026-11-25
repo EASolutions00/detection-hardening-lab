@@ -163,7 +163,9 @@ deployment, where the variance floor is not controlled by snapshot restoration.
 **Untestable is reported, not assumed safe.** An event key seen too few times before a change
 cannot be tested with any power. TeLoS reports these as INCONCLUSIVE rather than folding them
 into UNCHANGED. Calling them unchanged would claim they survived, which the data does not
-support, and would inflate the reported recall.
+support, and would inflate the reported recall. The exception is a key that disappears
+completely: the exact chance of seeing no event needs no minimum count, so such a key is tested
+whatever its count (DECISIONS 2026-11-26).
 
 **A failed capture is not a result.** The same rule applies to a whole run. Before 14 September
 2026, a run whose agent had sent nothing after the change was reported as a list of lost event

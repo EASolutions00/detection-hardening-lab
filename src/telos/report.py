@@ -104,8 +104,10 @@ def render_analysis(result: AnalysisResult) -> str:
 
     incon = result.by_class(Classification.INCONCLUSIVE)
     if incon:
-        out.append(f"NOT TESTED, REPORTED AS INCONCLUSIVE  ({len(incon)})")
-        out.append("  These are not cleared. There was not enough data to test them.")
+        # "Decide", not "test": since 2026-11-26 a rare key that vanished is tested
+        # exactly, and is still INCONCLUSIVE when it fails the correction.
+        out.append(f"NOT DECIDED, REPORTED AS INCONCLUSIVE  ({len(incon)})")
+        out.append("  These are not cleared. There was not enough data to decide them.")
         for f in incon:
             out.append(f"    {f.key:<34} {f.pre_total} occurrences before the change")
         out.append("")

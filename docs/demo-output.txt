@@ -69,21 +69,17 @@ REPORTED FINDINGS  (3)
     noise floor   1.17% CoV, dispersion 1.00
     why           rate fell to 0.294 of baseline (q=4.08e-137, drop 70.6% exceeds noise band 3.5%)
 
-NOT TESTED, REPORTED AS INCONCLUSIVE  (1)
-  These are not cleared. There was not enough data to test them.
-    Security-4697[ServiceFileName,ServiceName] 7 occurrences before the change
-
-==============================================================================
-FIELD-LEVEL LOSS
-==============================================================================
-
-  The event still fires at its normal rate. A field inside it stopped
-  being populated, so any detection rule matching on that field is blind.
-  A profile keyed on event type alone cannot see this.
+FIELD-LEVEL LOSS  (1)
+  The event is still written, but a field inside it is now empty, so any
+  detection rule matching on that field is blind.
 
   was  PowerShell-4104[Path,ScriptBlockText]
   now  PowerShell-4104[Path]
   lost field(s): ScriptBlockText
+
+NOT DECIDED, REPORTED AS INCONCLUSIVE  (1)
+  These are not cleared. There was not enough data to decide them.
+    Security-4697[ServiceFileName,ServiceName] 7 occurrences before the change
 
 ==============================================================================
 STAGE D  proposed method versus naive differencing

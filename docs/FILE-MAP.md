@@ -88,7 +88,7 @@ physical drive (WORKLOG 2026-09-28, sixth), which is why the backups go there.
 | `tools/check_docs.py` | Flags document lines that contradict the code | SOURCE |
 | `tools/word/` | Markdown to Word tools. See `tools/word/README.md` | SOURCE |
 | `data/runs/` | Raw capture archives. Gitignored. **Empty on 2026-10-15** (only `.gitkeep`) | |
-| `data/summaries/` | Small derived CSVs, committed. Empty on 2026-10-15. `known-answer-dryrun-2026-11-26.txt`: the dry run's output, committed before any test-case run (added 2026-11-26) | |
+| `data/summaries/` | Small derived CSVs, committed. Empty on 2026-10-15. `known-answer-dryrun-2026-11-26.txt`: the dry run's output, committed before any test-case run (added 2026-11-26); `known-answer-dryrun-2026-11-26-after-item-43.txt`: the same after the exact-test rule (DECISIONS 2026-11-26) | |
 
 Not tracked, on purpose: `.venv/` (rebuild from `requirements.txt`), Python caches, and
 `.claude/settings.local.json` (personal "don't ask again" choices).

@@ -69,6 +69,14 @@ What this shows, in order:
 5. **K2 and K3 get the same ranking numbers**, although rule 67027 keeps firing in K2 and stops in K3. Only the FIELD
    LOSS line tells them apart (OPEN-QUESTIONS 43, third point).
 
+**2026-11-26, later the same day: the rule changed, before any run.** The student chose option (b) of OPEN-QUESTIONS
+43 (DECISIONS 2026-11-26): a key that drops to zero is tested with the exact test at any count. The expectations in
+section 1 did not change. The dry run with the new code, `data/summaries/known-answer-dryrun-2026-11-26-after-item-43.txt`:
+- **K1 finds 4 of 4 keys**; each sign-in key is LOST with q = 0.0087. The top ranked line is now a sign-in key, and its
+  blind techniques include T1021.001, T1078.002 and T1550.002, still mixed with potential ones (point 4).
+- N, K2 and K3 are unchanged.
+- On the real C3 runs, `Sysmon-8[]` is now LOST too (6 to 0, q = 0.0198), as section 1's C3 row already expects.
+
 ---
 
 ## 3. How the results are scored (fixed before the runs)
@@ -108,7 +116,8 @@ With "Audit Logon" off there are no logon events, so the proof must come from el
 1. The K1 to K3 scripts are in `C:\telos\` in the guest. They are not in `golden-base` yet (OPEN-QUESTIONS 42).
 2. Every case runs in one configuration, Config S (Defender off, as for C3 since 2026-11-03), so the before runs can be
    shared: the pipeline needs one parameters hash.
-3. The rare-key rule is decided (OPEN-QUESTIONS 43).
+3. The rare-key rule is decided (OPEN-QUESTIONS 43). **Done 2026-11-26:** option (b), the exact test for a key that
+   drops to zero (DECISIONS 2026-11-26).
 4. K2: whether the value takes effect without a restart is `(unverified)`. Its `-Verify` starts one process and reads
    its 4688; if the command line is still there, the harness voids the run.
 

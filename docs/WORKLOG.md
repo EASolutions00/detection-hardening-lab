@@ -17,6 +17,25 @@ Next:
 
 ---
 
+## 2026-11-26 (later) - The exact test for a key that drops to zero (item 43, option (b))
+
+**Chat:** 26343d0f (Claude Code). **Asked:** "Use the exact test".
+
+**Did:** `differential.py`: a key the control runs saw that drops to zero gets the exact test at any count
+(`_complete_loss`); a rare one that fails the correction is INCONCLUSIVE; `analyse()` refuses `min_pre_count` below 1;
+`n_tested` leaves out INCONCLUSIVE keys. `report.py`: "NOT TESTED" became "NOT DECIDED". Four new tests, one test's
+input changed from 6-to-0 to 6-to-3 (DECISIONS 2026-11-26 says why); 155 passed. The rule text updated in README,
+`src/README.md`, `model.py`, `spike.py`, `tools/check_docs.py`, PROMPT-new-chat, RUNBOOK and blueprint; in the
+thesis folder, `ACTIVITY-DIAGRAM-EXPLAINED.md` and the checklist. `docs/demo-output.txt` refreshed.
+
+**Result:** dry run: K1 4 of 4 keys (q = 0.0087 each), N no finding. Real C3 runs: only `Sysmon-8[]` changed, from
+INCONCLUSIVE to LOST (6 to 0, q = 0.0198); coverage unchanged (T1055); still prevention. Demo: same classes; its
+committed copy was already out of date in the FIELD-LEVEL LOSS section before today.
+
+**Not changed:** the activity diagram and the pipeline figure still state the old rule; both wait for the redraw.
+
+---
+
 ## 2026-11-26 - Test cases K1 to K3 adopted; expected results written before any run; a dry run finds a gap in K1
 
 **Chat:** 26343d0f (Claude Code). **Asked:** "Yes, adopt them" (the test cases K1 to K3, for the evaluation and the

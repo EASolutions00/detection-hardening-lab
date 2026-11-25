@@ -8,6 +8,7 @@ of the analysis is established, this file is the answer.
 
 from __future__ import annotations
 
+import math
 import sys
 from pathlib import Path
 
@@ -94,9 +95,9 @@ def test_untouched_key_is_unchanged():
 def test_rare_key_is_inconclusive_not_unchanged():
     """The point of the INCONCLUSIVE class.
 
-    A key seen 6 times cannot be tested with any power. Calling it UNCHANGED
-    would claim it survived, which the data does not support, and would inflate
-    the reported recall.
+    A partial drop of a key seen 6 times cannot be tested with any power: the
+    rate-ratio test needs counts. Calling it UNCHANGED would claim it survived,
+    which the data does not support, and would inflate the reported recall.
     """
     vm = make_control({"rare": [2, 2, 2, 2, 2], "big": STABLE, "gone": STABLE})
     pre = Phase("pre", {"rare": [2, 2, 2], "big": [100, 100, 100], "gone": [100, 100, 100]})
@@ -105,10 +106,69 @@ def test_rare_key_is_inconclusive_not_unchanged():
     # classifier. "big" stays alive so the capture is real. "gone" is lost; it
     # was there so the old gate would pass and let "rare" be classified. Since
     # 2026-09-28 every key is classified anyway, and "gone" is simply a loss.
-    post = Phase("post", {"rare": [0, 0, 0], "big": [100, 100, 100], "gone": [0, 0, 0]})
+    # Changed 2026-11-26: "rare" fell from 6 to 0 here, a complete loss, which is now
+    # tested exactly (DECISIONS 2026-11-26; see the next test). It now falls from 6 to
+    # 3, a partial drop, which keeps the minimum of 30.
+    post = Phase("post", {"rare": [1, 1, 1], "big": [100, 100, 100], "gone": [0, 0, 0]})
     res = analyse(pre, post, vm)
     got = {f.key: f.classification for f in res.findings}
     assert got["rare"] is Classification.INCONCLUSIVE
+
+
+def test_rare_key_that_vanishes_is_tested_exactly_and_lost():
+    """DECISIONS 2026-11-26, OPEN-QUESTIONS 43: the shape of K1's sign-in keys.
+
+    2 events in every control and before run, none after. The exact chance of
+    seeing no event where 6 were expected is e^-6, about 0.0025, and that test is
+    valid at any count. Before 2026-11-26 this key was INCONCLUSIVE, so a real
+    blind spot on a rare event was never ranked.
+    """
+    vm = make_control({"rare": [2, 2, 2, 2, 2], "big": STABLE})
+    pre = Phase("pre", {"rare": [2, 2, 2], "big": [100, 100, 100]})
+    post = Phase("post", {"rare": [0, 0, 0], "big": [100, 100, 100]})
+    res = analyse(pre, post, vm)
+    rare = next(f for f in res.findings if f.key == "rare")
+    assert rare.classification is Classification.LOST
+    assert rare.p_value == pytest.approx(math.exp(-6))
+    assert rare.q_value <= 0.05
+    assert res.outcome is ProfileOutcome.CHANGED
+
+
+def test_very_rare_key_that_vanishes_stays_inconclusive():
+    """Two events before, none after: e^-2 is about 0.14, which no correction can
+    pass. The key is INCONCLUSIVE with its reason, never UNCHANGED, because it did
+    not survive (DECISIONS 2026-11-26). It does not count as a tested key."""
+    vm = make_control({"rarest": [1, 1, 1, 1, 1], "big": STABLE})
+    pre = Phase("pre", {"rarest": [1, 1, 0], "big": [100, 100, 100]})
+    post = Phase("post", {"rarest": [0, 0, 0], "big": [100, 100, 100]})
+    res = analyse(pre, post, vm)
+    rarest = next(f for f in res.findings if f.key == "rarest")
+    assert rarest.classification is Classification.INCONCLUSIVE
+    assert rarest.p_value == pytest.approx(math.exp(-2))
+    assert "did not survive correction" in rarest.reason
+    assert res.n_tested == 1                     # "big" only
+
+
+def test_rare_vanished_key_unseen_in_control_is_not_tested():
+    """The exact test needs the key in the control runs. Without them there is no
+    noise measurement (DECISIONS 2026-09-28), so the key stays INCONCLUSIVE and
+    untested."""
+    vm = make_control({"big": STABLE})
+    pre = Phase("pre", {"rare": [2, 2, 2], "big": [100, 100, 100]})
+    post = Phase("post", {"rare": [0, 0, 0], "big": [100, 100, 100]})
+    res = analyse(pre, post, vm)
+    rare = next(f for f in res.findings if f.key == "rare")
+    assert rare.classification is Classification.INCONCLUSIVE
+    assert rare.p_value is None
+
+
+def test_min_pre_count_below_one_is_refused():
+    """A key with no event before the change cannot be tested, so the minimum is at
+    least 1. The rate-ratio code relies on it (DECISIONS 2026-11-26)."""
+    vm = make_control({"a": STABLE})
+    same = Phase("pre", {"a": [100, 100, 100]})
+    with pytest.raises(ValueError, match="at least 1"):
+        analyse(same, Phase("post", {"a": [100, 100, 100]}), vm, min_pre_count=0)
 
 
 def test_key_appearing_only_after_is_new():

@@ -199,9 +199,11 @@ in `REPO\src\telos\` unless stated otherwise.
   (since 2026-09-14). A profile with only one key skips the chi-square.
   `model.py`, `ProfileOutcome`; `differential.py`, `capture_problem()`, `analyse()`
 
-- Classification order is **NEW, then INCONCLUSIVE for fewer than 30 before, then INCONCLUSIVE
-  for a key the control runs never saw (added 2026-09-28), then LOST**.
-  `differential.py`, `_test_key()`; `variance.py`, `VarianceModel.measured()`
+- Classification order is **NEW; then LOST by the exact test for a key the control runs saw that
+  drops to zero, at any count (added 2026-11-26); then INCONCLUSIVE for fewer than 30 before;
+  then INCONCLUSIVE for a key the control runs never saw (added 2026-09-28); then the rate-ratio
+  test**. A rare LOST that fails the correction becomes INCONCLUSIVE, never UNCHANGED.
+  `differential.py`, `_test_key()`, `classify()`; `variance.py`, `VarianceModel.measured()`
 
 - LOST requires the post-change count to be **exactly zero**.
   `differential.py`, `_test_key()`
@@ -213,6 +215,7 @@ in `REPO\src\telos\` unless stated otherwise.
   `differential.py`, `classify()`
 
 - `ALPHA = 0.05`, `MAX_RATIO = 0.5`, `MIN_PRE_COUNT = 30`, `NOISE_SIGMAS = 3.0`.
+  `MIN_PRE_COUNT` applies to partial drops only since 2026-11-26 (DECISIONS 2026-11-26).
   `differential.py`
 
 - Rate is the count divided by the **number of runs**, not per unit time.

@@ -8,6 +8,57 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-11-26 - A key that drops to zero is tested with the exact test at any count; the minimum of 30 stays for partial drops
+
+**Decision (student, chat 26343d0f: "Use the exact test").** Option (b) of OPEN-QUESTIONS 43, Claude's
+recommendation. It also answers the spike's open point on `Sysmon-8[]` (item 25, "Spike answers"). Made before any
+evaluation run, on synthetic data and the spike only.
+
+**The rule now.**
+- A key the control runs saw, present before the change and absent in every after run, is tested with the exact
+  Poisson chance of seeing no event: e^-(expected events after / dispersion). At any count.
+- A partial drop still needs 30 events in the before runs (`MIN_PRE_COUNT`), because the rate-ratio test uses a
+  normal approximation that needs counts.
+- Benjamini-Hochberg, and the rule that a key must be seen in the control runs, are unchanged.
+- A rare key (under 30 before) that vanished but does not survive the correction is INCONCLUSIVE, never UNCHANGED,
+  and does not count as tested.
+- `analyse()` refuses a `min_pre_count` below 1, so the rate-ratio code always has a count before.
+
+**What changed in the code.** `differential._test_key` (the complete-loss test moved before the minimum, into
+`_complete_loss`); `classify` (the rare case above); `analyse` (the guard, and `n_tested`). The report's INCONCLUSIVE
+section is now titled "NOT DECIDED" ("not enough data to decide them"), because such a key may have been tested.
+`docs/demo-output.txt` refreshed; it was already out of date in its FIELD-LEVEL LOSS section before this change.
+Four new tests. **One test changed:** `test_rare_key_is_inconclusive_not_unchanged` used a key that fell from 6 to 0,
+which the new rule tests, so it now falls from 6 to 3, a partial drop; its purpose is kept. 155 passed.
+
+**Measured the same day.**
+- Dry run (`data/summaries/known-answer-dryrun-2026-11-26-after-item-43.txt`): K1 finds 4 of 4 keys, each sign-in key
+  with q = 0.0087. N still has no false finding. K2 and K3 are unchanged.
+- The real C3 spike runs (5 control, 3 before, 3 after; output in the chat's scratchpad, not in `data/summaries`):
+  exactly one key changed class, `Sysmon-8[]`, from INCONCLUSIVE to LOST (6 to 0, q = 0.0198). The report now shows 2
+  findings, the top one `Sysmon-8[]` (level 12); coverage still shows T1055 no longer detected. **C3 stays prevention**
+  (2026-11-13): the dump is blocked.
+- The synthetic demo: the same classes as before.
+
+**Why.**
+- The exact test is valid at small counts. The minimum of 30 was set for the approximate test of partial drops.
+- Attacks are rare events. A method that cannot test a complete loss of a rare key misses the case that matters most.
+- The spike raised the same question on 2026-11-16, before K1 existed.
+
+**Cost if wrong.** Rare keys can now be LOST. Two events before can never pass (e^-2 is about 0.14; tested). With
+about 10 tested keys, about 5 or more are needed `(unverified exact bound)`. If the control comparisons of the full
+collection show false findings from rare keys, move the complete-loss test back below the minimum; the first dry-run
+file shows what the old rule gives.
+
+**Not changed:** the figures. The activity diagram ("LOST: 30 or more before") and the pipeline figure ("1 to 29
+before ... INCONCLUSIVE") state the old rule, and both are already due for a redraw (STATUS).
+
+**For the defense:** "If a key had 6 events before and none after, the chance of that with no real change is about
+0.25%. That test is exact, so it does not need 30 events. The minimum of 30 is for partial drops, where the
+approximate test needs more data."
+
+---
+
 ## 2026-11-26 - Test cases K1 to K3 join the evaluation and the demo; each is the opposite of a CIS or DISA item, and their expected results are written before any run
 
 **Decision (student, chat 26343d0f: "Yes, adopt them").** Answers OPEN-QUESTIONS 42.

@@ -920,6 +920,8 @@ this is its test. OPEN-QUESTIONS 23; DECISIONS 2026-09-28.
 **Q4. How many event keys can be tested at all?**
 Count the keys with at least 30 events across 3 runs, the minimum before a key is tested. If only
 a small share clears it, raise the pre-change repetitions from 3 to 5. OPEN-QUESTIONS 25.
+Since 2026-11-26 the minimum applies to partial drops only; a key that drops to zero is tested at
+any count (DECISIONS 2026-11-26).
 
 **Q5. How much does the stimulus itself vary?**
 Measure the stimulus fingerprint in each control run, for example the count of Sysmon Event ID 1

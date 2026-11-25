@@ -40,6 +40,13 @@ Runs in four ordered stages.
 A key is only reported as REDUCED when three conditions hold together: the
 corrected q value, the effect size, and the measured noise floor. Any one alone
 is not enough.
+
+A key that drops to zero in every after run (LOST) is tested with the exact chance
+of seeing no event, at any count, if the control runs saw it. The minimum count,
+MIN_PRE_COUNT, applies to the rate-ratio test of a partial drop only. A rare loss
+that does not survive the correction is INCONCLUSIVE (DECISIONS 2026-11-26;
+OPEN-QUESTIONS 43: without this, K1's two sign-in keys, 6 events each, were never
+tested).
 """
 
 from __future__ import annotations
@@ -57,7 +64,8 @@ from .variance import VarianceModel
 # Defaults. All are configurable parameters of the method, not constants of it.
 ALPHA = 0.05          # false discovery rate
 MAX_RATIO = 0.5       # a drop must at least halve the rate to count as REDUCED
-MIN_PRE_COUNT = 30    # below this, the test has no power. Reported INCONCLUSIVE.
+MIN_PRE_COUNT = 30    # below this, a partial drop cannot be tested with power: INCONCLUSIVE.
+                      # A complete loss uses the exact test at any count (DECISIONS 2026-11-26).
 NOISE_SIGMAS = 3.0    # the drop must exceed this many CoV of the key's own noise
 
 
@@ -196,12 +204,21 @@ def _test_key(
         f.reason = "absent before the change, present after"
         return f
 
-    # Too rare to test. Reported honestly rather than folded into UNCHANGED.
+    # Complete loss of a key the control runs saw: the exact test, at any count
+    # (DECISIONS 2026-11-26; OPEN-QUESTIONS 43). The minimum count below is for the
+    # rate-ratio test of a partial drop, whose normal approximation needs counts.
+    # The chance of seeing no event needs none: 6 events before and none after
+    # gives e^-6, about 0.0025, before correction. classify() still applies
+    # Benjamini-Hochberg, and a rare loss that fails it becomes INCONCLUSIVE.
+    if a > 0 and b == 0 and vm.measured(key):
+        return _complete_loss(f, rate_pre, n2, phi)
+
+    # Too rare to test a partial drop. Reported honestly rather than folded into UNCHANGED.
     if a < min_pre_count:
         f.classification = Classification.INCONCLUSIVE
         f.reason = (
             f"only {a} occurrences before the change, below the minimum of "
-            f"{min_pre_count} needed for the test to have power"
+            f"{min_pre_count} needed for the rate-ratio test to have power"
         )
         return f
 
@@ -219,24 +236,9 @@ def _test_key(
         )
         return f
 
-    if b == 0:
-        # Complete loss. The log rate ratio is undefined, so use the exact
-        # Poisson probability of observing zero when the pre-change rate said we
-        # should have seen lambda. Dividing by the dispersion keeps the test
-        # conservative under overdispersion.
-        lam = rate_pre * n2
-        lam_eff = lam / phi
-        f.rate_ratio = 0.0
-        f.ci_low = 0.0
-        # Rule of three: with zero observed, the 95% upper bound on the rate is
-        # about 3 / exposure. Expressed here as a ratio to the pre-change rate.
-        f.ci_high = (3.0 * phi / n2) / rate_pre if rate_pre > 0 else None
-        f.p_value = float(math.exp(-lam_eff)) if lam_eff < 700 else 0.0
-        f.classification = Classification.LOST
-        f.reason = f"present before ({a} occurrences), absent after"
-        return f
-
-    # Both phases non-zero: quasi-Poisson rate ratio.
+    # Both phases non-zero: quasi-Poisson rate ratio. (b == 0 cannot reach here: a
+    # measured key that vanished was tested above, an unmeasured one is INCONCLUSIVE,
+    # and analyse() refuses a min_pre_count below 1, so a is at least 1.)
     #   RR              = rate_post / rate_pre
     #   Var(log RR)     = phi * (1/a + 1/b)
     # The dispersion phi widens the interval to match the variance actually
@@ -257,11 +259,34 @@ def _test_key(
     return f
 
 
+def _complete_loss(f: Finding, rate_pre: float, n2: int, phi: float) -> Finding:
+    """A key present before the change and absent in every run after it.
+
+    The log rate ratio is undefined, so the test is the exact Poisson chance of
+    seeing no event in the after runs when the before rate said we should have seen
+    lambda = rate_pre * n2. Dividing by the dispersion keeps the test conservative
+    under overdispersion. The test is valid at any count, so a complete loss needs
+    no minimum (DECISIONS 2026-11-26).
+    """
+    lam = rate_pre * n2
+    lam_eff = lam / phi
+    f.rate_ratio = 0.0
+    f.ci_low = 0.0
+    # Rule of three: with zero observed, the 95% upper bound on the rate is
+    # about 3 / exposure. Expressed here as a ratio to the pre-change rate.
+    f.ci_high = (3.0 * phi / n2) / rate_pre if rate_pre > 0 else None
+    f.p_value = float(math.exp(-lam_eff)) if lam_eff < 700 else 0.0
+    f.classification = Classification.LOST
+    f.reason = f"present before ({f.pre_total} occurrences), absent after"
+    return f
+
+
 def classify(
     findings: list[Finding],
     alpha: float,
     max_ratio: float,
     noise_sigmas: float,
+    min_pre_count: int = MIN_PRE_COUNT,
 ) -> None:
     """Apply BH correction, then settle REDUCED versus UNCHANGED in place.
 
@@ -287,11 +312,20 @@ def classify(
         if f.classification is Classification.LOST:
             # A complete loss still has to clear the correction.
             if f.q_value is not None and f.q_value > alpha:
-                f.classification = Classification.UNCHANGED
-                f.reason = (
-                    f"absent after the change, but q={f.q_value:.3g} did not survive "
-                    f"correction at alpha={alpha}"
-                )
+                if f.pre_total < min_pre_count:
+                    # Tested exactly because it vanished, but too rare to decide
+                    # (DECISIONS 2026-11-26). UNCHANGED would claim it survived.
+                    f.classification = Classification.INCONCLUSIVE
+                    f.reason = (
+                        f"absent after the change, but only {f.pre_total} occurrences before: "
+                        f"q={f.q_value:.3g} did not survive correction at alpha={alpha}"
+                    )
+                else:
+                    f.classification = Classification.UNCHANGED
+                    f.reason = (
+                        f"absent after the change, but q={f.q_value:.3g} did not survive "
+                        f"correction at alpha={alpha}"
+                    )
             continue
 
         if f.rate_ratio is None:
@@ -343,6 +377,9 @@ def analyse(
     noise_sigmas: float = NOISE_SIGMAS,
 ) -> AnalysisResult:
     """Run the whole comparison for one hardening change."""
+    if min_pre_count < 1:
+        raise ValueError("min_pre_count must be at least 1: a key with no event before the change "
+                         "cannot be tested")
     pre.validate()
     post.validate()
     if pre.n_runs != post.n_runs:
@@ -370,8 +407,11 @@ def analyse(
     # analysis. Every key is tested, whatever it said, and the outcome comes
     # from the keys. See the module docstring, stage 2.
     findings = [_test_key(k, pre, post, vm, min_pre_count) for k in keys]
-    classify(findings, alpha, max_ratio, noise_sigmas)
-    n_tested = sum(1 for f in findings if f.p_value is not None)
+    classify(findings, alpha, max_ratio, noise_sigmas, min_pre_count)
+    # A rare key tested exactly but too rare to decide is INCONCLUSIVE, so it does not
+    # count as tested (DECISIONS 2026-11-26).
+    n_tested = sum(1 for f in findings
+                   if f.p_value is not None and f.classification is not Classification.INCONCLUSIVE)
     n_found = sum(1 for f in findings if f.is_finding)
     # Pair LOST and NEW keys of one event type that differ only by dropped fields,
     # so the report names the field instead of showing two unexplained keys.

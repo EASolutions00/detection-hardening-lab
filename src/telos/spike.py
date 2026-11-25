@@ -135,7 +135,8 @@ def analyse_spike(runs_dir: str | Path, out_dir: str | Path, rules_dir: str | Pa
         answers["Q3"] = {"pairs": len(per_pair), "false_findings": sum(len(p["false_findings"]) for p in per_pair),
                          "per_pair": per_pair}
 
-        # Q4: keys with at least MIN_PRE_COUNT events over 3 runs.
+        # Q4: keys with at least MIN_PRE_COUNT events over 3 runs: the minimum for a partial
+        # drop. Since 2026-11-26 a key that drops to zero is tested at any count.
         testable = [k for k in keys if s_phase.mean(k) * 3 >= MIN_PRE_COUNT]
         answers["Q4"] = {"keys": len(keys), "testable": len(testable),
                          "share": round(len(testable) / len(keys), 3) if keys else 0.0}

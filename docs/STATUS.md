@@ -37,8 +37,9 @@ In order:
    instructions and the 10/10 list: `CONSULTATION-2026-11-23-CHECKLIST.md` (thesis folder).
 5. **The demo scenario list:** C1, C3 and C5, what each change does, and the expected result.
    **2026-11-26:** written in `docs/EXPECTED-RESULTS.md`, with the test cases K1 to K3 (DECISIONS 2026-11-26), before
-   any run. Before the evaluation runs, the student decides item 43 (the rule for rare keys) and item 42's open
-   point 1 (how the K scripts reach the guest).
+   any run. **Item 43 decided the same day:** a key that drops to zero is tested at any count (DECISIONS
+   2026-11-26). Still before the evaluation runs: item 42's open point 1 (how the K scripts reach the guest). The
+   activity diagram and the pipeline figure now also state the old 30-event rule; fix it in their redraw.
 
 Recommended, not decided: the 5 pinned control runs wait until the form is sent, because the pre-oral needs chapters
 1 to 3, not the results (Claude's reading). Not decided: when the GUI is built. The adviser pictures the system as a

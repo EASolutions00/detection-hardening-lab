@@ -523,7 +523,9 @@ too thin to support its precision and recall claims. Both are recoverable only i
   do not make it testable.
 - **Still open, for the student:** the number of runs per phase, and whether a key like `Sysmon-8[]` is left
   INCONCLUSIVE (reported, not cleared) or the threshold or stimulus is changed. None decided. **2026-11-26:** the K1
-  dry run shows the same problem for the two sign-in keys; options and a recommendation in item 43.
+  dry run shows the same problem for the two sign-in keys; options and a recommendation in item 43. **Decided the
+  same day (item 43, option (b)): a key that drops to zero is tested at any count, so `Sysmon-8[]` is now LOST on the
+  real C3 runs (6 to 0, q = 0.0198).** The number of runs per phase is still open.
 
 ---
 
@@ -1611,8 +1613,9 @@ the ranking. The table's "92653 and 92657 stop" holds; "keys LOST" holds only fo
 
 ## 43. Complete losses of rare keys are INCONCLUSIVE, so the system misses K1's sign-in keys
 
-**Status:** Open. **For the student, before the evaluation runs.** Found 2026-11-26 by chat 26343d0f, in the dry run
-of item 42. The same question the spike left open for C3's `Sysmon-8[]` (item 25, "Spike answers": "None decided").
+**Status:** **Decided 2026-11-26: option (b) (student: "Use the exact test"; DECISIONS 2026-11-26).** Built and tested
+the same day; on the real C3 runs `Sysmon-8[]` is now LOST (6 to 0, q = 0.0198). The two smaller points at the end
+stay open. Found 2026-11-26 by chat 26343d0f, in the dry run of item 42. The same question the spike left open for C3's `Sysmon-8[]` (item 25, "Spike answers": "None decided").
 
 **The problem.** `differential.MIN_PRE_COUNT = 30`: a key with fewer than 30 events in all the before runs together is
 INCONCLUSIVE, and is never tested or ranked. The pinned sign-in writes 2 type 10 and 2 type 3 logons per run, so 6

@@ -18,6 +18,9 @@ class Classification(str, Enum):
     INCONCLUSIVE exists on purpose. A key that occurred too few times before the
     change cannot be tested with any power. Calling it UNCHANGED would claim
     knowledge the data does not support and would inflate the reported recall.
+    A key that vanished completely is the exception: it gets the exact test at any
+    count, and stays INCONCLUSIVE only when it fails the correction (DECISIONS
+    2026-11-26).
     """
 
     LOST = "LOST"

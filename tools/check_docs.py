@@ -93,21 +93,22 @@ CHECKS = [
     ("rate-window",
      r"count ?/ ?window|per minute|per min\b|/ window",
      "Rate stated per unit time.",
-     "differential.py:176 computes a / n1, count per RUN. Windows are "
+     "differential._test_key computes a / n1, count per RUN. Windows are "
      "validated equal so the ratio is unaffected, but the formula differs."),
 
     ("lost-nonzero",
      r"LOST.{0,80}RR[= ]?0\.[0-9]|RR[= ]?0\.[0-9].{0,80}LOST",
      "A non-zero rate ratio labelled LOST.",
-     "differential.py:234 classifies LOST only when the post-change count is "
-     "exactly zero. A non-zero ratio is REDUCED."),
+     "differential._complete_loss classifies LOST only when the post-change count "
+     "is exactly zero. A non-zero ratio is REDUCED."),
 
     ("inconclusive-band",
      r"band spans|too rare.{0,40}band|inconclusive.{0,60}noise band|"
      r"noise band.{0,60}inconclusive",
      "INCONCLUSIVE explained by band width.",
-     "differential.py:199 reports INCONCLUSIVE when the pre-change count is "
-     "below MIN_PRE_COUNT=30. The band never enters it."),
+     "differential._test_key reports INCONCLUSIVE for a partial drop when the "
+     "pre-change count is below MIN_PRE_COUNT=30, and classify() for a rare key that "
+     "vanished but failed the correction (DECISIONS 2026-11-26). The band never enters it."),
 
     ("channel-4104",
      r"WinSec.{0,12}4104|Security.{0,12}4104|4104.{0,30}Security log",
