@@ -1535,6 +1535,10 @@ runs' `counts.json` and changes nothing). Each run becomes a sorted list of even
 **Recommendation (Claude), replacing the one above if he agrees:** Myers' diff as the core algorithm, with the noise
 floor as a filter after it and the depth-first rule search after that. Not decided.
 
+**Decided and built 2026-11-26** (DECISIONS 2026-11-26, chat 26343d0f): Myers is step 3 of `pipeline.compare`
+(`src/telos/myers.py`), each phase's runs joined. On the real C3 spike runs: D = 181 joined; single runs 1 to 28 for
+control pairs, 56 to 76 before against after. Still open: whether Sir Ervin accepts Myers as the core algorithm.
+
 ---
 
 ## 22. The stimulus is asserted identical and never verified

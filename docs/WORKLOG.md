@@ -17,6 +17,57 @@ Next:
 
 ---
 
+## 2026-11-25 - The simplified form checked against the cleaned consultation transcript; checklist written
+
+**Chat:** 26343d0f (Claude Code), in the thesis folder.
+
+**Asked:** list Sir Ervin's instructions from the transcript; list what FINAL must revise; simplify FINAL by those
+lists; list what would make it 10/10. Input: the cleaned transcript `Downloads\2026-11-23 10-00-10
++0800.cleaned-transcript.txt` and `proposal-form-FINAL.md`.
+
+**Found first:** chat 27d2595d had already written a full draft of `proposal-form-SIMPLIFIED.md` the same day, with
+Myers' algorithm (the student's choice of 2026-11-24, so far written only in the draft's note, not in DECISIONS).
+Built on that draft instead of starting again. The cleaned transcript confirms the readings in DECISIONS 2026-11-23,
+with one nuance: the student did say the file comes from the SIEM (L159); Sir Ervin then asked which application
+sets up the hardening (L161 to L177, L231), so the draft now names it and says it writes no file the system reads.
+
+**Done:** backup `proposal-form-SIMPLIFIED.2026-11-25.md.bak` (one command, `Copy-Item`, no output); eight edits to
+the draft (listed in the checklist, Part 3); new `CONSULTATION-2026-11-23-CHECKLIST.md` in the thesis folder: 47
+instructions with transcript lines and status, FINAL section by section, a 12-item list for 10/10, a draft demo
+scenario. Web checks: ISO/IEC 25010:2023 renamed usability "interaction capability" (arc42 summary, iso.org); RAM
+(study 2) is still only an arXiv preprint; Wazuh ships an SCA policy for CIS Windows 11 Enterprise (Wazuh 4.14
+documentation); CIS-CAT Lite does not cover Windows 11 (CIS-CAT coverage guide). No lab command. Nothing committed.
+
+**Found, form against code, not changed:** the form says the key uses the fields the rules read, but
+`DEFAULT_TRACKED_FIELDS` is a hand-written list that misses some (OPEN-QUESTIONS 32); the form's scope says Security
+and Sysmon events, but `archive.py` also maps PowerShell/Operational. Also seen, not opened: `Detecting … Using Myers'
+Difference Algorithm.docx` in the thesis folder, with a Word lock file beside it (open in Word); not in FILE-MAP.
+
+**Next:** the student confirms the draft's choices (its working note, choices 1 to 5) and decides the checklist's
+item 1 (one known loss made on purpose, for recall and the demo). Then the message to Sir Ervin.
+
+**Later the same chat:** student asked for the usual corporate hardening process and to correct the draft's. The
+Current Process is now 6 steps (change request and board, test PC, pilot group, staged rollout by Group Policy or
+Intune, compliance scan, drift checks), from NIST SP 800-128, SP 800-70 and CIS Controls v8 Control 4, not searched
+on the web; `(unverified)` until the interview. The pilot group is named as where the detection check fits.
+Checklist Part 3, item 9. The `change_directory` move to the thesis folder did not take effect; edits used full paths.
+
+**2026-11-26, same chat:** the steps were checked on the web (NIST SP 800-128 2019 update, SP 800-53 CM-4, SP 800-70
+Rev. 5 of May 2026, CIS Controls v8.1, CIS Build Kits, Microsoft Security Compliance Toolkit, Intune, deployment
+rings). The pilot and staged rollout are sourced only for Windows updates, so they were dropped. At the student's
+request ("put this wording into the draft"), the Current Process and "How it helps" were rewritten in plain words for
+a non-expert panel: six steps, a paragraph "The gap", and the system's place at step 3, the test computer.
+Checklist Part 3, item 10.
+
+**2026-11-26, same chat: Myers put into the pipeline** (student: "do item 1 first, put Myers into the pipeline").
+New `src/telos/myers.py` and `tests/test_myers.py`; `pipeline.compare` runs it as step 3; report section "MYERS
+COMPARISON"; `findings.json` part `myers`. Tests: 150 passed (was 143). Run on the real C3 spike runs into the
+scratchpad: D = 181 joined, single runs 1 to 28 (control pairs) and 56 to 76 (before against after). Recorded:
+DECISIONS 2026-11-26, OPEN-QUESTIONS 41. Also seen in that report: `Application-*` keys are counted, so the reader
+keeps channels beyond Security and Sysmon (the form's scope names only those two); not changed.
+
+---
+
 ## 2026-11-23 - Sir Ervin's algorithm list: Myers' diff checked on the real C3 data
 
 **Chat:** ee84ae3f (Claude Code).

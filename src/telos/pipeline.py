@@ -5,8 +5,8 @@ This module reads the folders of one comparison (the control runs, the runs befo
 the change, the runs after it), checks that they belong together, runs the whole
 method, and writes three files:
 
-    report.txt       verdict, noise floor, telemetry comparison, ranked blind spots,
-                     coverage change
+    report.txt       verdict, Myers comparison (step 3), noise floor, telemetry
+                     comparison, ranked blind spots, coverage change
     findings.json    the ranked findings, for a ticketing system
     comparison.csv   one row per event key
     navigator_layer.json   the coverage change as an ATT&CK Navigator layer (format 4.5)
@@ -30,6 +30,7 @@ from .differential import analyse
 from .impact import ImpactFinding, rank_impact
 from .index import build_index, load_rules
 from .model import AnalysisResult, Phase
+from .myers import MyersComparison, compare_phases, render_myers
 from .report import (comparison_csv, coverage_change, findings_json, load_controls, navigator_layer,
                      remediation_level2, render_analysis, render_coverage, render_impact, render_remediation2,
                      render_reproducibility, render_variance, render_verdict)
@@ -91,6 +92,7 @@ class ComparisonOutput:
     coverage_lost: list[str]
     files: dict[str, Path]
     left_out: list[str]
+    myers: MyersComparison | None = None
 
 
 def _valid(name: str, runs: list[RunData], min_runs: int) -> list[RunData]:
@@ -129,6 +131,10 @@ def compare(control_dirs: list, pre_dirs: list, post_dirs: list, rules_dir: str 
     pre, fired_pre, _ = load_phase("pre", [r.path for r in valid["pre"]], keys, window_minutes)
     post, fired_post, _ = load_phase("post", [r.path for r in valid["post"]], keys, window_minutes)
 
+    # Step 3: Myers on the sorted event lists, each phase's runs joined (DECISIONS 2026-11-26).
+    myers = compare_phases([r.counts for r in valid["control"]], [r.counts for r in valid["pre"]],
+                           [r.counts for r in valid["post"]])
+    # Step 4: which differences are larger than the noise floor.
     vm = VarianceModel.from_control(control, min_runs=min_runs)
     result = analyse(pre, post, vm)
     index = build_index(load_rules(rules_dir))
@@ -144,7 +150,7 @@ def compare(control_dirs: list, pre_dirs: list, post_dirs: list, rules_dir: str 
              "analyser_version": analyser_version,
              "runs": [{"phase": name, "run_id": r.run_id, "valid": r.valid, "change_id": r.change_id,
                        "folder": str(r.path)} for name, runs in groups.items() for r in runs]}
-    sections = [render_verdict(result, ranked), render_variance(vm), render_analysis(result),
+    sections = [render_verdict(result, ranked), render_myers(myers), render_variance(vm), render_analysis(result),
                 render_impact(ranked), render_coverage(before, after, lost)]
     level2: list[dict] = []
     if controls_path is not None:
@@ -158,10 +164,12 @@ def compare(control_dirs: list, pre_dirs: list, post_dirs: list, rules_dir: str 
              "navigator": out / "navigator_layer.json"}
     files["report"].write_text(report, encoding="utf-8")
     data = json.loads(findings_json(result, ranked, lost, repro))
+    data["myers"] = myers.to_dict()
     if controls_path is not None:
         data["remediation_level_2"] = level2
     files["findings"].write_text(json.dumps(data, indent=2), encoding="utf-8")
     files["csv"].write_text(comparison_csv(result), encoding="utf-8")
     files["navigator"].write_text(navigator_layer(f"TeLoS {next(iter(changes))}", before, after, ranked),
                                   encoding="utf-8")
-    return ComparisonOutput(result=result, ranked=ranked, coverage_lost=lost, files=files, left_out=left_out)
+    return ComparisonOutput(result=result, ranked=ranked, coverage_lost=lost, files=files, left_out=left_out,
+                            myers=myers)

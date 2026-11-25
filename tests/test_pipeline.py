@@ -79,6 +79,21 @@ def test_the_whole_method_runs_and_writes_three_files(tmp_path, rules_dir):
     assert out.ranked[0].key == INJECTION
 
 
+def test_myers_runs_in_the_pipeline_on_the_joined_phases(tmp_path, rules_dir):
+    """Step 3: the 3 runs before (120 injection events) against the 3 after (none)."""
+    control, pre, post = phases(tmp_path)
+    out = compare(control, pre, post, rules_dir, tmp_path / "out")
+    assert out.myers.phases.deleted == {INJECTION: 120}
+    assert out.myers.phases.inserted == {PROCESS: 3}
+    assert out.myers.phases.d == 123 and out.myers.phases.matches_count_subtraction
+    assert len(out.myers.control_pair_d) == 10 and len(out.myers.before_after_pair_d) == 9
+    report = (tmp_path / "out" / "report.txt").read_text(encoding="utf-8")
+    assert "MYERS COMPARISON" in report and "Edit distance D = 123" in report
+    assert report.index("MYERS COMPARISON") < report.index("NOISE FLOOR")
+    data = json.loads((tmp_path / "out" / "findings.json").read_text(encoding="utf-8"))
+    assert data["myers"]["phases"]["deleted"] == {INJECTION: 120}
+
+
 def test_the_report_carries_a_reproducibility_record(tmp_path, rules_dir):
     """FINAL, Outputs: the manifest and its hash, snapshot, tests, rule set, analyser version, raw counts."""
     control, pre, post = phases(tmp_path)

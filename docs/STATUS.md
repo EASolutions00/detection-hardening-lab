@@ -1,7 +1,8 @@
 # STATUS
 
 Current blockers and dates. This file changes often. CLAUDE.md does not.
-Last updated: 2026-11-23 (chat ee84ae3f): the first consultation with the adviser, in the new section "Now, as of
+Last updated: 2026-11-25 (chat 26343d0f): item 4 of "Now, as of 2026-11-23", the revised form.
+2026-11-23 (chat ee84ae3f): the first consultation with the adviser, in the new section "Now, as of
 2026-11-23", and in "Deadline and target", "Next, in order", "Still waiting on the student" and "The spike".
 2026-11-18: the study host decision in "The spike". 2026-11-16: the spike results in "The spike", "Also open" and
 "Lab state".
@@ -30,6 +31,9 @@ In order:
    with which tool (problems 2, 4 and 5). The stakeholder interview answers these (`INTERVIEW-GUIDE.md` in the
    thesis folder); none is recorded.
 4. **The revised form, section by section**, with every cut kept in a reserve file for the chapters.
+   **2026-11-25:** full draft in `proposal-form-SIMPLIFIED.md` (chats 27d2595d and 26343d0f), with the cuts in its
+   "Reserved for the chapters" part; waiting for the student's choices in its working note. Checklist of the 47
+   instructions and the 10/10 list: `CONSULTATION-2026-11-23-CHECKLIST.md` (thesis folder).
 5. **The demo scenario list:** C1, C3 and C5, what each change does, and the expected result.
 
 Recommended, not decided: the 5 pinned control runs wait until the form is sent, because the pre-oral needs chapters

@@ -8,6 +8,44 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-11-26 - Myers' difference algorithm is the core algorithm and runs in the pipeline as step 3; each phase's runs are joined into one sorted list
+
+**Decision (student).** Myers as the core algorithm and the title ending "Using Myers' Difference Algorithm": the
+student's choice of 2026-11-24, recorded until now only in the note of `proposal-form-SIMPLIFIED.md` (chat 27d2595d).
+Building it: student, 2026-11-26, chat 26343d0f: "do item 1 first, put Myers into the pipeline". Answers
+OPEN-QUESTIONS 41.
+
+**What was built.** `src/telos/myers.py`: Myers 1986 greedy shortest edit script, merge sort, and a hash map of counts.
+`pipeline.compare` runs it as step 3, before the noise floor (step 4), and writes a "MYERS COMPARISON" section in
+`report.txt` and a `myers` part in `findings.json`. 7 new tests (150 passed), including the paper's own example
+(ABCABBA to CBABAC, D = 5) and a check against the longest common subsequence on 300 random lists.
+
+**How the runs enter Myers: each phase's valid runs are joined into one sorted list** (Claude's choice while building,
+the recommendation of the checklist; the student has not confirmed it separately). D is also given for every pair of
+single runs, as context only: control against control, and before against after.
+
+**Why.** Joining is the simplest form: one Myers run per comparison, and each key's deletions are its total before
+minus its total after, which step 4 already tests on the same runs. The single-run D values give the panel the
+number it asks about: how large D is when nothing changed.
+
+**Measured the same day on the real C3 spike runs** (5 control, 3 before, 3 after; output in the chat's scratchpad,
+not in `data/summaries`): joined, 828 events before and 661 after, D = 181, 174 deleted and 7 inserted; the top
+deletion is `Sysmon-10[GrantedAccess=other,SourceImage,TargetImage]`, 141 events (73.3 to 26.3 per run, x 3). D between
+single runs: **1 to 28 for control against control (10 pairs), 56 to 76 for before against after (9 pairs).** Same
+result as subtracting the counts per key: yes. (The 2026-11-23 check saw D = 23 and 24 on two control pairs; the full
+range is 1 to 28.)
+
+**What it does not change.** The classification (LOST, REDUCED and the rest) still comes from step 4. Myers lists every
+difference, noise included; on sorted lists it equals per-key subtraction, and the module checks this on every run.
+
+**Cost if wrong.** If the panel or the student prefers pairs of single runs, `compare_phases` already computes every
+pair's D; changing which number leads the report is small. The statistics do not change either way.
+
+**For the defense:** "Myers is the published method for finding what was removed. In our lab, two runs with no change
+differ by D = 1 to 28. Before and after LSA Protection, single runs differ by D = 56 to 76."
+
+---
+
 ## 2026-11-23 - First consultation with the adviser: the next defense is the pre-oral; the proposal form is revised first, starting with the algorithm
 
 **Decision (adviser, Prof. Ervin Moran), at the first online consultation, 2026-11-23 10:00. Recorded in chat

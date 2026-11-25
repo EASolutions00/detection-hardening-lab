@@ -103,7 +103,9 @@ from `/var/ossec/logs/archives/`. Whether those archives are still on SIEM-01's 
 |---|---|---|
 | `proposal-form-FINAL.md` | The revised proposal text | SOURCE, LIVE |
 | `proposal-form-FINAL-for-Word.html` | Paste-ready copy. `tools/word/final_to_html_v2.py` | COPY |
-| `proposal-form-SIMPLIFIED.md` | The simplified revision the panel asked for (2026-10-22). Only the title section is drafted (2026-11-23); the adviser's instructions are in DECISIONS 2026-11-23 | SOURCE, LIVE |
+| `proposal-form-SIMPLIFIED.md` | The simplified revision the panel asked for (2026-10-22). Full draft 2026-11-25 (chat 27d2595d), revised the same day against the cleaned transcript (chat 26343d0f); waiting for the student's choices in its working note. The adviser's instructions are in DECISIONS 2026-11-23 | SOURCE, LIVE |
+| `proposal-form-SIMPLIFIED.2026-11-25.md.bak` | The draft by chat 27d2595d, before the 2026-11-25 revision by chat 26343d0f | SUPERSEDED |
+| `CONSULTATION-2026-11-23-CHECKLIST.md` | Sir Ervin's 47 instructions with transcript lines and status, FINAL section by section, the 10/10 list, a draft demo scenario (2026-11-25) | LIVE, not submitted |
 | `INTERVIEW-GUIDE.md` | Questions for the stakeholder interview the adviser asked for (2026-11-09). No interview recorded | LIVE, not submitted |
 | `CONSULTATION-2026-11-23.md`, `CONSULTATION-2026-11-23-TAGLISH.md` | Notes for the first consultation with the adviser, in English and in Taglish. The results are in DECISIONS 2026-11-23 | FROZEN |
 | `T1-REVISIONS-LIST.md` | What changed after the title defense, by revision. **Not submitted** (not required, 2026-10-15) | SOURCE |
