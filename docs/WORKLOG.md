@@ -64,7 +64,8 @@ New `src/telos/myers.py` and `tests/test_myers.py`; `pipeline.compare` runs it a
 COMPARISON"; `findings.json` part `myers`. Tests: 150 passed (was 143). Run on the real C3 spike runs into the
 scratchpad: D = 181 joined, single runs 1 to 28 (control pairs) and 56 to 76 (before against after). Recorded:
 DECISIONS 2026-11-26, OPEN-QUESTIONS 41. Also seen in that report: `Application-*` keys are counted, so the reader
-keeps channels beyond Security and Sysmon (the form's scope names only those two); not changed.
+keeps channels beyond Security and Sysmon (the form's scope names only those two); not changed. Then the student
+confirmed the joined lists ("Yes, keep joined"); DECISIONS 2026-11-26 and the draft's choice 5 now say so.
 
 ---
 

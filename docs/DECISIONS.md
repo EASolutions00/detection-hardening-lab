@@ -21,7 +21,7 @@ OPEN-QUESTIONS 41.
 (ABCABBA to CBABAC, D = 5) and a check against the longest common subsequence on 300 random lists.
 
 **How the runs enter Myers: each phase's valid runs are joined into one sorted list** (Claude's choice while building,
-the recommendation of the checklist; the student has not confirmed it separately). D is also given for every pair of
+the recommendation of the checklist; **confirmed by the student the same day: "Yes, keep joined"**). D is also given for every pair of
 single runs, as context only: control against control, and before against after.
 
 **Why.** Joining is the simplest form: one Myers run per comparison, and each key's deletions are its total before
