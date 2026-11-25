@@ -29,6 +29,19 @@ def test_only_c3_needs_a_reboot():
     assert CHANGES["C3"].reboot and not CHANGES["C1"].reboot and not CHANGES["C5"].reboot
 
 
+def test_known_answer_cases_run_their_scripts_and_confirm_with_verify():
+    """K1 to K3 (DECISIONS 2026-11-26): test cases, each a script in lab/scripts with -Verify,
+    applied like a change. None restarts the guest; K2's -Verify checks the effect itself."""
+    for cid, script in [("K1", "change-K1-audit-logon-off.ps1"), ("K2", "change-K2-cmdline-off.ps1"),
+                        ("K3", "change-K3-audit-process-creation-off.ps1")]:
+        ch = CHANGES[cid]
+        assert ch.apply[0].program == POWERSHELL
+        assert ch.apply[0].args[-1] == rf"C:\telos\{script}"
+        assert ch.verify.args[-2:] == (rf"C:\telos\{script}", "-Verify")
+        assert not ch.reboot
+        assert re.fullmatch(r"[0-9a-f]{64}", ch.script_sha256)
+
+
 def test_config_s_runs_the_defender_script_after_boot():
     assert CONFIG_S[0].args[-1] == r"C:\telos\config-S-defender-off.ps1"
 

@@ -3,7 +3,10 @@ stimulus, and the parameters that are hashed into every run manifest.
 
 Everything here points at files already in the golden image (`golden-base`,
 DECISIONS 2026-11-16): the scripts in `C:\\telos\\` (copied 2026-11-16) and Atomic
-Red Team at its pinned commit in `C:\\AtomicRedTeam\\`.
+Red Team at its pinned commit in `C:\\AtomicRedTeam\\`. The one exception: the scripts
+of the test cases K1 to K3 (added 2026-11-26) are not in `golden-base` yet
+(OPEN-QUESTIONS 42), so their verify step fails and the harness voids the run until
+they are.
 
 `pinned_stimulus()` is the study's one attack list (DECISIONS 2026-11-18): the Remote
 Desktop sign-in from the host, then the LSASS trial's tests. `trial_stimulus()` alone
@@ -43,6 +46,12 @@ CHANGES: dict[str, Change] = {
     "C1": _change("C1", "change-C1-disable-wdigest.ps1"),
     "C3": _change("C3", "change-C3-lsa-protection.ps1", reboot=True),
     "C5": _change("C5", "change-C5-rdp-nla.ps1"),
+    # Test cases with a known answer (DECISIONS 2026-11-26; OPEN-QUESTIONS 42): configuration
+    # mistakes made on purpose, each the opposite of a CIS or DISA item, never hardening.
+    # Their expected results are in docs/EXPECTED-RESULTS.md, written before any run.
+    "K1": _change("K1", "change-K1-audit-logon-off.ps1"),
+    "K2": _change("K2", "change-K2-cmdline-off.ps1"),
+    "K3": _change("K3", "change-K3-audit-process-creation-off.ps1"),
 }
 
 CONFIG_S: tuple[GuestStep, ...] = (script_step("config-S", "config-S-defender-off.ps1"),)

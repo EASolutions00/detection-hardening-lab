@@ -522,7 +522,8 @@ too thin to support its precision and recall claims. Both are recoverable only i
   Raising the pre-change runs from 3 to 5 gives 10, still under 30; it would need 15 runs. So more repetitions alone
   do not make it testable.
 - **Still open, for the student:** the number of runs per phase, and whether a key like `Sysmon-8[]` is left
-  INCONCLUSIVE (reported, not cleared) or the threshold or stimulus is changed. None decided.
+  INCONCLUSIVE (reported, not cleared) or the threshold or stimulus is changed. None decided. **2026-11-26:** the K1
+  dry run shows the same problem for the two sign-in keys; options and a recommendation in item 43.
 
 ---
 
@@ -1538,6 +1539,119 @@ floor as a filter after it and the depth-first rule search after that. Not decid
 **Decided and built 2026-11-26** (DECISIONS 2026-11-26, chat 26343d0f): Myers is step 3 of `pipeline.compare`
 (`src/telos/myers.py`), each phase's runs joined. On the real C3 spike runs: D = 181 joined; single runs 1 to 28 for
 control pairs, 56 to 76 before against after. Still open: whether Sir Ervin accepts Myers as the core algorithm.
+
+---
+
+## 42. Test cases with a known answer, so the study can show the method finds a blind spot
+
+**Status:** **Decided 2026-11-26 (student: "Yes, adopt them"; DECISIONS 2026-11-26).** The open points at the end
+stay open. Raised 2026-11-26 by chat 26343d0f (student: "check thoroughly for viable options for attacks and
+hardening changes to test the system ... based on hardening standards ... demonstrate that the algorithm works and
+detects blind spots"). Linked: item 38 (no blind spot under the shipped rules); item 43 (found by the dry run).
+
+**Rules read for this item** (the unpacked export `data/rules/wazuh-4.14.7`, read 2026-11-26):
+- The pinned Remote Desktop sign-in fires **92653** (level 3; T1021.001, T1078.002; logon type 10) and **92657**
+  (level 6; T1550.002, T1078.002, T1021.001; NTLM). Both descend from **60106** (4624, "Windows Logon Success", T1078).
+  So all of them read event 4624, which Windows writes only when "Audit Logon" is on.
+- 4625 rules (60105 T1078, 60122 T1531) match the event ID only, not the status code. The brute-force rule **60204**
+  (level 10, T1110) counts `authentication_failed` alerts from one IP in 240 s. A lockout (4740) fires **60115**
+  (level 9, T1110, T1531).
+- Event 4688: only **67027** (level 3, no technique), on event ID only (item: WORKLOG 2026-11-26). Process detection
+  with techniques reads Sysmon event 1 (92027, 92032, 92052 fired in `spike-S-C3-pre-1`).
+- The agent config pinned in `lab/configs/wazuh-agent-ossec.conf` lists Application, Security and System; Sysmon
+  reaches the archive by another config, not checked. PowerShell/Operational is not listed `(unverified whether
+  collected)`.
+
+**Candidate hardening changes, checked against the rules:**
+
+| Change | Standard (as found) | Effect on what rules read | Blind spot possible? |
+|---|---|---|---|
+| Account lockout threshold 5 or fewer | CIS 1.2.2 `(unverified number)`; Windows 11 22H2 new installs already default to 10 (Microsoft KB5020282) | 4625 status changes after lockout; 4740 appears | **No.** 60105, 60122, 60204 do not read the status; 60115 adds a T1110 alert |
+| PowerShell script block logging on | DISA WN11-CC-000326, V-253414; CIS Level 2 (Windows 11 number not confirmed; 18.10.88.1 in Server 2025 v2.0.0) | Adds 4104 events | **No, it adds evidence.** A NEW-key case, if the agent collects PowerShell/Operational |
+| Defender antivirus on | CIS and DISA require it `(IDs not checked)` | Blocks the LSASS tests | No: prevention. `config` is a hashed parameter, so S and N runs are never compared |
+| ASR rules, AppLocker or WDAC, SMB signing, LLMNR off, AutoPlay off | blueprint list | Block the attack | No: prevention (class B) |
+| Restrict NTLM, LM level, cached logons, RC4 off | C2, C4, C6, C7 | Need a domain, or no rule reads the field | No (items 1 and 21) |
+| RDP single session | CIS `(number not checked)` | Type 7 comes from session state, not from the setting (2026-11-12) | Not shown |
+
+**Test cases with a known answer** (each is the opposite of a benchmark control, so each is a configuration mistake,
+labeled as a test case and never as a hardening-induced blind spot):
+
+| # | Test case | Benchmark it breaks | Expected result, written before any run |
+|---|---|---|---|
+| K1 | "Audit Logon" set to No Auditing | DISA WN11-AU-000075, V-253317 (Logon successes, CAT II); CIS section 17.5 "Audit Logon" (Windows 11 number not confirmed) | `Security-4624[...]` keys LOST; 92653 and 92657 stop; T1021.001, T1078.002 and T1550.002 blind, while the RDP sign-in still opens a session |
+| K2 | "Include command line in process creation events" off | CIS Windows 11 Enterprise v5.0.1 18.9.3.1; DISA WN11-CC-000066 | `Security-4688[CommandLine,...]` LOST and a key without `CommandLine` NEW; 67027 still fires: "affects no detection" |
+| K3 | "Audit Process Creation" off | CIS Windows 11 Enterprise v5.0.1 17.3.2 | `Security-4688[...]` LOST; 67027 stops; no technique lost, because Sysmon event 1 rules still fire |
+
+**Why these.** They need no new attack: the pinned list already makes the events (2 RDP logons, about 50 process
+starts per run). Their answer is known before the run, so precision, recall and F1 can be computed (item 38: without
+them, no positive label exists). K1 is the only one that loses techniques while the attack still works.
+
+**Open points:** whether the RDP session can be proven open without 4624 (Sysmon processes of the new session, one hand
+trial); the CIS Windows 11 number for "Audit Logon"; whether every case uses the same configuration (the pipeline
+needs one parameters hash).
+
+**Dry run, 2026-11-26** (`src/known_answer_dryrun.py`; output `data/summaries/known-answer-dryrun-2026-11-26.txt`;
+real noise from 11 spike runs, the sign-in and each effect added by the script). K2 and K3 match the table above. N
+has no finding. **K1 does not fully match:** the coverage section names T1021.001, T1078.002 and T1550.002, as
+expected, but the two sign-in keys are INCONCLUSIVE (6 events in 3 runs, under the minimum of 30), so they never reach
+the ranking. The table's "92653 and 92657 stop" holds; "keys LOST" holds only for the other 4624 key and 4648. Item 43.
+
+**Open points after the decision** (2026-11-26):
+1. **How the K scripts reach `C:\telos\`.** They are not in `golden-base`. Either copy them in and take
+   `golden-base` again before the 5 pinned control runs (no code change; a new `golden_base` value in
+   `catalog.parameters`), or add a harness step that copies the script before the change (code and tests; one more
+   guest call before the fence). Not decided.
+2. **K2 and a restart:** whether the command-line value takes effect without one is `(unverified)`. K2's `-Verify`
+   tests the effect, so a run where it did not take effect is voided, never analysed.
+3. **Proof that K1's sign-in still worked:** the step's exit code, `Security-4672[]` unchanged (Special Logon is not
+   turned off by K1; `(unverified)` that the sign-in writes 4672), and one hand trial with `query session`.
+4. The three points above, from before the decision.
+
+---
+
+## 43. Complete losses of rare keys are INCONCLUSIVE, so the system misses K1's sign-in keys
+
+**Status:** Open. **For the student, before the evaluation runs.** Found 2026-11-26 by chat 26343d0f, in the dry run
+of item 42. The same question the spike left open for C3's `Sysmon-8[]` (item 25, "Spike answers": "None decided").
+
+**The problem.** `differential.MIN_PRE_COUNT = 30`: a key with fewer than 30 events in all the before runs together is
+INCONCLUSIVE, and is never tested or ranked. The pinned sign-in writes 2 type 10 and 2 type 3 logons per run, so 6
+each in 3 runs. When K1 removes them, the system says "too few events to decide", although the alerts of three
+techniques stopped.
+
+**The dry run** (3 before and 3 after runs; synthetic effects on real noise):
+
+| Rule for rare keys | K1 keys found | K1 recall | N false findings | The sign-in keys |
+|---|---|---|---|---|
+| (a) today: 30 events for every key | 2 of 4 | 0.50 | 0 | INCONCLUSIVE |
+| (b) exact test for a complete loss at any count; 30 kept for partial drops | 4 of 4 | 1.00 | 0 | LOST, q = 0.0087 each |
+
+**Options:**
+- **(a) Keep 30 for every key.** Simple and already built. K1's blind spot still shows in the coverage section, but the
+  sign-in keys are reported "inconclusive", and the top ranked line is the other 4624 key with 5 techniques that never
+  fired. Cost: K1 key-level recall 0.50, said plainly in the thesis.
+- **(b) Use the exact test for a complete loss below 30.** `_test_key` already computes it for a key that drops to
+  zero: the chance of seeing no event in the after runs if nothing changed, e^(-expected / dispersion). For 6 expected
+  events that is e^-6, about 0.0025. Benjamini-Hochberg and the noise floor stay as they are, and the key must still
+  be seen in the control runs. Partial drops keep the minimum of 30, because the rate-ratio test needs counts.
+  Cost: a few lines in `_test_key`, two tests, a decision entry. It also makes `Sysmon-8[]` testable for C3.
+- **(c) More sign-ins per run.** Not workable: a second sign-in in the same run reconnects to the open session and
+  writes type 7, not type 10 (item 37).
+
+**Recommendation `(Claude's)`: (b).** The exact test is valid at small counts; the minimum of 30 was set for the
+approximate test of partial drops. Attacks are rare events, so a method that cannot test a complete loss of a rare key
+misses the case that matters most. The choice is made before any evaluation run, from synthetic data only. Smallest
+count that could pass: e^-a must fall below the Benjamini-Hochberg threshold, so about 4 or more events in the before
+runs `(unverified exact bound)`.
+
+**Two smaller points from the same dry run, not decided:**
+1. **The ranked list mixes observed and potential techniques.** For a lost key it lists the techniques of every rule
+   that could read it, minus those still firing after. In K1 its top line names T1068, T1078, T1110, T1136 and T1203,
+   none of which fired before. The coverage section lists the techniques that really fired. Option: mark each blind
+   technique "fired before" or "could fire only".
+2. **K2 and K3 get the same ranking numbers** (0 techniques, level 3, 1 rule), although rule 67027 keeps firing in K2
+   and stops in K3. A rule with no technique appears in no coverage line. Option: a line per alerting rule that fired
+   before and not after.
 
 ---
 

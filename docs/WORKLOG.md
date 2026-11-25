@@ -17,6 +17,38 @@ Next:
 
 ---
 
+## 2026-11-26 - Test cases K1 to K3 adopted; expected results written before any run; a dry run finds a gap in K1
+
+**Chat:** 26343d0f (Claude Code). **Asked:** "Yes, adopt them" (the test cases K1 to K3, for the evaluation and the
+demo).
+
+**Did:**
+- `docs/EXPECTED-RESULTS.md`: each case's expected result, its benchmark item and the scoring rules, written before
+  any run.
+- The three test-case scripts (`lab/scripts/change-K1-...`, `-K2-...`, `-K3-...`) and their `catalog.CHANGES`
+  entries; one new test (151 passed).
+- Read the K1 code path: `differential._test_key` makes a key with fewer than 30 events before INCONCLUSIVE, and
+  `impact.rank_impact` ranks only LOST and REDUCED keys.
+- Dry run: `src/known_answer_dryrun.py` (real noise from 11 spike runs; the sign-in and each effect added by the
+  script). Output committed: `data/summaries/known-answer-dryrun-2026-11-26.txt`.
+- A what-if, in the chat's scratchpad only, not in the repo: the exact test for a complete loss below 30.
+- Outside git, in the thesis folder: the form's objective 3 and scope item 3; the checklist's Part 5, Part 4 item 1
+  and Part 1 item 42.
+
+**Result:**
+- N: no finding. Plain subtraction: 1 false finding (`Application-1001[]`, 1 to 0).
+- K2 and K3: as expected. K2 shows the FIELD LOSS line.
+- K1: the coverage section names T1021.001, T1078.002 and T1550.002. The two sign-in keys are INCONCLUSIVE (6 events
+  in 3 runs), so key-level recall is 0.50. The what-if finds 4 of 4 (q = 0.0087 for each sign-in key), and N still
+  has no finding. New OPEN-QUESTIONS 43.
+- Correction to the chat's earlier answer: the system does not rank "K1, then K3, then K2". K2 and K3 get the same
+  ranking numbers; only the FIELD LOSS line tells them apart.
+
+**Next:** before the 5 pinned control runs, the student decides item 43 (the rule for rare keys) and item 42's open
+point 1 (how the K scripts reach `C:\telos\`).
+
+---
+
 ## 2026-11-25 - The simplified form checked against the cleaned consultation transcript; checklist written
 
 **Chat:** 26343d0f (Claude Code), in the thesis folder.
@@ -66,6 +98,21 @@ scratchpad: D = 181 joined, single runs 1 to 28 (control pairs) and 56 to 76 (be
 DECISIONS 2026-11-26, OPEN-QUESTIONS 41. Also seen in that report: `Application-*` keys are counted, so the reader
 keeps channels beyond Security and Sysmon (the form's scope names only those two); not changed. Then the student
 confirmed the joined lists ("Yes, keep joined"); DECISIONS 2026-11-26 and the draft's choice 5 now say so.
+
+**2026-11-26, same chat: rules checked for the two known-loss options** (read only, the unpacked export in
+`data/rules/wazuh-4.14.7`). Only one shipped rule names event 4688: **67027** (level 3, "A process was created",
+`0955-WEF-baseline_rules.xml`), which matches provider and event ID only, has no ATT&CK technique and no child rule.
+The 52 rules that read `commandLine` are all Sysmon event 1 rules (`0800-sysmon_id_1.xml`), plus 2 Exchange rules. In
+`spike-S-C3-pre-1`: `Security-4688[CommandLine,...]` = 50 and 67027 fired 50 times. So turning off the command line
+in 4688 affects no rule (a LOST and NEW key pair only), and turning off Audit Process Creation stops only 67027 (no
+technique). Neither is a known loss of a technique. Not recorded in OPEN-QUESTIONS yet.
+
+**2026-11-26, same chat: viable test cases checked** (student: check attacks and hardening changes thoroughly, based
+on standards). Read the RDP, 4625 and lockout rules. Web checks: DISA V-253317 (WN11-AU-000075), V-253414
+(WN11-CC-000326), CIS v5.0.1 17.3.2 and 18.9.3.1, the NLA item, Microsoft KB5020282 (lockout default 10).
+Result: no further standards-based hardening change in this lab is expected to make a blind spot. Three known-answer
+test cases proposed: K1 Audit Logon off, K2 command line off, K3 Audit Process Creation off. New OPEN-QUESTIONS 42.
+Nothing committed.
 
 ---
 

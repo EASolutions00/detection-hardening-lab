@@ -8,6 +8,48 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-11-26 - Test cases K1 to K3 join the evaluation and the demo; each is the opposite of a CIS or DISA item, and their expected results are written before any run
+
+**Decision (student, chat 26343d0f: "Yes, adopt them").** Answers OPEN-QUESTIONS 42.
+- **K1:** "Audit Logon" set to No Auditing. Breaks DISA WN11-AU-000075 (V-253317) and CIS Intune for Windows 11
+  v2.0.0, 17.5.4.
+- **K2:** "Include command line in process creation events" off. Breaks CIS Windows 11 Enterprise v5.0.1, 18.9.3.1 and
+  DISA WN11-CC-000066.
+- **K3:** "Audit Process Creation" set to No Auditing. Breaks CIS Windows 11 Enterprise v5.0.1, 17.3.2.
+
+They are **test cases, never hardening changes**: configuration mistakes made on purpose, each with a known answer.
+They reuse the pinned attack list, so they need no new attack. C1, C3 and C5 stay the real cases.
+
+**What was written the same day.**
+- `docs/EXPECTED-RESULTS.md`: every case's expected result and the scoring rules, before any run.
+- `lab/scripts/change-K1-audit-logon-off.ps1`, `change-K2-cmdline-off.ps1`, `change-K3-audit-process-creation-off.ps1`,
+  each with `-Verify`. K2's `-Verify` checks the effect (a new 4688 with no command line), not only the value.
+- `catalog.CHANGES` entries K1 to K3, and one test (151 passed).
+- `src/known_answer_dryrun.py` and its output `data/summaries/known-answer-dryrun-2026-11-26.txt`.
+
+**Why.** Under Wazuh's shipped rules, the three real changes show no blind spot (item 38). Without a case whose right
+answer is "a loss", recall and F1 cannot be computed, and the demo cannot show what a finding looks like. The adviser
+also asked for the expected results before the demo (2026-11-23, point 8).
+
+**Measured the same day, by the dry run** (real noise from 11 spike runs; the sign-in and each case's effect added by
+the script; not lab evidence):
+- N: no finding. Plain subtraction: 1 false finding.
+- K2 and K3: exactly as expected. K2 shows the FIELD LOSS line.
+- K1: the coverage section names T1021.001, T1078.002 and T1550.002 as no longer detected. But the two sign-in keys
+  (6 events each in 3 runs) are INCONCLUSIVE, under the minimum of 30, so key-level recall is 0.50. The top ranked
+  line names 5 techniques whose rules could read the lost key and never fired. Item 43 asks the student to choose the
+  rule before the runs.
+
+**Not decided here:** the rare-key rule (item 43); how the K scripts reach `C:\telos\` (item 42); the run order.
+
+**Cost if wrong.** 9 more runs (3 per case), about 1.5 hours of machine time (estimate). If the panel rejects test
+cases, they leave the evaluation and the real cases stand alone.
+
+**For the defense:** "The real hardening changes hid no attack. So I also tested the system on three mistakes whose
+answer I wrote down before the runs. The system had to find each one."
+
+---
+
 ## 2026-11-26 - Myers' difference algorithm is the core algorithm and runs in the pipeline as step 3; each phase's runs are joined into one sorted list
 
 **Decision (student).** Myers as the core algorithm and the title ending "Using Myers' Difference Algorithm": the

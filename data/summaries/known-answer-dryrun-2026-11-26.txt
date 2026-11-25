@@ -1,0 +1,50 @@
+KNOWN-ANSWER DRY RUN (synthetic effects on real spike noise; see the script's docstring)
+Real runs: control spike-S-ctl-1, spike-S-ctl-2, spike-S-ctl-3, spike-S-ctl-4, spike-S-ctl-5; before spike-S-C3-pre-1, spike-S-C3-pre-2, spike-S-C3-pre-3; base of after spike-S-reboot-1, spike-S-reboot-2, spike-S-reboot-3
+
+====================================================================================================
+CASE N   verdict: UNCHANGED
+  COVERAGE      no longer detected (alerts fired before, none after): -
+  MYERS         joined D = 52; control pairs D 1 to 28; before-after pairs D 7 to 41
+  SCORE         expected LOST keys 0; system TP 0 FP 0 FN 0 (precision n/a, recall n/a); naive subtraction TP 0 FP 1 FN 0 (precision 0.00, recall n/a)
+  NAIVE FALSE   Application-1001[]
+
+====================================================================================================
+CASE K1   verdict: CHANGED
+  INCONCLUSIVE  Security-4624[AuthenticationPackageName=NTLM,LogonType=other,TargetUserName]   6 -> 0   (only 6 occurrences before the change, below the minimum of 30 needed for the test to have power)
+  INCONCLUSIVE  Security-4624[AuthenticationPackageName=other,LogonType=10,TargetUserName]   6 -> 0   (only 6 occurrences before the change, below the minimum of 30 needed for the test to have power)
+  LOST          Security-4624[AuthenticationPackageName=other,LogonType=other,TargetUserName]   34 -> 0   q = 1.9e-14
+  LOST          Security-4648[]   33 -> 0   q = 2.6e-14
+  RANKED        Security-4624[AuthenticationPackageName=other,LogonType=other,TargetUserName]: blind techniques T1068, T1078, T1110, T1136, T1203; highest level 15; rules 12
+  RANKED        Security-4648[]: blind techniques -; highest level 0; rules 0
+  COVERAGE      no longer detected (alerts fired before, none after): T1021.001, T1078.002, T1550.002
+  MYERS         joined D = 127; control pairs D 1 to 28; before-after pairs D 32 to 65
+  SCORE         expected LOST keys 4; system TP 2 FP 0 FN 2 (precision 1.00, recall 0.50); naive subtraction TP 4 FP 1 FN 0 (precision 0.80, recall 1.00)
+  MISSED        Security-4624[AuthenticationPackageName=NTLM,LogonType=other,TargetUserName], Security-4624[AuthenticationPackageName=other,LogonType=10,TargetUserName]
+  NAIVE FALSE   Application-1001[]
+
+====================================================================================================
+CASE K2   verdict: CHANGED
+  LOST          Security-4688[CommandLine,NewProcessName,ParentProcessName]   157 -> 0   q = 7.2e-68
+  NEW           Security-4688[NewProcessName,ParentProcessName]   0 -> 173
+  FIELD LOSS    Security-4688[CommandLine,NewProcessName,ParentProcessName] -> Security-4688[NewProcessName,ParentProcessName]   dropped: CommandLine
+  RANKED        Security-4688[CommandLine,NewProcessName,ParentProcessName]: blind techniques -; highest level 3; rules 1
+  COVERAGE      no longer detected (alerts fired before, none after): -
+  MYERS         joined D = 366; control pairs D 1 to 28; before-after pairs D 107 to 141
+  SCORE         expected LOST keys 1; system TP 1 FP 0 FN 0 (precision 1.00, recall 1.00); naive subtraction TP 1 FP 1 FN 0 (precision 0.50, recall 1.00)
+  NAIVE FALSE   Application-1001[]
+
+====================================================================================================
+CASE K3   verdict: CHANGED
+  LOST          Security-4688[CommandLine,NewProcessName,ParentProcessName]   157 -> 0   q = 7.2e-68
+  RANKED        Security-4688[CommandLine,NewProcessName,ParentProcessName]: blind techniques -; highest level 3; rules 1
+  COVERAGE      no longer detected (alerts fired before, none after): -
+  MYERS         joined D = 193; control pairs D 1 to 28; before-after pairs D 55 to 79
+  SCORE         expected LOST keys 1; system TP 1 FP 0 FN 0 (precision 1.00, recall 1.00); naive subtraction TP 1 FP 1 FN 0 (precision 0.50, recall 1.00)
+  NAIVE FALSE   Application-1001[]
+
+====================================================================================================
+case  expected | system TP  FP  FN | naive TP  FP  FN
+N            0 |         0   0   0 |        0   1   0
+K1           4 |         2   0   2 |        4   1   0
+K2           1 |         1   0   0 |        1   1   0
+K3           1 |         1   0   0 |        1   1   0

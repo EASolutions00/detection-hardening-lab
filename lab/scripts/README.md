@@ -25,6 +25,13 @@ not a hardening change: it turns Defender's live scanning off and reads it back 
 harness runs it after every boot (`LabConfig.after_boot`). All must be copied to `C:\telos\` in the guest
 before the golden snapshot.
 
+**Test cases, written 2026-11-26, not yet run:** `change-K1-audit-logon-off.ps1`, `change-K2-cmdline-off.ps1`,
+`change-K3-audit-process-creation-off.ps1` (DECISIONS 2026-11-26; OPEN-QUESTIONS 42). Each turns off a logging
+setting that CIS or DISA requires, so each is a **configuration mistake made on purpose, never a hardening change**.
+They exist to remove known evidence, so the study can check that the system finds it. Their expected results are in
+`docs/EXPECTED-RESULTS.md`, written before any run. They are **not in `golden-base` yet**: until they are copied to
+`C:\telos\`, their `-Verify` fails and the harness voids the run.
+
 `baseline-golden.ps1` (2026-11-13) sets the golden image's decided baseline and prints a 20-row check; exit
 code 0 only when every row passes. Run it once to set, restart, then with `-Verify` (runbook Phase 5).
 

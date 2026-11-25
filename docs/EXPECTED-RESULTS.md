@@ -1,0 +1,116 @@
+# Expected results, written before any run
+
+Written 2026-11-26 (chat 26343d0f), before any run with the pinned attack list. The commit date of this file is the
+proof that each expectation came before its data. Never edit an expectation after its runs exist. If one must change
+before the runs, add a dated line that says what changed and why.
+
+Why this file exists:
+- The adviser asked for it: "list the hardening changes and the expected results before the demo" (DECISIONS
+  2026-11-23, point 8).
+- The evaluation needs cases where the right answer is "a loss", or recall cannot be measured (OPEN-QUESTIONS 38 and
+  42; DECISIONS 2026-11-26).
+
+---
+
+## 1. The cases
+
+Every case uses the same pinned attack list (DECISIONS 2026-11-18): one Remote Desktop sign-in from the host, then
+the LSASS tests T1003.001 tests 1, 2 and 13, then cleanup. Each case is one change, applied alone, after a restore of
+`golden-base`.
+
+A **test case** (K1 to K3) is a configuration mistake made on purpose: the opposite of a CIS or DISA item. It is never
+called hardening. Its job is to remove evidence that is known in advance, so we can check that the system finds it.
+
+| Case | Kind | Change | Benchmark item | Evidence expected to disappear | Rules expected to stop | Techniques expected to lose all alerts | Does the attack still work? | Expected verdict |
+|---|---|---|---|---|---|---|---|---|
+| N | control | none | none | none | none | none | yes | no change |
+| C1 | hardening | WDigest `UseLogonCredential = 0` | DISA V-253358 | none (the console sign-in did not change, 2026-11-13) | none | none | yes | no blind spot |
+| C3 | hardening | LSA Protection, `RunAsPPL = 2` | CIS Windows 11 Enterprise v5.1.0, 18.9.27.2 (`RunAsPPL = 2` is a stated deviation) | part of `Sysmon-10` access to `lsass.exe` (73.3 to 26.3 per run in the spike) and `Sysmon-8[]` | 92403 and 61625 (level 12) | T1055 | **no**: the dump is blocked | **prevention**, not a blind spot (DECISIONS 2026-11-13) |
+| C5 | hardening | NLA on for Remote Desktop | CIS 18.10.57.3.9.4 in Windows 10 Enterprise v4.0.0 (the Windows 11 number is not confirmed) | none with the default client (2026-11-12) | none | none | yes | no blind spot: "the predicted effect was not seen" |
+| K1 | test case | "Audit Logon" set to No Auditing | breaks DISA WN11-AU-000075 (V-253317, CAT II) and CIS Intune for Windows 11 v2.0.0, 17.5.4 | every 4624 and 4648 event (about 15 and 11 per run) | 92653 and 92657 (the sign-in), 67022 | **T1021.001, T1078.002, T1550.002** | **yes**: auditing does not control access, so the sign-in still opens a session | **blind spot** |
+| K2 | test case | "Include command line in process creation events" off | breaks CIS Windows 11 Enterprise v5.0.1, 18.9.3.1 and DISA WN11-CC-000066 | the `CommandLine` field of 4688; the event is still written | none: 67027 matches the event ID only | none | yes | field loss that affects no detection |
+| K3 | test case | "Audit Process Creation" set to No Auditing | breaks CIS Windows 11 Enterprise v5.0.1, 17.3.2 | every 4688 event (about 50 per run) | 67027 (level 3, no technique) | none: the Sysmon event 1 rules still fire | yes | detection loss with no technique lost |
+
+**Where each expectation comes from.** Not from the system, so the test is not circular:
+- Which events a setting controls: Microsoft's audit documentation (the "Logon" subcategory writes 4624, 4625, 4648
+  and 4675; "Process Creation" writes 4688; the command-line setting fills 4688's `CommandLine`).
+- Which rules read those events: the rule files themselves (`data/rules/wazuh-4.14.7`, read 2026-11-26;
+  OPEN-QUESTIONS 42).
+- Event counts per run: the spike runs of 2026-11-16 plus the sign-in measured by hand (OPEN-QUESTIONS 37: two type 3
+  NTLM logons with 92657, one 4648, two type 10 logons with 92653). `(unverified)` until the first pinned run.
+- C1, C3 and C5 were already measured, so their rows are confirmations, not blind predictions. Only K1 to K3 are new.
+
+---
+
+## 2. What the current system will print for these events (the dry run)
+
+`src/known_answer_dryrun.py` ran the real pipeline on the expected events: real run-to-run noise from 11 spike runs,
+with the sign-in and each case's effect added by the script. Output: `data/summaries/known-answer-dryrun-2026-11-26.txt`.
+It checks that this file and the code agree. **It is not evidence from the lab.**
+
+| Case | Keys found LOST | Expected keys missed | Top ranked line | "No longer detected" (coverage) | False findings: system / plain subtraction |
+|---|---|---|---|---|---|
+| N | none | none | none | none | 0 / 1 (`Application-1001[]`, 1 to 0) |
+| K1 | the other 4624 key (34 to 0), `Security-4648[]` (33 to 0) | **the two sign-in keys, 6 to 0 each: INCONCLUSIVE** | the other 4624 key: 5 techniques (T1068, T1078, T1110, T1136, T1203), level 15, 12 rules | **T1021.001, T1078.002, T1550.002** | 0 / 1 |
+| K2 | `Security-4688[CommandLine,...]` (157 to 0), with the key without `CommandLine` NEW and a FIELD LOSS line | none | that key: 0 techniques, level 3, 1 rule | none | 0 / 1 |
+| K3 | `Security-4688[CommandLine,...]` (157 to 0) | none | that key: 0 techniques, level 3, 1 rule | none | 0 / 1 |
+
+What this shows, in order:
+1. **K2 and K3 come out exactly as expected.**
+2. **K1's blind spot shows in the coverage section**: the three techniques whose alerts fired before and not after.
+3. **K1's two sign-in keys are not tested.** A key with fewer than 30 events in the before runs is INCONCLUSIVE
+   (`MIN_PRE_COUNT`). The sign-in writes 2 + 2 logon events per run, so 6 in 3 runs. This is the same problem the
+   spike found for C3's `Sysmon-8[]` (OPEN-QUESTIONS 25). **The student decides the rule before the runs:
+   OPEN-QUESTIONS 43.** With the exact test for a complete loss (option (b) there), the dry run finds all 4 K1 keys
+   (q = 0.0087 for each sign-in key) and still no false finding in N.
+4. **K1's top ranked line names 5 techniques that never had an alert in the before runs.** The ranking lists the
+   techniques of every rule that could read the lost key. The coverage section lists the techniques that really
+   fired. The report should say which is which (OPEN-QUESTIONS 43, second point).
+5. **K2 and K3 get the same ranking numbers**, although rule 67027 keeps firing in K2 and stops in K3. Only the FIELD
+   LOSS line tells them apart (OPEN-QUESTIONS 43, third point).
+
+---
+
+## 3. How the results are scored (fixed before the runs)
+
+- **Unit:** the event key.
+- **Expected LOST keys**, by event ID and field only, among the keys seen in the before runs:
+  K1, every 4624, 4625, 4648 and 4675 key; K2, every 4688 key with `CommandLine`; K3, every 4688 key.
+  N, C1 and C5: none. C3 is not scored for recall, because its result is already known from the spike.
+- **Found:** keys the system classifies LOST or REDUCED.
+- **Numbers:** true positives, false positives, false negatives; precision, recall, F1, and the false-positive rate
+  (false positives divided by the keys not expected to change). The same numbers for plain subtraction (every key
+  whose joined count fell), so the noise floor's benefit is measured.
+- **Technique level:** the coverage section's "no longer detected" must equal the expected techniques: K1
+  {T1021.001, T1078.002, T1550.002}; C3 {T1055}; every other case, none.
+- **Field level:** K2 must show the FIELD LOSS line with `CommandLine` dropped.
+- **Verdict level:** the system cannot yet tell a blocked attack from a hidden one (limitation 8). For every case with
+  a loss, a person checks whether the attack still worked, and writes it down with the evidence.
+- **Reporting:** every number is reported as found. A miss is a result, not something to hide or rerun until it
+  passes.
+
+---
+
+## 4. How we show the attack still worked in K1
+
+With "Audit Logon" off there are no logon events, so the proof must come from elsewhere:
+1. The step `rdp-signin-30s` exits 0: the client stayed open for 30 seconds.
+2. Event 4672 ("special privileges assigned to new logon") belongs to "Audit Special Logon", which K1 does not turn
+   off. It is written at each administrator sign-in, so `Security-4672[]` should stay the same while 4624 disappears.
+   `(unverified)` that the sign-in's logons write 4672.
+3. One hand trial (the student, in the VM window): during a K1 run, `query session` in the guest shows the Remote
+   Desktop session.
+
+---
+
+## 5. What must be true before the runs
+
+1. The K1 to K3 scripts are in `C:\telos\` in the guest. They are not in `golden-base` yet (OPEN-QUESTIONS 42).
+2. Every case runs in one configuration, Config S (Defender off, as for C3 since 2026-11-03), so the before runs can be
+   shared: the pipeline needs one parameters hash.
+3. The rare-key rule is decided (OPEN-QUESTIONS 43).
+4. K2: whether the value takes effect without a restart is `(unverified)`. Its `-Verify` starts one process and reads
+   its 4688; if the command line is still there, the harness voids the run.
+
+**Run plan (estimate):** 5 control runs, 3 before runs shared by all cases, and 3 after runs for each of C1, C3, C5,
+K1, K2 and K3: 26 runs, about 4.3 hours at the spike's 9.8 minutes per run.

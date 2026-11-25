@@ -60,17 +60,20 @@ physical drive (WORKLOG 2026-09-28, sixth), which is why the backups go there.
 | `docs/T1-WALKTHROUGH.md` | Worked example of the method. Its C4 example was overtaken 2026-10-01 (banner at the top) | SOURCE |
 | `docs/demo-output.txt` | Output of `src/demo.py` (COMMANDS Part 4 says how to make it) | COPY |
 | `docs/FILE-MAP.md` | This file | SOURCE |
+| `docs/EXPECTED-RESULTS.md` | Each evaluation case's expected result and the scoring rules, written before any run (added 2026-11-26). Never edit an expectation after its runs exist | RECORD |
 | `lab/blueprint.md` | Lab design, resource budget, the change catalogue (section 8) | SOURCE |
 | `lab/configs/` | `sysmonconfig.xml`, `wazuh-agent-ossec.conf`, README. Pinned; hash them. Also `c5-client-no-nla.rdp`, a test file from 2026-11-12, not pinned | SOURCE |
 | `lab/scripts/README.md` | Rules for the hardening-change scripts. **No change script exists yet** | SOURCE |
 | `lab/scripts/telos-archive` | Helper on SIEM-01 that reads and exports the Wazuh archive (never writes to it), run as root through one sudoers rule | SOURCE |
 | `lab/scripts/telos-fence.cs` | Makes one process, so Sysmon marks the edge of a capture window | SOURCE |
 | `src/demo.py` | Runs the whole analysis on synthetic data | SOURCE |
-| `src/telos/` | The analysis package: `archive`, `index`, `impact`, `harness` and `pipeline` (all added 2026-11-13), `eventkey`, `differential`, `variance`, `baseline`, `model`, `report`, `synth`, `__init__` | SOURCE |
+| `src/telos/` | The analysis package: `archive`, `index`, `impact`, `harness` and `pipeline` (all added 2026-11-13), `myers` (added 2026-11-26), `eventkey`, `differential`, `variance`, `baseline`, `model`, `report`, `synth`, `__init__` | SOURCE |
 | `src/run.py` | The command that runs one comparison from run folders (added 2026-11-13) | SOURCE |
 | `src/spike.py`, `src/telos/spike.py` | The spike's run plan and batch runner (added 2026-11-16; tests in `tests/test_spike.py`) | SOURCE |
 | `src/capture.py`, `src/telos/catalog.py` | The command that runs one real capture window, and the lab's fixed pieces it uses (added 2026-11-16; tests in `tests/test_catalog.py`) | SOURCE |
 | `lab/scripts/change-C1-disable-wdigest.ps1`, `change-C3-lsa-protection.ps1`, `change-C5-rdp-nla.ps1`, `config-S-defender-off.ps1` | Change scripts with `-Verify`, and the after-boot Config S script (added 2026-11-13, not yet run by the harness) | SOURCE |
+| `lab/scripts/change-K1-audit-logon-off.ps1`, `change-K2-cmdline-off.ps1`, `change-K3-audit-process-creation-off.ps1` | Test-case scripts with `-Verify`: configuration mistakes made on purpose, never hardening (added 2026-11-26; not in `golden-base` yet, not yet run) | SOURCE |
+| `src/known_answer_dryrun.py` | Dry run of the test cases through the real pipeline: real spike noise, synthetic effects. Checks that `docs/EXPECTED-RESULTS.md` and the code agree; not lab evidence (added 2026-11-26) | SOURCE |
 | `lab/knowledge/compensating-controls.json` | Remediation level 2: curated compensating controls per change, each with its source and status. First two entries (C3, C5) from lab measurements, not tested. The student curates it (added 2026-11-13) | SOURCE |
 | `tests/` | `test_archive.py`, `test_index.py`, `test_impact.py`, `test_report_sections.py`, `test_harness.py`, `test_pipeline.py`, `test_eventkey.py`, `test_differential.py`. 118 passed on 2026-11-13 | SOURCE |
 | `data/rules/` | The Wazuh rule export from SIEM-01 (`wazuh-rules-4.14.7.tar.gz` and its unpacked folder `wazuh-4.14.7/`). **Not in git** (`.gitignore`); folder hash in DECISIONS, pinned table | COPY |
@@ -85,7 +88,7 @@ physical drive (WORKLOG 2026-09-28, sixth), which is why the backups go there.
 | `tools/check_docs.py` | Flags document lines that contradict the code | SOURCE |
 | `tools/word/` | Markdown to Word tools. See `tools/word/README.md` | SOURCE |
 | `data/runs/` | Raw capture archives. Gitignored. **Empty on 2026-10-15** (only `.gitkeep`) | |
-| `data/summaries/` | Small derived CSVs, committed. Empty on 2026-10-15 | |
+| `data/summaries/` | Small derived CSVs, committed. Empty on 2026-10-15. `known-answer-dryrun-2026-11-26.txt`: the dry run's output, committed before any test-case run (added 2026-11-26) | |
 
 Not tracked, on purpose: `.venv/` (rebuild from `requirements.txt`), Python caches, and
 `.claude/settings.local.json` (personal "don't ask again" choices).
