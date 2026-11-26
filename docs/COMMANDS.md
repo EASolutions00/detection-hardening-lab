@@ -918,8 +918,14 @@ first five rows: `data/summaries/host-hypervisor-check-2026-11-26.txt`.
 | SIEM-01 health | host, Claude (read only) | `Test-NetConnection 10.20.10.10 -Port 22`; `ssh -i $key -o BatchMode=yes eli@10.20.10.10 "uptime; systemctl is-system-running; systemctl is-active open-vm-tools wazuh-manager wazuh-indexer wazuh-dashboard"`; later `date -u` and `journalctl -u open-vm-tools -b` | `True`; up 3 min, `running`, 4 × `active` (10:56:17). Tools `running` at 10:58:16: `vmware.log` showed Tools connected at 10:52:35 with heartbeat "never received" (on 2026-11-16 it came at once). Clock 10:58:18 against host 10:58:17. Tools log: one start line, no errors |
 | A1 | host, Claude | `revertToSnapshot $win golden-base`; ``Start-Process -FilePath $vmrun -ArgumentList @('-T','ws','start',"`"$win`"",'gui') -WindowStyle Hidden``; `checkToolsState` every 5 s; `Monitor Mode`; `vmrun list` | Revert exit 0; start 10:57:23; Tools `running` 10:57:44; **`Monitor Mode: CPL0`** (10:57:29); 2 VMs running |
 | A3, host side | host, Claude (read only) | `Get-FileHash "$repo\lab\scripts\*.ps1" -Algorithm SHA256` | The 8 hashes below |
+| A2 | host, **student** (guest password) | the A2 loop, `CopyFileFromHostToGuest` for the 8 scripts | Exit lines not pasted. A3 proves the copies arrived |
+| A3, guest side | guest, student (read only) | `Get-FileHash C:\telos\*.ps1 -Algorithm SHA256 \| Format-Table Hash, Path -AutoSize` | **8 of 8 match** the hashes below, all 64 characters. `C:\telos` holds 26 `.ps1` files; the other 18 are older build scripts (for example `art-install.ps1`) |
+| A4 and K2, typed on the host by mistake | host, student, Terminal (Admin) | the A4 line; `$s = 'C:\telos\change-K2-cmdline-off.ps1'` and its three lines | `The argument 'C:\telos\baseline-golden.ps1' to the -File parameter does not exist.`; the same for K2 three times, exit code `-196608`. **Nothing ran:** `Test-Path C:\telos` on the host gives `False` (Claude). Had the baseline run there, it would have turned WDigest caching on, LSA Protection off, and Remote Desktop on with NLA off, on the host |
+| Boot setting | host, student, Terminal (Admin) | `bcdedit /enum` | `{current}`: `hypervisorlaunchtype Off`. Not stated whether read before or after the fix |
+| The guard (student: "Yes, add the guard") | host, Claude | the guard line in the 8 scripts; a test in `tests/test_catalog.py`; `.gitattributes`: `lab/scripts/*.ps1 text eol=lf` | DECISIONS 2026-11-26 |
+| Its checks | host, Claude (read only) | the guest's name: `telos-archive tail 300` over SSH, `computer` field counted on the host; PowerShell's parser on the 8 scripts; `git ls-files --eol`; `pytest tests -q`; the new check on the `git show HEAD` copies; C1 `-Verify` on the host | `WIN-EP-01` (277 of 300 lines, no other name); 8 × 0 errors; 8 × `i/lf w/lf attr/text eol=lf`; **156 passed**; 8 × "no guard, so the test fails"; the guard's message and **exit 3** |
 
-**The 8 repo hashes for A3 (2026-11-26, SHA256):**
+**The 8 repo hashes before the guard (2026-11-26, SHA256; superseded the same day, A2 and A3 repeated):**
 
 ```
 1D5DD96AA98F9E7A5B080AE5F761FA0562DD0E6836E72AA74626C85247CD1B9A  baseline-golden.ps1
@@ -930,6 +936,19 @@ FE1585AD957AB3DD571E73BBC28AD2D759404ABCBA8E45C069FAAB3144E966C5  change-C5-rdp-
 FFE2D302C185A602B91CF52B78AEC54EF234E7197863C17F2F4D26290A026E18  change-K2-cmdline-off.ps1
 8B7CCC9A30679573531C10BD488DC4F8DD8186E5714EE701A79CED8AADB087E9  change-K3-audit-process-creation-off.ps1
 DE393E50D701D3FE212100EDCCCAA1E8A19F31D3B5014CC2D9958F93AB3F8FE2  config-S-defender-off.ps1
+```
+
+**The 8 repo hashes after the guard (2026-11-26, SHA256; A3 compares with these):**
+
+```
+DC2A007F8807137E68C537F713D8E1A67B9554A30441D5E4149C3108E9B6647B  baseline-golden.ps1
+6A269612B13C77100908D6B0154293296441F172EFDE18A9E78CB88436114A4D  change-C1-disable-wdigest.ps1
+C5A4B8CCC28CC57A1632060F15CD501F14D5BF31B706D64702783DF930E5B62A  change-C3-lsa-protection.ps1
+A511F40D038A0A798E11434916EA0E20A470A62777AD3A29DBFE54BDEFCD8C4A  change-C5-rdp-nla.ps1
+91D7302C43B343BB673C9B88EED827F57FDDEC86B854C43EBBFB0E13A7B21F4E  change-K1-audit-logon-off.ps1
+AEB4759AAD6FCB618AC7EFAFD56BD793FD80FA2BF14D9CBF62178A5D4ABD58E7  change-K2-cmdline-off.ps1
+FB2CF4BC6A632A0641D5ECBBDA78969653AFC4E3C1D4106E6878E3706266CEAA  change-K3-audit-process-creation-off.ps1
+34B39FA12BF446F36C790A9849D40DD497FF9EC8A90284B849DB0F9228D392DE  config-S-defender-off.ps1
 ```
 
 **Reading.** `CPL0`: VMware runs directly on the hardware. `ULM`: it runs on top of the Windows hypervisor. Checked on
@@ -1218,7 +1237,7 @@ every host start since then (COMMANDS 2.18). Check it again after any Windows re
 ```bash
 .venv/Scripts/python.exe -m pytest tests -q
 ```
-Expect the number in CLAUDE.md's Commands section (`155 passed` on 2026-11-26; it was `58 passed` on 2026-09-28)
+Expect the number in CLAUDE.md's Commands section (`156 passed` on 2026-11-26; it was `58 passed` on 2026-09-28)
 
 ```bash
 git status --short

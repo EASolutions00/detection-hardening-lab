@@ -8,6 +8,39 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-11-26 - The guest scripts refuse to run outside WIN-EP-01; their line endings are pinned
+
+**Decision (student, chat 26343d0f: "Yes, add the guard").** The first line of code in each of the 8 guest scripts in
+`lab/scripts` (right after `param(...)`; in `config-S-defender-off.ps1`, which has no `param`, the first line) is:
+
+    if ($env:COMPUTERNAME -ne 'WIN-EP-01') { Write-Error 'This lab script changes security settings. It runs only on WIN-EP-01.'; exit 3 }
+
+A new test, `test_every_guest_script_refuses_to_run_outside_win_ep_01`, fails if a script lacks the line, or if a new
+script appears in `lab/scripts` without being listed. **Added by Claude in the same change, and flagged:**
+`.gitattributes` keeps `lab/scripts/*.ps1` at LF.
+
+**Why.**
+- **The near miss.** In Phase A on 2026-11-26, the A4 line (`baseline-golden.ps1 -WDigest On`) and K2's lines were
+  typed into the host's Terminal (Admin), whose prompt looks the same as the guest's. They failed only because the host
+  has no `C:\telos` (COMMANDS 2.18). On the host, the baseline would have turned WDigest caching on, LSA Protection off,
+  and Remote Desktop on with NLA off, on the PC that holds the guest password file, the SSH key and the GitHub login.
+  The repo copies of the scripts are on that host, in `lab\scripts`.
+- **A check inside the script does not depend on memory.** The `hostname` step in `GOLDEN-BASE-V2.md` does. The repo
+  is public, so the guard also protects anyone who clones it.
+- **Line endings.** `catalog.py` hashes the file in `lab/scripts` at run time, and the guest gets a byte copy. With
+  `core.autocrlf true`, any checkout would rewrite the LF files to CRLF and change every hash without a warning.
+
+**Checked (2026-11-26).** The guest's name is `WIN-EP-01` (277 of the last 300 archive lines, no other name). 8 of 8
+scripts parse with 0 errors; 156 passed; the new check fails on all 8 scripts as committed before (`git show HEAD`); on
+the host, C1's `-Verify` stops with the message and exit code 3. That the scripts still run in the guest: A4 of Phase A
+`(unverified until then)`.
+
+**Cost if wrong.** All 8 hashes changed, so A2 and A3 of Phase A are done again (about 5 minutes). If the VM is ever
+renamed, every script refuses, and every run is voided by its `-Verify` step (`harness.py`, line 298); the fix is this
+one line. The guard stops mistakes, not an attacker: anyone can edit the line or set `COMPUTERNAME` first.
+
+---
+
 ## 2026-11-26 - golden-base-v2 is prepared: the K scripts in the image, NLA through the Group Policy key, Audit Logon set explicitly, one CIS version (v3.0.0, the scanner's)
 
 **Decision (student, chat 26343d0f: "Yes, prepare them").** These are the changes recommended after checking how

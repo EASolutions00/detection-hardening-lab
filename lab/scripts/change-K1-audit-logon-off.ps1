@@ -10,6 +10,7 @@
 #   powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\telos\change-K1-audit-logon-off.ps1 -Verify   (exit 0 = in effect)
 # Not in golden-base yet (OPEN-QUESTIONS 42, open points). Not yet run in the guest.
 param([switch]$Verify)
+if ($env:COMPUTERNAME -ne 'WIN-EP-01') { Write-Error 'This lab script changes security settings. It runs only on WIN-EP-01.'; exit 3 }
 $sub = 'Logon'
 
 function Get-Inclusion([string]$name) {

@@ -6,7 +6,8 @@ result go into COMMANDS 2.18.
 
 **2026-11-26:** the pre-flight check before A1 found the Windows hypervisor on, since Windows was reinstalled in place
 on 2026-11-23. Fixed the same day: the student's `bcdedit` and a host restart; then `HypervisorPresent` `False`, and
-both VMs log `Monitor Mode: CPL0`. A1 done at 10:57 UTC (COMMANDS 2.18).
+both VMs log `Monitor Mode: CPL0`. A1 done at 10:57 UTC (COMMANDS 2.18). After A3 the guard was added to the 8
+scripts (DECISIONS 2026-11-26), so A2 and A3 are repeated with the new hashes.
 
 ---
 
@@ -18,8 +19,10 @@ both VMs log `Monitor Mode: CPL0`. A1 done at 10:57 UTC (COMMANDS 2.18).
    26426 reads only this key. The old image turned NLA off only at the listener (`...\WinStations\RDP-Tcp`), so a scan
    would report NLA compliant while NLA was off.
 3. **Audit Logon is set to Success and Failure** (CIS 17.5.4), so K1 starts from a known state.
-4. **The C1 and C3 scripts are copied again.** Only their header comments changed, but their bytes changed, and the
+4. **All 8 scripts are copied again.** Their bytes changed (new headers, then the guard line in item 5), and the
    harness records the hash of the repo file. The guest copy must be the same bytes.
+5. **Every guest script refuses to run outside WIN-EP-01** (DECISIONS 2026-11-26): one line right after `param(...)`
+   stops it with exit code 3 on any other machine.
 
 Everything else stays as in `golden-base` (2026-11-16). **`golden-base` itself stays**: it is the spike's image and
 the fallback.
@@ -51,6 +54,10 @@ Stores four paths for the commands below. Changes nothing. Correct result: no ou
 ## Phase A: smoke test of the new scripts (one session, all thrown away)
 
 Why first: a retake is slow. A script error found after the retake means a second retake.
+
+**Guest steps run in the VM window.** The host's Terminal (Admin) shows the same prompt, `PS C:\WINDOWS\system32>`.
+Before the first guest command, run `hostname` (read only): it must print `WIN-EP-01`. On 2026-11-26 the A4 and K2
+lines were typed on the host by mistake; they failed only because the host has no `C:\telos` (COMMANDS 2.18).
 
 ### A1. Revert to `golden-base` and start (Claude or student, host)
 
@@ -101,9 +108,10 @@ foreach ($f in $files) {
 | Guest, Terminal (Admin) | `Get-FileHash C:\telos\*.ps1 -Algorithm SHA256 \| Format-Table Hash, Path -AutoSize` | 8 hashes |
 | Host | `Get-FileHash "$repo\lab\scripts\*.ps1" -Algorithm SHA256 \| Format-Table Hash, Path -AutoSize` | The same 8 hashes, file by file |
 
-Claude can run the host line (read only); the 8 hashes of 2026-11-26 are in COMMANDS 2.18. If a pair differs, copy
-that file again (A2). Keep the files in `lab\scripts` as they are from here to the end of
-Phase D: if git rewrites their line endings, their hash changes and they must be copied again.
+Claude can run the host line (read only); the current 8 hashes, after the guard, are in COMMANDS 2.18. `C:\telos` also holds 18
+older build scripts; only these 8 must match. If a pair differs, copy that file again (A2).
+Do not edit the files in `lab\scripts` from here to the end of Phase D: any edit changes a hash, and that file must be
+copied again. Git no longer rewrites their line endings (`.gitattributes`, 2026-11-26).
 
 ### A4. Run the new baseline once (student, guest, Terminal (Admin))
 
@@ -134,7 +142,8 @@ Then the same three lines with `$s = 'C:\telos\change-K1-audit-logon-off.ps1'`, 
   a restart: tell Claude, who sets `reboot=True` for K2 in the catalog. If it is still 1, K2's check is wrong: tell
   Claude.
 - **If K1 or K3 shows `after:  1`:** the audit output may differ from what the check reads. Send Claude the output of
-  `auditpol /get /subcategory:"Logon" /r`.
+  `auditpol /get /subcategory:"Logon" /r` (K1) or `auditpol /get /subcategory:"Process Creation" /r` (K3).
+- **Keep the order K2, K1, K3:** K2's check starts `cmd.exe` and reads its new 4688 event, which K3 turns off.
 - **Undo:** A7. **Safe to run again:** yes.
 
 ### A6. Try C5 through the policy key (student, host and guest)

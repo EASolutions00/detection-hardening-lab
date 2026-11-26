@@ -10,6 +10,7 @@
 #   powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\telos\change-C3-lsa-protection.ps1           (apply)
 #   powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\telos\change-C3-lsa-protection.ps1 -Verify   (exit 0 = in effect)
 param([switch]$Verify)
+if ($env:COMPUTERNAME -ne 'WIN-EP-01') { Write-Error 'This lab script changes security settings. It runs only on WIN-EP-01.'; exit 3 }
 $key = 'HKLM:\SYSTEM\CurrentControlSet\Control\Lsa'
 if ($Verify) {
     $boot = (Get-CimInstance Win32_OperatingSystem).LastBootUpTime

@@ -47,6 +47,18 @@ scan reads the policy value. Wazuh's NLA check reads only that key, so the old l
 4.14.7's scan checks (DECISIONS 2026-11-26). Each header gives that number, with the newer number beside it where
 known.
 
+## Every guest script runs only on WIN-EP-01
+
+Since 2026-11-26 (DECISIONS 2026-11-26), the first line of code in each script, right after `param(...)`, is:
+
+```powershell
+if ($env:COMPUTERNAME -ne 'WIN-EP-01') { Write-Error 'This lab script changes security settings. It runs only on WIN-EP-01.'; exit 3 }
+```
+
+On any other machine the script stops before it changes anything, with exit code 3. `tests/test_catalog.py` fails if a
+script lacks the line, so a new script must carry it and be added to that test's list. The scripts stay LF
+(`.gitattributes`), because the harness records their hash.
+
 ## Every script must carry its source
 
 At the top of each script, in a comment. The example uses C1, whose control ID is verified:

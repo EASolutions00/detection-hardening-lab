@@ -17,7 +17,7 @@ Next:
 
 ---
 
-## 2026-11-26 (Phase A pre-flight) - The Windows hypervisor is back on; the spike ran with it off
+## 2026-11-26 (Phase A) - The Windows hypervisor was back on; the spike ran with it off; a guard on the guest scripts
 
 **Chat:** 26343d0f (Claude Code). **Asked:** "Start Phase A".
 
@@ -51,7 +51,20 @@ Cause unknown; it blocked nothing. **A1 done:** revert exit 0, WIN-EP-01 Tools `
 `Monitor Mode: CPL0`. A6's expected results in `GOLDEN-BASE-V2.md` now come from the 2026-11-12 record. The student's
 `bcdedit` outputs were not reported.
 
-**Next:** the student runs A2 to A6; Claude reverts at A7.
+**A2 and A3 (student):** the 8 guest copies match the repo, 8 of 8 hashes. Then the A4 line and K2's three lines were
+typed in the host's Terminal (Admin) by mistake: `The argument 'C:\telos\baseline-golden.ps1' to the -File parameter
+does not exist.`, exit `-196608`. Nothing ran (`Test-Path C:\telos` is `False` on the host). Had the baseline run on
+the host, it would have turned WDigest caching on, LSA Protection off, and Remote Desktop on with NLA off there.
+`GOLDEN-BASE-V2.md` now asks for `hostname` before the first guest command. `bcdedit /enum` (student):
+`hypervisorlaunchtype Off`, time not stated.
+
+**The guard** (student: "Yes, add the guard"; DECISIONS 2026-11-26): the first line of code in each of the 8 guest
+scripts stops it with exit 3 unless `$env:COMPUTERNAME` is `WIN-EP-01`; a new test checks the line in every script;
+`.gitattributes` keeps `lab/scripts/*.ps1` at LF (Claude's addition, flagged). Checked: the guest's name in the archive
+is `WIN-EP-01` (277 of 300 lines); 8 scripts parse with 0 errors; 156 passed; the new check fails on all 8 committed
+scripts from before; on the host, C1's `-Verify` stops with exit 3. All 8 hashes changed (COMMANDS 2.18).
+
+**Next:** the student repeats A2 and A3 with the new hashes, then A4 to A6 in the VM window; Claude reverts at A7.
 
 ---
 

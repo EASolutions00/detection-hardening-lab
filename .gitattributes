@@ -5,6 +5,11 @@
 lab/scripts/telos-archive text eol=lf
 *.sh                      text eol=lf
 
+# The guest scripts are hashed at run time (src/telos/catalog.py reads the file in lab/scripts) and copied byte for
+# byte into WIN-EP-01. With core.autocrlf true, a checkout would rewrite them to CRLF and change every hash without
+# a warning. They are LF in git and on disk, so keep them LF everywhere (2026-11-26).
+lab/scripts/*.ps1         text eol=lf
+
 # EVERY file in lab/configs is pinned by SHA256 in docs/DECISIONS.md. Git must
 # never rewrite a single byte of any of them, or the committed file stops
 # matching the hash and the claim that the lab runs the committed config

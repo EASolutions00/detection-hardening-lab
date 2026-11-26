@@ -46,6 +46,27 @@ def test_config_s_runs_the_defender_script_after_boot():
     assert CONFIG_S[0].args[-1] == r"C:\telos\config-S-defender-off.ps1"
 
 
+GUARD = ("if ($env:COMPUTERNAME -ne 'WIN-EP-01') { Write-Error 'This lab script changes security settings. "
+         "It runs only on WIN-EP-01.'; exit 3 }")
+GUEST_SCRIPTS = ["baseline-golden.ps1", "change-C1-disable-wdigest.ps1", "change-C3-lsa-protection.ps1",
+                 "change-C5-rdp-nla.ps1", "change-K1-audit-logon-off.ps1", "change-K2-cmdline-off.ps1",
+                 "change-K3-audit-process-creation-off.ps1", "config-S-defender-off.ps1"]
+
+
+def test_every_guest_script_refuses_to_run_outside_win_ep_01():
+    r"""DECISIONS 2026-11-26: that day the baseline was typed into the host's terminal by mistake, and it failed only
+    because the host has no C:\telos. So the first line of code after param(...), or the first line of code when a
+    script has no param, stops the script on any machine but WIN-EP-01, before it changes anything. A new script in
+    lab/scripts fails this test until it is listed here and carries the line."""
+    folder = Path(__file__).parent.parent / "lab" / "scripts"
+    assert sorted(p.name for p in folder.glob("*.ps1")) == sorted(GUEST_SCRIPTS)
+    for name in GUEST_SCRIPTS:
+        code = [ln.strip() for ln in (folder / name).read_text(encoding="utf-8-sig").splitlines()
+                if ln.strip() and not ln.strip().startswith("#")]
+        first = 1 if code[0].lower().startswith("param(") else 0
+        assert code[first] == GUARD, name
+
+
 def test_trial_stimulus_runs_test_13_last_then_cleans_up():
     """Test 13 leaves a second lsass.exe running, which breaks a later test that names
     lsass.exe (OPEN-QUESTIONS 35), so it runs last."""

@@ -4,6 +4,7 @@
 #   (COMMANDS 2.13; runbook Phase 5). So the harness runs this after every boot, and a run where it fails is voided.
 # Needs Tamper Protection off (runbook Phase 5; OPEN-QUESTIONS 10).
 #   powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\telos\config-S-defender-off.ps1   (exit 0 = off)
+if ($env:COMPUTERNAME -ne 'WIN-EP-01') { Write-Error 'This lab script changes security settings. It runs only on WIN-EP-01.'; exit 3 }
 for ($i = 0; $i -lt 12; $i++) {
     Set-MpPreference -DisableRealtimeMonitoring $true -DisableBehaviorMonitoring $true `
                      -DisableScriptScanning $true -DisableIOAVProtection $true -ErrorAction SilentlyContinue

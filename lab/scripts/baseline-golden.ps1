@@ -20,6 +20,7 @@
 #   Change scripts and the Config S script present in C:\telos ...................... lab/scripts/README.md
 #   Test-case scripts K1 to K3 present in C:\telos (golden-base-v2) ................... DECISIONS 2026-11-26
 param([switch]$Verify, [Parameter(Mandatory = $true)][ValidateSet('On', 'Default')][string]$WDigest)
+if ($env:COMPUTERNAME -ne 'WIN-EP-01') { Write-Error 'This lab script changes security settings. It runs only on WIN-EP-01.'; exit 3 }
 
 $lsa = 'HKLM:\SYSTEM\CurrentControlSet\Control\Lsa'
 $ts = 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server'
