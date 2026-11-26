@@ -43,8 +43,15 @@ Next:
 **Kept:** the 8 VMware logs and the new one, in `data/runs/host-vmware-logs-2026-11-16/` (gitignored); hashes in
 `data/summaries/host-hypervisor-check-2026-11-26.txt`.
 
-**Next:** the student turns the hypervisor off (COMMANDS 1.1) and restarts the host. Then Claude checks
-`HypervisorPresent` `False` and starts Phase A at A1.
+**After the restart** (student: "done, restarted. check"): `HypervisorPresent` `False`, VBS 0, no hypervisor event
+since the host start at 10:48:32 UTC; the rest of the pre-flight passed again. SIEM-01 started at 10:52:23 with
+`Monitor Mode: CPL0`, all 4 services `active`, clock within 1 s of the host. Its VMware Tools showed `installed` for
+about 6 minutes (heartbeat "never received" in `vmware.log`), then `running`; on 2026-11-16 the heartbeat came at once.
+Cause unknown; it blocked nothing. **A1 done:** revert exit 0, WIN-EP-01 Tools `running` 21 s after the start,
+`Monitor Mode: CPL0`. A6's expected results in `GOLDEN-BASE-V2.md` now come from the 2026-11-12 record. The student's
+`bcdedit` outputs were not reported.
+
+**Next:** the student runs A2 to A6; Claude reverts at A7.
 
 ---
 

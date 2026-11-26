@@ -42,8 +42,8 @@ In order:
    2026-11-26). The activity diagram and the pipeline figure now also state the old 30-event rule; fix it in their
    redraw. **Next lab step, prepared 2026-11-26:** `golden-base-v2` (the K scripts, NLA through the Group Policy key,
    Audit Logon set explicitly), then the trials and the compliance scans: `docs/GOLDEN-BASE-V2.md`, Phase A first
-   (the student; DECISIONS 2026-11-26). **2026-11-26, Phase A stopped at the pre-flight:** the Windows hypervisor is
-   on again ("Lab state"). The student turns it off and restarts the host first.
+   (the student; DECISIONS 2026-11-26). **2026-11-26, Phase A stopped at the pre-flight:** the Windows hypervisor was
+   on again ("Lab state"). Fixed the same day; A1 done. **Next: A2 to A6, the student.**
 
 Recommended, not decided: the 5 pinned control runs wait until the form is sent, because the pre-oral needs chapters
 1 to 3, not the results (Claude's reading). Not decided: when the GUI is built. The adviser pictures the system as a
@@ -239,10 +239,10 @@ and with them only C1, C3 and C5 can blind a detection (`DECISIONS.md` 2026-10-0
 
 ## Lab state
 
-- **2026-11-26 (chat 26343d0f): both VMs are off** (`vmrun list`). **The Windows hypervisor is on again** at every
-  host start since 2026-11-23, when Windows was reinstalled in place. The spike ran with it off (its VMware logs say
-  `CPL0`). The student turns it off (COMMANDS 1.1) and restarts the host before Phase A (COMMANDS 2.18; DECISIONS,
-  pinned versions).
+- **2026-11-26 (chat 26343d0f): the Windows hypervisor was on** at every host start from 2026-11-23, when Windows
+  was reinstalled in place, to the morning of 2026-11-26. The spike ran with it off (its VMware logs say `CPL0`). **Off
+  again** since the student's fix and host restart at 10:48 UTC (COMMANDS 1.1 and 2.18; DECISIONS, pinned versions).
+  **Both VMs running** since 10:52 and 10:57 UTC: WIN-EP-01 from `golden-base` for Phase A (thrown away at A7).
 - **2026-11-16 (chat ee84ae3f): `golden-base` exists and is checked** (cold, DECISIONS 2026-11-16, COMMANDS 2.16).
   A test boot gave 20 of 20, no `eli` session before the student's sign-in, NAT disconnected. WIN-EP-01 is now running
   from that test boot (in no snapshot; the next revert drops it); SIEM-01 running. **Decided:** no `cfg-suppressed`

@@ -912,6 +912,25 @@ first five rows: `data/summaries/host-hypervisor-check-2026-11-26.txt`.
 | The spike's state | host, Claude (read only) | the `Monitor Mode` line in each `vmware*.log` of both VMs | All 8 say `CPL0`: WIN-EP-01 at 11:32:59, 11:41:35, 11:54:10 and 12:06:44 on 2026-11-16; SIEM-01 at 06:42:14 on 2026-11-16 (one power-on until 13:22:41) and three on 2026-11-13 |
 | Keep the logs | host, Claude | `Copy-Item` of the 8 logs into `data\runs\host-vmware-logs-2026-11-16\` (gitignored); `Get-FileHash` | 8 hashes |
 | `ULM` check | host, Claude | ``Start-Process -FilePath $vmrun -ArgumentList @('-T','ws','start',"`"$win`"",'nogui') -WindowStyle Hidden``; wait for `Monitor Mode` in the new `vmware.log`; `vmrun -T ws stop $win hard`; `vmrun -T ws list`; copy that log | Start 07:19:51; **`Monitor Mode: ULM`** at 07:19:52; `stop exit 0`; `Total running VMs: 0`; copy `WIN-EP-01-ULM-check-2026-11-26.log` |
+| The fix | host, **student**, Terminal (Admin) | `bcdedit /enum '{current}'`; `bcdedit /set hypervisorlaunchtype off` (Part 1.1); host restart | Outputs not reported. Host started again at 10:48:32 |
+| After the restart | host, Claude (read only) | `HypervisorPresent`; `Win32_DeviceGuard`; `Hyper-V-Hypervisor` events since the start; `vmrun -T ws list`; `listSnapshots`; VMnet2 IPv4; `git log -1`, `git status --short` | **`False`**; VBS **0**; none; `Total running VMs: 0`; `golden-base` once; `10.20.10.1`; `a8c1e89`, only the 4 known untracked files |
+| Start SIEM-01 | host, Claude | `& $vmrun -T ws start $siem nogui`; `checkToolsState` every 5 s; `Monitor Mode` in the new `vmware.log` | Exit 0 at 10:52:23; **`Monitor Mode: CPL0`** (10:52:24); Tools `installed` for over 3 minutes |
+| SIEM-01 health | host, Claude (read only) | `Test-NetConnection 10.20.10.10 -Port 22`; `ssh -i $key -o BatchMode=yes eli@10.20.10.10 "uptime; systemctl is-system-running; systemctl is-active open-vm-tools wazuh-manager wazuh-indexer wazuh-dashboard"`; later `date -u` and `journalctl -u open-vm-tools -b` | `True`; up 3 min, `running`, 4 × `active` (10:56:17). Tools `running` at 10:58:16: `vmware.log` showed Tools connected at 10:52:35 with heartbeat "never received" (on 2026-11-16 it came at once). Clock 10:58:18 against host 10:58:17. Tools log: one start line, no errors |
+| A1 | host, Claude | `revertToSnapshot $win golden-base`; ``Start-Process -FilePath $vmrun -ArgumentList @('-T','ws','start',"`"$win`"",'gui') -WindowStyle Hidden``; `checkToolsState` every 5 s; `Monitor Mode`; `vmrun list` | Revert exit 0; start 10:57:23; Tools `running` 10:57:44; **`Monitor Mode: CPL0`** (10:57:29); 2 VMs running |
+| A3, host side | host, Claude (read only) | `Get-FileHash "$repo\lab\scripts\*.ps1" -Algorithm SHA256` | The 8 hashes below |
+
+**The 8 repo hashes for A3 (2026-11-26, SHA256):**
+
+```
+1D5DD96AA98F9E7A5B080AE5F761FA0562DD0E6836E72AA74626C85247CD1B9A  baseline-golden.ps1
+CFB33DD622609BCC9AD8531FDD8B8796BFF34E0C5AA8EE51A25BA2AD07A719FD  change-C1-disable-wdigest.ps1
+AC10E7BEAF766C145115EA62B75D59912B54FDF4D982623EA2A172FEC0A21FAA  change-C3-lsa-protection.ps1
+FE1585AD957AB3DD571E73BBC28AD2D759404ABCBA8E45C069FAAB3144E966C5  change-C5-rdp-nla.ps1
+6421827359C8B297CAB0B62935270106621715BCE9CF3E557F7BA36AB3507CFD  change-K1-audit-logon-off.ps1
+FFE2D302C185A602B91CF52B78AEC54EF234E7197863C17F2F4D26290A026E18  change-K2-cmdline-off.ps1
+8B7CCC9A30679573531C10BD488DC4F8DD8186E5714EE701A79CED8AADB087E9  change-K3-audit-process-creation-off.ps1
+DE393E50D701D3FE212100EDCCCAA1E8A19F31D3B5014CC2D9958F93AB3F8FE2  config-S-defender-off.ps1
+```
 
 **Reading.** `CPL0`: VMware runs directly on the hardware. `ULM`: it runs on top of the Windows hypervisor. Checked on
 this host by the `ULM` row; VMware community threads say the same (no official VMware page found). So the spike ran

@@ -2514,7 +2514,7 @@ Record these **before** taking the golden snapshot.
 | Host OS | Windows 11 Pro 10.0.26200. **2026-11-26:** Windows was reinstalled in place on 2026-11-23 (same version 25H2; build 26200.9457 before it, 26200.9974 after; registry key `Source OS`). Cause unknown (COMMANDS 2.18) | 2026-08-31 |
 | CPU | AMD Ryzen 9 7950X, 16C/32T | 2026-08-20 |
 | VMware Workstation | 17.5.1 build-23298084 | 2026-08-20 |
-| Windows hypervisor | **OFF** (`hypervisorlaunchtype off`). **Found ON 2026-11-26** at the Phase A pre-flight: on at every host start since 2026-11-23 12:51 UTC, most likely since the in-place reinstall. The spike (2026-11-16) ran with it off: its VMware logs say `Monitor Mode: CPL0`, and `ULM` was seen with it on (COMMANDS 2.18). The student turns it off again before Phase A | 2026-08-20 |
+| Windows hypervisor | **OFF** (`hypervisorlaunchtype off`). **Found ON 2026-11-26** at the Phase A pre-flight: on at every host start since 2026-11-23 12:51 UTC, most likely since the in-place reinstall. The spike (2026-11-16) ran with it off: its VMware logs say `Monitor Mode: CPL0`, and `ULM` was seen with it on (COMMANDS 2.18). **OFF again from the host start of 2026-11-26 10:48 UTC** (the student's `bcdedit`): `HypervisorPresent` `False`, VBS 0, both VMs `CPL0` | 2026-08-20 |
 | Python | 3.13.14 (`C:\Program Files\Python313`) | 2026-08-31 |
 | numpy | 2.5.2 | 2026-08-31 |
 | scipy | 1.18.1 | 2026-08-31 |

@@ -5,7 +5,8 @@ it. A step that uses the guest password or the VM window is the student's. When 
 result go into COMMANDS 2.18.
 
 **2026-11-26:** the pre-flight check before A1 found the Windows hypervisor on, since Windows was reinstalled in place
-on 2026-11-23. Phase A waits until the student turns it off and restarts the host (COMMANDS 2.18).
+on 2026-11-23. Fixed the same day: the student's `bcdedit` and a host restart; then `HypervisorPresent` `False`, and
+both VMs log `Monitor Mode: CPL0`. A1 done at 10:57 UTC (COMMANDS 2.18).
 
 ---
 
@@ -100,7 +101,8 @@ foreach ($f in $files) {
 | Guest, Terminal (Admin) | `Get-FileHash C:\telos\*.ps1 -Algorithm SHA256 \| Format-Table Hash, Path -AutoSize` | 8 hashes |
 | Host | `Get-FileHash "$repo\lab\scripts\*.ps1" -Algorithm SHA256 \| Format-Table Hash, Path -AutoSize` | The same 8 hashes, file by file |
 
-If a pair differs, copy that file again (A2). Keep the files in `lab\scripts` as they are from here to the end of
+Claude can run the host line (read only); the 8 hashes of 2026-11-26 are in COMMANDS 2.18. If a pair differs, copy
+that file again (A2). Keep the files in `lab\scripts` as they are from here to the end of
 Phase D: if git rewrites their line endings, their hash changes and they must be copied again.
 
 ### A4. Run the new baseline once (student, guest, Terminal (Admin))
@@ -138,11 +140,18 @@ Then the same three lines with `$s = 'C:\telos\change-K1-audit-logon-off.ps1'`, 
 ### A6. Try C5 through the policy key (student, host and guest)
 
 1. **Host:** `mstsc "$repo\lab\configs\c5-client-no-nla.rdp"`. This client skips the password check before the
-   session. With NLA off, **correct result:** the Windows sign-in screen of WIN-EP-01 appears. Close the window.
+   session. With NLA off, **correct result:** as on 2026-11-12 (COMMANDS 2.12, run A), first a box about the
+   connection with a clipboard option, and two prompts: answer yes. Then the Windows sign-in screen of WIN-EP-01, or
+   its desktop if the client uses the password stored on the host `(unverified which)`. Either one shows that the
+   session started without NLA. Close the window.
+   **If the desktop appeared:** the console session of `eli` moved into that window (on 2026-11-12 a sign-in with
+   `eli` at the console took over the console session, a type 7). Sign in again in the VM window; Terminal (Admin) is
+   still open there.
 2. **Guest, Terminal (Admin):** the three lines of A5 with `$s = 'C:\telos\change-C5-rdp-nla.ps1'`. **Correct
    result:** `before: 1`, `apply:  0`, `after:  0`.
-3. **Host:** the same `mstsc` line again. **Correct result:** an error that the remote computer requires Network Level
-   Authentication `(unverified exact text)`. This shows the policy key turned NLA on without a restart.
+3. **Host:** the same `mstsc` line again. **Correct result:** refused with "The remote computer requires Network Level
+   Authentication, which your computer does not support." (the text seen on 2026-11-12 with the listener key, COMMANDS
+   2.12, run C, error code `0xb09`). This shows the policy key turned NLA on without a restart.
 
 - **If step 3 still connects:** restart the VM and try step 3 again. If it is refused now, C5 needs a restart: tell
   Claude.
