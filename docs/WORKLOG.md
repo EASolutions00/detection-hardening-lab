@@ -86,7 +86,13 @@ image). B6 (student) signed out, shut down, NAT "Connect at power on" unticked. 
 `ethernet0` (VMnet8, NAT) `startConnected = "FALSE"`. **B8: `golden-base-v2` taken at 2026-11-26T13:31:48Z**, 7
 snapshots. `golden-base` stays as the spike's image and the fallback.
 
-**Next:** Phase C, the test boot and the repo update (C4 puts the snapshot time into the catalog).
+**Phase C (student: "Yes, start Phase C"):** C1 (Claude) revert to `golden-base-v2`, start 13:33:29 UTC, `CPL0`. C2
+(student) 25 of 25, only `eli` on the console, NAT `Disconnected`. C3 (Claude) the archive since the boot: 725
+WIN-EP-01 lines; the only `eli` logons are two type 2 at 13:34:18, the student's sign-in. C4: the catalog now names
+`golden-base-v2` and its time; 156 passed. DECISIONS' pinned table has a `golden-base-v2` row. **Phase C passed.**
+
+**Next:** Phase D, the trial runs and the compliance scans (`docs/GOLDEN-BASE-V2.md`). Before D3's first trial run,
+check the Kaspersky exclusion of `E:\TeLoS-artifacts`.
 
 ---
 

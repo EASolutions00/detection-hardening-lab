@@ -1,13 +1,11 @@
 """The lab's fixed pieces for the harness: the changes, Config S, the first test
 stimulus, and the parameters that are hashed into every run manifest.
 
-Everything here points at files already in the golden image (`golden-base`,
-DECISIONS 2026-11-16): the scripts in `C:\\telos\\` (copied 2026-11-16) and Atomic
-Red Team at its pinned commit in `C:\\AtomicRedTeam\\`. The one exception: the scripts
-of the test cases K1 to K3 (added 2026-11-26) are not in `golden-base` yet
-(OPEN-QUESTIONS 42), so their verify step fails and the harness voids the run until
-they are. They go into `golden-base-v2` (docs/GOLDEN-BASE-V2.md); then GOLDEN_SNAPSHOT
-and GOLDEN_BASE_TAKEN below change together.
+Everything here points at files already in the golden image (`golden-base-v2`,
+DECISIONS 2026-11-26; docs/GOLDEN-BASE-V2.md): the 8 scripts in `C:\\telos\\`, K1 to K3
+included (copied 2026-11-26, hashes checked in step B3), and Atomic Red Team at its
+pinned commit in `C:\\AtomicRedTeam\\`. The spike's image `golden-base` (2026-11-16) is
+kept; src/spike.py still names it, so the spike can be repeated.
 
 `pinned_stimulus()` is the study's one attack list (DECISIONS 2026-11-18): the Remote
 Desktop sign-in from the host, then the LSASS trial's tests. `trial_stimulus()` alone
@@ -23,11 +21,12 @@ from .harness import Change, GuestStep, HostStep, Step
 
 POWERSHELL = r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
 
-# The golden snapshot every run reverts to, and when it was taken (DECISIONS 2026-11-16). Change BOTH together, right
-# after a new snapshot is taken: the name goes to the harness (src/capture.py), the time into every run's hashed
-# parameters. golden-base-v2 replaces both once it exists (DECISIONS 2026-11-26; docs/GOLDEN-BASE-V2.md, step C4).
-GOLDEN_SNAPSHOT = "golden-base"
-GOLDEN_BASE_TAKEN = "2026-11-16T06:59:45Z"
+# The golden snapshot every run reverts to, and when it was taken. Change BOTH together, right after a new snapshot is
+# taken: the name goes to the harness (src/capture.py), the time into every run's hashed parameters.
+# golden-base-v2 since 2026-11-26 (DECISIONS 2026-11-26; docs/GOLDEN-BASE-V2.md, steps B8 and C4; COMMANDS 2.18).
+# Before: "golden-base", "2026-11-16T06:59:45Z" (DECISIONS 2026-11-16), the spike's image.
+GOLDEN_SNAPSHOT = "golden-base-v2"
+GOLDEN_BASE_TAKEN = "2026-11-26T13:31:48Z"
 SCRIPTS = Path(__file__).resolve().parents[2] / "lab" / "scripts"
 ART_MODULE = r"C:\AtomicRedTeam\invoke-atomicredteam\Invoke-AtomicRedTeam.psd1"
 ART_ATOMICS = r"C:\AtomicRedTeam\atomics"
