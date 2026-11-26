@@ -51,8 +51,8 @@ In order:
    **Phase E started:** `eval-ctl-1` stopped twice at the wait for VMware Tools, before any data; the harness's wait
    is fixed (DECISIONS 2026-11-27; 160 passed; tested on the real lab). **The 5 control runs `eval-ctl-1` to
    `eval-ctl-5` are all valid** (COMMANDS 2.19). **Decided 2026-11-27:** 3 runs per phase, and item 22's void
-   rule, built into the harness (DECISIONS 2026-11-27; 0 false findings in 70 control comparisons). **Next: the 3
-   before runs, then 3 after runs for each of the 6 cases** (21 runs).
+   rule, built into the harness (DECISIONS 2026-11-27; 0 false findings in 70 control comparisons). **The 3 before
+   runs are valid** (`eval-pre-1` to `eval-pre-3`). **Next: 3 after runs for each of the 6 cases** (18 runs).
 
 Recommended, not decided: the 5 pinned control runs wait until the form is sent, because the pre-oral needs chapters
 1 to 3, not the results (Claude's reading). Not decided: when the GUI is built. The adviser pictures the system as a

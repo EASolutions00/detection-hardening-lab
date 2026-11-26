@@ -57,7 +57,13 @@ accept both"; DECISIONS 2026-11-27):** 3 runs per phase, and item 22's void rule
 gives 80 to 141, corrected before the build. **Built:** `RunChecks` in the harness, recorded per run and not hashed;
 5 tests failing first; 165 passed; hash unchanged; the 9 saved runs all pass the rule.
 
-**Next:** the 3 before runs (`eval-pre-1` to `eval-pre-3`), then 3 after runs per case.
+**The 3 before runs:** `eval-pre-1` to `eval-pre-3`, all valid, fingerprints 96, 98, 97, one hash. `eval-pre-3`'s
+first attempt stopped with "vmrun start failed" before any data: the VM had started (`success=1`), but vmrun's
+connection broke (`The pipe has been ended`); a one-off in 30 runs, run again under the same unused id. All three
+before runs are "low" (695 to 706 events), while 3 of the 5 controls were "high"; why is unverified (one idea, also
+unverified: a task in Windows that depends on the time of day).
+
+**Next:** 3 after runs for each case, starting with C1 (`eval-post-C1-1`).
 
 ---
 
