@@ -64,7 +64,23 @@ scripts stops it with exit 3 unless `$env:COMPUTERNAME` is `WIN-EP-01`; a new te
 is `WIN-EP-01` (277 of 300 lines); 8 scripts parse with 0 errors; 156 passed; the new check fails on all 8 committed
 scripts from before; on the host, C1's `-Verify` stops with exit 3. All 8 hashes changed (COMMANDS 2.18).
 
-**Next:** the student repeats A2 and A3 with the new hashes, then A4 to A6 in the VM window; Claude reverts at A7.
+**A2 and A3 again (student):** 8 copies, each `exit 0`. In the VM, `hostname` printed `WIN-EP-01`, and the 8 hashes
+match the repo files at `819aa85`, compared by a script on the host at 12:52 UTC, not by eye (COMMANDS 2.18).
+
+**A4 to A6 (student):** A4 gave `checks passed: 25 of 25`, with no restart. In A5, K2, K1 and K3 each gave
+`before: 1`, `apply:  0`, `after:  0`. **K2 works without a restart:** its check found a new `cmd.exe` 4688 event with
+no command line right after the change (seen once; D3 tests it again). A6 step 1 connected (host Remote Desktop client
+log: connected 13:00:45, disconnected 13:01:23 UTC). Step 2 gave `before: 1`, `apply:  0`, `after:  0`. Step 3, the
+refusal that shows the policy value turned NLA on, had not run by 13:03 UTC. Then step 3: refused, error `0xb09`,
+at 13:08:15 UTC, after C5 and with no restart, so **C5's policy value works without a restart** (the script's header
+still says `(unverified)`; it stays unedited, because an edit changes its hash). Whether step 1 showed the sign-in
+screen or the desktop was not stated.
+
+**A7 (Claude):** reverted to `golden-base` at 13:16:05 UTC; only SIEM-01 running. **Phase A passed.** The student
+asked whether Phase A must be repeated, worried about a mistake; no: Phase A is thrown away at A7, and the
+measurements start from fresh reverts of `golden-base-v2`.
+
+**Next:** Phase B, take `golden-base-v2` (`docs/GOLDEN-BASE-V2.md`).
 
 ---
 

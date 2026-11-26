@@ -130,6 +130,8 @@ With "Audit Logon" off there are no logon events, so the proof must come from el
    drops to zero (DECISIONS 2026-11-26).
 4. K2: whether the value takes effect without a restart is `(unverified)`. Its `-Verify` starts one process and reads
    its 4688; if the command line is still there, the harness voids the run.
+   **2026-11-26, Phase A (A5):** seen once: `after:  0` right after the change, with no restart (COMMANDS 2.18). D3's
+   trial run tests it again. No expectation changed.
 
 **Run plan (estimate):** 5 control runs, 3 before runs shared by all cases, and 3 after runs for each of C1, C3, C5,
 K1, K2 and K3: 26 runs, about 4.3 hours at the spike's 9.8 minutes per run.

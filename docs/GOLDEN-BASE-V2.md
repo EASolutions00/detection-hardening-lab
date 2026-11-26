@@ -1,13 +1,14 @@
 # golden-base-v2: the retake, the trials and the compliance scans
 
-Prepared 2026-11-26 (chat 26343d0f; DECISIONS 2026-11-26). **Nothing here has been run yet.** Each step says who does
-it. A step that uses the guest password or the VM window is the student's. When a step is done, its command and
-result go into COMMANDS 2.18.
+Prepared 2026-11-26 (chat 26343d0f; DECISIONS 2026-11-26). **Only Phase A has been started (the note below).** Each
+step says who does it. A step that uses the guest password or the VM window is the student's. When a step is done,
+its command and result go into COMMANDS 2.18.
 
 **2026-11-26:** the pre-flight check before A1 found the Windows hypervisor on, since Windows was reinstalled in place
 on 2026-11-23. Fixed the same day: the student's `bcdedit` and a host restart; then `HypervisorPresent` `False`, and
 both VMs log `Monitor Mode: CPL0`. A1 done at 10:57 UTC (COMMANDS 2.18). After A3 the guard was added to the 8
-scripts (DECISIONS 2026-11-26), so A2 and A3 are repeated with the new hashes.
+scripts (DECISIONS 2026-11-26), so A2 and A3 were repeated with the new hashes: 8 of 8 match (12:52 UTC). A4 to A6 passed,
+and A7 reverted at 13:16 UTC: **Phase A passed** (COMMANDS 2.18). K2 and C5 both took effect without a restart.
 
 ---
 
@@ -120,7 +121,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File C:\telos\baseline-golden.ps1
 ```
 
 - **What:** sets the baseline, now with the NLA policy key and Audit Logon, and prints a 25-row check.
-- **Correct result:** `checks passed: 25 of 25` `(unverified)`.
+- **Correct result:** `checks passed: 25 of 25` (seen 2026-11-26, COMMANDS 2.18).
 - **If a row says `False`:** write down its `Value` column, stop, and tell Claude.
 - **Undo:** A7. **Safe to run again:** yes.
 

@@ -1612,7 +1612,8 @@ the ranking. The table's "92653 and 92657 stop" holds; "keys LOST" holds only fo
    them", to preparing the lab changes for the next retake; DECISIONS 2026-11-26). Steps: `docs/GOLDEN-BASE-V2.md`.
 2. **K2 and a restart:** whether the command-line value takes effect without one is `(unverified)`. K2's `-Verify`
    tests the effect, so a run where it did not take effect is voided, never analysed. **Prepared 2026-11-26:**
-   `docs/GOLDEN-BASE-V2.md` steps A5 and D3 test it.
+   `docs/GOLDEN-BASE-V2.md` steps A5 and D3 test it. **Seen 2026-11-26 (A5):** `after:  0` right after the change,
+   with no restart (COMMANDS 2.18). D3 tests it again.
 3. **Proof that K1's sign-in still worked:** the step's exit code, `Security-4672[]` unchanged (Special Logon is not
    turned off by K1; `(unverified)` that the sign-in writes 4672), and one hand trial with `query session`.
    **Prepared 2026-11-26:** step D3 reads the session event 21 in the guest after the trial run, in place of
