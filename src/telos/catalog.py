@@ -15,9 +15,10 @@ is what the spike of 2026-11-16 used.
 from __future__ import annotations
 
 import hashlib
+import statistics
 from pathlib import Path
 
-from .harness import Change, GuestStep, HostStep, Step
+from .harness import Change, GuestStep, HostStep, RunChecks, Step
 
 POWERSHELL = r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
 
@@ -100,6 +101,17 @@ def rdp_signin(seconds: int = RDP_SECONDS) -> HostStep:
               f"Start-Sleep -Seconds {seconds}; "
               "if ($p.HasExited) { exit 1 }; Stop-Process -Id $p.Id; exit 0")
     return HostStep(f"rdp-signin-{seconds}s", (POWERSHELL, "-NoProfile", "-Command", script))
+
+
+# Item 22's void rule (DECISIONS 2026-11-27; student: "Yes, accept both"). The fingerprint is the Sysmon 1 events
+# in the window. These are the 5 control runs eval-ctl-1 to eval-ctl-5 (2026-11-26, COMMANDS 2.19), all with the
+# pinned stimulus; the range is their mean plus or minus 3 standard deviations, computed here, not typed in:
+# 110.8 +/- 3 x 10.33 = 79.8 to 141.8, so 80 to 141 events pass. The sign-in step must also exit 0 (it exits 1 when
+# mstsc closed early). The rule is recorded in each run, not hashed (harness.RunChecks).
+CONTROL_FINGERPRINTS = (100, 118, 119, 99, 118)
+_FP_MEAN, _FP_SD = statistics.mean(CONTROL_FINGERPRINTS), statistics.stdev(CONTROL_FINGERPRINTS)
+RUN_CHECKS = RunChecks(fingerprint_min=_FP_MEAN - 3 * _FP_SD, fingerprint_max=_FP_MEAN + 3 * _FP_SD,
+                       must_succeed=(rdp_signin().name,))
 
 
 def pinned_stimulus() -> list[Step]:

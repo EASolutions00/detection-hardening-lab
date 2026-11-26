@@ -133,6 +133,9 @@ With "Audit Logon" off there are no logon events, so the proof must come from el
    **2026-11-26, Phase A (A5):** seen once: `after:  0` right after the change, with no restart (COMMANDS 2.18). D3's
    trial run tests it again. No expectation changed.
 
+**2026-11-27 (dated line; no expectation changed):** the 5 control runs are done, all valid; **3 runs per phase is
+decided**, and item 22's void rule is set (DECISIONS 2026-11-27).
+
 **Run plan (estimate):** 5 control runs, 3 before runs shared by all cases, and 3 after runs for each of C1, C3, C5,
 K1, K2 and K3: 26 runs, about 4.3 hours at the spike's 9.8 minutes per run.
 

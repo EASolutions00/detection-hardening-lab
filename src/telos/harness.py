@@ -96,6 +96,48 @@ Step = Union[GuestStep, HostStep]
 
 
 @dataclass(frozen=True)
+class RunChecks:
+    """Item 22's void rule (DECISIONS 2026-11-27), checked once the window is counted.
+
+    A run is voided when its stimulus fingerprint, the Sysmon 1 events (process starts) in the
+    window, is outside [fingerprint_min, fingerprint_max], or when a step named in `must_succeed`
+    did not run or did not exit 0. The rule and the run's fingerprint go into the record, never
+    into the hashed parameters, so runs made before the rule existed keep the same hash."""
+
+    fingerprint_min: float | None = None
+    fingerprint_max: float | None = None
+    must_succeed: tuple[str, ...] = ()
+    fingerprint_prefix: str = "Sysmon-1["
+
+    def fingerprint(self, counts: dict[str, int]) -> int:
+        return sum(n for key, n in counts.items() if key.startswith(self.fingerprint_prefix))
+
+    def passes(self, fingerprint: int) -> bool:
+        lo = float("-inf") if self.fingerprint_min is None else self.fingerprint_min
+        hi = float("inf") if self.fingerprint_max is None else self.fingerprint_max
+        return lo <= fingerprint <= hi
+
+    def void_reasons(self, counts: dict[str, int], steps: list[dict]) -> list[str]:
+        reasons = []
+        fp = self.fingerprint(counts)
+        if not self.passes(fp):
+            reasons.append(f"stimulus fingerprint {fp} (Sysmon 1 in the window) outside "
+                           f"{self.fingerprint_min} to {self.fingerprint_max}")
+        codes = {s["name"]: s["exit_code"] for s in steps}
+        for name in self.must_succeed:
+            if name not in codes:
+                reasons.append(f"step {name} did not run")
+            elif codes[name] != 0:
+                reasons.append(f"step {name} failed (exit code {codes[name]})")
+        return reasons
+
+    def record(self, counts: dict[str, int]) -> dict:
+        return {"rule": "DECISIONS 2026-11-27 (item 22)", "fingerprint": self.fingerprint(counts),
+                "fingerprint_min": self.fingerprint_min, "fingerprint_max": self.fingerprint_max,
+                "must_succeed": list(self.must_succeed)}
+
+
+@dataclass(frozen=True)
 class Change:
     """A hardening change: how to apply it and how to confirm it took effect."""
 
@@ -294,14 +336,16 @@ def recount(run_dir: str | Path, agent: str = "WIN-EP-01", now: Callable[[], dat
 
 
 def capture(lab: Lab, run_id: str, phase: str, stimulus: list[Step], parameters: dict,
-            change: Change | None = None, extra_reboot: bool = False) -> dict:
+            change: Change | None = None, extra_reboot: bool = False,
+            checks: RunChecks | None = None) -> dict:
     """Run one capture window and write its folder. Returns the manifest.
 
     `extra_reboot` adds one reboot and settle before the START fence with no change,
-    for the spike's Q6 (does a post-change run's extra reboot leave a trace?)."""
+    for the spike's Q6 (does a post-change run's extra reboot leave a trace?).
+    `checks` is item 22's void rule; it is recorded, not hashed (DECISIONS 2026-11-27)."""
     cfg = lab.cfg
     run_started = lab.now()
-    checks = lab.preflight()
+    preflight_checks = lab.preflight()
     lab.guest_calls = 0
     reasons: list[str] = []
 
@@ -357,6 +401,11 @@ def capture(lab: Lab, run_id: str, phase: str, stimulus: list[Step], parameters:
     window, problem = _count_into(run_dir, run_id, cfg.agent, exports)   # requirement 2: END fence arrived
     if problem:
         reasons.append(problem)
+    run_checks = None
+    if checks is not None and window is not None:                     # item 22 (DECISIONS 2026-11-27)
+        counts = json.loads((run_dir / "counts.json").read_text(encoding="utf-8"))["counts"]
+        reasons.extend(checks.void_reasons(counts, steps))
+        run_checks = checks.record(counts)
 
     run_finished = lab.now()
     params = {**parameters, "window_s": cfg.window_s, "settle_s": cfg.settle_s, "drain_s": cfg.drain_s,
@@ -374,7 +423,8 @@ def capture(lab: Lab, run_id: str, phase: str, stimulus: list[Step], parameters:
             "run_seconds": (run_finished - run_started).total_seconds(),
             "start_fence_host_utc": t_start.isoformat(), "end_fence_host_utc": t_end.isoformat(),
             "after_boot": after_boot, "stimulus": steps, "guest_calls": lab.guest_calls,
-            "exports": exports, "window": window, "checks": checks,
+            "exports": exports, "window": window, "checks": preflight_checks,
+            "run_checks": run_checks,
             "void_reasons": reasons, "valid": not reasons,
         },
     }

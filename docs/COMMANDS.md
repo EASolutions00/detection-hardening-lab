@@ -1045,6 +1045,10 @@ student decides item 22's void rule and the runs per phase (STATUS, "The spike")
 | **`eval-ctl-4`** | host, **student** | `capture.py --run-id eval-ctl-4 --phase control` | **`valid: True`**, no void reasons; the 5 steps exit 0; 7 guest calls; window 18:34:39 to 18:37:39, 713 events, 0 broken lines; 516.4 s; `control`, **`9895d0cf...14cd`**. Counts: 4624 NTLM 2, type 10 2, type 2 3, other 20; 4688 with `CommandLine` 143; Sysmon 1: 72, 27, and **no `Sysmon-1[CommandLine,Hashes,Image]` key** (1 in runs 1 to 3) |
 | **`eval-ctl-5`** | host, **student** | `capture.py --run-id eval-ctl-5 --phase control` | **`valid: True`**, no void reasons; the 5 steps exit 0; 7 guest calls; window 18:44:34 to 18:47:34, 798 events, 1 broken line (the export's last line, SIEM-01's own systemd message at 18:49:47: harmless); 519.5 s; `control`, **`9895d0cf...14cd`**. **5 of 5 control runs valid** |
 | The 5 control runs, summary | host, Claude (read only) | a Python reader of the 5 `counts.json`: per key the 5 counts, mean and CoV; Sysmon 1 per run | Events 710, 815, 805, 713, 798. 35 keys, 18 with CoV 0. **Two groups:** runs 1 and 4 low, runs 2, 3 and 5 high, in the same keys: `Application-1001[]` 0 against 3, `Security-5379[]` 50 against 70 to 74, 4688 141 to 143 against 163 to 165, `Sysmon-10` 109 to 111 against 121 to 131, `Security-4672[]` 27 against 31 to 32. Sign-in keys constant (4624 NTLM 2, type 10 2). **Sysmon 1 per run (item 22's fingerprint): 100, 118, 119, 99, 118; mean 110.8, sd 10.3, CoV 9.3%** (spike, trial stimulus: 37 to 44) |
+| False-finding check (student: "Yes, run the check") | host, Claude (read only) | a Python script with the project's `analyse`, `VarianceModel.from_control` and `load_phase` on the 5 control runs: (1) the spike's Q3, every pair of single runs, both directions; (2) every 2-vs-2 split; (3) Q4; then (4) out of sample: the noise model from 3 runs, the other 2 compared 1 against 1, both directions | (1) 20 comparisons, **0 false findings**; (2) 30 comparisons, **0**, including before 2+3 (high) against after 1+4 (low) and the reverse; (3) 35 keys, **15 testable** (spike: 11 of 20); (4) 20 comparisons, **0**. Any LOST or REDUCED here would be false, because nothing changed |
+| The proposed void rule against all 9 runs | host, Claude (read only) | Sysmon 1 per window and the `rdp-signin-30s` exit code of the 5 control runs and the 4 trial runs | Sysmon 1: 100, 118, 119, 99, 118 (controls); 99, 98, 118, 96 (C5, K1, K2, K3 trials): **all inside 80 to 142** (mean plus or minus 3 sd); `rdp-signin-30s` exit 0 in all 9 |
+| The two decisions (student: "Yes, accept both") | host, Claude | DECISIONS 2026-11-27: 3 runs per phase; item 22's void rule | Range computed from the 5 fingerprints: 110.8 ± 3 × 10.33 = **79.8 to 141.8** (80 to 141 pass; first told to the student as "80 to 142", corrected before the build) |
+| The void rule, built | host, Claude | `harness.RunChecks`, `catalog.CONTROL_FINGERPRINTS` and `RUN_CHECKS`, `capture.py`; 5 tests; `pytest tests\test_harness.py -q` before the code; `pytest tests -q`; the hash; the rule on the 9 saved runs; `capture.py --help` | Before the code: **5 failed, 22 passed**. After: one test had its own setup error (2 folders missing), fixed; **165 passed**; hash **`9895d0cf...14cd`**; the 9 runs: fingerprints 100, 118, 119, 99, 118, 99, 98, 118, 96, **all pass**; the usage text |
 
 ---
 
@@ -1324,8 +1328,8 @@ every host start since then (COMMANDS 2.18). Check it again after any Windows re
 ```bash
 .venv/Scripts/python.exe -m pytest tests -q
 ```
-Expect the number in CLAUDE.md's Commands section (`160 passed` on 2026-11-26 after the Tools-wait fix; `156 passed`
-before it; it was `58 passed` on 2026-09-28)
+Expect the number in CLAUDE.md's Commands section (`165 passed` on 2026-11-26 after the void rule; `160` after the
+Tools-wait fix; `156` before it; it was `58 passed` on 2026-09-28)
 
 ```bash
 git status --short

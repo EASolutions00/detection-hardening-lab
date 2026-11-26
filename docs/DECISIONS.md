@@ -8,6 +8,43 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-11-27 - 3 runs per phase; item 22's void rule: the Sysmon 1 fingerprint within the control mean ± 3 sd, and the sign-in step must exit 0
+
+**Decision (student, chat 26343d0f: "Yes, accept both"; 2026-11-26 about 19:20 UTC).**
+1. **Runs per phase: 3** (the plan in EXPECTED-RESULTS section 5): 3 before runs shared by all cases, then 3 after
+   runs for each of C1, C3, C5, K1, K2, K3. 21 runs are left.
+2. **Item 22's void rule**, for every run with the pinned stimulus, from now on. A run is voided, and captured again
+   under a new run id, when (a) its **stimulus fingerprint**, the Sysmon 1 events in the window, is outside the mean
+   plus or minus 3 standard deviations of the 5 control runs: 110.8 ± 3 × 10.33 = **79.8 to 141.8**, so 80 to 141 events
+   pass; or (b) the step **`rdp-signin-30s` did not exit 0** (it exits 1 when mstsc closed before 30 s, so the sign-in did
+   not hold). The harness's own voids stay (a change not confirmed, tests longer than the window, no readable window, a
+   failed after-boot step).
+
+**Why.**
+- **0 false findings in 70 comparisons** of control runs against control runs (COMMANDS 2.19): every pair of single
+  runs (20), every 2-against-2 split (30), and out of sample, the noise model from 3 runs and the other 2 compared (20).
+  The 5 runs fall into two groups (runs 1 and 4 low; 2, 3 and 5 high; cause unverified), and the worst split, high runs
+  before and low runs after, gave none. So 3 runs per phase is enough against this noise.
+- **The fingerprint catches a run whose tests did not start.** All 9 runs so far are inside the range (96 to 119).
+- **The sign-in check works for K1.** A check on the sign-in's 4624 events would void every K1 run, because K1 turns
+  those events off on purpose; the step's exit code does not depend on auditing.
+
+**Built (student's go-ahead in the same answer).** `harness.RunChecks` (the rule, recorded in each run's
+`record.run_checks` with the run's fingerprint, **never in the hashed parameters**); `catalog.CONTROL_FINGERPRINTS` =
+(100, 118, 119, 99, 118) and `catalog.RUN_CHECKS`, whose range is computed from them, not typed in; `capture.py` uses
+the rule for the pinned stimulus only. Five tests, all failing first; 165 passed; the parameters hash still
+`9895d0cf...14cd`; the rule applied to the 9 saved runs voids none.
+
+**What it cannot do.** The fingerprint cannot tell C3's blocked attack from lost evidence: under C3 the test programs
+still start and only fail to reach LSASS (OPEN-QUESTIONS 22, spike). That case is ruled prevention by item 38, not a
+void. The range comes from 5 runs; with more control runs it would change. A wider range would void fewer runs.
+
+**Cost if wrong.** A too narrow range voids normal runs; each costs one more run (about 9 minutes). A too wide range
+lets through a run whose tests partly failed. 3 runs per phase is the analysis's minimum (`analyse()` needs the same
+number in both phases); if the before or after runs show more spread than the controls, more runs per phase are added.
+
+---
+
 ## 2026-11-27 - The harness's wait for VMware Tools also lets vmrun wait on Tools, with a time limit
 
 **Decision (student, chat 26343d0f: "Yes, fix the harness wait"; 2026-11-26 about 17:30 UTC).** In

@@ -10,7 +10,9 @@ Each test checks one rule from the runbook or DECISIONS:
 - a missing END fence or an unconfirmed change voids the run (requirements 2, 11);
 - a window across midnight exports both dates (step 10);
 - the wait for VMware Tools wakes a status stuck at "installed", and still ends when Tools
-  never answers (COMMANDS 2.19; DECISIONS 2026-11-27).
+  never answers (COMMANDS 2.19; DECISIONS 2026-11-27);
+- item 22's void rule: a fingerprint outside its range, or a required step that did not exit 0,
+  voids the run, and the rule never changes the parameters hash (DECISIONS 2026-11-27).
 
     .venv/Scripts/python.exe -m pytest tests -v
 """
@@ -28,7 +30,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from telos.harness import (Change, GuestStep, HarnessError, Lab, LabConfig, Result, capture,
+from telos.harness import (Change, GuestStep, HarnessError, HostStep, Lab, LabConfig, Result, capture,
                            parameters_hash)
 
 from test_archive import fence, logon_type2
@@ -88,7 +90,9 @@ class FakeRunner:
             src, dest = args[-2], Path(args[-1])
             dest.write_bytes(self._gz[src.split(":", 1)[1]])
             return Result(0, "")
-        return Result(0, "")
+        code, seconds = self.program_results.get(tool, (0, 0.0))       # a host step, for example
+        self.clock.sleep(seconds)
+        return Result(code, "")
 
     def vmrun_ops(self) -> list[str]:
         ops = []
@@ -364,3 +368,74 @@ def test_the_real_runner_stops_a_program_that_passes_its_time_limit():
     from telos.harness import TIMED_OUT, run_command
     r = run_command([sys.executable, "-c", "import time; time.sleep(30)"], timeout=0.5)
     assert r.returncode == TIMED_OUT
+
+
+# --- item 22's void rule (DECISIONS 2026-11-27) ---------------------------------
+
+def process_start(time: str) -> str:
+    """One Sysmon 1 event, a process start inside the window."""
+    from test_archive import SYSMON, line
+    return line(SYSMON, "1", time, {"image": "C:\\\\x\\\\a.exe", "commandLine": "a.exe"})
+
+
+def archive_with_processes(n: int) -> dict[str, list[str]]:
+    starts = [process_start(f"2026-11-20T10:05:{i:02d}.0000000Z") for i in range(n)]
+    return {"2026-11-20": [fence("START", "run-1", "2026-11-20T10:03:05.0000000Z"), *starts,
+                           fence("END", "run-1", "2026-11-20T10:13:05.0000000Z")]}
+
+
+SIGNIN = HostStep("rdp-signin-30s", ("rdp.exe",))
+
+
+def test_a_fingerprint_outside_its_range_voids_the_run(tmp_path):
+    from telos.harness import RunChecks
+    lab, _, _ = make(tmp_path, archive=archive_with_processes(3))
+    m = capture(lab, "run-1", "pre", ATTACK, PARAMS, checks=RunChecks(fingerprint_min=10, fingerprint_max=20))
+    assert m["record"]["valid"] is False
+    assert any("fingerprint" in r for r in m["record"]["void_reasons"])
+
+
+def test_a_required_step_that_did_not_exit_0_voids_the_run(tmp_path):
+    """The sign-in step exits 1 when mstsc closed before its 30 s, so the sign-in did not hold."""
+    from telos.harness import RunChecks
+    lab, _, _ = make(tmp_path, archive=archive_with_processes(3), program_results={"rdp.exe": (1, 30.0)})
+    m = capture(lab, "run-1", "pre", [SIGNIN, *ATTACK], PARAMS,
+                checks=RunChecks(fingerprint_min=0, fingerprint_max=1000, must_succeed=("rdp-signin-30s",)))
+    assert m["record"]["valid"] is False
+    assert any("rdp-signin-30s" in r and "exit code 1" in r for r in m["record"]["void_reasons"])
+
+
+def test_a_run_that_passes_the_rule_stays_valid_and_records_the_rule(tmp_path):
+    from telos.harness import RunChecks
+    lab, _, _ = make(tmp_path, archive=archive_with_processes(3))
+    rule = RunChecks(fingerprint_min=0, fingerprint_max=1000, must_succeed=("rdp-signin-30s",))
+    m = capture(lab, "run-1", "pre", [SIGNIN, *ATTACK], PARAMS, checks=rule)
+    assert m["record"]["valid"] is True
+    rc = m["record"]["run_checks"]
+    assert rc["fingerprint"] >= 3 and rc["fingerprint_min"] == 0 and rc["must_succeed"] == ["rdp-signin-30s"]
+
+
+def test_the_void_rule_never_changes_the_parameters_hash(tmp_path):
+    """The 5 control runs were made before the rule existed; the runs after must keep their hash."""
+    from telos.harness import RunChecks
+    (tmp_path / "a").mkdir()
+    (tmp_path / "b").mkdir()
+    a_lab, _, _ = make(tmp_path / "a", archive=archive_with_processes(3))
+    b_lab, _, _ = make(tmp_path / "b", archive=archive_with_processes(3))
+    without = capture(a_lab, "run-1", "pre", ATTACK, PARAMS)
+    with_rule = capture(b_lab, "run-1", "pre", ATTACK, PARAMS, checks=RunChecks(fingerprint_min=0, fingerprint_max=9))
+    assert with_rule["parameters_sha256"] == without["parameters_sha256"]
+    assert "run_checks" not in with_rule["parameters"]
+
+
+def test_the_catalogs_range_is_the_control_mean_plus_or_minus_3_sd():
+    """From eval-ctl-1 to eval-ctl-5 (COMMANDS 2.19): 100, 118, 119, 99, 118."""
+    import statistics
+    from telos.catalog import CONTROL_FINGERPRINTS, RUN_CHECKS, rdp_signin
+    assert CONTROL_FINGERPRINTS == (100, 118, 119, 99, 118)
+    m, sd = statistics.mean(CONTROL_FINGERPRINTS), statistics.stdev(CONTROL_FINGERPRINTS)
+    assert RUN_CHECKS.fingerprint_min == pytest.approx(m - 3 * sd)
+    assert RUN_CHECKS.fingerprint_max == pytest.approx(m + 3 * sd)
+    assert RUN_CHECKS.passes(80) and not RUN_CHECKS.passes(79)
+    assert RUN_CHECKS.passes(141) and not RUN_CHECKS.passes(142)
+    assert RUN_CHECKS.must_succeed == (rdp_signin().name,)

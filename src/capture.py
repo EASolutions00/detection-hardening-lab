@@ -19,8 +19,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from telos.catalog import (CHANGES, CONFIG_S, GOLDEN_SNAPSHOT, parameters, pinned_stimulus,  # noqa: E402
-                           trial_stimulus)
+from telos.catalog import (CHANGES, CONFIG_S, GOLDEN_SNAPSHOT, RUN_CHECKS, parameters,  # noqa: E402
+                           pinned_stimulus, trial_stimulus)
 from telos.harness import HarnessError, Lab, LabConfig, capture, recount  # noqa: E402
 
 REPO = Path(__file__).resolve().parent.parent
@@ -66,10 +66,12 @@ def main() -> int:
     lab = Lab(cfg)
     change = CHANGES[a.change] if a.change else None
     stimulus = pinned_stimulus() if a.stimulus == "pinned" else trial_stimulus()
+    # Item 22's void rule was measured with the pinned stimulus only (DECISIONS 2026-11-27).
+    checks = RUN_CHECKS if a.stimulus == "pinned" else None
     print(f"run {a.run_id}: phase {a.phase}, change {a.change or '-'}, config {a.config}, window {a.window_s} s, "
           f"stimulus {a.stimulus}")
     try:
-        m = capture(lab, a.run_id, a.phase, stimulus, parameters(a.config), change=change)
+        m = capture(lab, a.run_id, a.phase, stimulus, parameters(a.config), change=change, checks=checks)
     except HarnessError as exc:
         print(f"STOPPED before producing data: {exc}", file=sys.stderr)
         return 2
@@ -78,6 +80,9 @@ def main() -> int:
     print(f"after-boot: {r['after_boot']}")
     print(f"stimulus: {[(s['name'], s['exit_code'], s['seconds']) for s in r['stimulus']]}")
     print(f"guest calls: {r['guest_calls']}   window: {r['window']}")
+    if r.get("run_checks"):
+        rc = r["run_checks"]
+        print(f"fingerprint: {rc['fingerprint']} (range {rc['fingerprint_min']:.1f} to {rc['fingerprint_max']:.1f})")
     print(f"exports: {[(e['date'], e['lines']) for e in r['exports']]}")
     print(f"folder: {cfg.runs_dir / a.run_id}")
     return 0 if r["valid"] else 1

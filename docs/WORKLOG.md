@@ -50,7 +50,14 @@ five. The other counts fall into **two groups**: runs 1 and 4 low, runs 2, 3 and
 119, 99, 118 (mean 110.8, sd 10.3). Three runs had 1 broken line each: always SIEM-01's own last line of the export,
 after the window. One output was pasted twice; nothing was overwritten.
 
-**Next:** the student decides item 22's void rule and the runs per phase, from these 5 runs.
+**The false-finding check (student: "Yes, run the check"):** 0 false findings in 70 control-against-control
+comparisons, the worst split and an out-of-sample test included; 15 of 35 keys testable. **Decided (student: "Yes,
+accept both"; DECISIONS 2026-11-27):** 3 runs per phase, and item 22's void rule (the Sysmon 1 fingerprint within
+79.8 to 141.8, the control mean ± 3 sd, and `rdp-signin-30s` exit 0). Claude first said "80 to 142"; the exact range
+gives 80 to 141, corrected before the build. **Built:** `RunChecks` in the harness, recorded per run and not hashed;
+5 tests failing first; 165 passed; hash unchanged; the 9 saved runs all pass the rule.
+
+**Next:** the 3 before runs (`eval-pre-1` to `eval-pre-3`), then 3 after runs per case.
 
 ---
 

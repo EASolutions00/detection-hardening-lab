@@ -1673,7 +1673,9 @@ runs `(unverified exact bound)`.
 
 ## 22. The stimulus is asserted identical and never verified
 
-**Status:** Open. Raised 2026-09-12. **This one contaminates results rather than reducing them**,
+**Status:** **Decided and built 2026-11-27** (DECISIONS 2026-11-27): a run with the pinned stimulus is voided when its
+Sysmon 1 fingerprint is outside the 5 new control runs' mean ± 3 sd (79.8 to 141.8), or when `rdp-signin-30s` did not
+exit 0. The C3 limit below still holds. Raised 2026-09-12. **This one contaminates results rather than reducing them**,
 so it ranks with item 18 rather than with the cleanup items.
 
 **First real case, 2026-11-13** (LSASS trial part 2, COMMANDS 2.13; DECISIONS 2026-11-13, C3). With LSA Protection on,
