@@ -49,8 +49,9 @@ In order:
    2026-11-26T13:31:48Z** (COMMANDS 2.18). **Phase C passed:** test boot checked; the catalog now reverts every run to
    `golden-base-v2`. **Phase D passed:** 42 of 42 scan results as predicted; 4 trial runs valid (COMMANDS 2.18).
    **Phase E started:** `eval-ctl-1` stopped twice at the wait for VMware Tools, before any data; the harness's wait
-   is fixed (DECISIONS 2026-11-27; 160 passed; tested on the real lab). **Next: the student runs `eval-ctl-1` to
-   `eval-ctl-5`, then decides item 22's void rule and the runs per phase** (EXPECTED-RESULTS section 5).
+   is fixed (DECISIONS 2026-11-27; 160 passed; tested on the real lab). **The 5 control runs `eval-ctl-1` to
+   `eval-ctl-5` are all valid** (COMMANDS 2.19). **Next: the student decides item 22's void rule and the runs per
+   phase** from them (EXPECTED-RESULTS section 5); then the before and after runs.
 
 Recommended, not decided: the 5 pinned control runs wait until the form is sent, because the pre-oral needs chapters
 1 to 3, not the results (Claude's reading). Not decided: when the GUI is built. The adviser pictures the system as a

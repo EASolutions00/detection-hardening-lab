@@ -42,7 +42,15 @@ when the first check is not `running`; `run_command` has a time limit. Four new 
 code first; **160 passed**; the hash unchanged. On the real lab the new reset passed twice with a soft stop between
 (the wait 10.7 s and 10.8 s), with 0 guest calls.
 
-**Next:** the student runs `eval-ctl-1` to `eval-ctl-5`; then decides item 22's void rule and the runs per phase.
+**The 5 control runs (student, Windows Update paused first):** `eval-ctl-1` to `eval-ctl-5`, **all valid**, one
+parameters hash `9895d0cf...14cd`, about 8.7 minutes each (17:55 to 18:49 UTC). The sign-in keys are the same in all
+five. The other counts fall into **two groups**: runs 1 and 4 low, runs 2, 3 and 5 high, in the same keys at once
+(`Application-1001[]` 0 against 3, `Security-5379[]` 50 against 70 to 74, 4688 141 against 165). Cause unverified;
+`Application-1001` is usually a Windows Error Reporting event. Item 22's fingerprint, Sysmon 1 per window: 100, 118,
+119, 99, 118 (mean 110.8, sd 10.3). Three runs had 1 broken line each: always SIEM-01's own last line of the export,
+after the window. One output was pasted twice; nothing was overwritten.
+
+**Next:** the student decides item 22's void rule and the runs per phase, from these 5 runs.
 
 ---
 
