@@ -73,7 +73,11 @@ PC was unplugged by accident at 22:55 UTC, during K2-3, which had written nothin
 22 runs on disk all valid, SIEM-01 started cleanly (disk `clean`, 4 services active; VMware cleared the old locks).
 K1's runs have 0 Remote Desktop logons, as expected; C3's runs take 12.7 minutes. The two groups now mix across cases.
 
-**Next:** the student starts `src/evaluate.py` again for the last 4 runs (K2-3, K3-1 to K3-3, about 36 minutes).
+**The batch, restarted:** K2-3 and K3-1 to K3-3, all valid (finished 23:32 to 23:58 UTC). K2-3's 4688 key has no
+`CommandLine`; K3's runs have no 4688 key. **All 26 evaluation runs are valid**, with one parameters hash.
+
+**Next:** the analysis, one comparison per case (`src/run.py`, the 5 control runs, the 3 before runs, the case's 3
+after runs), and the results beside EXPECTED-RESULTS.
 
 ---
 
