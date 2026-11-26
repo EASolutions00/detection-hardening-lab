@@ -17,6 +17,35 @@ Next:
 
 ---
 
+## 2026-11-27 (Phase E starts) - eval-ctl-1 stopped twice at the wait for VMware Tools; the wait is fixed
+
+**Chat:** 26343d0f (Claude Code). **Asked:** "start Phase E", then "double check again to avoid unexpected failure
+run", then "Yes, fix the harness wait". Times UTC (2026-11-26 evening).
+
+**Did:** the pre-flight after the student's PC restart (host start 15:51:18): hypervisor `False`, `golden-base-v2`
+once, `10.20.10.1`, `a1c318e`. SIEM-01 started 16:14, healthy (its Tools showed `installed`, as at 10:52). Control
+runs named `eval-ctl-1` to `eval-ctl-5` (Claude's choice, said to the student).
+
+**Broke:** `eval-ctl-1` stopped twice (16:22, 16:33) with "VMware Tools not running after 300 s", **before producing
+data**; no run folder. Two wrong leads first (the VMware window, then the VM's tab); each fixed only a VM already
+running, and the harness's revert and `nogui` start failed again. **The cause:** Tools ran in the guest within 11 s,
+but `checkToolsState` stayed at `installed` until something waited on Tools; `getGuestIPAddress -wait` answered in
+0.4 s and woke it. Why the same code passed on 2026-11-16 and in the morning is not known (logs rotated away).
+
+**Double check (student's request), everything else passed:** SIEM-01 in UTC with today's archive file; the stored
+Remote Desktop sign-in for `TERMSRV/10.20.10.20`; the password file present (not read); no pending restart; no sleep,
+no display off, no secure screen saver; the parameter hash `9895d0cf...14cd`. **Windows Update was not paused**
+(the student's click).
+
+**Fixed (DECISIONS 2026-11-27):** `wait_tools()` now lets vmrun wait on Tools (`getGuestIPAddress -wait`, limit 300 s)
+when the first check is not `running`; `run_command` has a time limit. Four new tests, three of them failing on the old
+code first; **160 passed**; the hash unchanged. On the real lab the new reset passed twice with a soft stop between
+(the wait 10.7 s and 10.8 s), with 0 guest calls.
+
+**Next:** the student runs `eval-ctl-1` to `eval-ctl-5`; then decides item 22's void rule and the runs per phase.
+
+---
+
 ## 2026-11-26 (Phase A) - The Windows hypervisor was back on; the spike ran with it off; a guard on the guest scripts
 
 **Chat:** 26343d0f (Claude Code). **Asked:** "Start Phase A".

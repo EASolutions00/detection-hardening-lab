@@ -9,7 +9,10 @@ One window, in order (runbook Phase 6):
 
     checks before the run   VMnet2 holds the host's lab address, SSH to SIEM-01 answers,
                             telos-archive disk answers, free space on the host (requirement 9)
-    1-3  reset              revert to the snapshot, start, wait for VMware Tools, settle
+    1-3  reset              revert to the snapshot, start, wait for VMware Tools, settle.
+                            The wait: `checkToolsState`; if it does not say running, vmrun's own
+                            wait on Tools (`getGuestIPAddress -wait`, time-limited), then
+                            `checkToolsState` again (DECISIONS 2026-11-27)
     4    change             post-change runs only: apply, reboot if needed and settle,
                             then confirm in the guest (requirement 11). Before the fence (D2).
     5    START fence
@@ -59,9 +62,16 @@ class Result:
     stdout: str = ""
 
 
-def run_command(args: list[str]) -> Result:
-    """The real runner: run a host program and capture its output."""
-    p = subprocess.run(args, capture_output=True, text=True)
+TIMED_OUT = 124      # the return code of a program stopped at its time limit (as GNU `timeout` uses)
+
+
+def run_command(args: list[str], timeout: float | None = None) -> Result:
+    """The real runner: run a host program and capture its output. With `timeout`, a program
+    still running after that many seconds is stopped, and the result has code TIMED_OUT."""
+    try:
+        p = subprocess.run(args, capture_output=True, text=True, timeout=timeout)
+    except subprocess.TimeoutExpired:
+        return Result(TIMED_OUT, "")
     return Result(p.returncode, p.stdout)
 
 
@@ -139,8 +149,9 @@ class Lab:
         self.guest_calls = 0
 
     # --- WIN-EP-01 ----------------------------------------------------------
-    def vmrun(self, *args: str) -> Result:
-        return self.run([self.cfg.vmrun, "-T", "ws", *args])
+    def vmrun(self, *args: str, timeout: float | None = None) -> Result:
+        cmd = [self.cfg.vmrun, "-T", "ws", *args]
+        return self.run(cmd) if timeout is None else self.run(cmd, timeout=timeout)
 
     def guest(self, step: GuestStep) -> Result:
         """Run a program in the guest. Counted, because each call writes logons (requirement 10)."""
@@ -152,14 +163,32 @@ class Lab:
     def host(self, step: HostStep) -> Result:
         return self.run(list(step.args))
 
+    def tools_running(self) -> bool:
+        return "running" in self.vmrun("checkToolsState", self.cfg.vmx).stdout
+
     def wait_tools(self) -> None:
+        """Wait until `checkToolsState` says running: one check; if it does not say running yet,
+        vmrun's own wait on Tools (`getGuestIPAddress -wait`, at most tools_timeout_s), then a
+        check every 5 s for at most tools_timeout_s.
+
+        Why the extra wait (DECISIONS 2026-11-27; COMMANDS 2.19): after the host start of
+        2026-11-26 15:51 UTC, `checkToolsState` stayed at "installed" for over 300 s after every
+        start without a window, while Tools ran in the guest. It said "running" only after
+        something had waited on Tools: `getGuestIPAddress -wait` answered in 0.4 s and woke it.
+        Right after a start Tools is not up yet, so in practice the wait runs on every start; it
+        returns as soon as Tools is up. It uses no guest password, starts no program in the
+        guest, and comes before the settle and the START fence, so before any window."""
+        if self.tools_running():
+            return
+        self.vmrun("getGuestIPAddress", self.cfg.vmx, "-wait", timeout=self.cfg.tools_timeout_s)
         waited = 0
         while waited <= self.cfg.tools_timeout_s:
-            if "running" in self.vmrun("checkToolsState", self.cfg.vmx).stdout:
+            if self.tools_running():
                 return
             self.sleep(5)
             waited += 5
-        raise HarnessError(f"VMware Tools not running after {self.cfg.tools_timeout_s} s")
+        raise HarnessError(f"VMware Tools not running after {self.cfg.tools_timeout_s} s "
+                           "(checkToolsState never said running, also after vmrun's own wait)")
 
     def reset_to_known_state(self) -> None:
         """Requirement 5: the one function that returns the endpoint to a known state."""

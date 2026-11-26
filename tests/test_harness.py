@@ -8,7 +8,9 @@ Each test checks one rule from the runbook or DECISIONS:
 - guest calls are counted (requirement 10) and the password never reaches a file;
 - the export is checked against its hash (step 10);
 - a missing END fence or an unconfirmed change voids the run (requirements 2, 11);
-- a window across midnight exports both dates (step 10).
+- a window across midnight exports both dates (step 10);
+- the wait for VMware Tools wakes a status stuck at "installed", and still ends when Tools
+  never answers (COMMANDS 2.19; DECISIONS 2026-11-27).
 
     .venv/Scripts/python.exe -m pytest tests -v
 """
@@ -53,10 +55,13 @@ class FakeRunner:
         self.clock, self.archive, self.lab_ip, self.bad_hash = clock, archive_by_date, lab_ip, bad_hash
         self.program_results = program_results or {}
         self.calls: list[tuple[datetime, list[str]]] = []
+        self.timeouts: list[float] = []          # the time limit of every call that had one
         self._gz: dict[str, bytes] = {}
 
-    def __call__(self, args: list[str]) -> Result:
+    def __call__(self, args: list[str], timeout: float | None = None) -> Result:
         self.calls.append((self.clock.now(), list(args)))
+        if timeout is not None:
+            self.timeouts.append(timeout)
         tool = Path(args[0]).name.lower()
         if tool == "ipconfig":
             return Result(0, f"IPv4 Address. . . . . . . . . . . : {self.lab_ip}\n")
@@ -107,13 +112,14 @@ def archive_for(run_id: str, start: str, end: str, inside: str = "2026-11-20T10:
     return [fence("START", run_id, start), logon_type2(inside), fence("END", run_id, end)]
 
 
-def make(tmp_path, *, start=datetime(2026, 11, 20, 10, 0, 0), window_s=600, archive=None, **runner_kw):
+def make(tmp_path, *, start=datetime(2026, 11, 20, 10, 0, 0), window_s=600, archive=None,
+         runner_cls=None, **runner_kw):
     pw = tmp_path / "guest.pw"
     pw.write_text(PASSWORD)
     clock = Clock(start)
     archive = archive or {start.strftime("%Y-%m-%d"): archive_for("run-1", "2026-11-20T10:03:05.0000000Z",
                                                                     "2026-11-20T10:13:05.0000000Z")}
-    runner = FakeRunner(clock, archive, **runner_kw)
+    runner = (runner_cls or FakeRunner)(clock, archive, **runner_kw)
     cfg = LabConfig(vmrun="vmrun", vmx="F:/lab/WIN-EP-01.vmx", snapshot="cfg-suppressed", guest_user="eli",
                     password_file=pw, ssh_key=tmp_path / "key", runs_dir=tmp_path / "runs", window_s=window_s)
     lab = Lab(cfg, runner, now=clock.now, sleep=clock.sleep)
@@ -297,3 +303,64 @@ def test_a_window_across_midnight_exports_both_dates(tmp_path):
     m = capture(lab, "run-1", "pre", ATTACK, PARAMS)
     assert [e["date"] for e in m["record"]["exports"]] == ["2026-11-20", "2026-11-21"]
     assert m["record"]["valid"] is True
+
+
+class StuckToolsRunner(FakeRunner):
+    """The lab after the host start of 2026-11-26 15:51 UTC (COMMANDS 2.19): Tools runs in the guest,
+    but `checkToolsState` says "installed" until something has waited on Tools with
+    `getGuestIPAddress -wait`. With `tools_answer=False`, the wait runs out its time limit instead."""
+
+    def __init__(self, *args, tools_answer: bool = True, **kw):
+        super().__init__(*args, **kw)
+        self.tools_answer, self.woken = tools_answer, False
+
+    def __call__(self, args: list[str], timeout: float | None = None) -> Result:
+        if Path(args[0]).name.lower() == "vmrun" and "checkToolsState" in args:
+            self.calls.append((self.clock.now(), list(args)))
+            return Result(0, "running\n" if self.woken else "installed\n")
+        if Path(args[0]).name.lower() == "vmrun" and "getGuestIPAddress" in args and "-wait" in args:
+            self.calls.append((self.clock.now(), list(args)))
+            if timeout is not None:
+                self.timeouts.append(timeout)
+            if self.tools_answer:
+                self.clock.sleep(15)                    # Tools comes up about 15 s after the start
+                self.woken = True
+                return Result(0, "10.20.10.20\n")
+            self.clock.sleep(timeout or 0)              # the real runner stops vmrun at its limit
+            return Result(124, "")
+        return super().__call__(args, timeout)
+
+
+def test_a_tools_status_stuck_at_installed_is_woken_and_the_run_goes_on(tmp_path):
+    """2026-11-26: eval-ctl-1 stopped twice with 'VMware Tools not running after 300 s' while Tools
+    ran; one `getGuestIPAddress -wait` woke the status in 0.4 s (COMMANDS 2.19)."""
+    lab, runner, _ = make(tmp_path, runner_cls=StuckToolsRunner)
+    m = capture(lab, "run-1", "pre", ATTACK, PARAMS)
+    ops = runner.vmrun_ops()
+    assert ops.index("start") < ops.index("getGuestIPAddress") < ops.index("guest:telos-fence.exe START run-1")
+    assert runner.timeouts == [lab.cfg.tools_timeout_s]          # the wait always has a time limit
+    assert m["record"]["valid"] is True
+
+
+def test_tools_that_never_answer_stop_the_run_before_any_guest_call(tmp_path):
+    lab, runner, clock = make(tmp_path, runner_cls=StuckToolsRunner, tools_answer=False)
+    began = clock.now()
+    with pytest.raises(HarnessError, match="VMware Tools not running"):
+        capture(lab, "run-1", "pre", ATTACK, PARAMS)
+    assert runner.timeouts == [lab.cfg.tools_timeout_s]          # the wait was tried, with its limit
+    assert not any("runProgramInGuest" in a for _, a in runner.calls)
+    assert not (tmp_path / "runs" / "run-1").exists()            # no data
+    assert clock.now() - began <= timedelta(seconds=2 * lab.cfg.tools_timeout_s + 10)   # it always ends
+
+
+def test_a_working_tools_status_needs_no_extra_wait(tmp_path):
+    """When the first check already says "running", the harness goes on at once, with no extra wait."""
+    lab, runner, _ = make(tmp_path)
+    capture(lab, "run-1", "pre", ATTACK, PARAMS)
+    assert "getGuestIPAddress" not in runner.vmrun_ops()
+
+
+def test_the_real_runner_stops_a_program_that_passes_its_time_limit():
+    from telos.harness import TIMED_OUT, run_command
+    r = run_command([sys.executable, "-c", "import time; time.sleep(30)"], timeout=0.5)
+    assert r.returncode == TIMED_OUT

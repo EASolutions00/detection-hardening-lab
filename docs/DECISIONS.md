@@ -8,6 +8,49 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-11-27 - The harness's wait for VMware Tools also lets vmrun wait on Tools, with a time limit
+
+**Decision (student, chat 26343d0f: "Yes, fix the harness wait"; 2026-11-26 about 17:30 UTC).** In
+`src/telos/harness.py`, `Lab.wait_tools()` checks `vmrun checkToolsState` once. If it does not say `running`, it runs
+`vmrun getGuestIPAddress <vmx> -wait`, VMware's own wait on Tools, stopped after `tools_timeout_s` (300 s) at the
+latest. Then it checks `checkToolsState` every 5 s for at most 300 s, as before. `run_command` gets an optional time
+limit; a program still running at its limit is stopped and returns code 124 (`TIMED_OUT`). Before any evaluation run.
+
+**Why.**
+- **Two stopped runs.** `eval-ctl-1` stopped twice with "VMware Tools not running after 300 s", before producing data
+  (COMMANDS 2.19). Tools ran in the guest each time: its port 3389 answered, and `vmware.log` showed the normal Tools
+  steps within 11 s of the start.
+- **What wakes the status.** On a VM stuck at `installed`, `getGuestIPAddress` without `-wait` said "The VMware Tools
+  are not running"; with `-wait` it answered `10.20.10.20` in 0.4 s, and `checkToolsState` said `running` right after.
+  VMware's window connecting to the VM (`MKSControlMgr: connected`) also woke it. A `nogui` start has neither, and the
+  old harness only polled `checkToolsState`.
+- **Since when.** After the host start of 2026-11-26 15:51 UTC. Why the same code passed on 2026-11-16 (19 spike runs)
+  and on 2026-11-26 before that start (4 trial runs) is **not known**; those VMware logs have rotated away.
+
+**Rejected.**
+- **Keep VMware's window open with the VM's tab** (the first two leads, COMMANDS 2.19). It held only for a VM already
+  running when the window or tab opened; after the harness's revert and `nogui` start it failed again (17:10, 17:17 UTC).
+- **Start the VM with a window (`gui`) in the harness.** One word, but `start ... gui` once hung inside a command
+  (COMMANDS 2.16), and a VM window would open on the host during every run.
+
+**What it does not change.** No parameter: the hash is still `9895d0cf...14cd` (checked after the change). Nothing
+inside the window: the wait comes before the settle (180 s), Config S and the START fence. It uses no guest password
+and starts no program in the guest. Right after a start Tools is not up yet, so in practice the wait runs on every start;
+it returns as soon as Tools is up (10.7 s and 10.8 s in the real test).
+
+**Checked (2026-11-26, times UTC).** Four new tests in `tests/test_harness.py`: a status stuck at `installed` is woken
+and the run goes on; Tools that never answer stop the run before any guest call, with no data, within 2 × 300 s; a
+working status needs no extra wait; the real runner stops a program at its limit (code 124). Three of them failed on the
+old code first. **160 passed.** On the real lab, the new reset ran twice with a soft stop between (17:50:46 to 17:51:26):
+`checkToolsState` `installed`, then `getGuestIPAddress -wait` exit 0 after 10.7 s, then `running`; 0 guest calls.
+
+**Cost if wrong.** If `-wait` ever returns before Tools can run guest programs, the 180 s settle still comes before
+the first guest call. If Tools never answers, a run stops after at most about 600 s instead of 300 s, still before any
+data. The harness code differs from the spike's; the spike stays a separate earlier stage, and every evaluation run uses
+this code.
+
+---
+
 ## 2026-11-26 - The guest scripts refuse to run outside WIN-EP-01; their line endings are pinned
 
 **Decision (student, chat 26343d0f: "Yes, add the guard").** The first line of code in each of the 8 guest scripts in

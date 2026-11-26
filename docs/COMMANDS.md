@@ -1015,6 +1015,28 @@ between.
 **Undo.** Delete `data\runs\host-vmware-logs-2026-11-16\` (not in git). The `ULM` check left WIN-EP-01 off; A1's
 revert removes its short start.
 
+### 2.19 Phase E: the evaluation runs (from 2026-11-26 16:10 UTC)
+
+Purpose: `docs/EXPECTED-RESULTS.md` section 5. First the 5 control runs with the pinned attack list; from them the
+student decides item 22's void rule and the runs per phase (STATUS, "The spike"); then the before and after runs.
+
+| Step | Where, by whom | Command | Result seen |
+|---|---|---|---|
+| Pre-flight | host, Claude (read only) | `vmrun -T ws list`; `listSnapshots`; VMnet2 IPv4; `HypervisorPresent`; `git log -1 --oneline`; `git status --short`; host start time | `Total running VMs: 0`; 7 snapshots, `golden-base-v2` once; `10.20.10.1`; **`False`**; `a1c318e`, only the 4 known untracked files; host started 2026-11-26 15:51:18 |
+| Start SIEM-01 | host, Claude | `& $vmrun -T ws start $siem nogui`; `checkToolsState` every 5 s; `Monitor Mode` | Exit 0 at 16:14:01; **`CPL0`**; Tools still `installed` at 16:17:15 (late again, as at 10:52) |
+| SIEM-01 health | host, Claude (read only) | `Test-NetConnection 10.20.10.10 -Port 22`; `ssh ... "uptime; systemctl is-system-running; systemctl is-active open-vm-tools wazuh-manager wazuh-indexer wazuh-dashboard; date -u"` | `True`; up 3 min, `running`, 4 × `active`; clock 16:17:36, host 16:17:36 |
+| `eval-ctl-1`, first attempt | host, **student** (guest password) | `capture.py --run-id eval-ctl-1 --phase control` | **`STOPPED before producing data: VMware Tools not running after 300 s`**. No `data\runs\eval-ctl-1` folder was written. WIN-EP-01 powered on 16:22:10 |
+| Why Tools was "not running" | host, Claude (read only, then one program start) | `checkToolsState` on both VMs; the `running status` lines of both `vmware.log`; `Test-NetConnection 10.20.10.20 -Port 3389`; `Get-Process vmware*`; `vmrun getGuestIPAddress`; then `Start-Process vmware.exe` (the Workstation window) and `checkToolsState` every 5 s | Both `installed`; WIN-EP-01's log shows the same status steps (0 to 1, 1 to 2, 2 to 1, by 16:22:24) as the working run of 15:25; port 3389 `True`; only `vmware-authd`, `vmware-usbarbitrator64` and 2 × `vmware-vmx` running; `getGuestIPAddress` "The VMware Tools are not running". **Window opened 16:30:17; both `running` at 16:30:23**, with `vmware-tray` and `vmware-unity-helper` now running. **Cause: after a host restart, `vmrun` sees Tools only while VMware Workstation's window program runs.** The same explains SIEM-01's late Tools at 10:52 (`running` 53 s after WIN-EP-01 was opened with a window) and at 16:14 |
+| `eval-ctl-1`, second attempt | host, **student** (guest password) | the same command | **`STOPPED before producing data: VMware Tools not running after 300 s`** again; no folder written. WIN-EP-01 powered on 16:33:27 |
+| Why, again | host, Claude (read only, then one tab opened) | `Get-Process vmware*`; `checkToolsState`; the `running status` lines; then `Start-Process vmware.exe -ArgumentList "`"$win`""` (opens WIN-EP-01 as a tab, no power change) and `checkToolsState` every 5 s | The window was open (`vmware` since 16:30:17); SIEM-01 `running`, WIN-EP-01 `installed`, its log normal. **Tab opened 16:52:26; WIN-EP-01 `running` at 16:52:32.** **Corrected cause: `vmrun` sees a VM's Tools only while that VM is open as a tab in the VMware window.** The window alone covered only the VMs that were running when it opened. On 2026-11-26 the trial runs worked because WIN-EP-01 had a tab from its `gui` starts |
+| Double check before a third attempt (student: "double check again") | host, Claude (read only) | `ipconfig`; `ssh ... "date -u; date +%Z%z; telos-archive disk; telos-archive dated-list"`; host free bytes; `cmdkey /list:TERMSRV/10.20.10.20`; `Test-Path` of the password file (not read); the Windows Update restart keys and pause value; `powercfg` sleep and display; screen saver keys; the parameter hash in Python; `Test-Path data\runs\eval-ctl-1` | `10.20.10.1` present; SIEM-01 **`UTC+0000`**, disk 14%, `Nov/ossec-archive-26.json` present (154 MB); 2.28 TB free; `TERMSRV/10.20.10.20`, user `WIN-EP-01\eli`; `True`; no restart pending, **updates not paused**; sleep never, display never off, no secure screen saver; **`9895d0cf...14cd`**, the trials' hash; `False` |
+| The harness's reset, repeated by hand | host, Claude | `revertToSnapshot $win golden-base-v2`; `start $win nogui`; `checkToolsState` every 5 s up to 300 s (the harness's own steps); then `getGuestIPAddress $win -wait` | 17:10:33 start; **`installed` after 328 s** with the WIN-EP-01 tab open; then the IP `10.20.10.20` |
+| Start with a window, then the harness's reset | host, Claude | revert; the A1 `Start-Process ... gui` line; wait; then revert, `start nogui`, wait up to 300 s | With a window: `running` after 17 s. Then **`nogui`: `installed` after 327 s.** Logs: the window start has `MKSControlMgr: connected`; the `nogui` start has none; both show the same Tools steps (0 to 1, 1 to 2, 2 to 1 within 11 s) |
+| What wakes the status | host, Claude (read only) | on the `nogui` VM: `checkToolsState`; `getGuestIPAddress` without and with `-wait`; `checkToolsState` | `installed`; without `-wait`: "The VMware Tools are not running"; **with `-wait`: `10.20.10.20` in 0.4 s; then `running`.** **Cause: Tools is ready within seconds, but `checkToolsState` reports `running` only after something waits on Tools (`-wait`) or VMware's window connects to the VM. The harness only polls `checkToolsState` (`harness.py` line 158), so after this host start it can never pass.** Why the same code passed on 2026-11-26 (4 trials) and 2026-11-16 (19 runs) is not known; those logs have rotated away. **This supersedes the two "Cause" lines above** (the window, then the tab) |
+| The fix (student: "Yes, fix the harness wait") | host, Claude | `src/telos/harness.py`: `wait_tools()` runs `vmrun getGuestIPAddress <vmx> -wait` (limit 300 s) when the first `checkToolsState` is not `running`, then checks as before; `run_command(args, timeout)` returns 124 at the limit. Four tests in `tests/test_harness.py` | DECISIONS 2026-11-27 |
+| Its checks | host, Claude | `pytest tests\test_harness.py -q` on the old code; then `pytest tests -q`; the parameter hash in Python; `git diff --stat` | Old code: **3 failed, 19 passed** (the stuck-status test with today's own error). New code: **160 passed**; hash **`9895d0cf...14cd`**, unchanged; 3 files |
+| The fixed reset on the real lab | host, Claude (no guest call; the password file named does not exist) | a Python script: `Lab(cfg).reset_to_known_state()` with `settle_s=0`, then `lab.stop()`, then the reset again; every `vmrun` call timed | Reset 1: revert exit 0 (17:50:46), start exit 0, `checkToolsState` `installed`, **`getGuestIPAddress -wait` exit 0 after 10.7 s**, `checkToolsState` `running`: passed in 14.5 s. Stop exit 0 (8.6 s). Reset 2: the same, `-wait` 10.8 s, passed in 13.2 s. **0 guest calls** |
+
 ---
 
 ## Part 3: Read-only checks (safe, change nothing)
@@ -1293,7 +1315,8 @@ every host start since then (COMMANDS 2.18). Check it again after any Windows re
 ```bash
 .venv/Scripts/python.exe -m pytest tests -q
 ```
-Expect the number in CLAUDE.md's Commands section (`156 passed` on 2026-11-26; it was `58 passed` on 2026-09-28)
+Expect the number in CLAUDE.md's Commands section (`160 passed` on 2026-11-26 after the Tools-wait fix; `156 passed`
+before it; it was `58 passed` on 2026-09-28)
 
 ```bash
 git status --short
@@ -1305,3 +1328,9 @@ Expect blank
 ```
 Expect `10.20.10.1`. **Anything else, or an error, means the host has lost the lab network.** Fix
 it with Part 1.3 and 1.4 first. Added 2026-09-26, OPEN-QUESTIONS 27.
+
+**No VMware-window check is needed (DECISIONS 2026-11-27).** A check that the VMware window and the VM tabs are open
+was added here on 2026-11-26 after two stopped runs, and removed the same evening: the real cause was that
+`checkToolsState` stays at `installed` until something waits on Tools, and the harness now does that wait itself
+(COMMANDS 2.19). If a run ever stops again with "VMware Tools not running", run
+`& $vmrun -T ws getGuestIPAddress $win -wait`: an IP means Tools runs, and the cause is elsewhere.
