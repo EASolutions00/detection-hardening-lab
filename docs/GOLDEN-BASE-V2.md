@@ -10,7 +10,9 @@ both VMs log `Monitor Mode: CPL0`. A1 done at 10:57 UTC (COMMANDS 2.18). After A
 scripts (DECISIONS 2026-11-26), so A2 and A3 were repeated with the new hashes: 8 of 8 match (12:52 UTC). A4 to A6 passed,
 and A7 reverted at 13:16 UTC: **Phase A passed** (COMMANDS 2.18). K2 and C5 both took effect without a restart. **Phase B passed:** `golden-base-v2` taken
 at 2026-11-26T13:31:48Z; B5 gave 25 of 25 after a restart. **Phase C passed:** the test boot
-is clean, and the catalog names `golden-base-v2` since C4.
+is clean, and the catalog names `golden-base-v2` since C4. **Phase D passed:** 42 of 42 scan results as
+predicted, 4 trial runs valid. From D1 on, scan results were read from the SIEM archive (COMMANDS 2.18), and a scan
+takes about 11 s.
 
 ---
 

@@ -169,3 +169,26 @@ check 26222's condition line, which was not read. **Image:** `golden-base-v2`. *
   turns NLA on by default.
 
 `(unverified)` until the scans of `docs/GOLDEN-BASE-V2.md`, Phase D. A different result is reported as found.
+
+**Scan results (dated lines; the table above is not edited):**
+- **2026-11-26, Baseline (D1):** 26177 Failed, 26270 Failed, 26426 Failed, 26148 Passed, 26222 Passed, 26144 Passed.
+  **As predicted, 6 of 6** (COMMANDS 2.18; export `data\runs\scans-2026-11-26\D1-baseline-checks.csv`). Check 26222's
+  condition, read in the export: `all`, so the key, the value and the value 1 must all be present.
+- **2026-11-26, After C1 (D2):** 26177 **Passed**, 26270 Failed, 26426 Failed, 26148 Passed, 26222 Passed, 26144
+  Passed. **As predicted, 6 of 6**; the totals moved by one check (read from the SIEM archive, COMMANDS 2.18).
+- **2026-11-26, After C3 (D2):** 26177 Failed, 26270 **Failed**, 26426 Failed, 26148 Passed, 26222 Passed, 26144
+  Passed. **As predicted, 6 of 6**: the totals equal the baseline, so the scan does not see C3. That C3 applied is shown
+  by Sysmon 13, `RunAsPPL` set to 2 at 14:18:28 UTC, before the scan.
+- **2026-11-26, After C5 (D3, after `trial-C5-1`):** 26177 Failed, 26270 Failed, 26426 **Passed**, 26148 Passed, 26222
+  Passed, 26144 Passed. **As predicted, 6 of 6**; one check moved. The no-NLA client was refused (`0xb09`).
+- **2026-11-26, After K1 (D3, after `trial-K1-1`):** 26177 Failed, 26270 Failed, 26426 Failed, 26148 **Failed**, 26222
+  Passed, 26144 Passed. **As predicted, 6 of 6**; one check moved. In the run: no 4624 and no 4648 key, 4672 unchanged;
+  session event 21 at 14:43:56 UTC shows the sign-in worked (section 4).
+- **2026-11-26, After K2 (D3, after `trial-K2-1`):** 26177 Failed, 26270 Failed, 26426 Failed, 26148 Passed, 26222
+  **Failed**, 26144 Passed. **As predicted, 6 of 6**; one check moved. In the run, the 4688 key had no `CommandLine`
+  field (165 events; `trial-C5-1`: 143 with it).
+- **2026-11-26, After K3 (D3, after `trial-K3-1`):** 26177 Failed, 26270 Failed, 26426 Failed, 26148 Passed, 26222
+  Passed, 26144 **Failed**. **As predicted, 6 of 6**; one check moved. In the run, no 4688 key; Sysmon 1 still present.
+- **Summary, 2026-11-26:** 7 states, **42 of 42 results as predicted**. The scan sees C1, C5, K1, K2 and K3, and does
+  not see C3, as section 6 says. All read from the SIEM archive, except the baseline, also read from the dashboard
+  export (the same results).

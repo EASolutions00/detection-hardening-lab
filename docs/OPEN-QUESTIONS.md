@@ -1617,7 +1617,9 @@ the ranking. The table's "92653 and 92657 stop" holds; "keys LOST" holds only fo
 3. **Proof that K1's sign-in still worked:** the step's exit code, `Security-4672[]` unchanged (Special Logon is not
    turned off by K1; `(unverified)` that the sign-in writes 4672), and one hand trial with `query session`.
    **Prepared 2026-11-26:** step D3 reads the session event 21 in the guest after the trial run, in place of
-   `query session`, which would have to run during the 30-second sign-in.
+   `query session`, which would have to run during the 30-second sign-in. **Seen 2026-11-26 (D3, `trial-K1-1`):**
+   step `rdp-signin-30s` exit 0; session event 21 at 14:43:56 UTC, inside the window; no 4624 key; `Security-4672[]`
+   27, the same as `trial-C5-1` (COMMANDS 2.18).
 4. The three points above, from before the decision.
 
 ---

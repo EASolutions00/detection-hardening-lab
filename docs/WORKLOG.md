@@ -91,8 +91,19 @@ snapshots. `golden-base` stays as the spike's image and the fallback.
 WIN-EP-01 lines; the only `eli` logons are two type 2 at 13:34:18, the student's sign-in. C4: the catalog now names
 `golden-base-v2` and its time; 156 passed. DECISIONS' pinned table has a `golden-base-v2` row. **Phase C passed.**
 
-**Next:** Phase D, the trial runs and the compliance scans (`docs/GOLDEN-BASE-V2.md`). Before D3's first trial run,
-check the Kaspersky exclusion of `E:\TeLoS-artifacts`.
+**Phase D (student: "Yes, start Phase D"):** 7 compliance scans and 4 trial runs. **All 42 scan results as
+predicted** (EXPECTED-RESULTS section 6): the scan sees C1, C5, K1, K2 and K3, and not C3. The first scan was read
+from the student's dashboard export; the archive on SIEM-01 gave the same results, so Claude read the other six from
+the archive over SSH (no dashboard password). Each scan took about 11 s, not about 5 minutes. **Trial runs
+`trial-C5-1`, `trial-K1-1`, `trial-K2-1`, `trial-K3-1`: all valid**, all on `golden-base-v2`, one parameters hash
+`9895d0cf...`. In the data: C5's sign-in keys as OPEN-QUESTIONS 37, and the no-NLA client refused after the run; K1
+no 4624 and no 4648 key, with session event 21 proving the sign-in; K2 the 4688 key without `CommandLine`; K3 no 4688
+key, Sysmon 1 still there. K2 and C5 again needed no restart. `trial-K3-1` had one broken line: SIEM-01's own last
+line of the export, cut off after the window, harmless. The Kaspersky exclusion survived the reinstall (student).
+The student asked to run their steps for them; Claude did not, because they need the guest or dashboard password.
+
+**Next:** Phase E, the evaluation runs (`EXPECTED-RESULTS.md` section 5): 5 control runs, 3 before runs, 3 after
+runs per case.
 
 ---
 
