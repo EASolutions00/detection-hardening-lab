@@ -2,7 +2,7 @@
 
 Current blockers and dates. This file changes often. CLAUDE.md does not.
 Last updated: 2026-11-26 (chat 26343d0f): Phase A: the Windows hypervisor found on and turned off again, then a guard
-on the guest scripts, then Phase A passed (item 5 and "Lab state"). Earlier the same day: item 5 of "Now, as of 2026-11-23", the test cases and the expected
+on the guest scripts, then Phases A and B passed, `golden-base-v2` taken (item 5 and "Lab state"). Earlier the same day: item 5 of "Now, as of 2026-11-23", the test cases and the expected
 results. 2026-11-25 (chat 26343d0f): item 4, the revised form.
 2026-11-23 (chat ee84ae3f): the first consultation with the adviser, in the new section "Now, as of
 2026-11-23", and in "Deadline and target", "Next, in order", "Still waiting on the student" and "The spike".
@@ -45,7 +45,8 @@ In order:
    (the student; DECISIONS 2026-11-26). **2026-11-26, Phase A stopped at the pre-flight:** the Windows hypervisor was
    on again ("Lab state"). Fixed the same day; A1 to A3 done. Then the guard was added to the 8 guest
    scripts (DECISIONS 2026-11-26), and A2 and A3 were repeated: 8 of 8 new hashes match. **Phase A passed**
-   (A7 at 13:16 UTC); K2 and C5 both work without a restart. **Next: Phase B, take `golden-base-v2`.**
+   (A7 at 13:16 UTC); K2 and C5 both work without a restart. **Phase B passed: `golden-base-v2` taken at
+   2026-11-26T13:31:48Z** (COMMANDS 2.18). **Next: Phase C, the test boot and the repo update.**
 
 Recommended, not decided: the 5 pinned control runs wait until the form is sent, because the pre-oral needs chapters
 1 to 3, not the results (Claude's reading). Not decided: when the GUI is built. The adviser pictures the system as a
@@ -244,7 +245,8 @@ and with them only C1, C3 and C5 can blind a detection (`DECISIONS.md` 2026-10-0
 - **2026-11-26 (chat 26343d0f): the Windows hypervisor was on** at every host start from 2026-11-23, when Windows
   was reinstalled in place, to the morning of 2026-11-26. The spike ran with it off (its VMware logs say `CPL0`). **Off
   again** since the student's fix and host restart at 10:48 UTC (COMMANDS 1.1 and 2.18; DECISIONS, pinned versions).
-  SIEM-01 running since 10:52 UTC. WIN-EP-01 off, reverted to `golden-base` at 13:16 UTC (Phase A's A7).
+  SIEM-01 running since 10:52 UTC. WIN-EP-01 off; **`golden-base-v2` taken at 2026-11-26T13:31:48Z** (7 snapshots;
+  `golden-base` kept). The repo still points at `golden-base` until Phase C's C4.
 - **2026-11-16 (chat ee84ae3f): `golden-base` exists and is checked** (cold, DECISIONS 2026-11-16, COMMANDS 2.16).
   A test boot gave 20 of 20, no `eli` session before the student's sign-in, NAT disconnected. WIN-EP-01 is now running
   from that test boot (in no snapshot; the next revert drops it); SIEM-01 running. **Decided:** no `cfg-suppressed`

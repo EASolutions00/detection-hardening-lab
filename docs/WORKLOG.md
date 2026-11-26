@@ -80,7 +80,13 @@ screen or the desktop was not stated.
 asked whether Phase A must be repeated, worried about a mistake; no: Phase A is thrown away at A7, and the
 measurements start from fresh reverts of `golden-base-v2`.
 
-**Next:** Phase B, take `golden-base-v2` (`docs/GOLDEN-BASE-V2.md`).
+**Phase B (student: "Yes, start Phase B"):** B1 (Claude) hypervisor `False`, revert, start 13:19:16 UTC, `CPL0`. B2
+8 × `exit 0`; B3 8 of 8 hashes match by script; B4 25 of 25; B5 **25 of 25 after a restart** (never seen for the old
+image). B6 (student) signed out, shut down, NAT "Connect at power on" unticked. B7 (Claude): VM off, no `.vmss`,
+`ethernet0` (VMnet8, NAT) `startConnected = "FALSE"`. **B8: `golden-base-v2` taken at 2026-11-26T13:31:48Z**, 7
+snapshots. `golden-base` stays as the spike's image and the fallback.
+
+**Next:** Phase C, the test boot and the repo update (C4 puts the snapshot time into the catalog).
 
 ---
 
