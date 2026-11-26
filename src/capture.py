@@ -27,6 +27,23 @@ REPO = Path(__file__).resolve().parent.parent
 HOME = Path(os.environ["USERPROFILE"])
 
 
+def lab_config(window_s: int, backup_dir: str | None, config: str) -> LabConfig:
+    """The lab's settings for one run. `src/evaluate.py` uses this same function, so the batch and a single run
+    are made with identical settings (DECISIONS 2026-11-27)."""
+    return LabConfig(
+        vmrun=r"C:\Program Files (x86)\VMware\VMware Workstation\vmrun.exe",
+        vmx=r"F:\TeLoS Homelab\WIN-EP-01\WIN-EP-01.vmx",
+        snapshot=GOLDEN_SNAPSHOT,          # catalog: one place for the name and its time
+        guest_user="eli",
+        password_file=HOME / ".telos" / "WIN-EP-01.pw",
+        ssh_key=HOME / ".telos" / "siem01_ed25519",
+        runs_dir=REPO / "data" / "runs",
+        backup_dir=Path(backup_dir) if backup_dir else None,
+        window_s=window_s,
+        after_boot=CONFIG_S if config == "S" else (),
+    )
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="One capture window on the TeLoS lab.")
     ap.add_argument("--run-id", required=True)
@@ -51,18 +68,7 @@ def main() -> int:
     if (a.phase == "post") != (a.change is not None):
         ap.error("--change is required for --phase post and refused for the other phases")
 
-    cfg = LabConfig(
-        vmrun=r"C:\Program Files (x86)\VMware\VMware Workstation\vmrun.exe",
-        vmx=r"F:\TeLoS Homelab\WIN-EP-01\WIN-EP-01.vmx",
-        snapshot=GOLDEN_SNAPSHOT,          # catalog: one place for the name and its time
-        guest_user="eli",
-        password_file=HOME / ".telos" / "WIN-EP-01.pw",
-        ssh_key=HOME / ".telos" / "siem01_ed25519",
-        runs_dir=REPO / "data" / "runs",
-        backup_dir=Path(a.backup_dir) if a.backup_dir else None,
-        window_s=a.window_s,
-        after_boot=CONFIG_S if a.config == "S" else (),
-    )
+    cfg = lab_config(a.window_s, a.backup_dir, a.config)
     lab = Lab(cfg)
     change = CHANGES[a.change] if a.change else None
     stimulus = pinned_stimulus() if a.stimulus == "pinned" else trial_stimulus()

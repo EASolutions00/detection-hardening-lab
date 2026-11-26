@@ -1054,6 +1054,8 @@ student decides item 22's void rule and the runs per phase (STATUS, "The spike")
 | `eval-pre-3`, first attempt | host, **student** | `capture.py --run-id eval-pre-3 --phase pre` | **`STOPPED before producing data: vmrun start failed`**; no run folder |
 | Why | host, Claude (read only) | `vmrun -T ws list`; the newest `vmware.log` (power and error lines); the `.lck` files; host start time; free space on F: | WIN-EP-01 **running**: `VMAutomation_PowerOn` at 20:09:46 with `success=1`, Tools' `OS_PowerOn` script at 20:09:57; at 20:09:46.442 **`VmdbPipeStreamsOvlError Couldn't read: (109) The pipe has been ended`**: vmrun's connection broke, so it reported a failure for a start that worked. Locks: those of a running VM. Host start still 15:51:18; F: 138.3 GB free. **A one-off** (first in 30 runs); if it repeats, the harness could check `vmrun list` after a failed start. `eval-pre-3` is still unused |
 | **`eval-pre-3`** | host, **student** | the same command, again | **`valid: True`**, no void reasons; the 5 steps exit 0; 7 guest calls; window 20:14:35 to 20:17:35, 695 events, 1 broken line (the export's last line, SIEM-01's own systemd message at 20:19:44: harmless); **fingerprint 97**; 519.7 s; `pre`, **`9895d0cf...14cd`**. Counts: type 10 2; 4688 137; 5379 47; no `Application-1001` (low). **3 of 3 before runs valid, all three "low"** (695 to 706 events; the controls had 2 low, 3 high) |
+| **`eval-post-C1-1`** | host, **student** | `capture.py --run-id eval-post-C1-1 --phase post --change C1` | **`valid: True`**, no void reasons; the 5 steps exit 0; 9 guest calls; window 20:25:12 to 20:28:12, 710 events, 0 broken lines; **fingerprint 98**; `post`, C1 script `6a269612...`, **`change_confirmed` true**, **`9895d0cf...14cd`**. Counts: type 10 2; 4688 139; 5379 54; no `Application-1001` (low) |
+| The batch (student: "can this be done in simultaneous so I can leave my PC", then "Yes, build it") | host, Claude | `src/telos/evaluation.py` (the plan of all 26 runs); `src/evaluate.py` (the spike's `run_batch`, `capture.lab_config`, the pinned stimulus, `RUN_CHECKS`); `capture.py` refactored to `lab_config()`; 5 tests in `tests/test_evaluation.py`; `pytest`; both `--help`; the plan against `data\runs` | Not in parallel: one WIN-EP-01. Tests: failed first (no module), then **170 passed**; the batch's settings equal `capture.py`'s and give **`9895d0cf...14cd`**; both commands start; **9 done, 17 to run**, from `eval-post-C1-2` to `eval-post-K3-3` |
 
 ---
 
@@ -1333,7 +1335,8 @@ every host start since then (COMMANDS 2.18). Check it again after any Windows re
 ```bash
 .venv/Scripts/python.exe -m pytest tests -q
 ```
-Expect the number in CLAUDE.md's Commands section (`165 passed` on 2026-11-26 after the void rule; `160` after the
+Expect the number in CLAUDE.md's Commands section (`170 passed` on 2026-11-26 after the evaluation batch; `165` after
+the void rule; `160` after the
 Tools-wait fix; `156` before it; it was `58 passed` on 2026-09-28)
 
 ```bash

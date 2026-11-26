@@ -95,10 +95,11 @@ Uncertainty goes in `OPEN-QUESTIONS.md`, not in a comment inside a draft.
 
 ```bash
 .venv/Scripts/python.exe src/demo.py          # end to end on synthetic data
-.venv/Scripts/python.exe -m pytest tests -q   # expect: 165 passed (update when tests are added)
+.venv/Scripts/python.exe -m pytest tests -q   # expect: 170 passed (update when tests are added)
 .venv/Scripts/python.exe src/spike.py   # the spike's 19 runs, about 3 hours; the student runs it (guest password)
 .venv/Scripts/python.exe src/spike.py --analyse   # answers spike Q1 to Q6 into data/summaries (no VM)
 .venv/Scripts/python.exe src/capture.py --run-id <id> --phase pre   # one real capture window; the student runs it (guest password)
+.venv/Scripts/python.exe src/evaluate.py   # the evaluation's remaining runs in order, unattended, resumable; the student runs it (guest password)
 .venv/Scripts/python.exe src/run.py --control <run dirs> --pre <run dirs> --post <run dirs> --rules data/rules/wazuh-4.14.7 --out <dir>   # one comparison from real run folders
 ```
 

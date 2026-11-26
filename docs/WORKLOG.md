@@ -63,7 +63,13 @@ connection broke (`The pipe has been ended`); a one-off in 30 runs, run again un
 before runs are "low" (695 to 706 events), while 3 of the 5 controls were "high"; why is unverified (one idea, also
 unverified: a task in Windows that depends on the time of day).
 
-**Next:** 3 after runs for each case, starting with C1 (`eval-post-C1-1`).
+**After runs:** `eval-post-C1-1` valid (C1 confirmed, fingerprint 98, low). The student asked to run the rest at the
+same time so the PC could be left; not in parallel (one WIN-EP-01), but one after another: **`src/evaluate.py`**,
+the whole plan of 26 runs, which skips runs on disk and so resumes after any stop, built on the spike's `run_batch`
+and on the same `lab_config()` as `capture.py`. 5 tests; 170 passed; same hash.
+
+**Next:** the student starts `src/evaluate.py` for the 17 remaining after runs (about 2.5 hours), with the host left
+signed in and unlocked.
 
 ---
 
