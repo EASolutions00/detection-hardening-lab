@@ -6,7 +6,8 @@ DECISIONS 2026-11-16): the scripts in `C:\\telos\\` (copied 2026-11-16) and Atom
 Red Team at its pinned commit in `C:\\AtomicRedTeam\\`. The one exception: the scripts
 of the test cases K1 to K3 (added 2026-11-26) are not in `golden-base` yet
 (OPEN-QUESTIONS 42), so their verify step fails and the harness voids the run until
-they are.
+they are. They go into `golden-base-v2` (docs/GOLDEN-BASE-V2.md); then GOLDEN_SNAPSHOT
+and GOLDEN_BASE_TAKEN below change together.
 
 `pinned_stimulus()` is the study's one attack list (DECISIONS 2026-11-18): the Remote
 Desktop sign-in from the host, then the LSASS trial's tests. `trial_stimulus()` alone
@@ -21,6 +22,12 @@ from pathlib import Path
 from .harness import Change, GuestStep, HostStep, Step
 
 POWERSHELL = r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
+
+# The golden snapshot every run reverts to, and when it was taken (DECISIONS 2026-11-16). Change BOTH together, right
+# after a new snapshot is taken: the name goes to the harness (src/capture.py), the time into every run's hashed
+# parameters. golden-base-v2 replaces both once it exists (DECISIONS 2026-11-26; docs/GOLDEN-BASE-V2.md, step C4).
+GOLDEN_SNAPSHOT = "golden-base"
+GOLDEN_BASE_TAKEN = "2026-11-16T06:59:45Z"
 SCRIPTS = Path(__file__).resolve().parents[2] / "lab" / "scripts"
 ART_MODULE = r"C:\AtomicRedTeam\invoke-atomicredteam\Invoke-AtomicRedTeam.psd1"
 ART_ATOMICS = r"C:\AtomicRedTeam\atomics"
@@ -106,7 +113,7 @@ def parameters(config: str) -> dict:
     """The pinned values hashed into every run manifest (DECISIONS, pinned table)."""
     return {
         "config": config,                                                  # S = Defender off, N = as is
-        "golden_base": "2026-11-16T06:59:45Z",
+        "golden_base": GOLDEN_BASE_TAKEN,
         "art_commit": "cb486d9a888e921fac5902a06c7b46e420bb14a7",
         "invoke_atomicredteam_commit": "8af478bb9e4637df568ac1e596553b025b16cd1b",
         "sysmon_config_sha256": "02C43AC8EA7B27A9D290C2FE4587A5C184B09FC0AEDA263C2C4E24A4EE43B3AD",

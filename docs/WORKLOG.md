@@ -17,6 +17,30 @@ Next:
 
 ---
 
+## 2026-11-26 (evening) - How engineers harden and deploy; golden-base-v2 prepared
+
+**Chat:** 26343d0f (Claude Code). **Asked:** how engineers do operating system and endpoint hardening and deploy it, to
+copy the process in the lab; then "Yes, prepare them".
+
+**Did:** 10 web searches (NIST SP 800-70 Rev. 5 and SP 800-128, CM-3, Microsoft's toolkit and Group Policy guide,
+Intune and Windows 365 baselines, DISA's GPO package, CIS Build Kits). A reader agent read Wazuh 4.14.7's
+`cis_win11_enterprise.yml` (CIS Windows 11 Enterprise v3.0.0) and Microsoft's toolkit page. The two NIST PDFs could not
+be read here (compressed text, and no PDF tool on this host). The Tenable NLA page cited earlier now gives 404.
+
+**Found:** the lab copies the testing step of the usual process. Wazuh's NLA check (26426) reads only the Group Policy
+key and passes when it is missing, so with the old image it would say "compliant" while NLA was off. C3's deviation
+fails its check (26270) before and after. Also a correction: a pilot rollout is sourced for security baselines too
+(Windows 365 baseline page; CIS test OU), not only for Windows updates, as said earlier in this chat.
+
+**Prepared (student: "Yes, prepare them"):** C5 and the baseline on the Group Policy key; Audit Logon set explicitly;
+25 baseline rows; CIS v3.0.0 numbers in the headers; `catalog.GOLDEN_SNAPSHOT` and `GOLDEN_BASE_TAKEN`;
+`docs/GOLDEN-BASE-V2.md`; `EXPECTED-RESULTS.md` section 6; the form's limitation 10. 8 scripts parse with 0 errors;
+155 passed.
+
+**Next:** the student runs Phase A of `docs/GOLDEN-BASE-V2.md`.
+
+---
+
 ## 2026-11-26 (later) - The exact test for a key that drops to zero (item 43, option (b))
 
 **Chat:** 26343d0f (Claude Code). **Asked:** "Use the exact test".

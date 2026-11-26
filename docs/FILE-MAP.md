@@ -60,7 +60,8 @@ physical drive (WORKLOG 2026-09-28, sixth), which is why the backups go there.
 | `docs/T1-WALKTHROUGH.md` | Worked example of the method. Its C4 example was overtaken 2026-10-01 (banner at the top) | SOURCE |
 | `docs/demo-output.txt` | Output of `src/demo.py` (COMMANDS Part 4 says how to make it) | COPY |
 | `docs/FILE-MAP.md` | This file | SOURCE |
-| `docs/EXPECTED-RESULTS.md` | Each evaluation case's expected result and the scoring rules, written before any run (added 2026-11-26). Never edit an expectation after its runs exist | RECORD |
+| `docs/EXPECTED-RESULTS.md` | Each evaluation case's expected result and the scoring rules, written before any run (added 2026-11-26). Never edit an expectation after its runs exist. Section 6: the compliance scan's expected pass or fail | RECORD |
+| `docs/GOLDEN-BASE-V2.md` | The steps to take `golden-base-v2`, then the trial runs and the compliance scans, each command explained (added 2026-11-26; not run) | SOURCE |
 | `lab/blueprint.md` | Lab design, resource budget, the change catalogue (section 8) | SOURCE |
 | `lab/configs/` | `sysmonconfig.xml`, `wazuh-agent-ossec.conf`, README. Pinned; hash them. Also `c5-client-no-nla.rdp`, a test file from 2026-11-12, not pinned | SOURCE |
 | `lab/scripts/README.md` | Rules for the hardening-change scripts. **No change script exists yet** | SOURCE |
@@ -72,7 +73,7 @@ physical drive (WORKLOG 2026-09-28, sixth), which is why the backups go there.
 | `src/spike.py`, `src/telos/spike.py` | The spike's run plan and batch runner (added 2026-11-16; tests in `tests/test_spike.py`) | SOURCE |
 | `src/capture.py`, `src/telos/catalog.py` | The command that runs one real capture window, and the lab's fixed pieces it uses (added 2026-11-16; tests in `tests/test_catalog.py`) | SOURCE |
 | `lab/scripts/change-C1-disable-wdigest.ps1`, `change-C3-lsa-protection.ps1`, `change-C5-rdp-nla.ps1`, `config-S-defender-off.ps1` | Change scripts with `-Verify`, and the after-boot Config S script (added 2026-11-13, not yet run by the harness) | SOURCE |
-| `lab/scripts/change-K1-audit-logon-off.ps1`, `change-K2-cmdline-off.ps1`, `change-K3-audit-process-creation-off.ps1` | Test-case scripts with `-Verify`: configuration mistakes made on purpose, never hardening (added 2026-11-26; not in `golden-base` yet, not yet run) | SOURCE |
+| `lab/scripts/change-K1-audit-logon-off.ps1`, `change-K2-cmdline-off.ps1`, `change-K3-audit-process-creation-off.ps1` | Test-case scripts with `-Verify`: configuration mistakes made on purpose, never hardening (added 2026-11-26; not in `golden-base` yet, not yet run; they go into `golden-base-v2`) | SOURCE |
 | `src/known_answer_dryrun.py` | Dry run of the test cases through the real pipeline: real spike noise, synthetic effects. Checks that `docs/EXPECTED-RESULTS.md` and the code agree; not lab evidence (added 2026-11-26) | SOURCE |
 | `lab/knowledge/compensating-controls.json` | Remediation level 2: curated compensating controls per change, each with its source and status. First two entries (C3, C5) from lab measurements, not tested. The student curates it (added 2026-11-13) | SOURCE |
 | `tests/` | `test_archive.py`, `test_index.py`, `test_impact.py`, `test_report_sections.py`, `test_harness.py`, `test_pipeline.py`, `test_eventkey.py`, `test_differential.py`. 118 passed on 2026-11-13 | SOURCE |

@@ -1,5 +1,7 @@
 # Change C3: LSA Protection (LSASS as a protected process)
-# Source: CIS Microsoft Windows 11 Enterprise Benchmark v5.1.0, 18.9.27.2 (18.9.25.2 in v2.0.0); blueprint row C3
+# Source: CIS Microsoft Windows 11 Enterprise Benchmark v3.0.0, 18.9.26.2 (Wazuh check 26270; the CIS version the study
+#   pins, DECISIONS 2026-11-26). 18.9.27.2 in v5.1.0; 18.9.25.2 in v2.0.0. Blueprint row C3.
+#   The check wants RunAsPPL = 1, so a scan reports this deviation as failed, before and after.
 # Stated deviation: RunAsPPL = 2 (no UEFI lock), not the benchmark's "Enabled with UEFI Lock"
 #   (DECISIONS 2026-09-29; OPEN-QUESTIONS 18). The baseline has RunAsPPL = 0 (DECISIONS 2026-11-03).
 # Expected telemetry effect (a prediction): Sysmon 10 access to lsass.exe changes.

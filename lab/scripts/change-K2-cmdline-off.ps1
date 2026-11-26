@@ -1,7 +1,8 @@
 # Test case K2: "Include command line in process creation events" turned off
 # NOT a hardening change. A configuration mistake made on purpose, with a known answer (OPEN-QUESTIONS 42;
 # DECISIONS 2026-11-26). It breaks these benchmark items:
-#   CIS Microsoft Windows 11 Enterprise Benchmark v5.0.1, 18.9.3.1 (Enabled)
+#   CIS Microsoft Windows 11 Enterprise Benchmark v3.0.0, 18.9.3.1 (Enabled) (Wazuh check 26222; the CIS version the
+#   study pins, DECISIONS 2026-11-26). The same number in v5.0.1.
 #   DISA Windows 11 STIG WN11-CC-000066
 # The golden image sets the value to 1 (baseline-golden.ps1, row "4688 command line").
 # Expected result, written before any run: docs/EXPECTED-RESULTS.md, case K2.

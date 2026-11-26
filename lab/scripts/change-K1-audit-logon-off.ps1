@@ -2,8 +2,8 @@
 # NOT a hardening change. A configuration mistake made on purpose, with a known answer (OPEN-QUESTIONS 42;
 # DECISIONS 2026-11-26). It breaks these benchmark items:
 #   DISA Windows 11 STIG WN11-AU-000075 (V-253317): audit Logon successes, CAT II
-#   CIS Microsoft Intune for Windows 11 Benchmark v2.0.0, 17.5.4 "Audit Logon" = Success and Failure
-#   (the CIS Windows 11 Enterprise number is not confirmed)
+#   CIS Microsoft Windows 11 Enterprise Benchmark v3.0.0, 17.5.4 "Audit Logon" = Success and Failure (Wazuh check
+#   26148; the CIS version the study pins, DECISIONS 2026-11-26). Also 17.5.4 in CIS Intune for Windows 11 v2.0.0.
 # Expected result, written before any run: docs/EXPECTED-RESULTS.md, case K1.
 # Run by the harness inside WIN-EP-01:
 #   powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\telos\change-K1-audit-logon-off.ps1           (apply)

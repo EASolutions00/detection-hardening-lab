@@ -1,7 +1,8 @@
 # Test case K3: "Audit Process Creation" set to No Auditing
 # NOT a hardening change. A configuration mistake made on purpose, with a known answer (OPEN-QUESTIONS 42;
 # DECISIONS 2026-11-26). It breaks this benchmark item:
-#   CIS Microsoft Windows 11 Enterprise Benchmark v5.0.1, 17.3.2 "Audit Process Creation" includes Success
+#   CIS Microsoft Windows 11 Enterprise Benchmark v3.0.0, 17.3.2 "Audit Process Creation" includes Success (Wazuh check
+#   26144; the CIS version the study pins, DECISIONS 2026-11-26). The same number in v5.0.1.
 # The golden image sets it to Success (baseline-golden.ps1; DECISIONS 2026-09-29). It was removed from the hardening
 # catalogue on 2026-09-08 because CIS requires it on (lab/scripts/README.md); here it returns as a test case only.
 # Expected result, written before any run: docs/EXPECTED-RESULTS.md, case K3.

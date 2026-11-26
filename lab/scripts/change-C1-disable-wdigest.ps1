@@ -1,5 +1,7 @@
 # Change C1: Disable WDigest (UseLogonCredential = 0)
 # Source: DISA V-253358 (Windows 11 STIG); blueprint section 8, row C1
+#   CIS Microsoft Windows 11 Enterprise Benchmark v3.0.0, 18.4.8 "WDigest Authentication" = Disabled (Wazuh check 26177;
+#   the CIS version the study pins, DECISIONS 2026-11-26). The check reads the same value this script writes.
 # Expected telemetry effect (a prediction): 4624 logon-type distribution shifts.
 #   Measured 2026-11-13: not seen; a console sign-in wrote identical events (OPEN-QUESTIONS 1, "The C1 trial").
 # Run by the harness inside WIN-EP-01:

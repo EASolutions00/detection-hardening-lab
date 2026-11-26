@@ -1353,6 +1353,12 @@ The claim that real attack tools connect this way is general knowledge `(unverif
 **Blocks:** the C5 attack test in the pinned list, and the golden snapshot (the baseline's NLA and Remote Desktop
 state must be decided first).
 
+**2026-11-26: C5 moves to the Group Policy key** (DECISIONS 2026-11-26). The measurements above used the listener
+value (`...\WinStations\RDP-Tcp`). In `golden-base-v2`, the baseline also turns NLA off through
+`HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services` (value 0), and C5 sets that key to 1, as Group Policy
+would; Wazuh's CIS check 26426 reads only that key. That the sign-in writes the same events through the policy key is
+`(unverified)`: `docs/GOLDEN-BASE-V2.md` steps A6 and D3 test it.
+
 ---
 
 ## 38. All three candidate changes show no blind spot under the shipped rules
@@ -1602,11 +1608,15 @@ the ranking. The table's "92653 and 92657 stop" holds; "keys LOST" holds only fo
 1. **How the K scripts reach `C:\telos\`.** They are not in `golden-base`. Either copy them in and take
    `golden-base` again before the 5 pinned control runs (no code change; a new `golden_base` value in
    `catalog.parameters`), or add a harness step that copies the script before the change (code and tests; one more
-   guest call before the fence). Not decided.
+   guest call before the fence). **Decided 2026-11-26: a new snapshot, `golden-base-v2`** (student: "Yes, prepare
+   them", to preparing the lab changes for the next retake; DECISIONS 2026-11-26). Steps: `docs/GOLDEN-BASE-V2.md`.
 2. **K2 and a restart:** whether the command-line value takes effect without one is `(unverified)`. K2's `-Verify`
-   tests the effect, so a run where it did not take effect is voided, never analysed.
+   tests the effect, so a run where it did not take effect is voided, never analysed. **Prepared 2026-11-26:**
+   `docs/GOLDEN-BASE-V2.md` steps A5 and D3 test it.
 3. **Proof that K1's sign-in still worked:** the step's exit code, `Security-4672[]` unchanged (Special Logon is not
    turned off by K1; `(unverified)` that the sign-in writes 4672), and one hand trial with `query session`.
+   **Prepared 2026-11-26:** step D3 reads the session event 21 in the guest after the trial run, in place of
+   `query session`, which would have to run during the 30-second sign-in.
 4. The three points above, from before the decision.
 
 ---

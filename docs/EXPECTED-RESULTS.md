@@ -40,6 +40,15 @@ called hardening. Its job is to remove evidence that is known in advance, so we 
   NTLM logons with 92657, one 4648, two type 10 logons with 92653). `(unverified)` until the first pinned run.
 - C1, C3 and C5 were already measured, so their rows are confirmations, not blind predictions. Only K1 to K3 are new.
 
+**2026-11-26, later: two changes before any run** (DECISIONS 2026-11-26; `docs/GOLDEN-BASE-V2.md`). The expected
+results above do not change.
+1. **One CIS version:** CIS Microsoft Windows 11 Enterprise Benchmark **v3.0.0**, the version Wazuh 4.14.7's scan
+   checks. Its numbers: C1 18.4.8, C3 18.9.26.2, C5 18.10.56.3.9.4, K1 17.5.4, K2 18.9.3.1, K3 17.3.2. The table above
+   keeps the numbers as first written.
+2. **C5 now sets NLA through the Group Policy key**, and the baseline turns NLA off through the same key, as Group
+   Policy would. C5's expected events stay the same. Whether the policy key gives the same events as the listener
+   value is checked by the trial run `trial-C5-1`.
+
 ---
 
 ## 2. What the current system will print for these events (the dry run)
@@ -114,6 +123,7 @@ With "Audit Logon" off there are no logon events, so the proof must come from el
 ## 5. What must be true before the runs
 
 1. The K1 to K3 scripts are in `C:\telos\` in the guest. They are not in `golden-base` yet (OPEN-QUESTIONS 42).
+   **Prepared 2026-11-26:** they go into `golden-base-v2` (`docs/GOLDEN-BASE-V2.md`).
 2. Every case runs in one configuration, Config S (Defender off, as for C3 since 2026-11-03), so the before runs can be
    shared: the pipeline needs one parameters hash.
 3. The rare-key rule is decided (OPEN-QUESTIONS 43). **Done 2026-11-26:** option (b), the exact test for a key that
@@ -123,3 +133,37 @@ With "Audit Logon" off there are no logon events, so the proof must come from el
 
 **Run plan (estimate):** 5 control runs, 3 before runs shared by all cases, and 3 after runs for each of C1, C3, C5,
 K1, K2 and K3: 26 runs, about 4.3 hours at the spike's 9.8 minutes per run.
+
+---
+
+## 6. Compliance scan, expected before and after (written 2026-11-26, before any scan)
+
+**Scanner:** Wazuh 4.14.7's compliance scan (SCA), file `cis_win11_enterprise.yml`, "CIS Microsoft Windows 11
+Enterprise Benchmark v3.0.0". The checks below were read word for word from Wazuh's repository at tag v4.14.7, except
+check 26222's condition line, which was not read. **Image:** `golden-base-v2`. **How to scan:**
+`docs/GOLDEN-BASE-V2.md`, Phase D.
+
+| State | 26177 WDigest | 26270 LSASS | 26426 NLA | 26148 Audit Logon | 26222 Command line | 26144 Process Creation |
+|---|---|---|---|---|---|---|
+| Baseline | Failed (`UseLogonCredential = 1`) | Failed (`RunAsPPL = 0`) | Failed (policy value 0) | Passed | Passed | Passed |
+| After C1 | **Passed** | Failed | Failed | Passed | Passed | Passed |
+| After C3 | Failed | **Failed** (`RunAsPPL = 2`; the check wants 1) | Failed | Passed | Passed | Passed |
+| After C5 | Failed | Failed | **Passed** | Passed | Passed | Passed |
+| After K1 | Failed | Failed | Failed | **Failed** | Passed | Passed |
+| After K2 | Failed | Failed | Failed | Passed | **Failed** | Passed |
+| After K3 | Failed | Failed | Failed | Passed | Passed | **Failed** |
+
+**How each prediction was made:** each check's rule text, against the value each state sets.
+- 26177 passes when `UseLogonCredential` is missing or 0.
+- 26270 passes only when `RunAsPPL` is 1.
+- 26426 passes when the policy key or its value is missing, or when the value is 1.
+- 26148 needs "Success and Failure", 26144 needs "Success", and 26222 needs the command-line value to be 1.
+
+**What it means:**
+- The scan sees C1, C5, K1, K2 and K3.
+- It does not see C3, because the lab's stated deviation (value 2) fails the check either way.
+- With the old image (`golden-base`, NLA off only at the listener), check 26426 would say Passed before and after C5.
+  That is a false pass: the check reads only the policy key, and it counts a missing key as compliant, because Windows
+  turns NLA on by default.
+
+`(unverified)` until the scans of `docs/GOLDEN-BASE-V2.md`, Phase D. A different result is reported as found.

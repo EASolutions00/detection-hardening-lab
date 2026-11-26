@@ -30,10 +30,22 @@ before the golden snapshot.
 setting that CIS or DISA requires, so each is a **configuration mistake made on purpose, never a hardening change**.
 They exist to remove known evidence, so the study can check that the system finds it. Their expected results are in
 `docs/EXPECTED-RESULTS.md`, written before any run. They are **not in `golden-base` yet**: until they are copied to
-`C:\telos\`, their `-Verify` fails and the harness voids the run.
+`C:\telos\`, their `-Verify` fails and the harness voids the run. They go into `golden-base-v2`
+(`docs/GOLDEN-BASE-V2.md`).
 
 `baseline-golden.ps1` (2026-11-13) sets the golden image's decided baseline and prints a 20-row check; exit
 code 0 only when every row passes. Run it once to set, restart, then with `-Verify` (runbook Phase 5).
+**Changed 2026-11-26 for `golden-base-v2`** (DECISIONS 2026-11-26): it also turns NLA off through the Group Policy key,
+sets Audit Logon to Success and Failure, and checks 25 rows (adds the NLA policy value, Audit Logon, and K1 to K3
+present).
+
+**C5 writes the Group Policy key since 2026-11-26:** `HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services`,
+`UserAuthentication = 1`. A change script must write the same value a Group Policy would write, because a compliance
+scan reads the policy value. Wazuh's NLA check reads only that key, so the old listener value was invisible to it.
+
+**The CIS version the study pins is CIS Microsoft Windows 11 Enterprise Benchmark v3.0.0**, the version Wazuh
+4.14.7's scan checks (DECISIONS 2026-11-26). Each header gives that number, with the newer number beside it where
+known.
 
 ## Every script must carry its source
 

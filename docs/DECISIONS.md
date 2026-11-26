@@ -8,6 +8,54 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-11-26 - golden-base-v2 is prepared: the K scripts in the image, NLA through the Group Policy key, Audit Logon set explicitly, one CIS version (v3.0.0, the scanner's)
+
+**Decision (student, chat 26343d0f: "Yes, prepare them").** These are the changes recommended after checking how
+engineers harden and deploy Windows settings:
+- write each setting the way Group Policy writes it;
+- pin one CIS version;
+- scan for compliance before and after;
+- state the lab's limits.
+
+The question was about preparing for "the next golden-base retake", so the yes is **read as also choosing the retake**
+for the K scripts (OPEN-QUESTIONS 42, open point 1). Only prepared: the retake and every step in the VM are the
+student's (`docs/GOLDEN-BASE-V2.md`).
+
+**What changed (in the repo; not yet in the image):**
+- `change-C5-rdp-nla.ps1` writes `HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services`, `UserAuthentication =
+  1`. Group Policy writes this key, and Wazuh's CIS check 26426 reads it. Before, the script wrote the listener value.
+- `baseline-golden.ps1` also turns NLA off through that key (value 0) and sets Audit Logon to Success and Failure. It
+  now checks 25 rows (was 20): the NLA policy value, Audit Logon, and the K1 to K3 scripts present.
+- The script headers give CIS Microsoft Windows 11 Enterprise Benchmark v3.0.0 numbers, with the v5.x number beside
+  where known.
+- `catalog.GOLDEN_SNAPSHOT` and `GOLDEN_BASE_TAKEN` hold the snapshot name and its time in one place, and
+  `src/capture.py` reads them. Their values do not change until the retake.
+- `docs/GOLDEN-BASE-V2.md`: the smoke test, the retake, the test boot, the trial runs and the compliance scans, each
+  command explained. All 8 guest scripts parse with 0 errors (host check, 2026-11-26). 155 tests pass.
+- `EXPECTED-RESULTS.md`: a dated note, and section 6, the scan predictions. The form: limitation 10.
+
+**Why.**
+- **NLA.** Wazuh 4.14.7's check 26426 reads only the policy key, and passes when it is missing, because Windows turns
+  NLA on by default. The old image turned NLA off at the listener, so a scan would say "compliant" while NLA was off,
+  before and after C5.
+- **CIS v3.0.0 (Claude's choice while preparing).** It is the version the demo's scanner checks, and all six numbers
+  come from one file read word for word. The newer numbers stay beside it.
+- **Audit Logon set explicitly (Claude's choice while preparing).** K1's scan check needs "Success and Failure" before
+  the change, and the image's value was not known. Windows' default is believed to be the same `(unverified)`, so this
+  should add no event.
+- **A new name, `golden-base-v2`.** COMMANDS 2.16 says never to reuse a snapshot name. `golden-base` stays, as the
+  spike's image and the fallback.
+
+**Cost if wrong.** If the policy key changes the sign-in's events, C5's earlier measurements (item 37) no longer
+describe the new image; trial `trial-C5-1` shows it. The work takes about 1.5 hours for the smoke test, retake and test
+boot, and about 2 hours for the trials and scans (estimates). If v3.0.0 is judged too old, only the citations change;
+the scanner stays at v3.0.0.
+
+**For the defense:** "Engineers set these values through Group Policy, so my lab writes the same keys. Then the
+compliance scan and my detection check look at the same change."
+
+---
+
 ## 2026-11-26 - A key that drops to zero is tested with the exact test at any count; the minimum of 30 stays for partial drops
 
 **Decision (student, chat 26343d0f: "Use the exact test").** Option (b) of OPEN-QUESTIONS 43, Claude's

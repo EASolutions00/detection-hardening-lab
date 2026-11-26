@@ -38,8 +38,10 @@ In order:
 5. **The demo scenario list:** C1, C3 and C5, what each change does, and the expected result.
    **2026-11-26:** written in `docs/EXPECTED-RESULTS.md`, with the test cases K1 to K3 (DECISIONS 2026-11-26), before
    any run. **Item 43 decided the same day:** a key that drops to zero is tested at any count (DECISIONS
-   2026-11-26). Still before the evaluation runs: item 42's open point 1 (how the K scripts reach the guest). The
-   activity diagram and the pipeline figure now also state the old 30-event rule; fix it in their redraw.
+   2026-11-26). The activity diagram and the pipeline figure now also state the old 30-event rule; fix it in their
+   redraw. **Next lab step, prepared 2026-11-26:** `golden-base-v2` (the K scripts, NLA through the Group Policy key,
+   Audit Logon set explicitly), then the trials and the compliance scans: `docs/GOLDEN-BASE-V2.md`, Phase A first
+   (the student; DECISIONS 2026-11-26).
 
 Recommended, not decided: the 5 pinned control runs wait until the form is sent, because the pre-oral needs chapters
 1 to 3, not the results (Claude's reading). Not decided: when the GUI is built. The adviser pictures the system as a

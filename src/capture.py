@@ -4,7 +4,7 @@ guest password to vmrun.
     .venv/Scripts/python.exe src/capture.py --run-id test-pre-1 --phase pre
     .venv/Scripts/python.exe src/capture.py --run-id test-post-1 --phase post --change C3
 
-It reverts WIN-EP-01 to golden-base, applies the change for an "after" run,
+It reverts WIN-EP-01 to the golden snapshot (catalog.GOLDEN_SNAPSHOT), applies the change for an "after" run,
 fires the fences, runs the pinned attack list (or the spike's with --stimulus trial; the
 pinned list opens a Remote Desktop window on the host for 30 s), waits out the fixed window, exports
 the archive from SIEM-01, and writes data/runs/<run-id>/ (runbook Phase 6).
@@ -19,7 +19,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from telos.catalog import CHANGES, CONFIG_S, parameters, pinned_stimulus, trial_stimulus  # noqa: E402
+from telos.catalog import (CHANGES, CONFIG_S, GOLDEN_SNAPSHOT, parameters, pinned_stimulus,  # noqa: E402
+                           trial_stimulus)
 from telos.harness import HarnessError, Lab, LabConfig, capture, recount  # noqa: E402
 
 REPO = Path(__file__).resolve().parent.parent
@@ -53,7 +54,7 @@ def main() -> int:
     cfg = LabConfig(
         vmrun=r"C:\Program Files (x86)\VMware\VMware Workstation\vmrun.exe",
         vmx=r"F:\TeLoS Homelab\WIN-EP-01\WIN-EP-01.vmx",
-        snapshot="golden-base",
+        snapshot=GOLDEN_SNAPSHOT,          # catalog: one place for the name and its time
         guest_user="eli",
         password_file=HOME / ".telos" / "WIN-EP-01.pw",
         ssh_key=HOME / ".telos" / "siem01_ed25519",
