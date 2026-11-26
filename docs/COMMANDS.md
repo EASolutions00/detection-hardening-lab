@@ -879,7 +879,7 @@ Purpose: runbook Phase 5, the state every capture run reverts to (DECISIONS 2026
 
 | Step | Where, by whom | Command | Result seen |
 |---|---|---|---|
-| Revert and start | host, Claude | `vmrun revertToSnapshot $win golden-base`; `Start-Process vmrun -ArgumentList '-T','ws','start',$win,'gui'` (not waited on, because `start ... gui` hung inside a command before); `checkToolsState` | Revert exit 0; start 07:02:06; Tools running 07:02:22 |
+| Revert and start | host, Claude | `vmrun revertToSnapshot $win golden-base`; ``Start-Process -FilePath $vmrun -ArgumentList @('-T','ws','start',"`"$win`"",'gui') -WindowStyle Hidden`` (not waited on, because `start ... gui` hung inside a command before). **Corrected 2026-11-26 from the chat:** this row had lost the escaped quotes around `$win`, which the space in the path needs; `checkToolsState` | Revert exit 0; start 07:02:06; Tools running 07:02:22 |
 | Check | guest, student, Terminal (Admin) | `baseline-golden.ps1 -Verify -WDigest On`; `query user`; `Get-NetAdapter \| Select-Object Name, Status` | **`checks passed: 20 of 20`** (Wininit event 12 since boot: `none`); `eli console 1 Active ... 7:08 AM` only; `NAT Disconnected`, `LAB Up` |
 | Archive | host, Claude | `telos-archive tail 6000`, WIN-EP-01 lines since 07:02:06, 4624 for `eli` | 694 lines from 07:02:22; the only `eli` logons are two type 2 at 07:08:06 (rule 60118), the student's sign-in. Nothing signed `eli` in at boot |
 
@@ -897,6 +897,29 @@ Purpose: runbook Phase 5, the state every capture run reverts to (DECISIONS 2026
 | Recount | host, Claude | `harness.recount()` (tests failing first; 133 passed); `.\.venv\Scripts\python.exe src\capture.py --run-id test-pre-1 --recount` | `valid True`; window 07:32:45.2599503Z to 07:35:45.2974529Z, 284 events, 19 keys, 0 broken lines; Sysmon-8 2, Sysmon-10 75; fired 92403 ×2, 61625 ×1, 92027 ×4, 92032 ×1, 92052 ×2 |
 
 **Undo.** Delete `data\runs\test-pre-1\` (not in git). A recount can be run again; it adds a note each time.
+
+---
+
+### 2.18 `golden-base-v2`: Phases A to D (from 2026-11-26, times UTC)
+
+Purpose: `docs/GOLDEN-BASE-V2.md` (DECISIONS 2026-11-26). One row per step, added as it happens. Evidence for the
+first five rows: `data/summaries/host-hypervisor-check-2026-11-26.txt`.
+
+| Step | Where, by whom | Command | Result seen |
+|---|---|---|---|
+| Pre-flight before A1 | host, Claude (read only) | `vmrun -T ws list`; `vmrun -T ws listSnapshots $win`; VMnet2 IPv4; `HypervisorPresent`; `git log -1 --oneline`; `git status --short` | `Total running VMs: 0`; 6 snapshots, `golden-base` once; `10.20.10.1`; **`True`**; `bfdad21`; only the 4 known untracked files. **Phase A not started** |
+| Why the hypervisor is on | host, Claude (read only) | System log: oldest event, `Kernel-General` 12, `Hyper-V-Hypervisor` events; `HKLM:\SYSTEM\Setup\Source OS*`; `CurrentVersion`; `Get-HotFix`; `Win32_DeviceGuard`; `vmware.exe` version; `Get-Service AVP*, WinDefend` | Log kept from 2026-11-23 12:52; 7 host starts, hypervisor event 1 at each; `Source OS (Updated on 11/23/2026 13:11:49)`: old build 26200.9457, now 26200.9974, installed 2026-11-23 12:59; 4 updates, all 2026-11-23 or 24; VBS 2, no services; `17.5.1 build-23298084`; `AVP21.27` Running, `WinDefend` Stopped |
+| The spike's state | host, Claude (read only) | the `Monitor Mode` line in each `vmware*.log` of both VMs | All 8 say `CPL0`: WIN-EP-01 at 11:32:59, 11:41:35, 11:54:10 and 12:06:44 on 2026-11-16; SIEM-01 at 06:42:14 on 2026-11-16 (one power-on until 13:22:41) and three on 2026-11-13 |
+| Keep the logs | host, Claude | `Copy-Item` of the 8 logs into `data\runs\host-vmware-logs-2026-11-16\` (gitignored); `Get-FileHash` | 8 hashes |
+| `ULM` check | host, Claude | ``Start-Process -FilePath $vmrun -ArgumentList @('-T','ws','start',"`"$win`"",'nogui') -WindowStyle Hidden``; wait for `Monitor Mode` in the new `vmware.log`; `vmrun -T ws stop $win hard`; `vmrun -T ws list`; copy that log | Start 07:19:51; **`Monitor Mode: ULM`** at 07:19:52; `stop exit 0`; `Total running VMs: 0`; copy `WIN-EP-01-ULM-check-2026-11-26.log` |
+
+**Reading.** `CPL0`: VMware runs directly on the hardware. `ULM`: it runs on top of the Windows hypervisor. Checked on
+this host by the `ULM` row; VMware community threads say the same (no official VMware page found). So the spike ran
+with the hypervisor off, and it came back between 2026-11-16 13:22 and 2026-11-23 12:51. No lab run happened in
+between.
+
+**Undo.** Delete `data\runs\host-vmware-logs-2026-11-16\` (not in git). The `ULM` check left WIN-EP-01 off; A1's
+revert removes its short start.
 
 ---
 
@@ -1170,11 +1193,13 @@ Expect `Total running VMs: 0`
 ```
 Expect `False`. **If it says True, the hypervisor came back and timing is compromised.**
 Re-run the Part 1.1 command and restart.
+**2026-11-26:** it said `True`. Windows had been reinstalled in place on 2026-11-23, and the hypervisor has started at
+every host start since then (COMMANDS 2.18). Check it again after any Windows reinstall or feature update.
 
 ```bash
 .venv/Scripts/python.exe -m pytest tests -q
 ```
-Expect `58 passed` (checked 2026-09-28)
+Expect the number in CLAUDE.md's Commands section (`155 passed` on 2026-11-26; it was `58 passed` on 2026-09-28)
 
 ```bash
 git status --short

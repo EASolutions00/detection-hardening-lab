@@ -2511,10 +2511,10 @@ Record these **before** taking the golden snapshot.
 
 | Item | Value | Date recorded |
 |---|---|---|
-| Host OS | Windows 11 Pro 10.0.26200 | 2026-08-31 |
+| Host OS | Windows 11 Pro 10.0.26200. **2026-11-26:** Windows was reinstalled in place on 2026-11-23 (same version 25H2; build 26200.9457 before it, 26200.9974 after; registry key `Source OS`). Cause unknown (COMMANDS 2.18) | 2026-08-31 |
 | CPU | AMD Ryzen 9 7950X, 16C/32T | 2026-08-20 |
 | VMware Workstation | 17.5.1 build-23298084 | 2026-08-20 |
-| Windows hypervisor | **OFF** (`hypervisorlaunchtype off`) | 2026-08-20 |
+| Windows hypervisor | **OFF** (`hypervisorlaunchtype off`). **Found ON 2026-11-26** at the Phase A pre-flight: on at every host start since 2026-11-23 12:51 UTC, most likely since the in-place reinstall. The spike (2026-11-16) ran with it off: its VMware logs say `Monitor Mode: CPL0`, and `ULM` was seen with it on (COMMANDS 2.18). The student turns it off again before Phase A | 2026-08-20 |
 | Python | 3.13.14 (`C:\Program Files\Python313`) | 2026-08-31 |
 | numpy | 2.5.2 | 2026-08-31 |
 | scipy | 1.18.1 | 2026-08-31 |
@@ -2522,7 +2522,7 @@ Record these **before** taking the golden snapshot.
 | PyYAML | 6.0.3 | 2026-08-31 |
 | pytest | 9.1.1 | 2026-08-31 |
 | Analyser git commit | `78f41f4` (first version of the analysis core) | 2026-08-31 |
-| **Host antivirus** | **Kaspersky 21.26** (`AVP21.26` service running). **Windows Defender is OFF on the host** as a result: `WinDefend` is `Stopped` and `Get-MpPreference` fails with `0x800106ba`. Kaspersky blocks Atomic Red Team files, so `E:\TeLoS-artifacts` is on its exclusion list. **Remove that exclusion when the thesis is finished.** | 2026-09-02 |
+| **Host antivirus** | **Kaspersky 21.26** (`AVP21.26` service running). **Windows Defender is OFF on the host** as a result: `WinDefend` is `Stopped` and `Get-MpPreference` fails with `0x800106ba`. Kaspersky blocks Atomic Red Team files, so `E:\TeLoS-artifacts` is on its exclusion list. **Remove that exclusion when the thesis is finished.** **2026-11-26:** the service is now `AVP21.27` (update date unknown); `WinDefend` still Stopped. Check the exclusion before the next capture run (GOLDEN-BASE-V2 D3) | 2026-09-02 |
 | Artifact store | `E:\TeLoS-artifacts\` holds every pinned installer, clone and archive. **Not** in the repo. Binaries do not belong in git. | 2026-09-02 |
 | Credentials store | `C:\Users\Elijah\.telos\` holds `WIN-EP-01.pw`, `SIEM-01.pw` and the `siem01_ed25519` key pair. Outside the repo on purpose, since the repo is public. **Never commit these.** | 2026-09-02 |
 | `git core.autocrlf` | **`true`** on this host. This silently rewrote the pinned Sysmon config on first commit, one byte short of the recorded hash. `.gitattributes` now pins `lab/configs/sysmonconfig.xml` as binary and keeps `lab/scripts/telos-archive` and `*.sh` at LF. | 2026-09-02 |

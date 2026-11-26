@@ -1,0 +1,63 @@
+Host hypervisor check, 2026-11-26 (chat 26343d0f). Times UTC. Every check is read only, except section 5.
+Record: COMMANDS 2.18, WORKLOG 2026-11-26 (Phase A pre-flight), DECISIONS "Pinned versions".
+
+1. Pre-flight before Phase A of docs/GOLDEN-BASE-V2.md (COMMANDS Part 5)
+   vmrun -T ws list                                           Total running VMs: 0
+   vmrun -T ws listSnapshots WIN-EP-01                        Total snapshots: 6, golden-base once (last)
+   VMnet2 IPv4                                                10.20.10.1
+   (Get-CimInstance Win32_ComputerSystem).HypervisorPresent   True    FAIL (pinned OFF since 2026-08-20)
+   git log -1 --oneline; git status --short                   bfdad21; only the 4 known untracked files
+   Phase A was not started.
+
+2. Host System log (Get-WinEvent)
+   Oldest event kept: 2026-11-23 12:52. Nothing older.
+   Host starts (Kernel-General event 12) since 2026-11-01:
+     2026-11-23 12:51, 2026-11-23 12:54, 2026-11-23 15:20, 2026-11-24 03:10,
+     2026-11-25 02:41, 2026-11-25 09:45, 2026-11-26 04:09
+   Hyper-V-Hypervisor event 1 "Hypervisor successfully started." at each of these 7 starts.
+
+3. Why
+   HKLM\SYSTEM\Setup\Source OS (Updated on 11/23/2026 13:11:49): old build 26200.9457, 25H2, old install 2026-07-29 22:12
+   HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion: build 26200.9974, 25H2, Professional, installed 2026-11-23 12:59
+   -> Windows was reinstalled in place on 2026-11-23 (an in-place upgrade to the same version). Its cause is unknown.
+   Get-HotFix: 4 entries only, all 2026-11-23 or 2026-11-24 (a normal list goes back months).
+   Win32_DeviceGuard: VirtualizationBasedSecurityStatus 2, SecurityServicesConfigured {0}, SecurityServicesRunning {0}.
+   vmware.exe: 17.5.1 build-23298084 (the pinned value).
+   Services: AVP21.27 Running (pinned AVP21.26), WinDefend Stopped (as pinned).
+   Not read: the boot setting itself (bcdedit needs an admin terminal; the student reads it before the fix).
+
+4. The spike day, 2026-11-16: the "Monitor Mode" line that VMware writes at each power-on
+   WIN-EP-01 vmware-2.log   power-on 11:32:59   Monitor Mode: CPL0   (vhv.enable = "FALSE")
+   WIN-EP-01 vmware-1.log   power-on 11:41:35   Monitor Mode: CPL0
+   WIN-EP-01 vmware-0.log   power-on 11:54:10   Monitor Mode: CPL0
+   WIN-EP-01 vmware.log     power-on 12:06:44   Monitor Mode: CPL0   (the last spike run; WIN-EP-01's last start before today)
+   SIEM-01   vmware.log     power-on 06:42:14   Monitor Mode: CPL0   (one power-on until 13:22:41; it covers all
+                                                                     19 spike runs, 09:12:58 to about 12:19)
+   SIEM-01   vmware-0/1/2   2026-11-13          Monitor Mode: CPL0
+   A VM's monitor mode is fixed at its power-on, and the Windows hypervisor starts only when the host starts.
+
+5. First-hand check with the hypervisor on (this changed state: WIN-EP-01 started, then powered off)
+   07:19:51 Start-Process vmrun -T ws start WIN-EP-01 nogui
+   07:19:52 new vmware.log: "Monitor Mode: ULM"
+   vmrun -T ws stop WIN-EP-01 hard: exit 0. vmrun list: Total running VMs: 0.
+   -> On this host, with this VMware, ULM = the Windows hypervisor is on, CPL0 = it is off.
+   The same reading in VMware community threads (no official VMware page found):
+   https://communities.vmware.com/t5/VMware-Workstation-Pro/Can-not-start-any-VM-Exception-0xc0000005-access-violation-has/td-p/2881343
+   https://communities.vmware.com:443/t5/VMware-Workstation-Pro/Unable-to-start-any-VM-as-long-as-they-are-using-more-than-1-CPU/td-p/2925261
+
+6. Copies in data/runs/host-vmware-logs-2026-11-16/ (gitignored: the logs hold host details). SHA256:
+   A27D1A0B79716F3F0521D61750290AD86FEBFF79A0AEACC50508973FF208E2BD  SIEM-01\vmware.log
+   D23623E70AE946F6267CB8128D687E3AB2F86D10D285B29D29E65824DECE7924  SIEM-01\vmware-0.log
+   3D6B4C9103F6A59065ADED35D98D2150448A1CF3E258D0605D92AFBEF1349BC9  SIEM-01\vmware-1.log
+   0BE24182F9102E8BC2A5D73220B9AD953241DBF2FC910EC4DF083E7BA3D947CA  SIEM-01\vmware-2.log
+   ABB36B40394FDD015A6FD63F0FD449AC3E8517C385B8B8B6F890B511C9EFFED5  WIN-EP-01\vmware.log
+   1B3EB7E27F3144EF50FDAADD6DE84783FA75C76435F0F6DD6A34AF3667D2E6C2  WIN-EP-01\vmware-0.log
+   0FDCD425454A1DD9873AFC85062C54E550470839D24A5ABE811E469AAE153903  WIN-EP-01\vmware-1.log
+   B9985AB7B3E46D4E6ED5DDB321A9EE17C2E5D967D7E7819E2C0D4E71592B794E  WIN-EP-01\vmware-2.log
+   EC3A5A357E19BAA52436E504CE3664E20FBC783571094FF719542FEA2AADE5A7  WIN-EP-01-ULM-check-2026-11-26.log
+
+Conclusion
+- The spike's 19 runs ran with the Windows hypervisor off (section 4, read with section 5).
+- The hypervisor came back after 2026-11-16 13:22 and by 2026-11-23 12:51, most likely with the in-place reinstall of
+  2026-11-23 (unverified: the older System log is gone).
+- No lab run happened in between: WIN-EP-01's last start before today was 2026-11-16 12:06:44, SIEM-01's 06:42:14.

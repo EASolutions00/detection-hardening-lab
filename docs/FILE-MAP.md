@@ -88,8 +88,8 @@ physical drive (WORKLOG 2026-09-28, sixth), which is why the backups go there.
 | `thesis/T2/`, `thesis/T3/` | README and proposal each. Not chosen | SUPERSEDED |
 | `tools/check_docs.py` | Flags document lines that contradict the code | SOURCE |
 | `tools/word/` | Markdown to Word tools. See `tools/word/README.md` | SOURCE |
-| `data/runs/` | Raw capture archives. Gitignored. **Empty on 2026-10-15** (only `.gitkeep`) | |
-| `data/summaries/` | Small derived CSVs, committed. Empty on 2026-10-15. `known-answer-dryrun-2026-11-26.txt`: the dry run's output, committed before any test-case run (added 2026-11-26); `known-answer-dryrun-2026-11-26-after-item-43.txt`: the same after the exact-test rule (DECISIONS 2026-11-26) | |
+| `data/runs/` | Raw capture archives. Gitignored. **Empty on 2026-10-15** (only `.gitkeep`). `host-vmware-logs-2026-11-16/`: copies of both VMs' VMware logs from the spike day, plus the `ULM` check log of 2026-11-26; the proof that the spike ran with the Windows hypervisor off (added 2026-11-26; hashes in `data/summaries/host-hypervisor-check-2026-11-26.txt`) | |
+| `data/summaries/` | Small derived CSVs, committed. Empty on 2026-10-15. `known-answer-dryrun-2026-11-26.txt`: the dry run's output, committed before any test-case run (added 2026-11-26); `known-answer-dryrun-2026-11-26-after-item-43.txt`: the same after the exact-test rule (DECISIONS 2026-11-26); `host-hypervisor-check-2026-11-26.txt`: the hypervisor found on at the Phase A pre-flight, and the evidence that the spike ran with it off (COMMANDS 2.18) | |
 
 Not tracked, on purpose: `.venv/` (rebuild from `requirements.txt`), Python caches, and
 `.claude/settings.local.json` (personal "don't ask again" choices).

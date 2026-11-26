@@ -2,7 +2,10 @@
 
 Prepared 2026-11-26 (chat 26343d0f; DECISIONS 2026-11-26). **Nothing here has been run yet.** Each step says who does
 it. A step that uses the guest password or the VM window is the student's. When a step is done, its command and
-result go into COMMANDS 2.17.
+result go into COMMANDS 2.18.
+
+**2026-11-26:** the pre-flight check before A1 found the Windows hypervisor on, since Windows was reinstalled in place
+on 2026-11-23. Phase A waits until the student turns it off and restarts the host (COMMANDS 2.18).
 
 ---
 
@@ -27,15 +30,16 @@ runs.
 
 ---
 
-## Every session: three names (host, PowerShell)
+## Every session: four names (host, PowerShell)
 
 ```powershell
 $vmrun = 'C:\Program Files (x86)\VMware\VMware Workstation\vmrun.exe'
 $win   = 'F:\TeLoS Homelab\WIN-EP-01\WIN-EP-01.vmx'
+$siem  = 'F:\TeLoS Homelab\SIEM-01\SIEM-01.vmx'
 $repo  = 'E:\Claude general'
 ```
 
-Stores three paths for the commands below. Changes nothing. Correct result: no output. Safe to run again.
+Stores four paths for the commands below. Changes nothing. Correct result: no output. Safe to run again.
 
 **The 8 files** copied in steps A2 and B2: `baseline-golden.ps1`, `change-C1-disable-wdigest.ps1`,
 `change-C3-lsa-protection.ps1`, `change-C5-rdp-nla.ps1`, `change-K1-audit-logon-off.ps1`, `change-K2-cmdline-off.ps1`,
@@ -51,15 +55,22 @@ Why first: a retake is slow. A script error found after the retake means a secon
 
 ```powershell
 & $vmrun -T ws revertToSnapshot $win golden-base
-Start-Process $vmrun -ArgumentList '-T','ws','start',$win,'gui'
+Start-Process -FilePath $vmrun -ArgumentList @('-T','ws','start',"`"$win`"",'gui') -WindowStyle Hidden
 & $vmrun -T ws checkToolsState $win
+Select-String -Path 'F:\TeLoS Homelab\WIN-EP-01\vmware.log' -Pattern 'Monitor Mode'
 ```
 
-- **What:** puts WIN-EP-01 back to `golden-base`, starts it in a window, and asks whether VMware Tools runs.
-- **When:** SIEM-01 is running.
-- **Correct result:** no output from the first line; `running` from the last line. If it says `installed`, wait 20
-  seconds and run that line again. The start is not waited on, because `start ... gui` hung inside a command before
-  (COMMANDS 2.16).
+- **What:** puts WIN-EP-01 back to `golden-base`, starts it in a window, asks whether VMware Tools runs, and reads how
+  VMware runs the VM.
+- **When:** the pre-flight check passed (COMMANDS Part 5), with `HypervisorPresent` `False`, and SIEM-01 is running.
+  If `& $vmrun -T ws list` does not show SIEM-01, start it first: `& $vmrun -T ws start $siem nogui`, then
+  `& $vmrun -T ws checkToolsState $siem` until it says `running`.
+- **Correct result:** no output from the first line; `running` from the third line (if it says `installed`, wait 20
+  seconds and run that line again); a line ending `Monitor Mode: CPL0` from the last line. `CPL0` means VMware runs
+  directly on the hardware. `ULM` means the Windows hypervisor is on: stop (COMMANDS 2.18). The start is not waited
+  on, because `start ... gui` hung inside a command before (COMMANDS 2.16).
+- **Keep the escaped quotes around `$win`:** the path has a space. This is the form that worked on 2026-11-16 (chat
+  ee84ae3f). The shorter line in COMMANDS 2.16 had lost the quotes.
 - **If it fails:** an `Error:` line from the revert. Check the name with `& $vmrun -T ws listSnapshots $win`.
 - **Undo:** not needed. **Safe to run again:** yes.
 
@@ -278,6 +289,10 @@ Revert to `golden-base-v2` and start (C1), then D0.
 
 The host must be signed in and unlocked: the Remote Desktop window opens for 30 seconds.
 
+Before the first trial run, the student checks in Kaspersky's settings that `E:\TeLoS-artifacts` is still on its
+exclusion list. Windows was reinstalled in place on 2026-11-23 and Kaspersky is now 21.27 (COMMANDS 2.18). That the
+exclusion survived is unverified.
+
 ```powershell
 Set-Location $repo
 .\.venv\Scripts\python.exe src\capture.py --run-id trial-C5-1 --phase post --change C5
@@ -291,8 +306,8 @@ Then `trial-K1-1` with `--change K1`, `trial-K2-1` with `--change K2`, and `tria
 - **If it says "change ... not confirmed in the guest":** the change did not take effect without a restart. Tell
   Claude (the catalog's `reboot` for that change), then run the trial again.
 
-After each trial run, Claude starts the VM **without** a revert (`Start-Process $vmrun -ArgumentList
-'-T','ws','start',$win,'gui'`), and the student does D0. Also:
+After each trial run, Claude starts the VM **without** a revert (the second line of A1), and the student does D0.
+Also:
 
 - **After C5:** from the host, `mstsc "$repo\lab\configs\c5-client-no-nla.rdp"`. **Correct result:** refused, NLA
   required.
@@ -306,7 +321,7 @@ After each trial run, Claude starts the VM **without** a revert (`Start-Process 
 
 ### D4. Record (Claude)
 
-COMMANDS 2.17 (every command and result of Phases A to D), WORKLOG, and the scan results beside the predictions in
+COMMANDS 2.18 (every command and result of Phases A to D), WORKLOG, and the scan results beside the predictions in
 `EXPECTED-RESULTS.md` section 6.
 
 ---

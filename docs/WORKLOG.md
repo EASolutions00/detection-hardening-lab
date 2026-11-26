@@ -17,6 +17,37 @@ Next:
 
 ---
 
+## 2026-11-26 (Phase A pre-flight) - The Windows hypervisor is back on; the spike ran with it off
+
+**Chat:** 26343d0f (Claude Code). **Asked:** "Start Phase A".
+
+**Did:** the pre-flight check before A1. Four of five passed: no VM running, `golden-base` once in 6 snapshots, VMnet2
+`10.20.10.1`, `bfdad21` with only the 4 known untracked files. **`HypervisorPresent` was `True`** (pinned OFF since
+2026-08-20). Phase A was not started.
+
+**Found:**
+- The host's System log starts at 2026-11-23 12:51 UTC. All 7 host starts since then launched the hypervisor.
+- Windows was reinstalled in place on 2026-11-23: registry key `Source OS (Updated on 11/23/2026 13:11:49)`, build
+  26200.9457 before, 26200.9974 after, new install date 2026-11-23 12:59 UTC. `Get-HotFix` lists 4 updates, all from
+  2026-11-23 and 2026-11-24. The cause of the reinstall is unknown.
+- **The spike ran with the hypervisor off.** Its 4 remaining WIN-EP-01 logs and SIEM-01's log (one power-on from 06:42
+  to 13:22 UTC, so all 19 runs) say `Monitor Mode: CPL0`. A start of a few seconds of WIN-EP-01 today, with the
+  hypervisor on, logged `Monitor Mode: ULM`, so the reading is checked on this host. No lab run happened between 2026-11-16 and
+  today.
+- VMware is still 17.5.1 build-23298084. Kaspersky is now `AVP21.27` (pinned 21.26).
+- Two errors in `docs/GOLDEN-BASE-V2.md`, written earlier today, fixed: A1's `Start-Process` line had lost the quotes
+  around the VM path, which has a space (copied from the shortened COMMANDS 2.16 row, now corrected from the chat);
+  and it sent the results to COMMANDS 2.17, which holds `test-pre-1`. They go to the new 2.18. A1 now also reads the
+  `Monitor Mode` line at each start.
+
+**Kept:** the 8 VMware logs and the new one, in `data/runs/host-vmware-logs-2026-11-16/` (gitignored); hashes in
+`data/summaries/host-hypervisor-check-2026-11-26.txt`.
+
+**Next:** the student turns the hypervisor off (COMMANDS 1.1) and restarts the host. Then Claude checks
+`HypervisorPresent` `False` and starts Phase A at A1.
+
+---
+
 ## 2026-11-26 (evening) - How engineers harden and deploy; golden-base-v2 prepared
 
 **Chat:** 26343d0f (Claude Code). **Asked:** how engineers do operating system and endpoint hardening and deploy it, to
