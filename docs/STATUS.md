@@ -52,8 +52,8 @@ In order:
    is fixed (DECISIONS 2026-11-27; 160 passed; tested on the real lab). **The 5 control runs `eval-ctl-1` to
    `eval-ctl-5` are all valid** (COMMANDS 2.19). **Decided 2026-11-27:** 3 runs per phase, and item 22's void
    rule, built into the harness (DECISIONS 2026-11-27; 0 false findings in 70 control comparisons). **The 3 before
-   runs are valid** (`eval-pre-1` to `eval-pre-3`). `eval-post-C1-1` valid. **Next: the student starts
-   `src/evaluate.py`** for the 17 remaining after runs, unattended (about 2.5 hours; DECISIONS 2026-11-27).
+   runs are valid** (`eval-pre-1` to `eval-pre-3`). **22 of 26 runs valid** (to `eval-post-K2-2`; a power cut at
+   22:55 UTC stopped the batch, nothing finished was lost). **Next: `src/evaluate.py` again for the last 4 runs.**
 
 Recommended, not decided: the 5 pinned control runs wait until the form is sent, because the pre-oral needs chapters
 1 to 3, not the results (Claude's reading). Not decided: when the GUI is built. The adviser pictures the system as a

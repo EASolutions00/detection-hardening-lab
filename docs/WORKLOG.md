@@ -68,8 +68,12 @@ same time so the PC could be left; not in parallel (one WIN-EP-01), but one afte
 the whole plan of 26 runs, which skips runs on disk and so resumes after any stop, built on the spike's `run_batch`
 and on the same `lab_config()` as `capture.py`. 5 tests; 170 passed; same hash.
 
-**Next:** the student starts `src/evaluate.py` for the 17 remaining after runs (about 2.5 hours), with the host left
-signed in and unlocked.
+**The batch:** `eval-post-C1-2` by hand, then `src/evaluate.py` ran C1-3 to K2-2, **13 runs, all valid**. Then the
+PC was unplugged by accident at 22:55 UTC, during K2-3, which had written nothing. After the restart: hypervisor off,
+22 runs on disk all valid, SIEM-01 started cleanly (disk `clean`, 4 services active; VMware cleared the old locks).
+K1's runs have 0 Remote Desktop logons, as expected; C3's runs take 12.7 minutes. The two groups now mix across cases.
+
+**Next:** the student starts `src/evaluate.py` again for the last 4 runs (K2-3, K3-1 to K3-3, about 36 minutes).
 
 ---
 
