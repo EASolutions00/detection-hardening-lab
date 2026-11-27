@@ -111,8 +111,9 @@ CHECKS = [
      r"noise band.{0,60}inconclusive",
      "INCONCLUSIVE explained by band width.",
      "differential._test_key reports INCONCLUSIVE for a partial drop when the "
-     "pre-change count is below MIN_PRE_COUNT=30, and classify() for a rare key that "
-     "vanished but failed the correction (DECISIONS 2026-11-26). The band never enters it."),
+     "pre-change count is below MIN_PRE_COUNT=30, and classify() for a key that vanished "
+     "but failed the correction, at any count (DECISIONS 2026-11-26 and 2026-11-27). The band "
+     "never enters it."),
 
     ("channel-4104",
      r"WinSec.{0,12}4104|Security.{0,12}4104|4104.{0,30}Security log",

@@ -48,31 +48,64 @@ def test_verdict_for_a_run_that_could_not_be_tested(index):
     assert "NOT TESTABLE" in text
 
 
-def test_verdict_when_no_lost_key_leaves_a_technique_blind(index):
+def test_verdict_names_lost_keys_even_when_no_technique_lost_its_alerts(index):
+    """Changed 2026-11-27 (fix 4; DECISIONS 2026-11-27): the verdict never says "no blind spot"."""
     r = result(Finding(LSASS_READ, Classification.LOST))
-    ranked = rank_impact(r, post({PROCESS: 5}), index, fired_after={"99001": 2})
-    assert "NO BLIND SPOT FOUND" in render_verdict(r, ranked)
+    ranked = rank_impact(r, post({PROCESS: 5}), index, fired_after={"99001": 2}, fired_before={"92900": 1})
+    text = render_verdict(r, ranked)
+    assert "KEYS LOST OR REDUCED: 1, BUT NO TECHNIQUE THAT ALERTED BEFORE LOST ITS ALERTS" in text
+    assert "NO BLIND SPOT" not in text
 
 
 def test_verdict_counts_keys_with_a_blind_technique_and_names_the_top_one(index):
     r = result(Finding(LSASS_READ, Classification.LOST), Finding(INJECTION, Classification.REDUCED),
                Finding(NO_RULE, Classification.LOST))
-    ranked = rank_impact(r, post({INJECTION: 2, PROCESS: 5}), index, fired_after={})
+    ranked = rank_impact(r, post({INJECTION: 2, PROCESS: 5}), index, fired_after={},
+                         fired_before={"92900": 1, "92403": 1})
     text = render_verdict(r, ranked)
     assert "BLIND SPOTS FOUND: 2" in text
     assert LSASS_READ in text.splitlines()[-1] or LSASS_READ in text
+
+
+def test_verdict_counts_only_techniques_that_alerted_before(index):
+    """The same keys, but no alert fired before either: the techniques are potential, not a loss
+    that was seen, so there is no blind spot to count (fix 4 of the outside review)."""
+    r = result(Finding(LSASS_READ, Classification.LOST), Finding(INJECTION, Classification.REDUCED),
+               Finding(NO_RULE, Classification.LOST))
+    ranked = rank_impact(r, post({INJECTION: 2, PROCESS: 5}), index, fired_after={}, fired_before={})
+    text = render_verdict(r, ranked)
+    assert "BLIND SPOTS FOUND" not in text
+    assert "KEYS LOST OR REDUCED: 3, BUT NO TECHNIQUE THAT ALERTED BEFORE LOST ITS ALERTS" in text
+    assert "(potential," in text and "not seen): 2" in text
+
+
+def test_verdict_with_nothing_lost_counts_the_undecided_keys(index):
+    r = result(Finding(PROCESS, Classification.UNCHANGED), Finding(INJECTION, Classification.INCONCLUSIVE),
+               Finding(NO_RULE, Classification.INCONCLUSIVE))
+    text = render_verdict(r, rank_impact(r, post({PROCESS: 5}), index, fired_after={}, fired_before={}))
+    assert "NO KEY LOST OR REDUCED" in text
+    assert "undecided keys (INCONCLUSIVE, not shown safe) 2" in text
+    assert "NO BLIND SPOT" not in text
 
 
 # --- ranked blind spots and remediation level 1 ------------------------------
 
 def test_ranked_section_shows_the_three_numbers_and_the_could_fire_rules(index):
     r = result(Finding(LSASS_READ, Classification.LOST))
-    ranked = rank_impact(r, post({PROCESS: 5}), index, fired_after={})
+    ranked = rank_impact(r, post({PROCESS: 5}), index, fired_after={}, fired_before={"92900": 1})
     text = render_impact(ranked)
     assert LSASS_READ in text
     assert "blind techniques 1" in text and "highest level 12" in text and "rules 1" in text
-    assert "T1003.001" in text
+    assert "BLIND (alerts fired before the change, none after): T1003.001" in text
     assert "99001" in text            # the could-fire rule, offered as remediation level 1
+
+
+def test_ranked_section_marks_a_technique_that_never_alerted_as_potential(index):
+    r = result(Finding(LSASS_READ, Classification.LOST))
+    ranked = rank_impact(r, post({PROCESS: 5}), index, fired_after={}, fired_before={})
+    text = render_impact(ranked)
+    assert "no alert before or after (potential, not seen): T1003.001" in text
+    assert "BLIND (alerts fired" not in text
 
 
 # --- coverage change ---------------------------------------------------------
@@ -89,11 +122,14 @@ def test_coverage_change_lists_techniques_that_fired_before_and_not_after(index)
 
 def test_json_export_keeps_the_ranking_and_parses(index):
     r = result(Finding(LSASS_READ, Classification.LOST), Finding(INJECTION, Classification.REDUCED))
-    ranked = rank_impact(r, post({INJECTION: 2, PROCESS: 5}), index, fired_after={"99001": 2})
+    ranked = rank_impact(r, post({INJECTION: 2, PROCESS: 5}), index, fired_after={"99001": 2},
+                         fired_before={"92403": 1})
     data = json.loads(findings_json(r, ranked, lost_techniques=["T1055"]))
     assert data["outcome"] == "CHANGED"
     assert [f["key"] for f in data["ranked"]] == [INJECTION, LSASS_READ]
     assert data["ranked"][0]["blind_techniques"] == ["T1055"]
+    assert data["ranked"][0]["blind_alerted_before"] == ["T1055"]
+    assert data["ranked"][0]["blind_never_alerted"] == []
     assert data["coverage_lost"] == ["T1055"]
 
 
@@ -103,13 +139,24 @@ def test_navigator_layer_uses_the_required_fields_of_format_4_5(index):
     techniqueID required per technique."""
     from telos.report import navigator_layer
     r = result(Finding(INJECTION, Classification.LOST))
-    ranked = rank_impact(r, post({PROCESS: 5}), index, fired_after={"99001": 1})
+    ranked = rank_impact(r, post({PROCESS: 5}), index, fired_after={"99001": 1},
+                         fired_before={"92403": 1, "99001": 1})
     layer = json.loads(navigator_layer("C3 test", {"T1055", "T1003.001"}, {"T1003.001"}, ranked))
     assert layer["name"] == "C3 test" and layer["domain"] == "enterprise-attack"
     assert layer["versions"]["layer"] == "4.5" and layer["versions"]["navigator"] == "4.9.0"
     by_id = {t["techniqueID"]: t for t in layer["techniques"]}
     assert by_id["T1055"]["color"] == "#e60d0d" and "no alert" in by_id["T1055"]["comment"]
     assert by_id["T1003.001"]["color"] == "#31a354"
+
+
+def test_navigator_layer_greys_a_technique_that_never_alerted(index):
+    """Fix 4 of the outside review (DECISIONS 2026-11-27): a technique only named by a lost key's
+    rules, with no alert before or after, is potential, not a coverage loss."""
+    from telos.report import navigator_layer
+    r = result(Finding(LSASS_READ, Classification.LOST))
+    ranked = rank_impact(r, post({PROCESS: 5}), index, fired_after={}, fired_before={})
+    by_id = {t["techniqueID"]: t for t in json.loads(navigator_layer("t", set(), set(), ranked))["techniques"]}
+    assert by_id["T1003.001"]["color"] == "#bdbdbd" and "potential" in by_id["T1003.001"]["comment"]
 
 
 KB = {"version": 1, "controls": [

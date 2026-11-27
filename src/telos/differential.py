@@ -43,10 +43,11 @@ is not enough.
 
 A key that drops to zero in every after run (LOST) is tested with the exact chance
 of seeing no event, at any count, if the control runs saw it. The minimum count,
-MIN_PRE_COUNT, applies to the rate-ratio test of a partial drop only. A rare loss
-that does not survive the correction is INCONCLUSIVE (DECISIONS 2026-11-26;
-OPEN-QUESTIONS 43: without this, K1's two sign-in keys, 6 events each, were never
-tested).
+MIN_PRE_COUNT, applies to the rate-ratio test of a partial drop only. A loss that
+does not survive the correction is INCONCLUSIVE, at any count: for a rare key since
+DECISIONS 2026-11-26 (OPEN-QUESTIONS 43: before it, K1's two sign-in keys, 6 events
+each, were never tested), and for a key with 30 or more events since DECISIONS
+2026-11-27 (until then it went to UNCHANGED, which claims that it survived).
 """
 
 from __future__ import annotations
@@ -210,7 +211,7 @@ def _test_key(
     # rate-ratio test of a partial drop, whose normal approximation needs counts.
     # The chance of seeing no event needs none: 6 events before and none after
     # gives e^-6, about 0.0025, before correction. classify() still applies
-    # Benjamini-Hochberg, and a rare loss that fails it becomes INCONCLUSIVE.
+    # Benjamini-Hochberg, and a loss that fails it becomes INCONCLUSIVE.
     if a > 0 and b == 0 and vm.measured(key):
         return _complete_loss(f, rate_pre, n2, phi)
 
@@ -287,7 +288,6 @@ def classify(
     alpha: float,
     max_ratio: float,
     noise_sigmas: float,
-    min_pre_count: int = MIN_PRE_COUNT,
 ) -> None:
     """Apply BH correction, then settle REDUCED versus UNCHANGED in place.
 
@@ -299,6 +299,10 @@ def classify(
 
     Requiring all three is the point of the method. A p value alone will flag
     keys whose ordinary swing is larger than the drop being reported.
+
+    A complete loss (LOST, from _complete_loss) only has to clear the correction.
+    If it does not, it is INCONCLUSIVE at any count: the key is absent after the
+    change, so UNCHANGED would claim that it survived (DECISIONS 2026-11-27).
     """
     tested = [f for f in findings if f.p_value is not None]
     if not tested:
@@ -311,22 +315,17 @@ def classify(
 
     for f in tested:
         if f.classification is Classification.LOST:
-            # A complete loss still has to clear the correction.
+            # A complete loss still has to clear the correction. If it does not, it is
+            # not decided: INCONCLUSIVE at any count. Until 2026-11-27 a key with 30 or
+            # more events before went to UNCHANGED here, which claims it survived (fix 4
+            # of the outside review; DECISIONS 2026-11-27). No key of the evaluation
+            # reached that branch (src/zero_loss_sensitivity.py).
             if f.q_value is not None and f.q_value > alpha:
-                if f.pre_total < min_pre_count:
-                    # Tested exactly because it vanished, but too rare to decide
-                    # (DECISIONS 2026-11-26). UNCHANGED would claim it survived.
-                    f.classification = Classification.INCONCLUSIVE
-                    f.reason = (
-                        f"absent after the change, but only {f.pre_total} occurrences before: "
-                        f"q={f.q_value:.3g} did not survive correction at alpha={alpha}"
-                    )
-                else:
-                    f.classification = Classification.UNCHANGED
-                    f.reason = (
-                        f"absent after the change, but q={f.q_value:.3g} did not survive "
-                        f"correction at alpha={alpha}"
-                    )
+                f.classification = Classification.INCONCLUSIVE
+                f.reason = (
+                    f"absent after the change ({f.pre_total} occurrences before), but "
+                    f"q={f.q_value:.3g} did not survive correction at alpha={alpha}: not decided"
+                )
             continue
 
         if f.rate_ratio is None:
@@ -408,9 +407,9 @@ def analyse(
     # analysis. Every key is tested, whatever it said, and the outcome comes
     # from the keys. See the module docstring, stage 2.
     findings = [_test_key(k, pre, post, vm, min_pre_count) for k in keys]
-    classify(findings, alpha, max_ratio, noise_sigmas, min_pre_count)
-    # A rare key tested exactly but too rare to decide is INCONCLUSIVE, so it does not
-    # count as tested (DECISIONS 2026-11-26).
+    classify(findings, alpha, max_ratio, noise_sigmas)
+    # A key tested exactly that did not clear the correction is INCONCLUSIVE, so it
+    # does not count as tested (DECISIONS 2026-11-26 and 2026-11-27).
     n_tested = sum(1 for f in findings
                    if f.p_value is not None and f.classification is not Classification.INCONCLUSIVE)
     n_found = sum(1 for f in findings if f.is_finding)

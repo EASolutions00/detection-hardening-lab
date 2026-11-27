@@ -119,23 +119,40 @@ PREVENTION_NOTE = ("A blind technique can also mean the change stopped the attac
 
 
 def render_verdict(result: AnalysisResult, ranked: list[ImpactFinding]) -> str:
-    """FINAL's first section: no blind spot, blind spots with count and the top one, or not testable."""
+    """FINAL's first section: blind spots with count and the top one, lost keys with no seen loss of
+    alerts, nothing lost, or not testable.
+
+    Changed 2026-11-27 (fix 4 of the outside review; DECISIONS 2026-11-27). It never says "no blind
+    spot": an undecided key is not shown safe, so the verdict always gives their number. A blind spot
+    is counted only for a technique whose alerts fired before the change and not after it; a technique
+    that never alerted is potential, not a loss that was seen.
+    """
     out = [LINE, "VERDICT", LINE, ""]
     if result.outcome is ProfileOutcome.NOT_TESTABLE:
         out.append("  NOT TESTABLE: the capture did not record enough to compare.")
         out.append(f"  why: {result.outcome_reason}")
         return "\n".join(out) + "\n"
-    blind = [h for h in ranked if h.blind_techniques]
-    if not blind:
-        out.append("  NO BLIND SPOT FOUND")
-        out.append(f"  {len(ranked)} lost or reduced key(s); none left an ATT&CK technique with no alert firing after")
-        out.append("  the change.")
-    else:
-        top = blind[0]
-        out.append(f"  BLIND SPOTS FOUND: {len(blind)}")
+    seen = [h for h in ranked if h.blind_alerted_before]
+    if seen:
+        top = seen[0]
+        out.append(f"  BLIND SPOTS FOUND: {len(seen)}")
+        out.append("  (lost or reduced keys read by the rules of a technique whose alerts fired before the change")
+        out.append("  and not after it)")
         out.append(f"  top: {top.key}")
-        out.append(f"       blind techniques {len(top.blind_techniques)}   highest level {top.max_level}"
-                   f"   rules {len(top.rules)}")
+        out.append(f"       techniques that lost their alerts {len(top.blind_alerted_before)}"
+                   f"   highest level {top.max_level}   rules {len(top.rules)}")
+    elif ranked:
+        out.append(f"  KEYS LOST OR REDUCED: {len(ranked)}, BUT NO TECHNIQUE THAT ALERTED BEFORE LOST ITS ALERTS")
+    else:
+        out.append("  NO KEY LOST OR REDUCED")
+    undecided = len(result.by_class(Classification.INCONCLUSIVE))
+    out.append(f"  lost or reduced keys {len(ranked)};  undecided keys (INCONCLUSIVE, not shown safe) {undecided}")
+    potential = ({t for h in ranked for t in h.blind_never_alerted}
+                 - {t for h in ranked for t in h.blind_alerted_before})
+    if potential:
+        out.append("  techniques that never alerted, before or after, named by the lost keys' rules (potential,")
+        out.append(f"  not seen): {len(potential)}")
+    if seen:
         out.append("")
         out.append("  " + PREVENTION_NOTE)
     return "\n".join(out) + "\n"
@@ -149,19 +166,25 @@ def render_impact(ranked: list[ImpactFinding]) -> str:
     the change and cover the blind technique, but did not fire.
     """
     out = [LINE, "RANKED BLIND SPOTS  (blind techniques, then highest level, then number of rules)", LINE, ""]
+    out.append("  A blind technique: no alert for it fired after the change. Only one whose alerts fired before")
+    out.append("  the change is a loss that was seen; one that never alerted is potential (DECISIONS 2026-11-27).")
+    out.append("")
     if not ranked:
         out.append("  no lost or reduced key")
     for i, h in enumerate(ranked, 1):
         out.append(f"  {i}. {h.classification.value:<8} {h.key}")
-        out.append(f"     blind techniques {len(h.blind_techniques)}   highest level {h.max_level}   rules {len(h.rules)}")
+        out.append(f"     blind techniques {len(h.blind_techniques)} ({len(h.blind_alerted_before)} alerted before, "
+                   f"{len(h.blind_never_alerted)} never alerted)   highest level {h.max_level}   rules {len(h.rules)}")
         if not h.rules:
             out.append("     no alerting rule reads this key: it affects no detection")
             out.append("")
             continue
         out.append(f"     rules that read it: {', '.join(h.rules)}")
         out.append(f"     techniques: {', '.join(h.techniques) or '(none named in the rules)'}")
-        if h.blind_techniques:
-            out.append(f"     BLIND (no alert for it fired after the change): {', '.join(h.blind_techniques)}")
+        if h.blind_alerted_before:
+            out.append(f"     BLIND (alerts fired before the change, none after): {', '.join(h.blind_alerted_before)}")
+        if h.blind_never_alerted:
+            out.append(f"     no alert before or after (potential, not seen): {', '.join(h.blind_never_alerted)}")
         for t, rules in h.surviving.items():
             out.append(f"     still detected: {t} by {', '.join(rules)}")
         for t, rules in h.could_fire.items():
@@ -222,6 +245,8 @@ def findings_json(result: AnalysisResult, ranked: list[ImpactFinding],
             "key": h.key,
             "classification": h.classification.value,
             "blind_techniques": h.blind_techniques,
+            "blind_alerted_before": h.blind_alerted_before,
+            "blind_never_alerted": h.blind_never_alerted,
             "highest_level": h.max_level,
             "rules": h.rules,
             "techniques": h.techniques,
@@ -268,6 +293,7 @@ def render_remediation2(change_id: str | None, entries: list[dict]) -> str:
 
 NOT_DETECTED = "#e60d0d"
 DETECTED = "#31a354"
+POTENTIAL = "#bdbdbd"
 
 
 def navigator_layer(name: str, before: set[str], after: set[str], ranked: list[ImpactFinding]) -> str:
@@ -278,25 +304,32 @@ def navigator_layer(name: str, before: set[str], after: set[str], ranked: list[I
     `versions.layer` "4.5" and `versions.navigator` at least "4.9.0" (required inside
     `versions`), and per technique `techniqueID` (required), `color` and `comment`.
 
-    Red: no alert for the technique fired after the change, either because its alerts
-    stopped (coverage change) or because a lost key left it blind (the ranking).
-    Green: an alert for it still fired after the change.
+    Red: its alerts fired before the change and none after (the coverage change; "blind after a lost
+    event key" when a lost key's rules name it). Green: an alert for it still fired after the change.
+    Grey, since 2026-11-27: no alert before or after, only named by a lost key's rules, so potential
+    and not a loss that was seen (fix 4 of the outside review; DECISIONS 2026-11-27).
     """
-    blind = {t for h in ranked for t in h.blind_techniques}
+    seen = {t for h in ranked for t in h.blind_alerted_before}
+    never = {t for h in ranked for t in h.blind_never_alerted}
     techniques = []
-    for t in sorted(before | after | blind):
+    for t in sorted(before | after | seen | never):
         if t in after:
             color, comment = DETECTED, "an alert for this technique still fired after the change"
-        elif t in blind:
-            color, comment = NOT_DETECTED, "no alert fired after the change; blind after a lost event key"
+        elif t in before or t in seen:
+            color = NOT_DETECTED
+            comment = "no alert fired after the change; its alerts fired before"
+            if t in seen:
+                comment += "; blind after a lost event key"
         else:
-            color, comment = NOT_DETECTED, "no alert fired after the change; its alerts fired before"
+            color = POTENTIAL
+            comment = "no alert before or after; named by a lost event key's rules (potential, not seen)"
         techniques.append({"techniqueID": t, "color": color, "comment": comment})
     layer = {
         "name": name,
         "domain": "enterprise-attack",
         "versions": {"layer": "4.5", "navigator": "4.9.0"},
-        "description": "TeLoS coverage change: red = no alert fired after the change, green = still detected.",
+        "description": ("TeLoS coverage change: red = alerts fired before and none after, green = still detected, "
+                        "grey = never alerted (potential)."),
         "techniques": techniques,
     }
     return json.dumps(layer, indent=2)

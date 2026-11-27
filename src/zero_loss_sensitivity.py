@@ -151,7 +151,7 @@ def findings_under(test: str, ctl, pre, post, vm):
         x_ctl = sum(1 for v in ctl.counts[f.key] if v > 0)
         f.p_value = {"split3": p_split(a, n1, n2), "split8": p_split(a + c, n1 + nc, n2),
                      "runs3": p_runs(x_pre, n1, n2), "runs8": p_runs(x_pre + x_ctl, n1 + nc, n2)}[test]
-    classify(findings, ALPHA, MAX_RATIO, NOISE_SIGMAS, MIN_PRE_COUNT)
+    classify(findings, ALPHA, MAX_RATIO, NOISE_SIGMAS)
     return findings
 
 

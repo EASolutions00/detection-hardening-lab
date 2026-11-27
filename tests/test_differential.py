@@ -149,6 +149,23 @@ def test_very_rare_key_that_vanishes_stays_inconclusive():
     assert res.n_tested == 1                     # "big" only
 
 
+def test_a_complete_loss_that_fails_the_correction_is_inconclusive_at_any_count():
+    """Fix 4 of the outside review (DECISIONS 2026-11-27). Until then a key with 30 or more
+    events before that fell to zero but failed the correction became UNCHANGED, which claims
+    that it survived. Seen only under the other tests of src/zero_loss_sensitivity.py: the 4688
+    key, 417 to 0. Now it is INCONCLUSIVE, like a rare one. BH over [0.05, 0.9] gives q = 0.1."""
+    from telos.differential import classify
+    from telos.model import Finding
+    big = Finding("big", Classification.LOST, pre_total=417, post_total=0, p_value=0.05)
+    steady = Finding("steady", Classification.UNCHANGED, pre_total=300, post_total=300,
+                     rate_ratio=1.0, p_value=0.9, cov=0.01)
+    classify([big, steady], alpha=0.05, max_ratio=0.5, noise_sigmas=3.0)
+    assert big.q_value == pytest.approx(0.1)
+    assert big.classification is Classification.INCONCLUSIVE
+    assert "417 occurrences before" in big.reason and "did not survive correction" in big.reason
+    assert steady.classification is Classification.UNCHANGED
+
+
 def test_rare_vanished_key_unseen_in_control_is_not_tested():
     """The exact test needs the key in the control runs. Without them there is no
     noise measurement (DECISIONS 2026-09-28), so the key stays INCONCLUSIVE and

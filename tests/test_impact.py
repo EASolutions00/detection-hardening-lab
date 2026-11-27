@@ -96,16 +96,18 @@ def post(counts):
 
 def test_a_technique_no_rule_fired_for_after_the_change_is_blind(index):
     r = result((LSASS_READ, Classification.LOST))
-    [hit] = rank_impact(r, post({LSASS_READ: 0, PROCESS: 0}), index, fired_after={})
+    [hit] = rank_impact(r, post({LSASS_READ: 0, PROCESS: 0}), index, fired_after={}, fired_before={"92900": 2})
     assert hit.key == LSASS_READ
     assert hit.rules == ["92900"]
     assert hit.max_level == 12
     assert hit.blind_techniques == ["T1003.001"]
+    assert hit.blind_alerted_before == ["T1003.001"] and hit.blind_never_alerted == []
 
 
 def test_a_rule_for_the_technique_that_fired_after_the_change_keeps_it_covered(index):
     r = result((LSASS_READ, Classification.LOST))
-    [hit] = rank_impact(r, post({LSASS_READ: 0, PROCESS: 5}), index, fired_after={"99001": 3})
+    [hit] = rank_impact(r, post({LSASS_READ: 0, PROCESS: 5}), index, fired_after={"99001": 3},
+                        fired_before={"92900": 2})
     assert hit.blind_techniques == []
     assert hit.surviving == {"T1003.001": ["99001"]}
 
@@ -113,32 +115,50 @@ def test_a_rule_for_the_technique_that_fired_after_the_change_keeps_it_covered(i
 def test_a_rule_that_only_could_fire_is_context_not_coverage(index):
     """Sysmon 1 events survive and 99001 reads them, but 99001 did not fire."""
     r = result((LSASS_READ, Classification.LOST))
-    [hit] = rank_impact(r, post({LSASS_READ: 0, PROCESS: 5}), index, fired_after={})
+    [hit] = rank_impact(r, post({LSASS_READ: 0, PROCESS: 5}), index, fired_after={}, fired_before={"92900": 2})
     assert hit.blind_techniques == ["T1003.001"]
     assert hit.could_fire == {"T1003.001": ["99001"]}
 
 
 def test_a_reduced_key_whose_own_rule_still_fired_is_covered(index):
     r = result((INJECTION, Classification.REDUCED))
-    [hit] = rank_impact(r, post({INJECTION: 2}), index, fired_after={"92403": 1})
+    [hit] = rank_impact(r, post({INJECTION: 2}), index, fired_after={"92403": 1}, fired_before={"92403": 2})
     assert hit.blind_techniques == []
 
 
 def test_blind_techniques_rank_before_severity(index):
     r = result((LSASS_READ, Classification.LOST), (INJECTION, Classification.REDUCED))
     ranked = rank_impact(r, post({LSASS_READ: 0, INJECTION: 2, PROCESS: 5}), index,
-                         fired_after={"99001": 2})
+                         fired_after={"99001": 2}, fired_before={"92900": 1, "92403": 1})
     assert [h.key for h in ranked] == [INJECTION, LSASS_READ]
 
 
 def test_only_lost_and_reduced_keys_are_ranked(index):
     r = result((LSASS_READ, Classification.UNCHANGED), (INJECTION, Classification.NEW),
                (PROCESS, Classification.INCONCLUSIVE))
-    assert rank_impact(r, post({LSASS_READ: 3, INJECTION: 1, PROCESS: 5}), index, fired_after={}) == []
+    assert rank_impact(r, post({LSASS_READ: 3, INJECTION: 1, PROCESS: 5}), index, fired_after={},
+                       fired_before={}) == []
 
 
 def test_a_lost_key_no_rule_reads_is_listed_last_with_no_rules(index):
     r = result((NO_RULE, Classification.LOST), (LSASS_READ, Classification.LOST))
-    ranked = rank_impact(r, post({NO_RULE: 0, LSASS_READ: 0}), index, fired_after={})
+    ranked = rank_impact(r, post({NO_RULE: 0, LSASS_READ: 0}), index, fired_after={}, fired_before={})
     assert [h.key for h in ranked] == [LSASS_READ, NO_RULE]
     assert ranked[-1].rules == [] and ranked[-1].max_level == 0 and ranked[-1].blind_techniques == []
+
+
+def test_a_blind_technique_that_never_alerted_is_potential_not_seen(index):
+    """Fix 4 of the outside review (DECISIONS 2026-11-27): no alert before or after, so a rule
+    names the technique, but no loss of alerts was seen."""
+    r = result((LSASS_READ, Classification.LOST))
+    [hit] = rank_impact(r, post({LSASS_READ: 0, PROCESS: 5}), index, fired_after={}, fired_before={})
+    assert hit.blind_techniques == ["T1003.001"]
+    assert hit.blind_alerted_before == []
+    assert hit.blind_never_alerted == ["T1003.001"]
+
+
+def test_an_alert_before_from_another_rule_of_the_technique_counts_as_seen(index):
+    """Seen means that any alerting rule with the technique fired before, as in the coverage change."""
+    r = result((LSASS_READ, Classification.LOST))
+    [hit] = rank_impact(r, post({LSASS_READ: 0, PROCESS: 5}), index, fired_after={}, fired_before={"99001": 1})
+    assert hit.blind_alerted_before == ["T1003.001"] and hit.blind_never_alerted == []

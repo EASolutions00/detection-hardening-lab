@@ -18,6 +18,12 @@ For each blind technique the report also shows the rules that **could** fire: an
 alerting rule with the technique that reads an event type still observed after
 the change (from the index). That is context for a reader, never counted: it shows
 where a detection exists but the attack tests did not trigger it.
+
+**Seen or only potential** (fix 4 of the outside review; DECISIONS 2026-11-27). A
+blind technique whose alerts fired in the "before" runs lost alerts that were seen.
+One that never alerted, before or after, is only potential: a rule names it, but the
+attack tests never triggered it. The ranking still counts both, as decided on
+2026-11-13; the report and the verdict tell them apart.
 """
 
 from __future__ import annotations
@@ -41,16 +47,19 @@ class ImpactFinding:
     blind_techniques: list[str] = field(default_factory=list)
     surviving: dict[str, list[str]] = field(default_factory=dict)   # technique -> rules that did fire after
     could_fire: dict[str, list[str]] = field(default_factory=dict)  # blind technique -> rules that could fire
+    # The blind techniques, split by the "before" runs (DECISIONS 2026-11-27):
+    blind_alerted_before: list[str] = field(default_factory=list)   # an alert for it fired before: seen
+    blind_never_alerted: list[str] = field(default_factory=list)    # no alert before or after: potential
 
     @property
     def rank_key(self) -> tuple[int, int, int]:
         return (len(self.blind_techniques), self.max_level, len(self.rules))
 
 
-def _fired_by_technique(fired_after: Mapping[str, int], index: RuleIndex) -> dict[str, set[str]]:
-    """Technique -> alerting rules that fired at least once after the change."""
+def _fired_by_technique(fired: Mapping[str, int], index: RuleIndex) -> dict[str, set[str]]:
+    """Technique -> alerting rules that fired at least once in the given runs."""
     out: dict[str, set[str]] = {}
-    for rid, n in fired_after.items():
+    for rid, n in fired.items():
         rule = index.raw(rid)
         if n > 0 and rule is not None and rule.level >= 1:
             for t in rule.mitre:
@@ -74,13 +83,16 @@ def _by_id(ids: set[str]) -> list[str]:
 
 
 def rank_impact(result: AnalysisResult, post: Phase, index: RuleIndex,
-                fired_after: Mapping[str, int]) -> list[ImpactFinding]:
+                fired_after: Mapping[str, int], fired_before: Mapping[str, int]) -> list[ImpactFinding]:
     """Rank the LOST and REDUCED keys of one comparison, most serious first.
 
     `fired_after` is rule id -> alerts, summed over the "after" windows
-    (archive.WindowCounts.fired).
+    (archive.WindowCounts.fired); `fired_before` is the same for the "before"
+    windows. It splits each key's blind techniques into those whose alerts fired
+    before (seen) and those that never alerted (potential).
     """
     did = _fired_by_technique(fired_after, index)
+    alerted_before = _fired_by_technique(fired_before, index)
     could = _could_fire(post, index)
     out: list[ImpactFinding] = []
     for f in result.findings:
@@ -99,5 +111,7 @@ def rank_impact(result: AnalysisResult, post: Phase, index: RuleIndex,
             blind_techniques=blind,
             surviving=surviving,
             could_fire={t: _by_id(could[t]) for t in blind if could.get(t)},
+            blind_alerted_before=[t for t in blind if alerted_before.get(t)],
+            blind_never_alerted=[t for t in blind if not alerted_before.get(t)],
         ))
     return sorted(out, key=lambda h: (tuple(-n for n in h.rank_key), h.key))

@@ -139,7 +139,7 @@ def compare(control_dirs: list, pre_dirs: list, post_dirs: list, rules_dir: str 
     vm = VarianceModel.from_control(control, min_runs=min_runs)
     result = analyse(pre, post, vm)
     index = build_index(load_rules(rules_dir))
-    ranked = rank_impact(result, post, index, fired_after=fired_post)
+    ranked = rank_impact(result, post, index, fired_after=fired_post, fired_before=fired_pre)
     before, after, lost = coverage_change(fired_pre, fired_post, index)
 
     out = Path(out_dir)
