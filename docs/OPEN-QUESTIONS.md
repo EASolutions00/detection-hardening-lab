@@ -1738,6 +1738,10 @@ lists no lost technique:
 still look covered. Point 1 is a design choice: the 0.5 floor keeps small drifts out of the report, and here it also
 kept out a real, significant effect.
 
+**2026-11-28 (fix 8, the threshold sweep of `src/noise_ablation.py`):** with a halving ratio of 0.7, the full system
+reports C3's `Sysmon-10` drop, and nothing else changes: the scored cases stay at TP 7, FP 0, FN 0 and the 70
+comparisons of unchanged runs at 0 false findings. A fact for option (b) below, not a decision.
+
 **Options (not decided; for the thesis's limitations or for future work, not for this evaluation):**
 - (a) Report rule-level coverage beside technique-level coverage: "rules that stopped" (here 92403 and 61625).
 - (b) Report statistically clear drops above the 0.5 floor as a separate, lower class, without calling them findings.

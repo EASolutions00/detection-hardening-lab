@@ -80,6 +80,7 @@ the results commit `4198e38`, no file under `src` changed.
 | Evidence from the raw events (fix 3) | 2026-11-27 14:47 (`5ba66bb`) | A check. No verdict changed |
 | The verdict's wording; seen versus potential techniques; a failed complete loss is INCONCLUSIVE at any count (fix 4) | 2026-11-27 15:08 (`eeee1a1`) | The 6 `comparison.csv` files are identical to the official ones (SHA256) |
 | The rule export's hash computed and checked; each run's stored hash recomputed; the report states what the hash covers; new runs record their code version (fix 6) | 2026-11-28 (DECISIONS 2026-11-28) | The 6 `comparison.csv` files are identical to the official ones (SHA256), on a re-run |
+| What the noise part adds: an ablation and a threshold sweep (fix 8) | 2026-11-28 | A check; no rule changed. It reproduces the official result first (`src/noise_ablation.py`) |
 
 ## 4. Capture rules
 

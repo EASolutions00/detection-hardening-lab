@@ -17,6 +17,39 @@ Next:
 
 ---
 
+## 2026-11-28 - Fix 8 of 9: the limits for chapter 3, and what the noise part adds
+
+**Chat:** 26343d0f (Claude Code). **Asked:** the same run of fixes 5 to 9.
+
+**Did:** wrote `src/noise_ablation.py`, which compares five ways of deciding a loss: the full system, without the
+noise band, without measured noise (plain Poisson, every key tested), the halving rule alone, plain subtraction. It
+runs them on the 6 real cases, on the 70 comparisons of control runs against control runs (the method of DECISIONS
+2026-11-27, reused exactly) and on made-up partial losses (one key's after counts cut to 20, 40, 50 or 60 percent in
+the real C1 and C5 comparisons), then a threshold sweep. It checks itself first: the official class and q of every key
+in all 6 cases, and the recorded 0 false findings in the 70.
+
+**Result** (`data/summaries/eval-2026-11-26/noise-ablation.txt`; EXPECTED-RESULTS section 7, last block):
+- **The statistics remove the false findings:** in the 70 unchanged comparisons, the halving rule alone gives 62 and
+  plain subtraction 347; the full system 0.
+- **The measured noise removes one more kind:** plain Poisson gives 3, all `Application-1001[]` falling 6 to 0 when the
+  busier control runs are before and the quieter after; its measured dispersion (1.50) stops it.
+- **The noise band adds nothing measurable here,** and on made-up cuts to 40 percent it costs 3 of 30 detections.
+- **The real score does not depend on the noise part or on any single threshold tried.** A halving ratio of 0.7 would
+  report C3's `Sysmon-10` drop (written into OPEN-QUESTIONS 44 as a fact, not a decision).
+
+Wrote `docs/LIMITATIONS.md`: 17 limits for chapter 3 in four groups (what the evaluation measures, the statistics, the
+design, the evidence), each with its evidence and one sentence for the thesis.
+
+**Changed:** `src/noise_ablation.py` and its output (new); `docs/LIMITATIONS.md` (new); EXPECTED-RESULTS section 7 (a
+dated block; the "planned (fix 8)" line now points to it); README (the note on what measuring the noise adds);
+OPEN-QUESTIONS 44; FILE-MAP; FREEZE-DATES (section 3); PROMPT-new-chat; COMMANDS 2.19; STATUS.
+
+**Not claimed:** that the noise band helps. On this data it does not show; the thesis should say so.
+
+**Next:** fix 9, at once.
+
+---
+
 ## 2026-11-28 - Fix 7 of 9: the walkthrough and the old revision marked historical, do not present
 
 **Chat:** 26343d0f (Claude Code). **Asked:** the same run of fixes 5 to 9.

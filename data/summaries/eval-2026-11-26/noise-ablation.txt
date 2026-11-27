@@ -1,0 +1,66 @@
+NOISE ABLATION, evaluation runs of 2026-11-26 (src/noise_ablation.py)
+Chosen after the runs: a check, not a result fixed in advance. The made-up partial losses are not lab evidence.
+
+SELF-CHECKS
+  C1: the full system gives the official class, totals and q of every key: yes
+  C3: the full system gives the official class, totals and q of every key: yes
+  C5: the full system gives the official class, totals and q of every key: yes
+  K1: the full system gives the official class, totals and q of every key: yes
+  K2: the full system gives the official class, totals and q of every key: yes
+  K3: the full system gives the official class, totals and q of every key: yes
+  the 70 control comparisons: 70 built; false findings of the full system: 0 (recorded 2026-11-27: 0): yes
+
+A. THE FIVE WAYS, ON THE REAL CASES AND ON THE 70 CONTROL COMPARISONS
+  way               TP  FP  FN  C3 found    control comparisons: false findings  with any
+  full               7   0   0         0                                      0      0 of 70
+  no noise band      7   0   0         0                                      0      0 of 70
+  no noise model     7   0   0         0                                      3      3 of 70
+  halving rule       7   0   0         2                                     62     29 of 70
+  subtraction        7   1   0         5                                    347     48 of 70
+
+  The control comparisons by design (false findings: pairs of single runs / 2 against 2 / out of sample):
+  full             0 / 0 / 0
+  no noise band    0 / 0 / 0
+  no noise model   0 / 3 / 0
+  halving rule     16 / 30 / 16
+  subtraction      97 / 153 / 97
+  The false findings of the no-noise-model way (comparison, key, class, totals before and after; the full
+  system's dispersion for the key, from the control runs):
+    split 23>14    Application-1001[]                                         LOST     6 -> 0  dispersion 1.50
+    split 25>14    Application-1001[]                                         LOST     6 -> 0  dispersion 1.50
+    split 35>14    Application-1001[]                                         LOST     6 -> 0  dispersion 1.50
+
+B. MADE-UP PARTIAL LOSSES (real noise, a made-up cut; not lab evidence)
+  In the real C1 and C5 comparisons, one key's after counts cut to the ratio shown, for each key with 30 or
+  more events before and after. found = the cut key is LOST or REDUCED; others = other keys found, in total.
+  keys cut: 30 (15 in C1, 15 in C5)
+  way                       ratio 0.2           ratio 0.4           ratio 0.5           ratio 0.6
+  full             30 of 30, others 0    22 of 30, others 0     2 of 30, others 0     0 of 30, others 0  
+  no noise band    30 of 30, others 0    25 of 30, others 0     2 of 30, others 0     0 of 30, others 0  
+  no noise model   30 of 30, others 0    25 of 30, others 0     2 of 30, others 0     0 of 30, others 0  
+  halving rule     30 of 30, others 0    29 of 30, others 0     6 of 30, others 0     0 of 30, others 0  
+  subtraction      30 of 30, others 0    30 of 30, others 0    30 of 30, others 0    30 of 30, others 0  
+  The cut keys the full system misses at ratio 0.4 and 0.2, and why (its own reason):
+    C1 ratio 0.4: Application-1000[]                                           not reported: q=0.11 above alpha=0.05
+    C1 ratio 0.4: Security-5379[]                                              not reported: ratio 0.511 above 0.5; drop 48.9% within noise band 56.9%
+    C1 ratio 0.4: Sysmon-11[Image,TargetFilename]                              not reported: q=0.0658 above alpha=0.05
+    C1 ratio 0.4: Sysmon-1[CommandLine,Hashes,Image,OriginalFileName]          not reported: drop 52.5% within noise band 61.3%
+    C5 ratio 0.4: Application-1000[]                                           not reported: q=0.11 above alpha=0.05
+    C5 ratio 0.4: Security-5379[]                                              not reported: drop 51.8% within noise band 56.9%
+    C5 ratio 0.4: Sysmon-11[Image,TargetFilename]                              not reported: q=0.0658 above alpha=0.05
+    C5 ratio 0.4: Sysmon-1[CommandLine,Hashes,Image,OriginalFileName]          not reported: drop 56.2% within noise band 61.3%
+
+C. THRESHOLD SWEEP (the full system, one setting changed at a time)
+  defaults: alpha 0.05, halving ratio 0.5, minimum count 30, noise sigmas 3.0
+  setting                   TP  FP  FN  C3 found   control comparisons: false findings
+  defaults                   7   0   0         0                                     0
+  alpha 0.01                 7   0   0         0                                     0
+  alpha 0.10                 7   0   0         0                                     0
+  halving ratio 0.3          7   0   0         0                                     0
+  halving ratio 0.7          7   0   0         1                                     0
+  minimum count 10           7   0   0         0                                     0
+  minimum count 60           7   0   0         0                                     0
+  noise sigmas 2             7   0   0         0                                     0
+  noise sigmas 4             7   0   0         0                                     0
+
+Everything in A and C uses the code's own analyse() and the same runs as the official comparisons.

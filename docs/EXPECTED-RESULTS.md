@@ -248,8 +248,8 @@ no key fell at all; plain subtraction had an easy case there.
   `Sysmon-1[CommandLine,Hashes,Image,OriginalFileName,ParentImage]`, 211 to 209 events over 3 runs each (ratio 0.991).
   The simple rule "a loss must at least halve" also removes it, and all 7 true losses fell to zero. So here the halving
   rule alone gives the same TP 7, FP 0, FN 0 as the full system. Section 3 planned this comparison so that "the noise
-  floor's benefit is measured"; this evaluation does not measure it. A run of the analysis without the noise part is
-  planned (WORKLOG 2026-11-27, fix 8).
+  floor's benefit is measured"; this evaluation does not measure it. **Measured after the runs, in fix 8:** the last
+  block of this section.
 
 **How the score depends on the test for a key that falls to zero** (added 2026-11-27, fix 2 of the same review, its
 point 2; WORKLOG 2026-11-27). The declared test stays the main result: it was fixed before any run (DECISIONS
@@ -350,3 +350,36 @@ comparisons were run again into `data/summaries/eval-2026-11-26-fix4/`:
   blind spots. This answers section 2's point 4.
 - Point 6 of the block on the test for a key that falls to zero: such a key is now INCONCLUSIVE at any count
   (`data/summaries/eval-2026-11-26-fix4/zero-loss-sensitivity.txt`; the score did not change).
+
+**What the noise part adds** (added 2026-11-28, fix 8 of the outside review, its point 5; chosen after the runs, so a
+check and not a result fixed in advance). `src/noise_ablation.py` runs five ways of deciding that a key was lost: the
+full system; without the noise band; without any measured noise (plain Poisson, every key tested); the halving rule
+alone; plain subtraction. It first reproduces the official class and q of every key in all 6 cases, and the recorded
+0 false findings in the 70 comparisons of control runs against control runs (DECISIONS 2026-11-27). Output:
+`data/summaries/eval-2026-11-26/noise-ablation.txt`.
+
+| Way | Real cases: TP, FP, FN | 70 unchanged comparisons: false findings (comparisons with any) | Made-up losses to 40 percent: cut keys found (of 30) |
+|---|---|---|---|
+| Full system | 7, 0, 0 | 0 (0) | 22 |
+| No noise band | 7, 0, 0 | 0 (0) | 25 |
+| No measured noise (plain Poisson) | 7, 0, 0 | 3 (3) | 25 |
+| Halving rule alone | 7, 0, 0 | 62 (29) | 29 |
+| Plain subtraction | 7, 1, 0 | 347 (48) | 30 |
+
+What this shows, in order:
+1. **The statistics are what remove the false findings.** Without them, the halving rule gives 62 and plain
+   subtraction 347 false findings in 70 comparisons where nothing changed.
+2. **The measured noise removes one more kind.** All 3 false findings of plain Poisson are `Application-1001[]`, 6 to
+   0, in the 2-against-2 splits that put the busier control runs before and the quieter ones after. The key's measured
+   dispersion, 1.50, makes the same drop not significant.
+3. **The noise band adds nothing measurable on this data** (0 and 0 false findings), and on made-up partial losses to
+   40 percent it costs 3 of 30 detections: `Security-5379[]` in C5 and a `Sysmon-1` key in C1 and in C5, whose drops
+   fall inside their own noise bands (56.9 and 61.3 percent). The made-up losses are real noise with a made-up cut, not
+   lab evidence.
+4. **The real score does not depend on the noise part.** All five ways find the 7 true losses. Only plain subtraction
+   adds a false one.
+5. **The thresholds** (part C of the output): alpha 0.01 or 0.10, a halving ratio of 0.3 or 0.7, a minimum count of 10
+   or 60, or noise sigmas of 2 or 4, each alone, leave the score at TP 7, FP 0, FN 0 and the 70 comparisons at 0 false
+   findings. Only a halving ratio of 0.7 would report C3's `Sysmon-10` drop (OPEN-QUESTIONS 44).
+
+The limits this adds for chapter 3 are in `docs/LIMITATIONS.md`.

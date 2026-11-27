@@ -240,7 +240,11 @@ deployment, where the variance floor is not controlled by snapshot restoration.
 runs with no change, and 5 of 20 keys varied by more than 5%. In the evaluation, plain subtraction
 reported 1 false loss and TeLoS none (`docs/EXPECTED-RESULTS.md` section 7). That one false loss, a key that fell
 from 211 to 209, is also removed by the simple rule that a loss must at least halve, and every true loss fell to zero.
-So this evaluation does not yet show what measuring the noise adds.
+So the scored result alone does not show what measuring the noise adds. A check after the runs does
+(`src/noise_ablation.py`): in 70 comparisons of unchanged runs, the halving rule alone gives 62 false findings and
+plain subtraction 347; the full system gives 0, and plain Poisson statistics without the measured noise 3. The noise
+band (3 × CoV) added nothing measurable on this data (`docs/EXPECTED-RESULTS.md` section 7; limits in
+[docs/LIMITATIONS.md](docs/LIMITATIONS.md)).
 
 **Untestable is reported, not assumed safe.** An event key seen too few times before a change
 cannot be tested with any power. TeLoS reports these as INCONCLUSIVE rather than folding them

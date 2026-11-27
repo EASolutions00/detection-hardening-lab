@@ -72,8 +72,11 @@ In order:
    run's parameters hash, and each new run records its code version (DECISIONS 2026-11-28; no result changed).
    **The student said "STRAIGHT IT TO 9 UNINTERRUPTED", then, after a stop in fix 6, "DOUBLE CHECK 5 TO 9 FIX
    UNINTERRUPTED" (2026-11-28): fixes 5 to 9 in one go, each checked again.** Fix 7 done: the walkthrough and the old
-   revision are marked "historical, do not present", with what in each is wrong (2026-11-28). **Next: fix 8 (chapter 3
-   limits, and a test without the noise part); the student reads the results; item 44; the results chapter.**
+   revision are marked "historical, do not present", with what in each is wrong (2026-11-28). Fix 8 done:
+   `docs/LIMITATIONS.md` (17 limits for chapter 3), and `src/noise_ablation.py`: the statistics remove the false
+   findings (0 against 62 and 347 in 70 unchanged comparisons), the measured noise removes 3 more, the noise band adds
+   nothing measurable here. **Next: fix 9 (redraw the activity diagram); the student reads the results; item 44; the
+   results chapter.**
 
 Recommended, not decided: the 5 pinned control runs wait until the form is sent, because the pre-oral needs chapters
 1 to 3, not the results (Claude's reading). **Overtaken 2026-11-27:** all 26 runs were made before the form was sent.
