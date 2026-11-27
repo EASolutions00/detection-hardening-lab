@@ -36,6 +36,12 @@ Inputs, Features, limitation 11). One step from an upload to a report is the win
 in the repo, DECISIONS, STATUS, `thesis/README.md` (a note that the revised form has 4 problems). I also told the student
 that my earlier order was wrong: the checklist says to do the stakeholder interview before sending the form.
 
+**Interview guide, the same day (student: "Yes, update it"):** `INTERVIEW-GUIDE.md` (thesis folder) now follows the 4
+problems: old problems 3 and 4 form one group, old problem 5 is problem 4. Question 7 is new (who compares event counts
+today, with what tool), asked because the merge of old problem 4 rests on "no one does", which is still only our
+reading. Questions 8 to 18 moved down by one; section 7 updated (questions 3 to 13, 14 to 16, 18). Numbers checked, 1 to 18.
+The guide has no question that confirms the six steps of "The Current Process" in the form; not added.
+
 **Next:** the student checks the blank template; the stakeholder interview (`INTERVIEW-GUIDE.md`); then the message to
 Sir Ervin with the form. Open for the code: build the percentage, if it stays.
 
