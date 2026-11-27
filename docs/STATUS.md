@@ -255,9 +255,9 @@ and with them only C1, C3 and C5 can blind a detection (`DECISIONS.md` 2026-10-0
   was reinstalled in place, to the morning of 2026-11-26. The spike ran with it off (its VMware logs say `CPL0`). **Off
   again** since the student's fix and host restart at 10:48 UTC (COMMANDS 1.1 and 2.18; DECISIONS, pinned versions).
   SIEM-01 running since 10:52 UTC. **`golden-base-v2` taken at 2026-11-26T13:31:48Z** (7 snapshots;
-  `golden-base` kept). Since C4 the catalog reverts every run to `golden-base-v2`. Both VMs shut down cleanly at the
-  end of Phase D, then started again for Phase E after the host restart of 15:51 UTC: SIEM-01 since 16:14, WIN-EP-01
-  from the harness test of 17:51 (in no snapshot; the next run's revert drops it).
+  `golden-base` kept). Since C4 the catalog reverts every run to `golden-base-v2`. **Both VMs off since
+  2026-11-27 00:17 UTC**: WIN-EP-01 stopped by the harness after `eval-post-K3-3`; SIEM-01 shut down cleanly
+  (`vmrun stop ... soft`, exit 0) after the analysis.
 - **2026-11-16 (chat ee84ae3f): `golden-base` exists and is checked** (cold, DECISIONS 2026-11-16, COMMANDS 2.16).
   A test boot gave 20 of 20, no `eli` session before the student's sign-in, NAT disconnected. WIN-EP-01 is now running
   from that test boot (in no snapshot; the next revert drops it); SIEM-01 running. **Decided:** no `cfg-suppressed`
