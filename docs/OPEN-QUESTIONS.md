@@ -1671,6 +1671,30 @@ runs `(unverified exact bound)`.
 
 ---
 
+## 44. C3's real effect is below the REDUCED threshold, and T1055 stays "detected" through rules that fire anyway
+
+**Status:** Open. Found 2026-11-27 by chat 26343d0f, in the evaluation's C3 comparison (EXPECTED-RESULTS section 7).
+For the student and the adviser. **The C3 result stays as found; nothing is rerun or retuned to change it.**
+
+**What happened.** In C3's 3 after runs, the two LSASS dump rules (92403, 61625; T1055, level 12) stopped firing, so
+the dump was blocked, as expected. But the report says "no blind spot" and lists no lost technique:
+1. `Sysmon-10` fell by a third (107.7 to 72.3 per run; q = 8.8e-5), and the system reports REDUCED only at a rate
+   ratio of 0.5 or less. With the pinned stimulus, the Remote Desktop sign-in adds LSASS accesses that C3 does not
+   block, so the drop is smaller in proportion than in the spike (73.3 to 26.3) `(unverified reading)`.
+2. The coverage section counts a technique as detected while any of its rules fires. Rules 61632 and 61634 also map to
+   T1055 and fire in every run, so T1055 never leaves the "detected" list, although its dump-specific rules stopped.
+
+**Why it matters.** Point 2 is a limit of technique-level coverage: a technique can lose its most specific rules and
+still look covered. Point 1 is a design choice: the 0.5 floor keeps small drifts out of the report, and here it also
+kept out a real, significant effect.
+
+**Options (not decided; for the thesis's limitations or for future work, not for this evaluation):**
+- (a) Report rule-level coverage beside technique-level coverage: "rules that stopped" (here 92403 and 61625).
+- (b) Report statistically clear drops above the 0.5 floor as a separate, lower class, without calling them findings.
+- (c) Leave both as they are and state them as limitations.
+
+---
+
 ## 22. The stimulus is asserted identical and never verified
 
 **Status:** **Decided and built 2026-11-27** (DECISIONS 2026-11-27): a run with the pinned stimulus is voided when its

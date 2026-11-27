@@ -195,3 +195,46 @@ check 26222's condition line, which was not read. **Image:** `golden-base-v2`. *
 - **Summary, 2026-11-26:** 7 states, **42 of 42 results as predicted**. The scan sees C1, C5, K1, K2 and K3, and does
   not see C3, as section 6 says. All read from the SIEM archive, except the baseline, also read from the dashboard
   export (the same results).
+
+---
+
+## 7. Results of the evaluation runs (written after the runs, 2026-11-26/27; nothing above was edited)
+
+**Data:** 26 valid runs on `golden-base-v2`, one parameters hash `9895d0cf...14cd`: 5 control (`eval-ctl-1` to `-5`),
+3 before (`eval-pre-1` to `-3`), 3 after per case (`eval-post-<case>-1` to `-3`). **Analysis:** `src/run.py` per case,
+analyser `7850847`; output `data\summaries\eval-2026-11-26\<case>\` (report, findings, comparison). COMMANDS 2.19.
+
+**Key level, scored as section 3 says:**
+
+| Case | Expected LOST keys | System: found (LOST or REDUCED) | TP | FP | FN | Plain subtraction: keys that fell | Its FP |
+|---|---|---|---|---|---|---|---|
+| C1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| C5 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| K1 | 5 (the 4 `Security-4624` keys, `Security-4648[]`) | the same 5, all LOST | 5 | 0 | 0 | 5 | 0 |
+| K2 | 1 (`Security-4688[CommandLine,...]`) | the same, LOST | 1 | 0 | 0 | 2 | 1 |
+| K3 | 1 (`Security-4688[CommandLine,...]`) | the same, LOST | 1 | 0 | 0 | 1 | 0 |
+| **Total** | **7** | **7** | **7** | **0** | **0** | **8** | **1** |
+
+**System: precision 1.00, recall 1.00, F1 1.00, false-positive rate 0.** Plain subtraction: precision 0.875 (7 of 8),
+recall 1.00. Caution for the reading: all 3 before runs fell in the "low" group of the control runs, so in C1 and C5
+no key fell at all; plain subtraction had an easy case there.
+
+**Technique level:** K1 "no longer detected" = **T1021.001, T1078.002, T1550.002, exactly as expected**. C1, C5, K2,
+K3: none, as expected. **C3: none, against the expected {T1055}: a miss** (below).
+
+**Field level:** K2 shows **FIELD-LEVEL LOSS, lost field `CommandLine`**, as expected.
+
+**K1's sign-in (section 4):** step `rdp-signin-30s` exit 0 in all 3 K1 runs; `Security-4672[]` UNCHANGED (27.0 to 30.3
+per run) while every 4624 key was lost; session event 21 seen in `trial-K1-1` (14:43:56 UTC). So the sign-in worked:
+**K1 is a blind spot, as expected.**
+
+**C3, not as expected at the key and technique level (a result, reported as found):**
+- The dump was blocked: rules 92403 and 61625 (T1055, level 12) fired in all 8 control and before runs (2 and 1 per
+  run) and in none of the 3 C3 runs, as section 1 expects.
+- `Sysmon-10` fell from 107.7 to 72.3 per run (rate ratio 0.672, 95% CI 0.566 to 0.798, q = 8.8e-5), but the system
+  reports REDUCED only at a ratio of 0.5 or less: "not reported: ratio 0.672 above 0.5". In the spike (trial stimulus,
+  no sign-in) it fell from 73.3 to 26.3.
+- `Sysmon-8[]` fell from 3 to 1 per run: INCONCLUSIVE (9 before, below 30; not a drop to zero).
+- T1055 still counts as detected after C3, through rules 61632 and 61634, which fire in every run.
+- So the system says "no blind spot" for C3. The truth, by the rules that stopped, is **prevention** (section 1).
+  OPEN-QUESTIONS 44.

@@ -53,7 +53,9 @@ In order:
    `eval-ctl-5` are all valid** (COMMANDS 2.19). **Decided 2026-11-27:** 3 runs per phase, and item 22's void
    rule, built into the harness (DECISIONS 2026-11-27; 0 false findings in 70 control comparisons). **The 3 before
    runs are valid** (`eval-pre-1` to `eval-pre-3`). **All 26 evaluation runs valid** (2026-11-26, the last at 23:58 UTC;
-   a power cut at 22:55 cost one unfinished run). **Next: the analysis, one comparison per case.**
+   a power cut at 22:55 cost one unfinished run). **Analysed 2026-11-27: TP 7, FP 0, FN 0** (EXPECTED-RESULTS section 7);
+   K1 a blind spot as expected; **C3 not as expected** (OPEN-QUESTIONS 44). **Next: the student reads the results;
+   item 44; the results chapter.**
 
 Recommended, not decided: the 5 pinned control runs wait until the form is sent, because the pre-oral needs chapters
 1 to 3, not the results (Claude's reading). Not decided: when the GUI is built. The adviser pictures the system as a

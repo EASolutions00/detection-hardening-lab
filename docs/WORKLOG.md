@@ -76,8 +76,15 @@ K1's runs have 0 Remote Desktop logons, as expected; C3's runs take 12.7 minutes
 **The batch, restarted:** K2-3 and K3-1 to K3-3, all valid (finished 23:32 to 23:58 UTC). K2-3's 4688 key has no
 `CommandLine`; K3's runs have no 4688 key. **All 26 evaluation runs are valid**, with one parameters hash.
 
-**Next:** the analysis, one comparison per case (`src/run.py`, the 5 control runs, the 3 before runs, the case's 3
-after runs), and the results beside EXPECTED-RESULTS.
+**The analysis (student: "Yes, run them"):** `src/run.py` for each of the 6 cases. **Scored as fixed before the
+runs: TP 7, FP 0, FN 0** over C1, C5, K1, K2, K3 (plain subtraction 1 false positive, in K2). K1: the 5 expected keys
+LOST and exactly the 3 expected techniques no longer detected; the sign-in still worked (4672 unchanged), so a blind
+spot. K2: the field-level loss of `CommandLine`. K3: the 4688 key LOST. **C3 did not come out as expected:** the dump
+was blocked (rules 92403 and 61625 stopped), but `Sysmon-10`'s drop (ratio 0.672, q 8.8e-5) is above the 0.5
+reporting floor, and T1055 stays "detected" through rules 61632 and 61634. Reported as found (EXPECTED-RESULTS section
+7); OPEN-QUESTIONS 44. The output folder `data\summaries\eval-2026-11-26\` is not committed.
+
+**Next:** the student and the adviser read the results; item 44; then the results chapter.
 
 ---
 
