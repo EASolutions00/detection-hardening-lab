@@ -8,6 +8,54 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-11-27 - The revised form: 4 problems, a percentage beside the ranking, and the lab tool outside the modules
+
+**Decision (student, chat 26343d0f: "Accept all three", after the options were explained).** Choices 1 to 3 of the
+working note in `proposal-form-SIMPLIFIED.md` (thesis folder, outside this repo) stand as drafted, with the changes
+below. Choice 4, the Gantt chart, waits for Sir Ervin's dates.
+1. **4 problems and 5 objectives.** Old problem 4 (raw counts give false alarms) is merged into problem 3, because no
+   one compares raw counts today (consultation checklist item 24, transcript lines 335 to 339). The fifth objective,
+   the evaluation, was his request (item 34) and answers no single problem. **Condition:** the student checks whether
+   the school's blank template names a number of problems. This repo's `thesis/README.md` says "exactly 5"; the draft's
+   note says the template has headings only (unverified from here). If the template names 5, a real fifth problem is
+   needed first; the stakeholder interview may supply one. Nothing is invented to reach 5.
+2. **The percentage.** Objective 4 and Module 4 define one measured percentage: techniques whose alerts fired before the
+   change and not after, divided by techniques whose alerts fired before. No weights, so the ranking by three measured
+   numbers (DECISIONS 2026-11-13) stays. On the evaluation's reports: K1, 11 techniques before, 3 no longer detected,
+   so 3 of 11 (27%); C1, C3, C5, K2 and K3, 0 techniques lost, 0%. **Not built:** the report prints the three counts
+   (coverage change), so the percentage is one more line and a test (estimate, unverified).
+3. **The lab tool is not a module.** The 5 modules start at the upload, as Sir Ervin pictures it. The capture script
+   (`harness.py`, `capture.py`, `evaluate.py`) is "the study's lab tool", described in Chapter 3. **Module 1 now names
+   its inputs exactly:** the run record the lab tool writes (the events of the run's window, cut from the exported
+   Wazuh archive between the start and end markers, and a record of the run's settings, its tests' results and whether
+   the run was voided), and the rule files.
+
+**Why this wording in 3.** The code does not start from a plain SIEM export. `pipeline.py` reads two files per run,
+`counts.json` and `run_manifest.json`, and the capture step writes both: the counts are cut between two marker events,
+and the manifest holds the settings hash, the tests' exit codes and the valid flag. Module 1's checks ("attack tests
+completed", the SHA-256 of the settings) read the manifest. Saying "uploaded files" without naming them would hide
+this, and a panelist can ask where the engineer gets them. Today the counting of an exported archive runs at capture
+time (`archive.py` through the harness, and `harness.recount()` on a saved run); one step from an upload to a report is
+the window's work (Module 5), not built.
+
+**What changes in the documents.** In the form (not in this repo): the working note, Module 1, Inputs, Features,
+Module 4 (a technique still counts as detected while another rule for it alerts, so the percentage can understate a
+loss: C3, OPEN-QUESTIONS 44) and a new limitation 11 (the system reads the lab tool's run record, not a plain export).
+In the checklist: items 32 and 5 and the Module 1 and Impact rows marked confirmed. In this repo: `thesis/README.md`
+notes that the revised form has 4 problems.
+
+**Open, for the student.** (a) Check the blank template for a number of problems. (b) Ask Sir Ervin, in the message
+that sends the form: why 4 problems (no one compares raw counts today); whether "percentage" in his list means the
+impact or the scoring of the evaluation form (checklist Part 4, item 9; my reading, unverified); and that the study's
+input is the lab tool's run record. (c) Build the percentage before the form is sent, if it stays.
+
+**Cost if wrong.** If the template names 5 problems, the form needs a real fifth before it is sent. If "percentage"
+means the evaluation's scoring, the impact percentage is an extra: drop it with one line in objective 4 and Module 4;
+nothing in the code exists yet to remove. If the panel asks where the run records come from, the answer is Chapter 3:
+the lab tool, stated as limitation 11.
+
+---
+
 ## 2026-11-27 - The repository is renamed hardening-blind-spots
 
 **Decision (student, chat 27d2595d, from three options; chose "hardening-blind-spots").** The public GitHub repository

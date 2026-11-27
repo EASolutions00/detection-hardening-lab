@@ -35,13 +35,13 @@ In order:
    not a percentage; OpenSCAP no longer supports Windows; item 38 is still open. **Corrected 2026-11-27:** the file
    point needs no correction. The student told him the file will be exported from the SIEM (the student, 2026-11-24;
    DECISIONS 2026-11-23, correction note). The revised form now proposes a percentage beside the ranking (its choice 2,
-   waiting for the student).
+   confirmed 2026-11-27, DECISIONS 2026-11-27; ask him what "percentage" means).
 3. **The facts he asked for:** how engineers harden and check Windows today, who notices a telemetry change, and
    with which tool (problems 2, 4 and 5). The stakeholder interview answers these (`INTERVIEW-GUIDE.md` in the
    thesis folder); none is recorded.
 4. **The revised form, section by section**, with every cut kept in a reserve file for the chapters.
    **2026-11-25:** full draft in `proposal-form-SIMPLIFIED.md` (chats 27d2595d and 26343d0f), with the cuts in its
-   "Reserved for the chapters" part; waiting for the student's choices in its working note. Checklist of the 47
+   "Reserved for the chapters" part. **2026-11-27:** choices 1 to 3 of its working note confirmed (DECISIONS 2026-11-27); choice 4, the Gantt, waits for Sir Ervin's dates; the student checks that the blank template names no number of problems. Checklist of the 47
    instructions and the 10/10 list: `CONSULTATION-2026-11-23-CHECKLIST.md` (thesis folder).
 5. **The demo scenario list:** C1, C3 and C5, what each change does, and the expected result.
    **2026-11-26:** written in `docs/EXPECTED-RESULTS.md`, with the test cases K1 to K3 (DECISIONS 2026-11-26), before

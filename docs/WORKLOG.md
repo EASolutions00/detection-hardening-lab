@@ -17,6 +17,30 @@ Next:
 
 ---
 
+## 2026-11-27 - The revised form's choices 1 to 3 are confirmed
+
+**Chat:** 26343d0f (Claude Code). **Asked:** "whats next"; then, for choices a to c of the form's working note, "tell me
+more about the options"; then "Accept all three". The next steps are taken one at a time (the student's rule).
+
+**Did:** explained each choice with its options, its weakest point and the best argument against it (read: the form,
+the consultation checklist, DECISIONS 2026-11-13 and 2026-11-23, `pipeline.py`). The student accepted the advice.
+**Recorded** in DECISIONS 2026-11-27: 4 problems and 5 objectives, on the condition that the school's blank template
+names no number (the student checks); one percentage beside the ranking (K1: 3 of 11 techniques, 27%; the other five
+cases 0%; not built); the lab tool outside the modules, with Module 1 naming its inputs exactly.
+
+**Found on the way:** the code does not start from a plain SIEM export. `pipeline.py` reads `counts.json` and
+`run_manifest.json`, which the capture step writes; Module 1's checks read the manifest. The form now says so (Module 1,
+Inputs, Features, limitation 11). One step from an upload to a report is the window's work, not built.
+
+**Changed:** `proposal-form-SIMPLIFIED.md` and `CONSULTATION-2026-11-23-CHECKLIST.md` (thesis folder, outside the repo);
+in the repo, DECISIONS, STATUS, `thesis/README.md` (a note that the revised form has 4 problems). I also told the student
+that my earlier order was wrong: the checklist says to do the stakeholder interview before sending the form.
+
+**Next:** the student checks the blank template; the stakeholder interview (`INTERVIEW-GUIDE.md`); then the message to
+Sir Ervin with the form. Open for the code: build the percentage, if it stays.
+
+---
+
 ## 2026-11-27 - Chat 26343d0f reviews chat 27d2595d's repo update, fixes what was left, and pushes it
 
 **Asked:** "scan all files in the repo ... update all that needs to be updated AND FIXED DOCS MISMATCH ACCROSS ALL

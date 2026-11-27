@@ -17,7 +17,8 @@ Every proposal follows the same fixed structure. **Do not reorder or rename thes
 1. Area of Investigation (field and background)
 2. Algorithms to be Used
 3. Reasons for Choice of Project / The Current Process
-4. Statement of the Problems (**exactly 5**)
+4. Statement of the Problems (**exactly 5** in the form of 2026-10-15; the revised form has 4, `docs/DECISIONS.md`
+   2026-11-27, on the condition that the blank template names no number)
 5. Objectives of the Study: 1 general, then **exactly 5 specific**
 6. Project Context (concept of the proposed system)
 7. Features and Capabilities
