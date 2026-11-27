@@ -287,17 +287,46 @@ K3: none, as expected. **C3: none, against the expected {T1055}: a miss** (below
 
 **Field level:** K2 shows **FIELD-LEVEL LOSS, lost field `CommandLine`**, as expected.
 
-**K1's sign-in (section 4):** step `rdp-signin-30s` exit 0 in all 3 K1 runs; `Security-4672[]` UNCHANGED (27.0 to 30.3
-per run) while every 4624 key was lost; session event 21 seen in `trial-K1-1` (14:43:56 UTC). So the sign-in worked:
-**K1 is a blind spot, as expected.**
+**K1's sign-in (section 4; corrected 2026-11-27, fix 3 of the outside review):** the sign-in worked in all 3 K1 runs,
+so **K1 is a blind spot, as expected.** The evidence uses no finding of the tool and no detection rule
+(`src/independent_evidence.py`; output `data/summaries/eval-2026-11-26/independent-evidence.txt`):
+- **What marks this sign-in.** In all 23 runs that write 4624, the sign-in writes two linked type 10 logons for `eli`,
+  and `rdpclip.exe` (the Remote Desktop clipboard program), `userinit.exe` and `explorer.exe` start once each, in
+  session 2, under one of those two logon IDs (23 of 23). So these programs belong to this sign-in, not to the
+  harness's own guest logons (type 4, by `vmtoolsd.exe`; OPEN-QUESTIONS 26).
+- **In K1.** No 4624 is written at all (3 of 3 runs), but the same three programs start once each, in session 2, as
+  `eli`, 3.4 seconds after the window opens (3 of 3). Sysmon does not depend on the "Audit Logon" setting. The step
+  `rdp-signin-30s` exited 0.
+- **Why the first version was weak.** It rested on `Security-4672[]` staying UNCHANGED (27.0 to 30.3 per run). Section
+  4's `(unverified)` is now checked: the sign-in does write 4672, 7 per run (2 for each of its two network logons, 1
+  for its elevated Remote Desktop logon, 2 for the new session's window manager). But the other 20 to 25 come from the
+  harness's own guest logons (10 per run) and from SYSTEM (10 to 15), so the count is 27 to 32 in every run and
+  cannot show the sign-in. Session event 21 was read in the guest for `trial-K1-1` only (OPEN-QUESTIONS 42); its
+  channel was not in the three evaluation windows read for this (Security, Sysmon, System and Application only).
 
 **C3, not as expected at the key and technique level (a result, reported as found):**
-- The dump was blocked: rules 92403 and 61625 (T1055, level 12) fired in all 8 control and before runs (2 and 1 per
-  run) and in none of the 3 C3 runs, as section 1 expects.
+- **The dump was blocked (corrected 2026-11-27, fix 3 of the outside review).** The first version gave the rules that
+  stopped as the proof (92403 and 61625, T1055, level 12: in all 8 control and before runs, 2 and 1 per run, and in
+  none of the 3 C3 runs). That is circular: whether those rules stopped because the attack failed or because its
+  evidence was lost is the question. The raw events answer it (`src/independent_evidence.py`):
+  - The three test programs started in every run, C3 included, with the same command lines (`procdump.exe`,
+    `rundll32.exe ... comsvcs.dll MiniDump`, `rdrleakdiag.exe`; Sysmon 1, 26 of 26 runs).
+  - Each opened `lsass.exe` in 23 of 23 runs without C3, and none did in the 3 C3 runs (Sysmon 10).
+  - Both dump files, `lsass_dump.dmp` and `lsass-comsvcs.dmp`, were written in 23 of 23 runs without C3, and neither
+    in the C3 runs (Sysmon 11). Each C3 run still logged 9 other new files, so file logging worked. rdrleakdiag's
+    output is not logged in any run, so for test 13 only the first two points apply.
+  - ProcDump's helper (`PDM....tmp\ProcDump64.exe`) is missing under C3 too. Without C3, `procdump.exe` opens
+    `lsass.exe` itself and writes the helper 1 ms later (`eval-pre-1`). Under C3 no such open is logged and no helper
+    is written; OPEN-QUESTIONS 22 recorded ProcDump's "Access is denied" under LSA Protection (2026-11-13). So ProcDump
+    stops at its first open (reading).
+
+  So the attack ran and failed.
 - `Sysmon-10` fell from 107.7 to 72.3 per run (rate ratio 0.672, 95% CI 0.566 to 0.798, q = 8.8e-5), but the system
   reports REDUCED only at a ratio of 0.5 or less: "not reported: ratio 0.672 above 0.5". In the spike (trial stimulus,
-  no sign-in) it fell from 73.3 to 26.3.
+  no sign-in) it fell from 73.3 to 26.3. **By source (fix 3):** the accesses that stop are `wmiprvse.exe`'s (access
+  0x1400: 37.3 per run in the 23 runs without C3, 0 under C3) and the three test programs'; `svchost.exe`'s (0x1000)
+  stay (67.8 and 70.7 per run). OPEN-QUESTIONS 44.
 - `Sysmon-8[]` fell from 3 to 1 per run: INCONCLUSIVE (9 before, below 30; not a drop to zero).
 - T1055 still counts as detected after C3, through rules 61632 and 61634, which fire in every run.
-- So the system says "no blind spot" for C3. The truth, by the rules that stopped, is **prevention** (section 1).
-  OPEN-QUESTIONS 44.
+- So the system says "no blind spot" for C3. The truth, by the raw events above and not by the rules that stopped, is
+  **prevention** (section 1). OPEN-QUESTIONS 44.

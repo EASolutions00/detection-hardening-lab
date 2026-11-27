@@ -1,0 +1,108 @@
+INDEPENDENT EVIDENCE, evaluation runs of 2026-11-26 (src/independent_evidence.py)
+It uses no finding of the tool and no detection rule: only the raw Security and Sysmon events in each
+run's own capture window.
+
+WINDOWS (events found against the count in the run record)
+  the same count in 26 of 26 runs
+
+A. THE SIGN-IN (the first step of every run: Remote Desktop from the host)
+  type 10 = 4624 logons of type 10; programs = Sysmon 1 starts of rdpclip, userinit, explorer;
+  in type 10 = the programs' logon ID is one of the type 10 logon IDs; s = seconds from the window start to
+  rdpclip; 4672 = total: sign-in + harness + SYSTEM + other + not linkable (no 4624 to link to)
+  run              type 10  programs  session  user  in type 10     s   4672
+  eval-ctl-1             2     1 1 1        2  eli   yes          3.7   27 = 7 + 10 + 10 + 0 + 0
+  eval-ctl-2             2     1 1 1        2  eli   yes          3.3   32 = 7 + 10 + 15 + 0 + 0
+  eval-ctl-3             2     1 1 1        2  eli   yes          3.3   31 = 7 + 10 + 14 + 0 + 0
+  eval-ctl-4             2     1 1 1        2  eli   yes          3.3   27 = 7 + 10 + 10 + 0 + 0
+  eval-ctl-5             2     1 1 1        2  eli   yes          3.3   31 = 7 + 10 + 14 + 0 + 0
+  eval-pre-1             2     1 1 1        2  eli   yes          3.5   27 = 7 + 10 + 10 + 0 + 0
+  eval-pre-2             2     1 1 1        2  eli   yes          3.5   27 = 7 + 10 + 10 + 0 + 0
+  eval-pre-3             2     1 1 1        2  eli   yes          3.4   27 = 7 + 10 + 10 + 0 + 0
+  eval-post-C1-1         2     1 1 1        2  eli   yes          3.4   27 = 7 + 10 + 10 + 0 + 0
+  eval-post-C1-2         2     1 1 1        2  eli   yes          3.4   27 = 7 + 10 + 10 + 0 + 0
+  eval-post-C1-3         2     1 1 1        2  eli   yes          3.4   31 = 7 + 10 + 14 + 0 + 0
+  eval-post-C3-1         2     1 1 1        2  eli   yes          3.4   28 = 7 + 10 + 11 + 0 + 0
+  eval-post-C3-2         2     1 1 1        2  eli   yes          3.3   32 = 7 + 10 + 15 + 0 + 0
+  eval-post-C3-3         2     1 1 1        2  eli   yes          3.4   32 = 7 + 10 + 15 + 0 + 0
+  eval-post-C5-1         2     1 1 1        2  eli   yes          3.4   32 = 7 + 10 + 15 + 0 + 0
+  eval-post-C5-2         2     1 1 1        2  eli   yes          3.4   27 = 7 + 10 + 10 + 0 + 0
+  eval-post-C5-3         2     1 1 1        2  eli   yes          3.4   27 = 7 + 10 + 10 + 0 + 0
+  eval-post-K1-1         0     1 1 1        2  eli   -            3.4   32 = 0 + 0 + 15 + 0 + 17
+  eval-post-K1-2         0     1 1 1        2  eli   -            3.4   32 = 0 + 0 + 15 + 0 + 17
+  eval-post-K1-3         0     1 1 1        2  eli   -            3.4   27 = 0 + 0 + 10 + 0 + 17
+  eval-post-K2-1         2     1 1 1        2  eli   yes          3.4   27 = 7 + 10 + 10 + 0 + 0
+  eval-post-K2-2         2     1 1 1        2  eli   yes          3.4   27 = 7 + 10 + 10 + 0 + 0
+  eval-post-K2-3         2     1 1 1        2  eli   yes          3.7   27 = 7 + 10 + 10 + 0 + 0
+  eval-post-K3-1         2     1 1 1        2  eli   yes          8.1   31 = 7 + 10 + 14 + 0 + 0
+  eval-post-K3-2         2     1 1 1        2  eli   yes          3.4   32 = 7 + 10 + 15 + 0 + 0
+  eval-post-K3-3         2     1 1 1        2  eli   yes          3.3   32 = 7 + 10 + 15 + 0 + 0
+
+B. THE DUMP (the three LSASS tests: started = Sysmon 1, lsass = Sysmon 10 into lsass.exe, file = Sysmon 11)
+                   ProcDump (test 1)        comsvcs (test 2)   rdrleakdiag (test 13)  all
+  run              start lsass  file helper  start lsass  file  start lsass  file  files
+  eval-ctl-1           1     3     1      1      1     2     1      1     2     0     12
+  eval-ctl-2           1     3     1      1      1     2     1      1     2     0     12
+  eval-ctl-3           1     3     1      1      1     2     1      1     2     0     12
+  eval-ctl-4           1     3     1      1      1     2     1      1     2     0     12
+  eval-ctl-5           1     3     1      1      1     2     1      1     2     0     12
+  eval-pre-1           1     3     1      1      1     2     1      1     2     0     12
+  eval-pre-2           1     3     1      1      1     2     1      1     2     0     12
+  eval-pre-3           1     3     1      1      1     2     1      1     2     0     12
+  eval-post-C1-1       1     3     1      1      1     2     1      1     2     0     12
+  eval-post-C1-2       1     3     1      1      1     2     1      1     2     0     12
+  eval-post-C1-3       1     3     1      1      1     2     1      1     2     0     12
+  eval-post-C3-1       1     0     0      0      1     0     0      1     0     0      9
+  eval-post-C3-2       1     0     0      0      1     0     0      1     0     0      9
+  eval-post-C3-3       1     0     0      0      1     0     0      1     0     0      9
+  eval-post-C5-1       1     3     1      1      1     2     1      1     2     0     12
+  eval-post-C5-2       1     3     1      1      1     2     1      1     2     0     12
+  eval-post-C5-3       1     3     1      1      1     2     1      1     2     0     12
+  eval-post-K1-1       1     3     1      1      1     2     1      1     2     0     12
+  eval-post-K1-2       1     3     1      1      1     2     1      1     2     0     12
+  eval-post-K1-3       1     3     1      1      1     2     1      1     2     0     12
+  eval-post-K2-1       1     3     1      1      1     2     1      1     2     0     12
+  eval-post-K2-2       1     3     1      1      1     2     1      1     2     0     12
+  eval-post-K2-3       1     3     1      1      1     2     1      1     2     0     12
+  eval-post-K3-1       1     3     1      1      1     2     1      1     2     0     12
+  eval-post-K3-2       1     3     1      1      1     2     1      1     2     0     12
+  eval-post-K3-3       1     3     1      1      1     2     1      1     2     0     12
+
+C. SYSMON 10 INTO lsass.exe, by source program and access, mean per run
+  source                     access       23 runs without C3  3 C3 runs
+  svchost.exe                0x1000                     67.8       70.7
+  wmiprvse.exe               0x1400                     37.3        0.0
+  msmpeng.exe                0x1000                      2.0        1.0
+  procdump64.exe             0x1fffff                    2.0        0.0
+  procdump.exe               0x1fffff                    1.0        0.0
+  rdrleakdiag.exe            0x10147a                    1.0        0.0
+  lsass.exe                  0x1fffff                    1.0        0.0
+  rdrleakdiag.exe            0x1410                      1.0        0.0
+  rundll32.exe               0x1fffff                    1.0        0.0
+  svchost.exe                0x3000                      1.0        0.0
+  rundll32.exe               0x1410                      1.0        0.0
+  wmiprvse.exe               0x1410                      0.9        0.0
+  microsoftedgeupdate.exe    0x1000                      0.6        0.7
+  vmtoolsd.exe               0x1000                      0.1        0.0
+  vmtoolsd.exe               0x1400                      0.1        0.0
+  vmtoolsd.exe               0x1410                      0.0        0.0
+  all                                                  117.9       72.3
+
+D. PROCDUMP'S ORDER in eval-pre-1 (why its helper is missing when procdump.exe cannot open lsass.exe)
+  19:43:47.706  Sysmon 1   procdump.exe starts
+  19:43:47.762  Sysmon 10  procdump.exe opens lsass.exe (access 0x1fffff)
+  19:43:47.763  Sysmon 11  procdump.exe writes C:\Users\eli\AppData\Local\Temp\PDM94FE.tmp\ProcDump64.exe
+  19:43:47.769  Sysmon 1   procdump64.exe starts
+  19:43:47.803  Sysmon 10  procdump64.exe opens lsass.exe (access 0x1fffff)
+  19:43:47.805  Sysmon 11  procdump64.exe writes C:\Windows\Temp\lsass_dump.dmp
+  19:43:47.812  Sysmon 10  procdump64.exe opens lsass.exe (access 0x1fffff)
+
+SUMMARY
+  the session programs started once each, in one logon session, in session 2, as eli: 26 of 26 runs
+  two type 10 logons: 23 of 23 runs without K1; no 4624 at all: 3 of 3 K1 runs
+  the programs' logon ID is a type 10 logon ID: 23 of 23 runs that have type 10 logons
+  all three test programs started: 26 of 26 runs
+  each test program opened lsass.exe: 23 of 23 runs without C3; any of them, in C3: 0 of 3
+  both dump files written: 23 of 23 runs without C3; either, in C3: 0 of 3
+  ProcDump's helper written: 23 of 23 runs without C3; in C3: 0 of 3
+  rdrleakdiag's output seen by Sysmon 11: 0 of 26 runs
+  other files written in the C3 runs (Sysmon 11 still works): 9, 9, 9

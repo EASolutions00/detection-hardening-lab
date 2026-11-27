@@ -125,7 +125,8 @@ One capture window on the lab, and the run checks (item 22's void rule)
 The evaluation: each case's expected result, the scoring, and the results
     -> `REPO\docs\EXPECTED-RESULTS.md` (section 7 holds the results); the reports:
     `REPO\data\summaries\eval-2026-11-26\`; how the score depends on the test for a key that
-    falls to zero: `REPO\src\zero_loss_sensitivity.py`
+    falls to zero: `REPO\src\zero_loss_sensitivity.py`; the evidence that K1's sign-in worked and
+    C3's dump was blocked: `REPO\src\independent_evidence.py`
 
 The noise floor, coefficient of variation, dispersion
     -> `REPO\src\telos\variance.py`
@@ -267,8 +268,10 @@ in `REPO\src\telos\` unless stated otherwise.
   tests for a key that falls to zero, tried after the runs, the system finds 7, 6, 5 or 0 of the 7,
   never a false one (`REPO\src\zero_loss_sensitivity.py`). Plain subtraction found the same 7 with
   1 false positive (in K2). K1 is a blind spot: exactly
-  T1021.001, T1078.002 and T1550.002 no longer detected, while the sign-in still worked. K2 shows
-  the field-level loss of `CommandLine`. **C3 did not come out as expected** (item 44).
+  T1021.001, T1078.002 and T1550.002 no longer detected, while the sign-in still worked (Sysmon: its
+  session's programs started; `REPO\src\independent_evidence.py`). K2 shows
+  the field-level loss of `CommandLine`. **C3 did not come out as expected** (item 44); its dump was
+  blocked: the test programs started but never opened `lsass.exe`.
   EXPECTED-RESULTS section 7.
 
 - One attack-test list, window and repetition count, pinned once in Phase 0 for every change.

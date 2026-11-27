@@ -1659,6 +1659,10 @@ the ranking. The table's "92653 and 92657 stop" holds; "keys LOST" holds only fo
    `query session`, which would have to run during the 30-second sign-in. **Seen 2026-11-26 (D3, `trial-K1-1`):**
    step `rdp-signin-30s` exit 0; session event 21 at 14:43:56 UTC, inside the window; no 4624 key; `Security-4672[]`
    27, the same as `trial-C5-1` (COMMANDS 2.18).
+   **Checked 2026-11-27 (fix 3 of the outside review):** the sign-in does write 4672, 7 per run, but the harness's
+   guest logons (10) and SYSTEM (10 to 15) write the rest, so the count cannot show the sign-in. The proof now used:
+   Sysmon 1, `rdpclip.exe`, `userinit.exe` and `explorer.exe` in session 2 under a type 10 logon ID, in all 26
+   evaluation runs, and in the 3 K1 runs with no 4624 at all (EXPECTED-RESULTS section 7; `src/independent_evidence.py`).
 4. The three points above, from before the decision.
 
 ---
@@ -1715,11 +1719,16 @@ runs `(unverified exact bound)`.
 **Status:** Open. Found 2026-11-27 by chat 26343d0f, in the evaluation's C3 comparison (EXPECTED-RESULTS section 7).
 For the student and the adviser. **The C3 result stays as found; nothing is rerun or retuned to change it.**
 
-**What happened.** In C3's 3 after runs, the two LSASS dump rules (92403, 61625; T1055, level 12) stopped firing, so
-the dump was blocked, as expected. But the report says "no blind spot" and lists no lost technique:
+**What happened.** In C3's 3 after runs, the two LSASS dump rules (92403, 61625; T1055, level 12) stopped firing, and
+the dump was blocked, as expected (shown 2026-11-27 by the raw events, not by those rules: the test programs started,
+never opened `lsass.exe`, and wrote no dump file; EXPECTED-RESULTS section 7). But the report says "no blind spot" and
+lists no lost technique:
 1. `Sysmon-10` fell by a third (107.7 to 72.3 per run; q = 8.8e-5), and the system reports REDUCED only at a rate
    ratio of 0.5 or less. With the pinned stimulus, the Remote Desktop sign-in adds LSASS accesses that C3 does not
    block, so the drop is smaller in proportion than in the spike (73.3 to 26.3) `(unverified reading)`.
+   **2026-11-27, by source:** the accesses that stop under C3 are `wmiprvse.exe`'s (0x1400, 37.3 per run to 0) and the
+   three test programs'; `svchost.exe`'s 0x1000 accesses stay (67.8 and 70.7 per run). Whether those come from the
+   sign-in is not checked (`src/independent_evidence.py`).
 2. The coverage section counts a technique as detected while any of its rules fires. Rules 61632 and 61634 also map to
    T1055 and fire in every run, so T1055 never leaves the "detected" list, although its dump-specific rules stopped.
 
@@ -1747,7 +1756,9 @@ alerts were gone. That is "the attack did not happen", ruled prevention. But **t
 ProcDump returned -2 in both states (with "Access is denied" only when blocked), and comsvcs.dll and rdrleakdiag
 returned **0 when blocked**. So a run check based on exit status alone would pass these runs, and the analyser would
 report the lost keys as a blind spot. The check needs another signal, for example whether the test's dump file was
-written `(unverified as a design)`.
+written `(unverified as a design)`. **2026-11-27:** the evaluation's data has that signal: both dump files were written
+in 23 of 23 runs without C3 and in none of the 3 C3 runs, and the test programs opened `lsass.exe` only without C3
+(`src/independent_evidence.py`; EXPECTED-RESULTS section 7). It is not built into the harness.
 
 **Spike measurement, 2026-11-16 (chat ee84ae3f).** The planned fingerprint, Sysmon 1 events per window, was 37, 43, 44,
 38 and 38 in the 5 control runs (mean 40, CoV 8.1%; `spike_answers.txt`, Q5). **It did not move under C3**: 38 in the

@@ -69,11 +69,13 @@ hardening, because this study had no such case. In each case, 15 to 18 of the 35
 be tested; the others are reported as INCONCLUSIVE or NEW, never as safe.
 
 - **K1, "Audit Logon" off:** the 5 expected event keys LOST, and exactly the 3 expected techniques no
-  longer detected: T1021.001, T1078.002 and T1550.002. The sign-in still worked, so this is a blind spot.
+  longer detected: T1021.001, T1078.002 and T1550.002. The sign-in still worked (Sysmon shows its Remote Desktop
+  session start in all 3 runs), so this is a blind spot.
 - **K2, command line off:** a field-level loss. Event 4688 was still written, but without `CommandLine`.
 - **K3, process creation auditing off:** the 4688 key LOST; no technique lost, as expected.
-- **C1 and C5:** no change, as expected.
-- **C3 did not come out as expected.** The credential dump was blocked, as expected. But Sysmon event 10
+- **C1 and C5:** no key lost or reduced, as expected.
+- **C3 did not come out as expected.** The credential dump was blocked, as expected: the three test programs
+  started, but none could open `lsass.exe`, and no dump file was written. But Sysmon event 10
   fell to 0.672 of its rate, which is above the 0.5 reporting limit, and T1055 still counts as detected
   through two other rules. Reported as found, not re-run ([docs/OPEN-QUESTIONS.md](docs/OPEN-QUESTIONS.md)
   item 44).

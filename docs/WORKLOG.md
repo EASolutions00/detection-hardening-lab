@@ -17,6 +17,40 @@ Next:
 
 ---
 
+## 2026-11-27 - Fix 3 of 9: evidence for K1's sign-in and C3's block from the raw events
+
+**Chat:** 26343d0f (Claude Code). **Asked:** "Yes, start fix 3" (the outside review's point 3).
+
+**Did:** looked at the raw events of three runs with a one-off read-only script, then wrote
+`src/independent_evidence.py`, which checks all 26 runs. It reads only WIN-EP-01's events inside each run's own
+window, and stops unless it finds the event count the harness recorded (equal in 26 of 26). It uses no finding of the
+tool and no detection rule. COMMANDS 2.19, the last two rows.
+
+**Result** (`data/summaries/eval-2026-11-26/independent-evidence.txt`):
+- **K1's sign-in worked.** `rdpclip.exe`, `userinit.exe` and `explorer.exe` start once each, in session 2, as `eli`,
+  in all 26 runs. In the 23 runs that write 4624, their logon ID is one of the sign-in's two type 10 logon IDs, so they
+  mark this sign-in and not the harness's guest logons. The 3 K1 runs have no 4624 at all, and the same programs start.
+- **4672 cannot show it.** 27 to 32 per run in every run: the sign-in writes 7, the harness's guest logons 10, SYSTEM
+  10 to 15. Section 4's `(unverified)` is answered (the sign-in does write 4672), but the count does not move with it.
+- **C3: the attack ran and failed.** The three test programs started in 26 of 26 runs. They opened `lsass.exe`, and
+  both dump files were written, in 23 of 23 runs without C3, and in none of the 3 C3 runs. Each C3 run still logged 9
+  other new files. rdrleakdiag's output is not logged in any run.
+- **ProcDump's helper (reading):** without C3, `procdump.exe` opens `lsass.exe` 1 ms before it writes the helper;
+  under C3 no such open is logged and no helper is written. This closes the "not explained" point of fix 1's entry,
+  as a reading.
+- **For item 44:** C3's Sysmon 10 drop is almost all `wmiprvse.exe` (0x1400, 37.3 per run to 0) and the test
+  programs; `svchost.exe`'s 0x1000 accesses stay (67.8 and 70.7).
+
+**Corrected:** EXPECTED-RESULTS section 7: the K1 sign-in paragraph (it rested on 4672), C3's proof of the block and
+its last line (both rested on the rules that stopped), each with a dated note of what the first version said. README:
+K1's and C3's evidence, and "C1 and C5: no change", which fix 1 missed: now "no key lost or reduced". PROMPT-new-chat;
+OPEN-QUESTIONS 42 (point 3), 44 and 22 (dated lines); FILE-MAP; STATUS. Section 4, written before the runs, is not
+edited.
+
+**Next:** fix 4 (the report's wording, and the `classify()` rule found in fix 2), after the student's go-ahead.
+
+---
+
 ## 2026-11-27 - Fix 2 of 9: how the score depends on the test for a key that falls to zero
 
 **Chat:** 26343d0f (Claude Code). **Asked:** "Yes, start fix 2" (the outside review's point 2; the plan is in the
