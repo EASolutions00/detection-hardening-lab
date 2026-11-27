@@ -13,7 +13,9 @@ Format: date, the decision, why, and what it costs if wrong.
 **Decision (student, chat 26343d0f: fix 9 of the WORKLOG plan of 2026-11-27, "Redraw the activity diagram", within
 "STRAIGHT IT TO 9 UNINTERRUPTED" and "DOUBLE CHECK 5 TO 9 FIX UNINTERRUPTED").** **How far the redraw goes was
 Claude's choice while building, not asked, because the student asked for no stops.** It follows the student's
-earlier decisions, listed under "Why", and the student can reverse it (see "Cost if wrong").
+earlier decisions, listed under "Why", and the student can reverse it (see "Cost if wrong"). **Confirmed by the
+student the same day, chat 26343d0f: "Keep it",** after a walkthrough of all 34 steps with K1's numbers. The new
+diagram is Figure 2 of the revised form.
 1. **A new diagram, not relabelled lanes.** `thesis/T1/figures/make_system_activity_diagram.py` writes
    `T1_Activity_Diagram_Proposed_System.svg`: one sheet, four lanes (Security Engineer; Proposed System; Monitored
    Environment; SOC, indirect users, outside the system), 34 steps in its text version

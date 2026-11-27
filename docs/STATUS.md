@@ -78,9 +78,10 @@ In order:
    findings (0 against 62 and 347 in 70 unchanged comparisons), the measured noise removes 3 more, the noise band adds
    nothing measurable here. Fix 9 done (2026-11-28): a new activity diagram of the proposed system, one sheet that
    starts at the upload, with one user and the SOC copy outside the system; Figure 1 redrawn as the form's five steps
-   with Myers as step 3; the FINAL sheets marked historical (DECISIONS 2026-11-28). **All 9 fixes are done. Next: the
-   student reads the results and the new diagram's text version; item 44; the results chapter; a PDF of the new
-   figures for the Word copy of the form.**
+   with Myers as step 3; the FINAL sheets marked historical (DECISIONS 2026-11-28; the student confirmed the new
+   diagram the same day: "Keep it"). **All 9 fixes are done. Next: the student reads the results; item 44; the
+   results chapter; a PDF of the new figures for the Word copy of the form; in the form, Module 1 still lists the
+   check that each run recorded events, which the figure and the code place in Module 3.**
 
 Recommended, not decided: the 5 pinned control runs wait until the form is sent, because the pre-oral needs chapters
 1 to 3, not the results (Claude's reading). **Overtaken 2026-11-27:** all 26 runs were made before the form was sent.
