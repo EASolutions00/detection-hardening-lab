@@ -1,0 +1,183 @@
+{
+  "outcome": "CHANGED",
+  "outcome_reason": "1 event key(s) classified LOST or REDUCED; whole-profile chi-square p = 2.89e-78 is below alpha = 0.05",
+  "ranked": [
+    {
+      "rank": 1,
+      "key": "Security-4688[CommandLine,NewProcessName,ParentProcessName]",
+      "classification": "LOST",
+      "blind_techniques": [],
+      "highest_level": 3,
+      "rules": [
+        "67027"
+      ],
+      "techniques": [],
+      "still_detected_by": {},
+      "remediation_level_1": {}
+    }
+  ],
+  "coverage_lost": [],
+  "reproducibility": {
+    "parameters": {
+      "after_boot": [
+        "config-S"
+      ],
+      "agent": "WIN-EP-01",
+      "art_commit": "cb486d9a888e921fac5902a06c7b46e420bb14a7",
+      "config": "S",
+      "drain_s": 120,
+      "fence_sha256": "D35C939B71ECAC94868947932292531C02A171DECFD3046DEE47DB8E3BD0D814",
+      "golden_base": "2026-11-26T13:31:48Z",
+      "invoke_atomicredteam_commit": "8af478bb9e4637df568ac1e596553b025b16cd1b",
+      "rule_folder_sha256": "a3f9749e7bb35978f663c7d7dd0c6d67a92a03d0df552e341c52a4eb55ae2939",
+      "settle_s": 180,
+      "snapshot": "golden-base-v2",
+      "stimulus": [
+        "rdp-signin-30s",
+        "T1003.001-1",
+        "T1003.001-2",
+        "T1003.001-13",
+        "T1003.001-cleanup"
+      ],
+      "sysmon_config_sha256": "02C43AC8EA7B27A9D290C2FE4587A5C184B09FC0AEDA263C2C4E24A4EE43B3AD",
+      "wazuh_version": "4.14.7",
+      "window_s": 180
+    },
+    "parameters_sha256": "9895d0cf7c5854231710f0af733e248cd62bfa7a8ca154a3c29bab11c53b14cd",
+    "analyser_version": "7850847",
+    "runs": [
+      {
+        "phase": "control",
+        "run_id": "eval-ctl-1",
+        "valid": true,
+        "change_id": null,
+        "folder": "data\\runs\\eval-ctl-1"
+      },
+      {
+        "phase": "control",
+        "run_id": "eval-ctl-2",
+        "valid": true,
+        "change_id": null,
+        "folder": "data\\runs\\eval-ctl-2"
+      },
+      {
+        "phase": "control",
+        "run_id": "eval-ctl-3",
+        "valid": true,
+        "change_id": null,
+        "folder": "data\\runs\\eval-ctl-3"
+      },
+      {
+        "phase": "control",
+        "run_id": "eval-ctl-4",
+        "valid": true,
+        "change_id": null,
+        "folder": "data\\runs\\eval-ctl-4"
+      },
+      {
+        "phase": "control",
+        "run_id": "eval-ctl-5",
+        "valid": true,
+        "change_id": null,
+        "folder": "data\\runs\\eval-ctl-5"
+      },
+      {
+        "phase": "pre",
+        "run_id": "eval-pre-1",
+        "valid": true,
+        "change_id": null,
+        "folder": "data\\runs\\eval-pre-1"
+      },
+      {
+        "phase": "pre",
+        "run_id": "eval-pre-2",
+        "valid": true,
+        "change_id": null,
+        "folder": "data\\runs\\eval-pre-2"
+      },
+      {
+        "phase": "pre",
+        "run_id": "eval-pre-3",
+        "valid": true,
+        "change_id": null,
+        "folder": "data\\runs\\eval-pre-3"
+      },
+      {
+        "phase": "post",
+        "run_id": "eval-post-K3-1",
+        "valid": true,
+        "change_id": "K3",
+        "folder": "data\\runs\\eval-post-K3-1"
+      },
+      {
+        "phase": "post",
+        "run_id": "eval-post-K3-2",
+        "valid": true,
+        "change_id": "K3",
+        "folder": "data\\runs\\eval-post-K3-2"
+      },
+      {
+        "phase": "post",
+        "run_id": "eval-post-K3-3",
+        "valid": true,
+        "change_id": "K3",
+        "folder": "data\\runs\\eval-post-K3-3"
+      }
+    ],
+    "controls_file": "E:\\Claude general\\lab\\knowledge\\compensating-controls.json"
+  },
+  "myers": {
+    "method": "Myers (1986) on the sorted event lists; each phase's runs joined",
+    "runs_before": 3,
+    "runs_after": 3,
+    "phases": {
+      "events_before": 2101,
+      "events_after": 1978,
+      "d": 711,
+      "deleted": {
+        "Security-4688[CommandLine,NewProcessName,ParentProcessName]": 417
+      },
+      "inserted": {
+        "Sysmon-10[GrantedAccess=other,SourceImage,TargetImage]": 93,
+        "Security-5379[]": 81,
+        "Sysmon-1[CommandLine,Hashes,Image,OriginalFileName]": 39,
+        "Sysmon-1[CommandLine,Hashes,Image,OriginalFileName,ParentImage]": 30,
+        "Security-4624[AuthenticationPackageName=other,LogonType=other,TargetUserName]": 14,
+        "Security-4672[]": 14,
+        "Application-1001[]": 9,
+        "Application-16394[]": 3,
+        "Security-4798[]": 3,
+        "Security-5382[]": 3,
+        "Sysmon-1[CommandLine,Hashes,Image]": 3,
+        "Application-0[]": 2
+      },
+      "matches_count_subtraction": true
+    },
+    "single_runs": {
+      "control_vs_control_d": [
+        105,
+        95,
+        7,
+        88,
+        12,
+        102,
+        19,
+        92,
+        9,
+        85
+      ],
+      "before_vs_after_d": [
+        222,
+        260,
+        224,
+        224,
+        262,
+        226,
+        225,
+        263,
+        227
+      ]
+    }
+  },
+  "remediation_level_2": []
+}

@@ -1,0 +1,164 @@
+Change: C3   parameters sha256: 9895d0cf7c5854231710f0af733e248cd62bfa7a8ca154a3c29bab11c53b14cd
+Runs: control 5, before 3, after 3
+
+==============================================================================
+VERDICT
+==============================================================================
+
+  NO BLIND SPOT FOUND
+  0 lost or reduced key(s); none left an ATT&CK technique with no alert firing after
+  the change.
+
+==============================================================================
+MYERS COMPARISON  (step 3: what was removed; Myers 1986)
+==============================================================================
+
+  Before: 3 runs joined, 2101 events.   After: 3 runs joined, 2143 events.
+  Edit distance D = 296   (127 deleted, 169 inserted)
+
+  D between single runs, for context:
+    control against control (no change)   7 to 105 (10 pairs)
+    before against after                  64 to 122 (9 pairs)
+
+  Deleted (in the runs before, missing after): 5 keys
+       106  Sysmon-10[GrantedAccess=other,SourceImage,TargetImage]
+         9  Sysmon-11[Image,TargetFilename]
+         6  Sysmon-8[]
+         3  Sysmon-13[Details,EventType,TargetObject]
+         3  Sysmon-5[]
+
+  Inserted (new in the runs after): 12 keys
+        61  Security-4688[CommandLine,NewProcessName,ParentProcessName]
+        31  Security-5379[]
+        31  Sysmon-1[CommandLine,Hashes,Image,OriginalFileName]
+        13  Sysmon-1[CommandLine,Hashes,Image,OriginalFileName,ParentImage]
+        11  Security-4624[AuthenticationPackageName=other,LogonType=other,TargetUserName]
+        11  Security-4672[]
+         3  Security-4634[]
+         2  Security-4798[]
+         2  Security-5382[]
+         2  Sysmon-1[CommandLine,Hashes,Image]
+    ... and 2 more
+
+  Same result as subtracting the counts per key: yes
+  Myers lists every difference, normal variation included. The telemetry
+  comparison below (step 4) decides which ones are larger than the noise floor.
+
+==============================================================================
+NOISE FLOOR  (measured from the control runs)
+==============================================================================
+
+  event keys measured         35
+  median CoV                  0.00%
+  highest CoV                 91.29%
+  median dispersion           1.00
+  share of types over 5% CoV  31%
+
+  This is the answer to the feasibility spike's question Q1.
+  A median CoV near zero would mean the statistical layer buys
+  nothing inside the laboratory, and the study must say so.
+
+  event key                               mean      CoV  dispersion
+  ---------------------------------- --------- -------- -----------
+  Security-5382[]                          0.6  91.29%        1.00
+  Application-1001[]                       1.8  91.29%        1.50
+  Sysmon-1[CommandLine,Hashes,Image]       0.8  55.90%        1.00
+  Application-16384[]                      2.6  21.07%        1.00
+  Application-16394[]                      2.6  21.07%        1.00
+  Sysmon-1[CommandLine,Hashes,Image,OriginalFileName]      35.4  20.43%        1.48
+
+==============================================================================
+DIFFERENTIAL ANALYSIS
+==============================================================================
+
+STAGE B  capture check, then one chi-square over the whole profile
+         (reported as a summary; since 2026-09-28 it does not stop any key being tested)
+  chi-square = 44.3   p = 0.091   alpha = 0.05
+  profile outcome   UNCHANGED
+  why               no event key classified LOST or REDUCED; whole-profile chi-square p = 0.091 is not below alpha = 0.05
+  event keys carried into per-key testing: 15
+
+STAGE C  classification
+  LOST              0
+  REDUCED           0
+  NEW               2
+  INCONCLUSIVE     18
+  UNCHANGED        15
+
+REPORTED FINDINGS  (0)
+
+  none
+NOT DECIDED, REPORTED AS INCONCLUSIVE  (18)
+  These are not cleared. There was not enough data to decide them.
+    Application-1001[]                 0 occurrences before the change
+    Application-1003[]                 6 occurrences before the change
+    Application-16384[]                6 occurrences before the change
+    Application-16394[]                5 occurrences before the change
+    Application-8198[]                 3 occurrences before the change
+    Security-4624[AuthenticationPackageName=NTLM,LogonType=other,TargetUserName] 6 occurrences before the change
+    Security-4624[AuthenticationPackageName=other,LogonType=10,TargetUserName] 6 occurrences before the change
+    Security-4624[AuthenticationPackageName=other,LogonType=2,TargetUserName] 9 occurrences before the change
+    Security-4799[]                    6 occurrences before the change
+    Security-5058[]                    6 occurrences before the change
+    Security-5059[]                    3 occurrences before the change
+    Security-5061[]                    6 occurrences before the change
+    Sysmon-22[]                        9 occurrences before the change
+    Sysmon-3[DestinationIp,DestinationPort,Image] 6 occurrences before the change
+    Sysmon-5[]                         6 occurrences before the change
+    Sysmon-8[]                         9 occurrences before the change
+    System-1808[]                      3 occurrences before the change
+    System-7001[]                      3 occurrences before the change
+
+==============================================================================
+RANKED BLIND SPOTS  (blind techniques, then highest level, then number of rules)
+==============================================================================
+
+  no lost or reduced key
+==============================================================================
+COVERAGE CHANGE  (techniques with at least one alert that fired)
+==============================================================================
+
+  before the change   11: T1021.001, T1055, T1059.001, T1059.003, T1078.002, T1087, T1105, T1484, T1543.003, T1550.002, T1574.010
+  after the change    11: T1021.001, T1055, T1059.001, T1059.003, T1078.002, T1087, T1105, T1484, T1543.003, T1550.002, T1574.010
+  no longer detected  0: -
+
+==============================================================================
+REMEDIATION CANDIDATES, LEVEL 2  (curated compensating controls for C3)
+==============================================================================
+
+  no entry in the curated list for this change and these techniques
+
+==============================================================================
+REPRODUCIBILITY RECORD
+==============================================================================
+
+  parameters sha256   9895d0cf7c5854231710f0af733e248cd62bfa7a8ca154a3c29bab11c53b14cd
+  analyser version    7850847  (git commit of the repository)
+  parameters (hashed, the same in every run compared):
+    after_boot             ["config-S"]
+    agent                  "WIN-EP-01"
+    art_commit             "cb486d9a888e921fac5902a06c7b46e420bb14a7"
+    config                 "S"
+    drain_s                120
+    fence_sha256           "D35C939B71ECAC94868947932292531C02A171DECFD3046DEE47DB8E3BD0D814"
+    golden_base            "2026-11-26T13:31:48Z"
+    invoke_atomicredteam_commit "8af478bb9e4637df568ac1e596553b025b16cd1b"
+    rule_folder_sha256     "a3f9749e7bb35978f663c7d7dd0c6d67a92a03d0df552e341c52a4eb55ae2939"
+    settle_s               180
+    snapshot               "golden-base-v2"
+    stimulus               ["rdp-signin-30s", "T1003.001-1", "T1003.001-2", "T1003.001-13", "T1003.001-cleanup"]
+    sysmon_config_sha256   "02C43AC8EA7B27A9D290C2FE4587A5C184B09FC0AEDA263C2C4E24A4EE43B3AD"
+    wazuh_version          "4.14.7"
+    window_s               180
+  runs (raw counts in each run's counts.json, settings in its run_manifest.json):
+    control  eval-ctl-1               used               data\runs\eval-ctl-1
+    control  eval-ctl-2               used               data\runs\eval-ctl-2
+    control  eval-ctl-3               used               data\runs\eval-ctl-3
+    control  eval-ctl-4               used               data\runs\eval-ctl-4
+    control  eval-ctl-5               used               data\runs\eval-ctl-5
+    pre      eval-pre-1               used               data\runs\eval-pre-1
+    pre      eval-pre-2               used               data\runs\eval-pre-2
+    pre      eval-pre-3               used               data\runs\eval-pre-3
+    post     eval-post-C3-1           used               data\runs\eval-post-C3-1
+    post     eval-post-C3-2           used               data\runs\eval-post-C3-2
+    post     eval-post-C3-3           used               data\runs\eval-post-C3-3
