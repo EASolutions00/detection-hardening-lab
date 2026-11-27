@@ -1,5 +1,29 @@
 # T1 System Walkthrough
 
+> **HISTORICAL. DO NOT PRESENT** (marked 2026-11-28, fix 7 of the outside review; WORKLOG 2026-11-27 and 2026-11-28).
+> Read it only for the history of the design. Do not use it as the defense demonstration, and do not quote its
+> examples, numbers or claims. What in it is now wrong, with what replaces it:
+> - **The demonstration case, C4, is not a blind spot** under the chosen rules (the 2026-10-01 banner below), and its
+>   "VERDICT BLIND SPOTS FOUND" (Part 4) is for made-up counts. For a demonstration, use the saved evaluation output
+>   instead, `data/summaries/eval-2026-11-26-fix4/K1/report.txt`, and say that K1 is a deliberate logging mistake (a
+>   test case), not hardening. The evidence that K1's sign-in still worked is in `docs/EXPECTED-RESULTS.md` section 7.
+> - **The hash (Part 2.2).** It lists "the repetitions, ... the thresholds, ... and the harness's git commit" among the
+>   hashed parameters. None of the three is hashed. The hash covers the run's `parameters` only; the code version,
+>   the run checks and the analysis settings are recorded beside it, and the comparison now names the parameter that
+>   differs (built 2026-11-28; DECISIONS 2026-11-28).
+> - **The event key and the loss rule (Part 3).** It says that a key records only field presence, so it cannot see
+>   NTLM become Kerberos, and that a complete loss needs "at least the 30 needed" events before. The key keeps the value
+>   class of a few fields, `AuthenticationPackageName` among them (DECISIONS 2026-09-29; for example
+>   `Security-4624[AuthenticationPackageName=NTLM,...]`), and a key that falls to zero is tested exactly at any count
+>   (DECISIONS 2026-11-26).
+> - **That the action worked.** An exit code does not show it. The evaluation shows it from the raw events
+>   (`src/independent_evidence.py`; EXPECTED-RESULTS section 7).
+> - **Blind techniques and the comparison with subtraction.** A technique is a seen loss only if its alerts fired
+>   before the change (DECISIONS 2026-11-27), and this evaluation does not show the benefit of the noise model
+>   (EXPECTED-RESULTS section 7).
+>
+> The current descriptions are `README.md`, `docs/EXPECTED-RESULTS.md` section 7 and `src/README.md`.
+>
 > **Overtaken further by 2026-11-27; read this first.** This file describes the design of 2026-09-30.
 > Since then: value keying is built (2026-11-03); the harness, the index and the impact ranking are built
 > and ran on the lab; Myers' difference algorithm is step 3 of the pipeline (DECISIONS 2026-11-26); and

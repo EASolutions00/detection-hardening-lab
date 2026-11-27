@@ -71,8 +71,9 @@ In order:
    checked again, one claim corrected); fix 6 done: the analysis computes the rule export's hash and recomputes each
    run's parameters hash, and each new run records its code version (DECISIONS 2026-11-28; no result changed).
    **The student said "STRAIGHT IT TO 9 UNINTERRUPTED", then, after a stop in fix 6, "DOUBLE CHECK 5 TO 9 FIX
-   UNINTERRUPTED" (2026-11-28): fixes 5 to 9 in one go, each checked again.** **Next: fix 7 (mark the old documents
-   historical); the student reads the results; item 44; the results chapter.**
+   UNINTERRUPTED" (2026-11-28): fixes 5 to 9 in one go, each checked again.** Fix 7 done: the walkthrough and the old
+   revision are marked "historical, do not present", with what in each is wrong (2026-11-28). **Next: fix 8 (chapter 3
+   limits, and a test without the noise part); the student reads the results; item 44; the results chapter.**
 
 Recommended, not decided: the 5 pinned control runs wait until the form is sent, because the pre-oral needs chapters
 1 to 3, not the results (Claude's reading). **Overtaken 2026-11-27:** all 26 runs were made before the form was sent.

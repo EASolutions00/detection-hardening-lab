@@ -17,6 +17,33 @@ Next:
 
 ---
 
+## 2026-11-28 - Fix 7 of 9: the walkthrough and the old revision marked historical, do not present
+
+**Chat:** 26343d0f (Claude Code). **Asked:** the same run of fixes 5 to 9.
+
+**Did:** read the review's points 3, 5 to 10 and 12 to 14 against the two files, and checked each claim the banners
+name, in the files themselves: the walkthrough's hashed parameters (Part 2.2, lines 184 to 186: "the repetitions, ...
+the thresholds, ... and the harness's git commit"), its C4 verdict "BLIND SPOTS FOUND" (Part 4), "at least the 30
+needed" and the presence-only key (Part 3); the old revision's chi-square filter, web interface, weighted score
+and "CIS Benchmark 17.6.2". Wrote a banner at the top of each: HISTORICAL, DO NOT PRESENT, with what is wrong and what
+replaces it. The walkthrough's banner also says what to demonstrate instead: the saved K1 report, with K1 called a
+deliberate logging mistake.
+
+**Also:** `T1-PANEL-RESPONSE.md` (thesis folder) got a dated banner block: its verdict and impact-score examples are
+older than 2026-11-13. `prep-local/STUDY-GUIDE.md` (thesis folder) sent the reader to the walkthrough as "a worked
+example with real code output", and called FINAL "what will be submitted"; both rows now point to the current files.
+Its line on the diagram's "no blind spot found" box waits for fix 9.
+
+**Changed:** `docs/T1-WALKTHROUGH.md` and `docs/T1-PROPOSAL-REVISION.md` (banners); FILE-MAP (both "historical, do not
+present"; the walkthrough moves from SOURCE to SUPERSEDED); `tools/check_docs.py` (the walkthrough in the SUPERSEDED
+set); STATUS. Outside the repo: `T1-PANEL-RESPONSE.md`, `prep-local/STUDY-GUIDE.md`.
+
+**Not changed:** the body of either file. They stay as records; the banners say what not to use.
+
+**Next:** fix 8, at once.
+
+---
+
 ## 2026-11-28 - Fix 6 of 9: the hash, computed and checked; the code version in each new run
 
 **Chat:** 26343d0f (Claude Code). **Asked:** "STRAIGHT IT TO 9 UNINTERRUPTED". The work stopped in the middle of this

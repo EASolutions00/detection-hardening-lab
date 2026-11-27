@@ -57,8 +57,8 @@ physical drive (WORKLOG 2026-09-28, sixth), which is why the backups go there.
 | `docs/RUNBOOK-homelab.md` | Build the lab, Phases 0 to 8 | SOURCE |
 | `docs/PROMPT-new-chat.md` | Paste into a new chat to load the project | SOURCE |
 | `docs/PROMPT-uwf-test.md` | Prompt for the UWF test chat. Item 19 is answered, so it is no longer used | SUPERSEDED |
-| `docs/T1-PROPOSAL-REVISION.md` | First revision draft. Replaced by FINAL in DOCS | SUPERSEDED |
-| `docs/T1-WALKTHROUGH.md` | Worked example of the method. Its C4 example was overtaken 2026-10-01 (banner at the top) | SOURCE |
+| `docs/T1-PROPOSAL-REVISION.md` | First revision draft. Replaced by FINAL in DOCS. **Historical, do not present** (2026-11-28, banner: what in it is wrong) | SUPERSEDED |
+| `docs/T1-WALKTHROUGH.md` | Worked example of the method, of 2026-09-30. Its C4 example was overtaken 2026-10-01. **Historical, do not present** (2026-11-28, banner: what in it is wrong, and what to demonstrate instead) | SUPERSEDED |
 | `docs/demo-output.txt` | Output of `src/demo.py` (COMMANDS Part 4 says how to make it) | COPY |
 | `docs/FILE-MAP.md` | This file | SOURCE |
 | `docs/EXPECTED-RESULTS.md` | Each evaluation case's expected result and the scoring rules, written before any run (added 2026-11-26). Never edit an expectation after its runs exist. Section 6: the compliance scan's expected pass or fail. Section 7: the results, written after the runs (2026-11-27) | RECORD |
@@ -133,7 +133,7 @@ archives are still on SIEM-01's disk was not checked on 2026-10-15 (unverified).
 | `proposal-form.md` | Same file as `thesis/T1/proposal-form.md` | FROZEN |
 | `proposal-form-REVISED.md` | Same file as `thesis/T1/proposal-form-REVISED.md` | SUPERSEDED |
 | `T1-REVISION-DRAFT.md` | Earlier replacement text for `proposal-form.md`, written to answer the panel | SUPERSEDED |
-| `T1-PANEL-RESPONSE.md` | Each panel question with the reasoning behind the answer. Not submitted; stale in places (banner) | LIVE, not submitted |
+| `T1-PANEL-RESPONSE.md` | Each panel question with the reasoning behind the answer. Not submitted; stale in places (banner). Its verdict and impact-score examples are older than 2026-11-13: do not present them (banner, 2026-11-28) | LIVE, not submitted |
 | `ACTIVITY-DIAGRAM-EXPLAINED.md` | The diagram in plain words, for study. Not submitted | LIVE, not submitted |
 | `CLAUDE.md` | Rules for chats opened in this folder: points to the repo record and repeats the "keep it simple" rule (2026-10-30) | LIVE, not submitted |
 | `ACTIVITY-DIAGRAM-EXPLAINED.2026-09-29.md.bak`, `.2026-10-19.md.bak`, `.2026-10-19b.md.bak` | The explainer before the 2026-09-29 rewrite, before the 2026-10-19 fixes, and before the 2026-10-19 "where it starts" part | SUPERSEDED |

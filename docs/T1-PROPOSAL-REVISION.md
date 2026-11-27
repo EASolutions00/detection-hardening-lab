@@ -1,5 +1,21 @@
 # T1 Proposal Revision Draft
 
+> **HISTORICAL. DO NOT PRESENT** (marked 2026-11-28, fix 7 of the outside review). It is not a defense material. An
+> outside review (WORKLOG 2026-11-27, points 8, 9, 13 and 14) found, besides the points in the banner below:
+> - **The statistics.** It says a chi-square test for each event type filters the keys before the rate-ratio test. The code runs
+>   one chi-square over the whole profile, as a summary only (since 2026-09-28), tests every key, and uses Myers'
+>   algorithm as step 3 (DECISIONS 2026-11-26), which this draft does not mention.
+> - **Its activity diagram** applies the change and then restores the snapshot, and its "no loss" branch records that
+>   coverage survived. The harness restores first, then applies and confirms the change (`harness.capture`), and an
+>   undecided key is never reported as safe (DECISIONS 2026-11-27).
+> - **The product.** A web interface and a weighted impact score. The system is a Python application, and the
+>   impact is a ranking by three measured numbers (DECISIONS 2026-09-14 and 2026-11-13).
+> - **The example.** Disabling Audit Process Creation as "CIS Benchmark 17.6.2" is invented, and it weakens the
+>   configuration. Under the chosen rules a 4688 loss touches one rule, 67027, which names no technique
+>   (EXPECTED-RESULTS section 1, case K3).
+>
+> The current form is `proposal-form-SIMPLIFIED.md` (thesis folder, outside this repository).
+>
 > **SUPERSEDED. Kept as a record; do not quote from it.** It was replaced by
 > `proposal-form-FINAL.md` (submitted 2026-10-15), and that by `proposal-form-SIMPLIFIED.md` (2026-11-25),
 > both outside this repository. Both ASSUMPTION decisions below were settled

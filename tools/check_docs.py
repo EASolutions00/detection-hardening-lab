@@ -54,9 +54,10 @@ FROZEN = {
     "proposal-form.md", "proposal.txt", "proposalll.txt",
     "proposal(ongoing verification).txt", "proposal-form-FINAL.md",
 }
+# Changed 2026-11-28 (fix 7 of the outside review): the walkthrough is historical, not to be presented.
 SUPERSEDED = {
     "proposal-form-REVISED.md", "T1-REVISION-DRAFT.md",
-    "T1-PROPOSAL-REVISION.md", "T1-REVISIONS-LIST.md",
+    "T1-PROPOSAL-REVISION.md", "T1-REVISIONS-LIST.md", "T1-WALKTHROUGH.md",
 }
 LIVE = {
     "proposal-form-SIMPLIFIED.md", "T1-PANEL-RESPONSE.md",
