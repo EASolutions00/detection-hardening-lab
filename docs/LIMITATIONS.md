@@ -96,4 +96,5 @@ chapter; this file is the checked list to write it from. Every number here comes
 ---
 
 **Where this list came from:** the outside review's 14 points (WORKLOG 2026-11-27) and the checks of fixes 1 to 8.
-Fix 9 (the activity diagram) adds no limit.
+Fix 9 (the figures, 2026-11-28) adds no limit. The new activity diagram draws the window and the percentage as design;
+limit 17 already says they are not built.

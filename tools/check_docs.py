@@ -55,13 +55,17 @@ FROZEN = {
     "proposal(ongoing verification).txt", "proposal-form-FINAL.md",
 }
 # Changed 2026-11-28 (fix 7 of the outside review): the walkthrough is historical, not to be presented.
+# Changed 2026-11-28 (fix 9): the FINAL diagram's two sheets and their explainer are historical too; the text version
+# of the new diagram is live.
 SUPERSEDED = {
     "proposal-form-REVISED.md", "T1-REVISION-DRAFT.md",
     "T1-PROPOSAL-REVISION.md", "T1-REVISIONS-LIST.md", "T1-WALKTHROUGH.md",
+    "ACTIVITY-DIAGRAM-EXPLAINED.md", "T1_Activity_Diagram_Revised_Sheet1.md",
+    "T1_Activity_Diagram_Revised_Sheet2.md",
 }
 LIVE = {
     "proposal-form-SIMPLIFIED.md", "T1-PANEL-RESPONSE.md",
-    "ACTIVITY-DIAGRAM-EXPLAINED.md",
+    "T1_Activity_Diagram_Proposed_System.md",
 }
 
 

@@ -17,6 +17,62 @@ Next:
 
 ---
 
+## 2026-11-28 - Fix 9 of 9: a new activity diagram of the proposed system; Figure 1 redrawn; the FINAL sheets historical
+
+**Chat:** 26343d0f (Claude Code). **Asked:** the same run of fixes 5 to 9 ("DOUBLE CHECK 5 TO 9 FIX UNINTERRUPTED").
+The turn stopped once after the text version was written; the student said "Try again", and the work went on from
+there.
+
+**Found first.** The review's point 9 asked for two corrections on sheet 2. The revised form asks for more: "Figure 1
+and the activity diagram must be redrawn: Myers' step in the pipeline; one actor in the diagram; the copy of the report
+to the SOC shown outside the system", and describes Figure 2 as the engineer exporting, uploading, running the analysis
+and reading the report. The FINAL sheets draw the system capturing the runs and applying fixes, which the form's modules
+and its limitation 5 rule out. So a new diagram was drawn, and the old one kept as historical (DECISIONS 2026-11-28; how
+far to go was Claude's choice, not asked, because the student asked for no stops).
+
+**Did:**
+- `thesis/T1/figures/make_system_activity_diagram.py` (new) writes `T1_Activity_Diagram_Proposed_System.svg`: one sheet,
+  four lanes, 34 steps. The order inside Module 3 follows `pipeline.compare()`: Myers, the check on the control runs
+  (`VarianceModel.from_control()`), the noise model, then `analyse()`. A first draft put the noise model after the
+  capture check; reading `pipeline.compare()` again moved it, and drew the control-run check the student kept on
+  2026-09-29. The generator refuses a wrong tint (D3) and two boxes that overlap.
+- `make_pipeline_figure.py`: Figure 1 redrawn as the form's five steps, positions computed (1020 × 878 to 1020 × 1174).
+- `make_activity_diagram.py`: a HISTORICAL banner in its docstring, and a red line under both sheets. Compared element
+  by element with commit `4fe5163`: per sheet, only the height, the stored description and the added line changed.
+- Text version of the new diagram, `DOCS\Activity Diagram\T1_Activity_Diagram_Proposed_System.md`: every step with its
+  lane, which steps are built and where, what changed from FINAL.
+
+**Checked.** In the built-in browser, through a local web server bound to 127.0.0.1 (stopped after): every text line
+inside its box or diamond; no two text lines overlapping by more than 3 px; no arrow through a box, a decision, a
+circle, a label or another arrow (new diagram 117 text lines and 41 arrows; Figure 1 42 and 17); and by eye, part by
+part. The text version's 72 quotes all appear in the picture, and its stored description matches. The 8 thesis-folder
+copies equalled the committed files before they were overwritten, and equal the new files after (SHA256).
+
+**Found on the way.**
+- `tools/word/README.md` told a rebuild of FINAL's Word file to copy the four SVGs from `thesis/T1/figures/`. After this
+  fix that would put new figures into a frozen document. It now says to take them from commit `4fe5163`;
+  `build_docx.py` is unchanged.
+- The study guide's practice question "12 events before and 0 after. What class, and why not LOST?" has had a wrong
+  answer since 2026-11-26 (LOST at any count if q passes). Corrected in place, with "no blind spot found" (line 169).
+  Its other October marks ("designed" for boxes that are built now) were not corrected; the note at its top says so.
+
+**Changed.** In the repo: the three generators and their four SVGs (one new); `tools/check_docs.py` (the explainer and
+the two old text versions SUPERSEDED, the new text version LIVE); `tools/word/README.md`; `thesis/T1/README.md`;
+DECISIONS (a new entry; the "Not changed: the figures" line of 2026-11-26); FILE-MAP; PROMPT-new-chat; STATUS;
+LIMITATIONS (the note under the list). Outside the repo: the 4 SVGs copied to `DOCS` and `DOCS\Activity Diagram`;
+the new text version; banners on `T1_Activity_Diagram_Revised_Sheet1.md`, `Sheet2.md` and
+`ACTIVITY-DIAGRAM-EXPLAINED.md`; `prep-local/STUDY-GUIDE.md` (a note at the top, two corrections, one row);
+`proposal-form-SIMPLIFIED.md` (the to-do line marked done; the two figure placeholders name the files).
+COMMANDS: not changed; each generator's docstring gives its command, as before.
+
+**Not done:** a PDF of the new figures for the Word copy of the form; the full-size PDFs of the FINAL sheets (submitted
+2026-10-15) still show them without the red line; the explainer's body was not rewritten, only marked; the student has
+not seen the new diagram yet.
+
+**Next:** the final check of fixes 5 to 9 (tests, the document checker, git), then commit and push.
+
+---
+
 ## 2026-11-28 - Fix 8 of 9: the limits for chapter 3, and what the noise part adds
 
 **Chat:** 26343d0f (Claude Code). **Asked:** the same run of fixes 5 to 9.

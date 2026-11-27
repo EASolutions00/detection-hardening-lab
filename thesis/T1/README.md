@@ -61,7 +61,10 @@ positives come from the test cases K1 to K3, whose expected lost keys were writt
 - `proposal-form.md`, `proposal-form-REVISED.md` - earlier Markdown forms of the proposal,
   superseded. `proposal-form-FINAL.md` (submitted 2026-10-15) and the current revision,
   `proposal-form-SIMPLIFIED.md`, live outside this repo (`docs/FILE-MAP.md` section 3)
-- `figures/` - the scripts that generate the four T1 figures, and their SVG output. Figure 1 (the
-  pipeline) and the activity diagram still need Myers' step (redraw pending)
+- `figures/` - the scripts that generate the T1 figures, and their SVG output. Redrawn 2026-11-28 (fix 9
+  of the outside review): Figure 1, the pipeline, now shows the proposal's five steps with Myers as step 3
+  (`make_pipeline_figure.py`); Figure 2, the activity diagram of the proposed system, is new
+  (`make_system_activity_diagram.py`). The two FINAL sheets (`make_activity_diagram.py`) are historical: do
+  not present them
 - `../../lab/blueprint.md` - lab design and the go/no-go analysis
 - `../../docs/RUNBOOK-homelab.md` - how to actually build it

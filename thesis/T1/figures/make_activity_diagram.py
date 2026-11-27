@@ -2,6 +2,16 @@
 
 Run:  .venv/Scripts/python.exe thesis/T1/figures/make_activity_diagram.py
 
+HISTORICAL. DO NOT PRESENT (since 2026-11-28, fix 9 of the outside review).
+
+These two sheets are the FINAL diagram. The revised proposal changed the system
+they draw: it starts at the upload, so the capture is the study's lab tool, outside
+the system; it has one user; it does not apply fixes; the SOC copy is outside the
+system; and Myers is step 3. Sheet 2 also says "no blind spot found" and gives the
+old 30-event rule for LOST. The current diagram is make_system_activity_diagram.py,
+which writes T1_Activity_Diagram_Proposed_System.svg. Both sheets now carry a red
+HISTORICAL line at the bottom; nothing else in them changed on 2026-11-28.
+
 Why this file exists. The 2026-08-28 hand-drawn version described the analysis
 as keyed on event type alone. The unit of analysis changed on 2026-09-04 to
 event type plus populated tracked fields (DECISIONS.md). The figure was never
@@ -135,11 +145,16 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from svgkit import (
-    DEFS, DIVIDER, HEADER, HEADER_SUB, LANE_A, LANE_B,
+    BAD, DEFS, DIVIDER, HEADER, HEADER_SUB, LANE_A, LANE_B,
     action_box, arrow, connector, datastore, decision, edge_label, end_node,
     flow_final, line, loop_frame, phase_band, rect, start_node, svg, system_box,
     text,
 )
+
+# ADDED 2026-11-28 (fix 9): a visible line under each sheet, below the board.
+HISTORICAL = ("HISTORICAL: the FINAL diagram, before 2026-11-28. DO NOT PRESENT. "
+              "The current one is T1_Activity_Diagram_Proposed_System.svg.")
+BANNER_H = 40
 
 # ----------------------------------------------------------------- geometry
 
@@ -286,14 +301,17 @@ class Sheet:
     # --- output -----------------------------------------------------------
 
     def render(self, height: float, aria: str) -> str:
-        body = [rect(0, 0, SHEET_W, height, "#FFFFFF"), DEFS]
+        total = height + BANNER_H
+        body = [rect(0, 0, SHEET_W, total, "#FFFFFF"), DEFS]
         for i, (x, w) in enumerate(LANES):
             body.append(rect(x, HEAD_H, w, height - HEAD_H,
                              LANE_A if i % 2 == 0 else LANE_B))
         body += self.bands
         body += header(height)
         body += self.frames + self.arrows + self.nodes
-        return svg(SHEET_W, height, aria, body)
+        body.append(text(14, height + BANNER_H / 2, HISTORICAL, size=13, weight=700,
+                         anchor="start", fill=BAD, mono=True))
+        return svg(SHEET_W, total, "Historical, do not present. " + aria, body)
 
 
 def header(height) -> list[str]:

@@ -71,7 +71,10 @@ It refuses to run if the output file already exists, so it cannot overwrite the 
 also needs a `docx_build` folder beside it holding each figure as `.svg` and `.png`. That folder is
 not committed (`.gitignore`). To make it again:
 
-1. Copy the four SVGs from `thesis/T1/figures/`.
+1. Copy the four SVGs from `thesis/T1/figures/` **as they were at commit `4fe5163`**, for example
+   `git show 4fe5163:thesis/T1/figures/T1_Figure_Analysis_Pipeline.svg`. Since 2026-11-28 (fix 9 of the outside
+   review) the files there are not FINAL's: the pipeline figure was redrawn, and the two sheets carry a red
+   HISTORICAL line. FINAL is frozen, so its figures must not change.
 2. Render each to PNG at its own size with Microsoft Edge in headless mode (DECISIONS 2026-09-14,
    "Correction to 2026-09-09"):
    `msedge.exe --headless=new --disable-gpu --hide-scrollbars --user-data-dir=<scratch> --screenshot=<name>.png --window-size=W,H file:///<path>.svg`
@@ -82,7 +85,8 @@ The student opened and saved the built file in Word after 2026-10-12 (Word renam
 `image2.svg` and so on), and on 2026-10-15 saved it as `Detecting … Algorithm.docx`, the submitted
 file. So **that Word file in DOCS is now the source**, and running this script again would lose any
 hand edits. Checked 2026-10-15: the four pictures inside it are identical to the four SVGs in
-`thesis/T1/figures/`.
+`thesis/T1/figures/`. Since 2026-11-28 that holds only for the noise floor figure; the other three are identical to
+the versions at commit `4fe5163` (fix 9 of the outside review, above).
 
 **The template's hidden properties.** The school's blank template carries another thesis's title in
 its Title property and "MaryASoriano" as Author, and the student's formatted file kept both, so the

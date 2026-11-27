@@ -90,8 +90,8 @@ physical drive (WORKLOG 2026-09-28, sixth), which is why the backups go there.
 | `thesis/T1/proposal-form.md` | The version the title panel read (also in DOCS, identical) | FROZEN |
 | `thesis/T1/proposal.txt` | Early plain-text proposal | FROZEN |
 | `thesis/T1/proposal-form-REVISED.md` | Earlier revision (also in DOCS, identical) | SUPERSEDED |
-| `thesis/T1/figures/make_*.py`, `svgkit.py` | Generators of the four figures. `make_activity_diagram.py` **is** the diagram | SOURCE |
-| `thesis/T1/figures/*.svg` | The four figures, written by the generators | COPY |
+| `thesis/T1/figures/make_*.py`, `svgkit.py` | Generators of the figures. `make_system_activity_diagram.py` **is** the activity diagram: Figure 2 of the revised proposal, one sheet that starts at the upload (added 2026-11-28, fix 9 of the outside review). `make_pipeline_figure.py` is Figure 1, redrawn 2026-11-28 as the proposal's five steps. `make_activity_diagram.py` writes the two FINAL sheets: historical since 2026-11-28, do not present | SOURCE |
+| `thesis/T1/figures/*.svg` | The five figures, written by the generators: `T1_Activity_Diagram_Proposed_System.svg` (added 2026-11-28), `T1_Figure_Analysis_Pipeline.svg`, `T1_Figure_Noise_Floor.svg`, and the two FINAL sheets, which carry a red HISTORICAL line since 2026-11-28 | COPY |
 | `thesis/T2/`, `thesis/T3/` | README and proposal each. Not chosen | SUPERSEDED |
 | `tools/check_docs.py` | Flags document lines that contradict the code | SOURCE |
 | `tools/run_times.py` | When each spike, trial and evaluation run was captured, from its own `run_manifest.json`: the data side of the order in `docs/FREEZE-DATES.md`. Reads only; writes the one `--summary` file (added 2026-11-28) | SOURCE |
@@ -136,16 +136,16 @@ archives are still on SIEM-01's disk was not checked on 2026-10-15 (unverified).
 | `proposal-form-REVISED.md` | Same file as `thesis/T1/proposal-form-REVISED.md` | SUPERSEDED |
 | `T1-REVISION-DRAFT.md` | Earlier replacement text for `proposal-form.md`, written to answer the panel | SUPERSEDED |
 | `T1-PANEL-RESPONSE.md` | Each panel question with the reasoning behind the answer. Not submitted; stale in places (banner). Its verdict and impact-score examples are older than 2026-11-13: do not present them (banner, 2026-11-28) | LIVE, not submitted |
-| `ACTIVITY-DIAGRAM-EXPLAINED.md` | The diagram in plain words, for study. Not submitted | LIVE, not submitted |
+| `ACTIVITY-DIAGRAM-EXPLAINED.md` | The FINAL diagram's two sheets in plain words, for study. Not submitted. Historical since 2026-11-28 (fix 9; banner): the current diagram is explained in `Activity Diagram\T1_Activity_Diagram_Proposed_System.md` | SUPERSEDED (since 2026-11-28) |
 | `CLAUDE.md` | Rules for chats opened in this folder: points to the repo record and repeats the "keep it simple" rule (2026-10-30) | LIVE, not submitted |
 | `ACTIVITY-DIAGRAM-EXPLAINED.2026-09-29.md.bak`, `.2026-10-19.md.bak`, `.2026-10-19b.md.bak` | The explainer before the 2026-09-29 rewrite, before the 2026-10-19 fixes, and before the 2026-10-19 "where it starts" part | SUPERSEDED |
 | `ACTIVITY-DIAGRAM-EXPLAINED.2026-10-21.md.bak`, `.2026-11-03.md.bak`, `.2026-11-11.md.bak` | Three later backups of the explainer, by their dates (found 2026-11-27; not compared) | SUPERSEDED |
-| The four figure `.svg` files | Copies of `thesis/T1/figures/*.svg` (identical on 2026-10-15) | COPY |
+| The figure `.svg` files | Copies of `thesis/T1/figures/*.svg`: the four of 2026-10-15, and `T1_Activity_Diagram_Proposed_System.svg` since 2026-11-28. All five identical to the repo on 2026-11-28, after fix 9 (the pipeline redrawn, the two FINAL sheets marked historical) | COPY |
 | The four `*.2026-08-28.svg.bak` files | The figures before 2026-08-28 | SUPERSEDED |
 | `T1_Activity_Diagram_Swimlane.png` | The diagram shown at the title defense | FROZEN |
 | `TopicProposalFormTemplateBLANK.docx` | The school's blank template (also in the course folder). Its Title property is another thesis's title and its Author is "MaryASoriano"; a Word file made from it keeps both until changed in File, Info | SOURCE |
-| `Figure 3 Activity Diagram sheet 1 (full size).pdf`, `Figure 4 Activity Diagram sheet 2 (full size).pdf` | **Submitted 2026-10-15.** The two diagram sheets at full size, one page each, with FINAL's captions and matching hidden titles. Made with Edge headless from `thesis/T1/figures/` | COPY, SUBMITTED |
-| `Activity Diagram\` | Four more copies of the same four SVGs (identical on 2026-10-15). Also `T1_Activity_Diagram_Revised_Sheet1.md` and `Sheet2.md`: text versions of the two sheets, for a program that reads only text (found 2026-11-27) | COPY |
+| `Figure 3 Activity Diagram sheet 1 (full size).pdf`, `Figure 4 Activity Diagram sheet 2 (full size).pdf` | **Submitted 2026-10-15.** The two diagram sheets at full size, one page each, with FINAL's captions and matching hidden titles. Made with Edge headless from `thesis/T1/figures/`. They show the FINAL sheets without the red HISTORICAL line of 2026-11-28. No PDF of the new diagram exists yet | COPY, SUBMITTED |
+| `Activity Diagram\` | Five more copies of the same five SVGs (identical on 2026-11-28). Text versions, for a program that reads only text: `T1_Activity_Diagram_Proposed_System.md`, the current diagram step by step, with which steps are built and where, and what changed from FINAL (added 2026-11-28, LIVE); `T1_Activity_Diagram_Revised_Sheet1.md` and `Sheet2.md`, the two FINAL sheets (found 2026-11-27; historical since 2026-11-28, banner) | COPY |
 | `UWF Test\` | Empty folder left from the UWF test (item 19) | |
 | `~$NAL Detecting … (updated 2026-10-12).docx` | Word's lock file, dated 2026-10-13. Word makes it while the file is open and removes it on close. Its Word file is gone, so it is left over and can be deleted by hand | |
 | `~$tecting … Algorithm.docx` | Word's lock file for the submitted Word file, 2026-10-15 19:34: Word had it open. It goes away when Word closes. **Gone on 2026-11-27** | |
@@ -170,7 +170,7 @@ Removed from the public repo on 2026-09-10. Never put back.
 | `PANEL-QUESTIONS-CHECKLIST.txt` | Every title-defense question, wrong claim and instruction, with the answer now (2026-10-16). Listed as `.md` until 2026-11-27; the file is `.txt` | SOURCE |
 | `PANEL-QUESTIONS-DRILL.md`, `NEW SCRIPT SAMPLE (algorithms and Phase 0).txt`, `RE-PRESENTATION SCRIPT (new, read and explain).txt`, `TEST session-2026-10-21_1706.md` | Found 2026-11-27 and not opened, so not described here | |
 | The `(before ...)` copies of the 22-minute and full scripts | Backups made before each change on 2026-10-16 and 2026-10-17 | SUPERSEDED |
-| `STUDY-GUIDE.md` | The study plan for the diagram and the re-presentation | SOURCE |
+| `STUDY-GUIDE.md` | The study plan for the diagram and the re-presentation, written in October for the FINAL sheets. Since 2026-11-28 a note at the top says those sheets are historical and points to the new diagram's text version; two wrong answers are corrected in place | SOURCE |
 | `DEFENSE-PREP.md` | Defense preparation notes | SOURCE |
 | `Thesis Pre-oral defense transcript.txt` | Transcript of the title defense session (the file name says pre-oral) | FROZEN |
 | `title-defense-script.md`, `title-defense-bullets.md`, `topic-proposal-titles.pptx` | Title defense, 2026-08-25 | FROZEN |

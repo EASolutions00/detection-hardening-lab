@@ -139,19 +139,21 @@ The naive baseline the method is measured against
 Data shapes: Phase, Finding, Classification
     -> `REPO\src\telos\model.py`
 
-The activity diagram
-    -> `REPO\thesis\T1\figures\make_activity_diagram.py`, which **is** the diagram
+The activity diagram (Figure 2 of the revised proposal; one sheet; starts at the upload; since 2026-11-28)
+    -> `REPO\thesis\T1\figures\make_system_activity_diagram.py`, which **is** the diagram
+    -> the FINAL two sheets, historical, do not present: `REPO\thesis\T1\figures\make_activity_diagram.py`
 
-The other three figures
-    -> `REPO\thesis\T1\figures\make_pipeline_figure.py`
+The other figures
+    -> `REPO\thesis\T1\figures\make_pipeline_figure.py` (Figure 1: the five steps, Myers as step 3; redrawn 2026-11-28)
     -> `REPO\thesis\T1\figures\make_noise_floor_figure.py`
     -> `REPO\thesis\T1\figures\svgkit.py`
 
 Proposal numbering and template rules
     -> `REPO\thesis\README.md`
 
-The diagram explained in plain words, for a junior analyst
-    -> `DOCS\ACTIVITY-DIAGRAM-EXPLAINED.md`
+The diagram in plain words: every step, whether it is built, and where in the code
+    -> `DOCS\Activity Diagram\T1_Activity_Diagram_Proposed_System.md`
+    -> the FINAL two sheets explained (historical since 2026-11-28): `DOCS\ACTIVITY-DIAGRAM-EXPLAINED.md`
 
 The proposal revision that goes to the panel next
     -> `DOCS\proposal-form-SIMPLIFIED.md` (its working note lists the student's open choices)

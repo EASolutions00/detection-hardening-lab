@@ -8,6 +8,64 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-11-28 - Fix 9 of the outside review: a new activity diagram of the proposed system, Figure 1 redrawn, the FINAL sheets historical
+
+**Decision (student, chat 26343d0f: fix 9 of the WORKLOG plan of 2026-11-27, "Redraw the activity diagram", within
+"STRAIGHT IT TO 9 UNINTERRUPTED" and "DOUBLE CHECK 5 TO 9 FIX UNINTERRUPTED").** **How far the redraw goes was
+Claude's choice while building, not asked, because the student asked for no stops.** It follows the student's
+earlier decisions, listed under "Why", and the student can reverse it (see "Cost if wrong").
+1. **A new diagram, not relabelled lanes.** `thesis/T1/figures/make_system_activity_diagram.py` writes
+   `T1_Activity_Diagram_Proposed_System.svg`: one sheet, four lanes (Security Engineer; Proposed System; Monitored
+   Environment; SOC, indirect users, outside the system), 34 steps in its text version
+   (`DOCS\Activity Diagram\T1_Activity_Diagram_Proposed_System.md`).
+2. **What it draws.** The engineer captures 11 runs with the study's lab tool, outside the system, and uploads the run
+   records and the rule files. Modules 1 to 5 follow in the code's order: the run checks (a failure is an error, with no
+   report); the event keys and the merge sort; Myers; the check on the control runs (an error); the noise model; the
+   capture check (NOT TESTABLE); the per-key tests with the χ² summary; classify (LOST at any count, a loss that fails
+   the correction INCONCLUSIVE, REDUCED's three conditions, 30 events for a partial drop); "NO KEY LOST OR REDUCED" with
+   the number of undecided keys; the pairing; the link to rules and techniques; the ranking by three measured numbers;
+   the recommendations; the report. The engineer reads it, gives the SOC a copy outside the system, and accepts the
+   risk or fixes the rule or the telemetry and tests again.
+3. **Kept from FINAL:** the tint rule D3 (the generator refuses a wrong tint), the check on the control runs and the
+   pairing (DECISIONS 2026-09-29, the student kept both steps). New in the generator: it refuses two boxes that overlap.
+4. **Figure 1 is redrawn in place** (`make_pipeline_figure.py`): the form's five steps, numbered and named; Myers as step
+   3; the current decision rule; a ranking instead of "impact score"; the check on the control runs.
+5. **The FINAL sheets are historical, do not present.** `make_activity_diagram.py` stays, and its two sheets now carry a
+   red "HISTORICAL ... DO NOT PRESENT" line at the bottom. Nothing else in them changed (compared element by element
+   with commit `4fe5163`). FINAL is frozen; its figures are the files of `4fe5163` (`tools/word/README.md`).
+
+**Why a new diagram.** The FINAL sheets draw another system, and relabelling the lanes would have kept that:
+- the system restores the snapshot and runs the attack tests (Phases 0 to 3), but the lab tool is not a module and the
+  5 modules start at the upload (DECISIONS 2026-11-27, choice 3);
+- two human lanes, but one direct user (DECISIONS 2026-11-23, point 7);
+- the system applies the fix and captures again (Phase 5), but the form's limitation 5 says "The system recommends. It
+  does not apply fixes or write detection rules";
+- no copy to the SOC, no Myers; and the review's point 9: "no blind spot found" and the 30-event LOST rule.
+The form also describes Figure 2: "The engineer exports the files from the SIEM, uploads them, runs the analysis and
+reads the report. Giving a copy of the report to the Security Operations Center (SOC) is shown outside the system."
+
+**Where the picture follows the code, not the form's words.** The form puts "checks that each run recorded events" in
+Module 1. The code checks the control runs when it fits the noise model (an error) and the runs before and after inside
+`analyse()` (NOT TESTABLE), both after Myers. The form puts the event key in Module 2; the key is built when the lab
+tool writes the run record, by the system's own `eventkey.py`. **Drawn as design, not built:** the window (Upload, Run
+Analysis, the report on screen) and the percentage (LIMITATIONS, limit 17); the box says "count", not "percentage".
+
+**Checked.** In the browser: every text line inside its box or diamond, no two text lines overlapping, no arrow through
+a box, a decision, a circle, a label or another arrow (the new diagram: 117 text lines, 41 arrows; Figure 1: 42 and
+17). The text version's 72 quotes all appear in the picture. The thesis-folder copies equal the repo files (SHA256).
+
+**Cost if wrong.** If the student or Sir Ervin wants the lab procedure inside the diagram, the FINAL sheets' Phases 0
+to 3 can be redrawn with the capture in a "lab tool, outside the system" lane; the old generator is kept for that. The
+study material for the old sheets (`ACTIVITY-DIAGRAM-EXPLAINED.md`, the study guide's box numbers) is historical; the
+new text version replaces it, but it is shorter.
+
+**For the defense:** "Why does the diagram start at the upload?" The system's input is the run record and the rule
+files; the capture is the study's lab tool, described in chapter 3. "Where is Myers, and why is more needed?" Step 10:
+it lists every deleted and inserted event, but between two control runs with no change it still finds deletions, so
+the check against the control runs' noise (steps 11 to 17) decides which keys were lost.
+
+---
+
 ## 2026-11-28 - Fix 6 of the outside review: what the parameters hash covers, and what the analysis now computes and checks
 
 **Decision (student, chat 26343d0f: "STRAIGHT IT TO 9 UNINTERRUPTED", then, after a stop in this fix, "DOUBLE CHECK 5
@@ -350,7 +408,9 @@ collection show false findings from rare keys, move the complete-loss test back 
 file shows what the old rule gives.
 
 **Not changed:** the figures. The activity diagram ("LOST: 30 or more before") and the pipeline figure ("1 to 29
-before ... INCONCLUSIVE") state the old rule, and both are already due for a redraw (STATUS).
+before ... INCONCLUSIVE") state the old rule, and both are already due for a redraw (STATUS). **Changed 2026-11-28**
+(fix 9 of the outside review, DECISIONS 2026-11-28): the pipeline figure is redrawn, and a new activity diagram
+replaces the two FINAL sheets; both state this rule.
 
 **For the defense:** "If a key had 6 events before and none after, the chance of that with no real change is about
 0.25%. That test is exact, so it does not need 30 events. The minimum of 30 is for partial drops, where the
