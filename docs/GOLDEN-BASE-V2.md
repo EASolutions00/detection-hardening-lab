@@ -1,6 +1,7 @@
 # golden-base-v2: the retake, the trials and the compliance scans
 
-Prepared 2026-11-26 (chat 26343d0f; DECISIONS 2026-11-26). **Only Phase A has been started (the note below).** Each
+Prepared 2026-11-26 (chat 26343d0f; DECISIONS 2026-11-26). **Status 2026-11-27: Phases A to D passed, and Phase E's
+26 evaluation runs are all valid** (the note below; `docs/EXPECTED-RESULTS.md` section 7). Each
 step says who does it. A step that uses the guest password or the VM window is the student's. When a step is done,
 its command and result go into COMMANDS 2.18.
 
@@ -12,7 +13,8 @@ and A7 reverted at 13:16 UTC: **Phase A passed** (COMMANDS 2.18). K2 and C5 both
 at 2026-11-26T13:31:48Z; B5 gave 25 of 25 after a restart. **Phase C passed:** the test boot
 is clean, and the catalog names `golden-base-v2` since C4. **Phase D passed:** 42 of 42 scan results as
 predicted, 4 trial runs valid. From D1 on, scan results were read from the SIEM archive (COMMANDS 2.18), and a scan
-takes about 11 s.
+takes about 11 s. **Phase E done 2026-11-27:** 5 control, 3 before and 18 after runs, all 26 valid with one parameters
+hash, then scored TP 7, FP 0, FN 0 (COMMANDS 2.19; WORKLOG 2026-11-27).
 
 ---
 

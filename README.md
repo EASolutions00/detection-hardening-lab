@@ -4,10 +4,14 @@
 
 Undergraduate BS Computer Science thesis, plus the purple team lab built to run it.
 
-> **Detecting Security Blind Spots Through Pre- and Post-Hardening Events Using Differential
-> Analysis Algorithm**
+> **Detecting Security Blind Spots Through Pre- and Post-Hardening Events Using Myers' Difference
+> Algorithm**
 >
 > Elijah Amorsolo, OED20-0012616
+
+This is the title of the revised proposal. It changed on 2026-11-26, when Myers' difference algorithm
+became the core algorithm (`docs/DECISIONS.md` 2026-11-26). The adviser takes the revision to the panel
+for approval. The title approved in September 2026 ended "Using Differential Analysis Algorithm".
 
 ---
 
@@ -24,7 +28,57 @@ Nothing errors. Nothing alerts. Teams usually find out during an incident, month
 
 ---
 
-## It works
+## What it does
+
+TeLoS does not harden anything. It measures what one hardening change did to the evidence.
+
+1. The engineer exports Wazuh's event archive from the SIEM: runs before the change, runs after it,
+   and control runs with no change at all.
+2. TeLoS reads the export and compares the events before and after the change.
+3. It reports which events disappeared or dropped by more than their normal run-to-run variation,
+   which Wazuh rules and MITRE ATT&CK techniques depended on them, and which techniques had alerts
+   before the change and none after.
+
+Output: `report.txt`, `findings.json`, `comparison.csv`, and an ATT&CK Navigator layer. It runs from
+the command line today; the window (graphical interface) is not built yet.
+
+---
+
+## Results from the lab
+
+The evaluation ran on 2026-11-26 and 2026-11-27: **26 valid runs** on one Windows 11 endpoint,
+restored to the same snapshot before every run, with one pinned attack list. Six cases:
+
+- three hardening changes: C1 (WDigest off), C3 (LSA Protection on), C5 (Network Level Authentication on);
+- three test cases, K1 to K3, which turn off a logging setting on purpose, so the right answer is known
+  in advance. A test case is a configuration mistake, never a hardening change.
+
+Every expected result was committed before the runs ([docs/EXPECTED-RESULTS.md](docs/EXPECTED-RESULTS.md)).
+Scored at the level of event keys (defined below):
+
+| Method | Expected losses | Found | False alarms | Missed |
+|---|---|---|---|---|
+| TeLoS | 7 | 7 | 0 | 0 |
+| Plain subtraction of counts | 7 | 7 | 1 | 0 |
+
+- **K1, "Audit Logon" off:** the 5 expected event keys LOST, and exactly the 3 expected techniques no
+  longer detected: T1021.001, T1078.002 and T1550.002. The sign-in still worked, so this is a blind spot.
+- **K2, command line off:** a field-level loss. Event 4688 was still written, but without `CommandLine`.
+- **K3, process creation auditing off:** the 4688 key LOST; no technique lost, as expected.
+- **C1 and C5:** no change, as expected.
+- **C3 did not come out as expected.** The credential dump was blocked, as expected. But Sysmon event 10
+  fell to 0.672 of its rate, which is above the 0.5 reporting limit, and T1055 still counts as detected
+  through two other rules. Reported as found, not re-run ([docs/OPEN-QUESTIONS.md](docs/OPEN-QUESTIONS.md)
+  item 44).
+
+**Read these numbers with care.** It is a small study: 7 expected losses in 6 cases, in one lab. All
+3 before runs happened to fall in the quieter of two groups the control runs showed, so plain
+subtraction had an easy case in C1 and C5. Full scoring: `docs/EXPECTED-RESULTS.md` section 7. Reports:
+`data/summaries/eval-2026-11-26/`.
+
+---
+
+## The noise floor, shown on synthetic data
 
 This is real output from `src/demo.py`. I simulated one hardening change: one event key removed
 outright, one that lost a field while the event kept firing, one genuinely cut to 29 percent, and
@@ -45,11 +99,10 @@ measures each event key's natural variation first, then only reports a drop that
 
 An **event key** is the event type plus which of its tracked fields actually carried a value, for
 example `Security-4688[CommandLine,NewProcessName]`. That is how a change that empties one field,
-while the event keeps firing at its usual rate, becomes visible at all. (The example shows the key
-format. The lab endpoint does not yet audit process creation, so it writes no 4688 events; turning
-that on before the golden snapshot was decided 2026-09-29, see `docs/OPEN-QUESTIONS.md` item 20.)
-Since 2026-09-29 the design also records the value, grouped into a few classes, for the short list of
-fields that detection rules match by value. That part is not built yet.
+while the event keeps firing at its usual rate, becomes visible at all. K2 above is that case. For
+three fields that detection rules match by value (`GrantedAccess`, `LogonType` and
+`AuthenticationPackageName`), the key also keeps the value, grouped into the classes the rules look for
+(built 2026-11-03).
 
 **These numbers are synthetic.** They demonstrate that the code is correct. They are not
 measurements, and they are not a result of the study. Full output:
@@ -73,65 +126,77 @@ python -m venv .venv
 ```
 
 The demo needs no lab, no SIEM, and no virtual machines. The analyser consumes event counts and
-does not care where they came from.
+does not care where they came from. The lab commands (one capture, the evaluation batch, one
+comparison from run folders) are listed in [CLAUDE.md](CLAUDE.md); they need the lab.
 
 ---
 
 ## Status
 
-Honest state of the work, not a plan.
+Honest state of the work, not a plan. Checked 2026-11-27.
 
-| Component | Status |
+| Part | Status |
 |---|---|
-| Analysis core (event keys, variance model, capture check, differential analysis, classification) | **Built.** 58 tests passing. |
-| Naive baseline, for comparison | **Built** |
-| Reporting | Text output only |
-| Capture harness (acquisition from the lab) | Not built. The next major piece. |
-| Impact scoring (lost event to affected rules to ATT&CK techniques) | Not built |
-| Graphical interface (not a web application; decided 2026-09-14, kept 2026-10-07 after the panel chair asked for web-based) | Not built |
-| Detection rules: Wazuh 4.14.7's shipped rules (decided 2026-10-01) | Chosen; the rule-to-technique index is not built |
+| Reading Wazuh's archive into event keys, with value classes | **Built** |
+| Myers' difference algorithm, step 3 of the pipeline | **Built** 2026-11-26 |
+| Noise floor, rate ratio per key, Benjamini-Hochberg correction, classification | **Built** |
+| Links from lost keys to Wazuh rules and ATT&CK techniques; ranking; coverage change | **Built** |
+| Report and exports (text, JSON, CSV, ATT&CK Navigator layer); reproducibility record | **Built** |
+| Recommendations from a curated list of compensating controls | **Built**; entries for C3 and C5 only |
+| Capture harness (Python over `vmrun`): restore, change, attack tests, export, run checks | **Built**; used for all 26 evaluation runs |
+| Lab, runbook Phases 0 to 7 | **Done**. Golden snapshot `golden-base-v2` taken 2026-11-26 |
+| Evaluation runs and their scoring | **Done** 2026-11-27 (results above) |
+| Percentage of techniques lost | Not built. Proposed in the revised form, not decided |
+| Graphical interface (a desktop application, not a web application; decided 2026-09-14, kept 2026-10-07) | Not built |
+| Evaluation by security engineers with an ISO/IEC 25010 form | Not started |
 | Domain controller `DC-01` (decided 2026-09-29, dropped 2026-11-11) | Will not be built |
-| Lab Phase 0, host readiness | **Done** |
-| Lab Phase 1, virtual networks | **Done** |
-| Lab Phase 2, SIEM build (Wazuh 4.14.7) | **Done** 2026-09-02 |
-| Lab Phase 3, Windows endpoint build | **Done** 2026-09-02 |
-| Lab Phase 4, pin and record versions | Partly done. 4 of 5 pins recorded; the harness commit waits for the harness |
-| Lab Phases 5 to 7, golden snapshot, harness, feasibility spike | Not started |
+
+170 tests pass (`pytest`, 2026-11-27). Day-to-day status: [docs/STATUS.md](docs/STATUS.md).
 
 ---
 
 ## How the analysis works
 
-1. **Measure the noise floor.** Run the identical, pinned attack tests 5 times against the same
-   restored snapshot with nothing changed. Whatever varies is the laboratory's own noise. Recorded
-   per event key as a coefficient of variation and a dispersion parameter.
-2. **Check the capture, then summarise the whole profile.** A run in which any repetition recorded
-   no events at all is reported as not testable, because a dead agent and a real loss both look
-   like zeros. Otherwise, one chi-square test of homogeneity across the whole profile: did anything
-   change at all? It is reported as a summary and never stops the next step, because one lost key
-   among hundreds barely moves it (changed 2026-09-28, `docs/DECISIONS.md`).
-3. **Per-key rate ratio, for every key.** Dispersion-aware, using the variance measured in step 1
-   rather than assuming Poisson equidispersion. A key the control runs never saw has no measured
-   noise, so it is not tested and is reported INCONCLUSIVE.
-4. **Correction.** Benjamini-Hochberg across every key tested, because testing several hundred
-   at once will otherwise produce findings by chance alone.
-5. **Classification.** LOST, REDUCED, UNCHANGED, NEW, or INCONCLUSIVE.
+In the order the code runs it (`src/telos/pipeline.py`):
 
-A key is only reported as REDUCED when three conditions hold together: the corrected q value,
-the effect size, and the measured noise floor. Any one alone is not enough. A key is LOST when it
-was seen at least 30 times before, never after, and still survives the correction.
+1. **Read and key the events.** Each run's archive export becomes counts per event key.
+2. **Check the runs.** Only valid runs are used: at least 3 per phase, all with the same settings (one
+   parameters hash), and all "after" runs of one change. The harness voids a run whose attack tests did
+   not run as pinned: its number of process starts (Sysmon event 1) is outside the control runs' mean
+   plus or minus 3 standard deviations, or the sign-in step failed (`docs/DECISIONS.md` 2026-11-27).
+3. **Myers' difference algorithm.** Each phase's runs are joined into one sorted list of events. Myers
+   finds the shortest list of deletions and insertions that turns the "before" list into the "after"
+   list. It lists every difference, normal noise included (Myers 1986; `docs/DECISIONS.md` 2026-11-26).
+4. **Measure the noise floor.** From 5 control runs with nothing changed, measure how much each event
+   key moves on its own: its coefficient of variation (the run-to-run spread as a share of its mean) and
+   its dispersion (how much wider that spread is than pure chance would give).
+5. **Test each key.** A rate ratio (the rate after divided by the rate before) for every key, using the
+   spread measured in step 4. Then Benjamini-Hochberg correction, because testing many keys at once
+   produces some findings by chance alone. One chi-square test over the whole profile is reported as a
+   summary and never stops this step (changed 2026-09-28).
+6. **Classify.** LOST, REDUCED, UNCHANGED, NEW, or INCONCLUSIVE.
+7. **Impact.** Which Wazuh rules read each lost key, which ATT&CK techniques those rules detect, and
+   which techniques had alerts before the change and none after.
+
+A key is only reported as REDUCED when three conditions hold together: the corrected q value (the p
+value after the correction) is at most 0.05, the rate at least halved, and the drop exceeds three times
+the key's own coefficient of variation. Any one alone is not enough. A key is LOST when the control runs
+saw it, it fell to exactly zero after the change, and it still passes the correction. Such a key is
+tested with an exact test at any count; a partial drop needs at least 30 events before, or it is
+INCONCLUSIVE (`docs/DECISIONS.md` 2026-11-26).
 
 ---
 
 ## Repository layout
 
 ```
-docs/     runbook, decision log, work log, open questions, command reference
-src/      TeLoS analyser (Python)
-tests/    58 tests for the analysis core
-thesis/   the proposal, and the two alternatives that were not chosen
-lab/      homelab blueprint, pinned configs, hardening scripts
-data/     runs/ is local only, summaries/ is committed
+docs/     runbook, decision log, work log, open questions, command record, expected results
+src/      TeLoS analyser and the lab harness (Python)
+tests/    170 tests
+thesis/   the proposal, its figures, and the two alternatives that were not chosen
+lab/      lab design, pinned configs, change scripts
+data/     runs/ is local only; summaries/ holds the committed results
+tools/    the document checker, and the Word conversion tools
 ```
 
 Start with [CLAUDE.md](CLAUDE.md). It is the index to everything.
@@ -143,22 +208,25 @@ Start with [CLAUDE.md](CLAUDE.md). It is the index to everything.
 [docs/RUNBOOK-homelab.md](docs/RUNBOOK-homelab.md) rebuilds the whole thing from a bare host,
 in phases 0 to 8, with a check at the end of each one.
 
-Host: Ryzen 9 7950X, 64 GB RAM, VMware Workstation 17.5.1. Wazuh SIEM on Ubuntu, Sysmon and
-Atomic Red Team on a Windows endpoint, orchestrated over `vmrun` from Python on the Windows
-host. A domain controller joins them before the golden snapshot (decided 2026-09-29, not built). Every command run on the host is recorded in [docs/COMMANDS.md](docs/COMMANDS.md), with
-what a correct result looks like.
+Host: AMD Ryzen 9 7950X, 64 GB RAM, VMware Workstation 17.5.1. A Wazuh 4.14.7 SIEM on Ubuntu, and
+Sysmon and Atomic Red Team on a Windows 11 endpoint, driven over `vmrun` from Python on the Windows
+host. There is no domain controller (dropped 2026-11-11). Every command run on the host is recorded in
+[docs/COMMANDS.md](docs/COMMANDS.md), with what a correct result looks like.
 
 ---
 
 ## Methodology notes
 
-Two things here are deliberate.
+Three things here are deliberate.
 
 **A pre-declared falsifiable outcome.** Before collecting any data, I state the result that
 would prove my own central claim unnecessary, and commit to reporting it without softening. The
 statistical layer is only justified if the laboratory's run-to-run variance is non-zero. If it
 turns out to be negligible, I report that plainly and restrict the claim to production
 deployment, where the variance floor is not controlled by snapshot restoration.
+**Measured since:** in the feasibility spike (2026-11-16), the median event key did not vary between
+runs with no change, and 5 of 20 keys varied by more than 5%. In the evaluation, plain subtraction
+reported 1 false loss and TeLoS none (`docs/EXPECTED-RESULTS.md` section 7).
 
 **Untestable is reported, not assumed safe.** An event key seen too few times before a change
 cannot be tested with any power. TeLoS reports these as INCONCLUSIVE rather than folding them
@@ -186,8 +254,8 @@ I wrote up two other topics as full proposals before choosing T1. Both remain in
 
 **T2, severity inversion in the Wazuh ruleset.** Rules form a dependency graph, and a serious
 alert can sit at a severity level no analyst ever sees. Not chosen, and not a fallback: T1 is the
-final thesis with no fallback topic (`docs/DECISIONS.md` 2026-09-26). If T1's feasibility spike
-shows the full study cannot finish in time, the answer is a smaller scope, not a different topic.
+final thesis with no fallback topic (`docs/DECISIONS.md` 2026-09-26). T1's feasibility spike ran on
+2026-11-16 (19 of 19 runs valid), and the full evaluation on 2026-11-26 and 2026-11-27 (26 of 26 valid).
 
 **T3, analytic robustness scoring.** Score how hard each detection rule is to evade, and
 validate against the manually annotated subset of the Sigma corpus. **I killed it after

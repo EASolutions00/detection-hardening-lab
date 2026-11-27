@@ -1,6 +1,8 @@
 # src - the analyser
 
-Python. The analysis core is written and tested. Acquisition from live VMs is not.
+Python. The analysis core and the capture harness are written, tested, and used on the real lab:
+all 26 evaluation runs of 2026-11-26 and 2026-11-27 went through them (`docs/EXPECTED-RESULTS.md`
+section 7).
 
 ## What it produces
 
@@ -56,8 +58,9 @@ because the analyser consumes event counts and does not care where they came fro
 | Stage | Module | Status |
 |---|---|---|
 | 1. Acquisition: reading the archive into counts per window | `archive.py` | done 2026-11-13; checked on real windows |
-| 1. Acquisition: snapshots, stimulus, export (the harness) | `harness.py` | written 2026-11-13, tested with a fake `vmrun`; **first real run 2026-11-16** (`test-pre-1`, valid after one reader fix, COMMANDS 2.17) |
-| 2. Event keying | `eventkey.py` | done |
+| 1. Acquisition: snapshots, stimulus, export (the harness) | `harness.py` | written 2026-11-13, tested with a fake `vmrun`; **first real run 2026-11-16** (`test-pre-1`, valid after one reader fix, COMMANDS 2.17); then the spike's 19 runs (2026-11-16) and the evaluation's 26 (2026-11-26 to 2026-11-27), all valid |
+| 2. Event keying | `eventkey.py` | done; value classes for `GrantedAccess`, `LogonType` and `AuthenticationPackageName` since 2026-11-03 (`VALUE_KEYED_FIELDS`) |
+| 3. Myers' difference algorithm | `myers.py` | done 2026-11-26: step 3 of the pipeline, each phase's runs joined into one sorted list; D for every pair of single runs as context (DECISIONS 2026-11-26) |
 | 2. Profiling and variance model | `variance.py` | done |
 | 3. Differential analysis | `differential.py` | done |
 | 4. Rule-to-key index (which Wazuh rules read a key) | `index.py` | done 2026-11-13; checked on the real rule export |
@@ -65,12 +68,21 @@ because the analyser consumes event counts and does not care where they came fro
 | 5. Reporting | `report.py` | text sections: verdict, telemetry comparison, ranked blind spots with remediation level 1, coverage change, evaluation (2026-11-13). Exports: JSON of findings, CSV of the comparison. **Added later 2026-11-13:** the reproducibility record (parameters and hash, analyser version = git commit, every run and its folder) and the ATT&CK Navigator layer (format 4.5, checked against MITRE's specification) and remediation level 2 (curated list `lab/knowledge/compensating-controls.json`, matched by change and blind technique; two first entries from lab measurements, not tested). All seven of FINAL's sections and four exports now exist |
 | Lab catalogue and capture command | `catalog.py`, command `src/capture.py` | done 2026-11-16: the changes C1, C3, C5 (scripts in `C:\telos\`, `-Verify`, script SHA256), Config S after every boot, the trial stimulus (T1003.001 tests 1, 2, 13 last, cleanup), the pinned parameters; `capture.py` runs one window on the real lab. **The student runs it**. **2026-11-18:** the pinned attack list, `pinned_stimulus()` (the Remote Desktop sign-in from the host, then the trial's tests), is `capture.py`'s default (DECISIONS 2026-11-18) |
 | Spike plan and batch runner | `spike.py`, command `src/spike.py` | done 2026-11-16: 19 runs (runbook Phase 7), resumable; the harness gained `extra_reboot` (Q6) and each run's start, end and duration (Q2). `analyse_spike()` and `src/spike.py --analyse` answer Q1 to Q6 and run the C3 comparison, writing `data/summaries/cov_control_runs.csv`, `run_timings.csv` and `spike_answers.txt` |
-| Pipeline: run folders to report and exports | `pipeline.py`, command `src/run.py` | done 2026-11-13: checks the runs belong together (one parameters hash, one change, at least 3 valid runs per phase, voided runs left out), runs the whole method, writes `report.txt`, `findings.json`, `comparison.csv` |
+| Pipeline: run folders to report and exports | `pipeline.py`, command `src/run.py` | done 2026-11-13: checks the runs belong together (one parameters hash, one change, at least 3 valid runs per phase, voided runs left out), runs the whole method, writes `report.txt`, `findings.json`, `comparison.csv`, `navigator_layer.json` |
+| Run checks, item 22's void rule | `harness.RunChecks`, `catalog.RUN_CHECKS` | done 2026-11-27: a run is voided when its Sysmon 1 count is outside the control runs' mean ± 3 sd (79.8 to 141.8) or `rdp-signin-30s` did not exit 0 (DECISIONS 2026-11-27) |
+| Evaluation batch | `evaluation.py`, command `src/evaluate.py` | done 2026-11-27: the 26 runs of the plan in order, unattended; runs already on disk are skipped, so it resumes after a stop |
+| Dry run of the test cases | `src/known_answer_dryrun.py` | done 2026-11-26: the pipeline on real spike noise with synthetic effects; checks `docs/EXPECTED-RESULTS.md` against the code; not lab evidence |
 | Baseline for comparison | `baseline.py` | done |
 | Data shapes | `model.py` | done |
 | Synthetic data for testing | `synth.py` | done |
 
 ## The method, in the order it runs
+
+`pipeline.compare` first checks the runs (valid runs only, at least 3 per phase, one parameters hash,
+one change), then runs **Myers' difference algorithm** (`myers.py`, step 3 since 2026-11-26) on the
+sorted event lists, each phase's runs joined into one list. Myers lists every difference, noise
+included; on sorted lists it equals subtracting the counts per key, and the module checks this on
+every run. The steps below then decide which differences are larger than the noise.
 
 1. **Noise floor** (`variance.py`). From the control runs, measure each event key's
    coefficient of variation and dispersion. Once per environment.
@@ -121,15 +133,12 @@ disappears completely: it gets the exact test whatever its count (DECISIONS 2026
 
 ## Tests
 
-**118 tests** (2026-11-13): `tests/test_differential.py`, `tests/test_eventkey.py`, 11 in
-`tests/test_archive.py`, 11 in `tests/test_index.py`, 7 in `tests/test_impact.py`, 7 in
-`tests/test_report_sections.py`, 12 in `tests/test_harness.py` and 5 in `tests/test_pipeline.py`.
-(125 on 2026-11-13, after the reproducibility record, the Navigator layer, remediation level 2 and the
-harness's after-boot steps; 130 on 2026-11-16 with 5 in `tests/test_catalog.py`; 133 after the first real run:
-the reader now accepts vmrun's quoted fence arguments, and `harness.recount()` re-reads a saved run; 138 with
-the spike plan, `extra_reboot` and run timing; 140 with the spike analysis; 141 after the first real spike, when the C3
-report gained the analyser version; 143 with the pinned attack list, `catalog.pinned_stimulus()`, 2026-11-18.) (Updated from "58"; the count had not been updated since
-2026-10-15.)
+**170 tests** (2026-11-27), in 12 files under `tests/`: `test_differential.py`, `test_eventkey.py`,
+`test_archive.py`, `test_index.py`, `test_impact.py`, `test_report_sections.py`, `test_harness.py`,
+`test_pipeline.py`, `test_catalog.py`, `test_spike.py`, `test_myers.py` and `test_evaluation.py`.
+The count grew from 58 (2026-10-15) to 118 (2026-11-13), 143 (2026-11-18), 150 with Myers
+(2026-11-26), 160 with the harness's wait for VMware Tools, 165 with item 22's void rule, and 170 with
+the evaluation batch (all 2026-11-27). WORKLOG has each step.
 The three that matter most:
 
 - `test_drop_inside_the_noise_band_is_not_reported`
@@ -151,21 +160,23 @@ found by the suite: an all-zero post-change phase used to raise from `chi2_conti
 
 An analysis key is the event type **plus which tracked fields were populated**, written
 `Security-4688[CommandLine,NewProcessName]`. See `eventkey.py` and the decision entry in
-`docs/DECISIONS.md`. That is a format example: the lab endpoint does not yet audit process
-creation, so it writes no 4688 events; turning it on before the golden snapshot was decided
-2026-09-29 (`docs/OPEN-QUESTIONS.md` item 20).
+`docs/DECISIONS.md`. The lab endpoint audits process creation with the command line since 2026-11-03
+(`docs/OPEN-QUESTIONS.md` item 20), and both golden snapshots keep it on. Test case K2 turns the command
+line off, and the evaluation found exactly this signature (`docs/EXPECTED-RESULTS.md` section 7).
 
 Keying on the event type alone cannot see a field-level loss. Emptying CommandLine leaves
 4688 firing at its former rate, so the profile reports UNCHANGED while every rule matching
 on CommandLine is blind. Under the composite key the same change produces a LOST key and a
 NEW key at the same rate, which is the signature of a stripped field.
 
-**The honest limit, in the code today.** The key records *that* a tracked field carried a value,
-never *which* value. A change that alters a field's contents while leaving it populated moves
-neither the key nor its rate.
+**The honest limit, in the code today.** For most fields the key records *that* a tracked field
+carried a value, never *which* value. A change that alters such a field's contents while leaving it
+populated moves neither the key nor its rate.
 
-**Decided 2026-09-29, not built:** for the short list of fields that detection rules match by
-specific value, the key will also record the value, grouped into a few classes (`docs/DECISIONS.md`
-2026-09-29, item 18). Under Wazuh's shipped rules the list is `GrantedAccess`, `LogonType` and
-`AuthenticationPackageName` (2026-10-01), confirmed after the C3 capture. When it is built,
-`DEFAULT_TRACKED_FIELDS` and the `key-values` check in `tools/check_docs.py` change with it.
+**Value classes, built 2026-11-03** (decided 2026-09-29, `docs/DECISIONS.md`, item 18). For the short
+list of fields that detection rules match by specific value, the key also records the value, grouped
+into the classes the rules look for, and `other` for every value no rule looks for
+(`VALUE_KEYED_FIELDS` in `eventkey.py`). Under Wazuh's shipped rules the list is `GrantedAccess`
+(Sysmon 10), and `LogonType` and `AuthenticationPackageName` (4624). Each class holds the rule's own
+pattern, so the key and the rule cannot disagree (OPEN-QUESTIONS 35). The `key-values` check in
+`tools/check_docs.py` describes this.

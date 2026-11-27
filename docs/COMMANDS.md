@@ -133,6 +133,30 @@ folder as `origin`, and uploads all commits.
 **When.** Once. After this, use `git push`.
 **Correct result.** Prints the URL, then `* [new branch] HEAD -> main`.
 
+**Renamed 2026-11-27 to `hardening-blind-spots`** (student's choice, chat 27d2595d; DECISIONS 2026-11-27). Run by
+Claude in Git Bash, in this order:
+
+```
+gh repo rename hardening-blind-spots --repo EASolutions00/detection-hardening-lab --yes
+gh api repos/EASolutions00/hardening-blind-spots --jq '.name, .html_url, .visibility'
+git remote set-url origin https://github.com/EASolutions00/hardening-blind-spots.git
+git remote -v
+git ls-remote origin HEAD
+git rev-parse HEAD
+```
+
+**What.** The first renames the repository on GitHub; the code, history and settings stay. The second checks it by
+the new name. The third changes only `.git\config`, the address this PC pushes to. The last three check it.
+**Why.** "detection-hardening-lab" reads as making detection rules stronger; the system finds the detections that a
+hardening change breaks. GitHub keeps redirecting the old address, unless a new repository is ever made under the old
+name (GitHub Docs, "Renaming a repository").
+**Correct result.** The rename prints nothing when the shell is not interactive, so the check is the proof:
+`hardening-blind-spots`, `https://github.com/EASolutions00/hardening-blind-spots`, `public`. Then the new address twice
+(fetch and push), and the same commit id from GitHub and from this PC (`8d6178c...` on 2026-11-27).
+**Undo.** `gh repo rename detection-hardening-lab --repo EASolutions00/hardening-blind-spots --yes`, then
+`git remote set-url origin https://github.com/EASolutions00/detection-hardening-lab.git`.
+**The old name stays below and in WORKLOG** where it records what was run then.
+
 ### 2.5 Purge a file from all git history
 
 ```
@@ -1104,7 +1128,7 @@ that it answered at all.
 | `git check-ignore .venv` | Is it ignored | Prints `.venv` |
 | `git log --format='%h %ad %s' --date=format:'%Y-%m-%d'` | Real commit dates | Used to catch two wrongly dated WORKLOG entries |
 | `gh auth status` | Logged in | `EASolutions00` |
-| `gh repo view --json name,visibility,url` | Repo state | `detection-hardening-lab \| PUBLIC` |
+| `gh repo view --json name,visibility,url` | Repo state | `hardening-blind-spots \| PUBLIC` (renamed 2026-11-27; `detection-hardening-lab` before) |
 | `gh api repos/OWNER/REPO/license --jq '.license.spdx_id'` | License detected | `MIT` |
 
 ### 3.4 Reading a .docx without pandoc

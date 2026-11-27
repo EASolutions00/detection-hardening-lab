@@ -1,12 +1,14 @@
 # lab/scripts - Hardening change scripts
 
-One script per hardening change. These are applied by the harness after reverting to a
-config snapshot, and they must be version controlled.
+One script per hardening change. These are applied by the harness after reverting to the golden
+snapshot, and they must be version controlled.
 
 ## Why scripts instead of snapshots
 
-Do not create one post-change snapshot per change. Revert to `cfg-suppressed` or `cfg-natural`,
-then apply the change by running the script.
+Do not create one post-change snapshot per change. Revert to the golden snapshot, then apply the change
+by running the script. Since 2026-11-16 there is no `cfg-suppressed` or `cfg-natural` snapshot: every run
+reverts to the golden snapshot (`golden-base-v2` since 2026-11-26), and Config S is set by an after-boot
+script (`docs/DECISIONS.md` 2026-11-16).
 
 Two reasons. The change itself becomes auditable and reproducible, which is what the
 proposal's reproducibility claim needs. And one branching snapshot delta chain per change would
@@ -15,9 +17,11 @@ fill F:.
 ## Naming
 
 `change-ID-short-name.ps1`, for example `change-C1-disable-wdigest.ps1`. The ID matches the
-catalogue in `../blueprint.md` section 8 (C1 to C8, B1 to B6).
+catalogue in `../blueprint.md` section 8 (C1 to C8, B1 to B6). The test cases K1 to K3 use the same
+pattern (`docs/EXPECTED-RESULTS.md` section 1).
 
-**Written 2026-11-13, not yet run by the harness:** `change-C1-disable-wdigest.ps1`,
+**Written 2026-11-13; run by the harness since 2026-11-16** (the spike, the trials, and the 26 evaluation
+runs of 2026-11-26 to 2026-11-27; `docs/EXPECTED-RESULTS.md` section 7): `change-C1-disable-wdigest.ps1`,
 `change-C3-lsa-protection.ps1`, `change-C5-rdp-nla.ps1`. Each sets its value, and `-Verify` exits 0 only
 when the change is in effect inside the guest (runbook requirement 11); C3's check is Wininit event 12
 since the last boot, which never reaches the archive (OPEN-QUESTIONS 28). Also `config-S-defender-off.ps1`,
@@ -25,13 +29,25 @@ not a hardening change: it turns Defender's live scanning off and reads it back 
 harness runs it after every boot (`LabConfig.after_boot`). All must be copied to `C:\telos\` in the guest
 before the golden snapshot.
 
-**Test cases, written 2026-11-26, not yet run:** `change-K1-audit-logon-off.ps1`, `change-K2-cmdline-off.ps1`,
+**Test cases, written 2026-11-26; run in the trials and the evaluation (2026-11-26 to 2026-11-27):**
+`change-K1-audit-logon-off.ps1`, `change-K2-cmdline-off.ps1`,
 `change-K3-audit-process-creation-off.ps1` (DECISIONS 2026-11-26; OPEN-QUESTIONS 42). Each turns off a logging
 setting that CIS or DISA requires, so each is a **configuration mistake made on purpose, never a hardening change**.
 They exist to remove known evidence, so the study can check that the system finds it. Their expected results are in
-`docs/EXPECTED-RESULTS.md`, written before any run. They are **not in `golden-base` yet**: until they are copied to
-`C:\telos\`, their `-Verify` fails and the harness voids the run. They go into `golden-base-v2`
-(`docs/GOLDEN-BASE-V2.md`).
+`docs/EXPECTED-RESULTS.md`, written before any run. They are in `golden-base-v2` (taken 2026-11-26,
+`docs/GOLDEN-BASE-V2.md`), not in the older `golden-base`: a run reverted to `golden-base` cannot find them,
+so their `-Verify` fails and the harness voids the run.
+
+**Old comments left in the scripts on purpose (2026-11-27).** Six header lines are out of date, and the scripts are
+not edited: their bytes are hashed in every run's manifest (`change_script_sha256`) and copied into `golden-base-v2`,
+so an edit would make the repo copy differ from the image's copy. What each line said, and what is now known:
+- `change-C5-rdp-nla.ps1` lines 12 and 13, "with the policy key (unverified)": the policy key's effect and "no
+  restart needed" were seen in Phase A (A6, refused with `0xb09` after C5, no restart) and in `trial-C5-1`
+  (COMMANDS 2.18 and 2.19).
+- `change-K2-cmdline-off.ps1` line 10, "without a restart is (unverified)": seen in A5 and confirmed in every K2 run
+  (`change_confirmed` true, no reboot).
+- `change-K1-...`, `change-K2-...`, `change-K3-...` lines 11, 15 and 12, "Not in golden-base yet ... Not yet run in the
+  guest": they are in `golden-base-v2` and ran in the trials and in the 9 K runs of the evaluation.
 
 `baseline-golden.ps1` (2026-11-13) sets the golden image's decided baseline and prints a 20-row check; exit
 code 0 only when every row passes. Run it once to set, restart, then with `-Verify` (runbook Phase 5).
@@ -77,7 +93,8 @@ This file's example used to be "Disable Audit Process Creation". That change was
 catalogue on 2026-09-08, because CIS requires the setting **on**, so turning it off is de-hardening.
 
 The control ID is not optional. T1's proposal states every change comes from the CIS Benchmarks
-or DISA STIGs (the count is no longer fixed at 16 since 2026-09-29; the spike sets it). A panelist can ask for the ID of any one of them, and several in the current
+or DISA STIGs (the count is no longer fixed at 16; the study uses C1, C3 and C5, plus the test cases K1 to
+K3). A panelist can ask for the ID of any one of them, and several in the current
 catalogue are still generic domain knowledge. See `docs/OPEN-QUESTIONS.md` item 4.
 
 ## Expected effect is a prediction, not a fact

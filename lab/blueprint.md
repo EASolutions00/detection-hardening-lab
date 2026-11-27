@@ -162,6 +162,10 @@ WIN-EP-01
 │   └── SNAP: cfg-natural      (Config N: defaults left on)
 ```
 
+**As built:** no `cfg-*` snapshot exists (DECISIONS 2026-11-16); Config S is applied after every boot by a script.
+`golden-base` was taken 2026-11-16 and `golden-base-v2` on 2026-11-26, with the test-case scripts K1 to K3 in it;
+every evaluation run reverts to `golden-base-v2` (`docs/GOLDEN-BASE-V2.md`).
+
 Do **not** create 16 post-change snapshots. Revert to the config snapshot, then
 apply the hardening change by script. This keeps the change itself version-
 controlled and auditable, which is what the proposal's reproducibility claim
@@ -173,8 +177,8 @@ requires, and avoids 16 branching delta chains on F:.
 
 Each capture window, driven by the host harness:
 
-1. `vmrun revertToSnapshot <vmx> cfg-suppressed` **(since 2026-11-16: `golden-base`, with Config S applied after
-   every boot by a script; DECISIONS 2026-11-16)**
+1. `vmrun revertToSnapshot <vmx> cfg-suppressed` **(since 2026-11-16: `golden-base`, and `golden-base-v2` since
+   2026-11-26, with Config S applied after every boot by a script; DECISIONS 2026-11-16)**
 2. `vmrun start <vmx> nogui`
 3. Poll for VMware Tools ready, then **settle 180 s** (let boot-time event storm
    drain and stop counting it)
@@ -244,6 +248,11 @@ Per T1's stated design: 16 changes × (3 pre + 3 post) = 96, plus 5 control runs
 = **101 capture windows** minimum. **Scope changed 2026-09-29:** every measurable class C change
 is kept and the rest reduced, and the spike sets the final number (`docs/DECISIONS.md`), so the
 real count will be lower. The per-run arithmetic below still applies.
+
+**Measured, 2026-11-16 and 2026-11-27.** The spike measured 9.8 minutes per run (Q2), not 40. The
+evaluation ran **26 runs**: 5 control, 3 before shared by all cases, and 3 after for each of C1, C3, C5
+and the test cases K1 to K3 (`docs/DECISIONS.md` 2026-11-27), about 8.7 minutes each and 12.7 for C3
+(`docs/WORKLOG.md` 2026-11-27). The estimates below are kept as first written.
 
 Estimated wall clock per run `(unverified — measure this in week 1)`:
 

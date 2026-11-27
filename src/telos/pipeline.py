@@ -13,7 +13,8 @@ method, and writes three files:
 
 Checks, each a reason the comparison would otherwise be wrong:
 - **Voided runs are left out** and named (the harness voids a run whose tests ran
-  past the window, whose change was not confirmed, or whose window could not be read).
+  past the window, whose change was not confirmed, or whose window could not be read,
+  and, since 2026-11-27, a run outside item 22's void rule; `harness.RunChecks`).
 - **Each phase needs at least `min_runs` valid runs** (3 by design; blueprint).
 - **Every run must have the same `parameters` hash.** Runs with different settings
   (window, snapshot, attack list, rule set) are not comparable (runbook step 11).

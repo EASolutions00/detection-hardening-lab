@@ -28,11 +28,12 @@ One window, in order (runbook Phase 6):
 password file at the moment of the call. The password is never stored in an
 object, a log or a file. A person runs the harness; it is not run by an assistant.
 
-**What it does not decide.** Whether a run is voided for a moved stimulus fingerprint
-(OPEN-QUESTIONS 22) is decided later from the spike data; the harness records what
-that needs (exit codes, durations, guest calls, event counts) and voids only on the
-reasons it can know: tests longer than the window, a change not confirmed, a window
-that cannot be read (for example no END fence).
+**When it voids a run.** On the reasons it can know: tests longer than the window, a
+change not confirmed, a window that cannot be read (for example no END fence), a failed
+after-boot step. And, given `RunChecks` (item 22's rule, DECISIONS 2026-11-27), when the
+stimulus fingerprint (Sysmon 1 in the window) is outside the control runs' range or a named
+step did not exit 0. It records exit codes, durations, guest calls and event counts for
+every run.
 """
 
 from __future__ import annotations

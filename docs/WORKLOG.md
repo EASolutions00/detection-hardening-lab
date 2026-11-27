@@ -17,6 +17,111 @@ Next:
 
 ---
 
+## 2026-11-27 - Chat 26343d0f reviews chat 27d2595d's repo update, fixes what was left, and pushes it
+
+**Asked:** "scan all files in the repo ... update all that needs to be updated AND FIXED DOCS MISMATCH ACCROSS ALL
+FILES"; then "readme.md is outdated"; then "Review all, then push". GitHub still showed the README of before the
+evaluation (58 tests, harness not built), because chat 27d2595d's update of 24 files was not committed (the student:
+"I review first").
+
+**Reviewed:** every changed line of the 24 files, against the code, the run data, DECISIONS, EXPECTED-RESULTS section 7
+and `vmrun`. The three code files changed only in comments. Accurate, except:
+- `PROMPT-new-chat.md` counted items 31 and 34 as open; 31 no longer arises and 34 did not arise. Fixed.
+- `FILE-MAP.md` said nobody knew which scan `checks.csv` is; it is the D1 baseline export of 2026-11-26 14:10 UTC,
+  with a hashed copy in `data/runs/scans-2026-11-26/`. Fixed.
+- Dates: the evaluation runs are on 2026-11-26 in UTC (COMMANDS 2.19) and 2026-11-27 on the host's clock. Where a
+  line said they "finished 2026-11-27", it now also gives 2026-11-26 23:58 UTC (CLAUDE.md, both thesis READMEs).
+- `README.md`: a sentence still said "If T1's feasibility spike shows the full study cannot finish"; now the spike's
+  and the evaluation's results.
+
+**Searched all live files and the code comments** for the old repository name, old test counts, "not yet run" and
+"not built" claims, `cfg-*` snapshots and the old title: every remaining hit is right where it stands (rename notes,
+the old title quoted as old, the checker's own pattern, the submitted Word file's name, `spike.py`'s own image).
+**Six stale comment lines in the guest scripts** (C5's policy key and K2's restart "(unverified)"; "Not in
+golden-base yet" in K1 to K3) are now listed in `lab/scripts/README.md` with what is known; the scripts are not
+edited, because their bytes are hashed in every run and copied into `golden-base-v2`.
+
+---
+
+## 2026-11-24 to 2026-11-27 - Chat 27d2595d: the Myers choice, the revised form, a progress check, and a repo-wide update
+
+**Chat:** 27d2595d (Claude Code). Its work from 2026-11-24 had no entry until this one. Times are the host's (UTC+8).
+
+**2026-11-24.** The student pasted the cleaned consultation transcript and asked for a plan. The student chose Myers'
+difference algorithm as the core algorithm and the title ending "Using Myers' Difference Algorithm" (recorded and built
+2026-11-26 by chat 26343d0f, DECISIONS 2026-11-26), and corrected Claude: "I told him the file will be exported from the
+SIEM". **2026-11-25:** Claude explained Myers' algorithm and how it fits the system; then, at the student's request
+("do not commit and push yet"), wrote the full draft of `proposal-form-SIMPLIFIED.md` in the thesis folder, with the
+cut detail kept in its "Reserved for the chapters" part and four choices for the student in its working note (4
+problems and 5 objectives; the percentage; the capture tool moved out of the modules; the Gantt dates). Chat 26343d0f
+revised it the same day (entry 2026-11-25). **2026-11-26:** what an engineer sees at the end: the report sections and
+the four exports (no file changed).
+
+**2026-11-27, read only:** a progress check. About 72% of the revised form's 9 features are built, 6.5 of 9 by
+Claude's scoring (unverified; about 85% by the weights of 2026-11-12). The window (GUI) is the largest missing part.
+Then a question outside the thesis (no file).
+
+**2026-11-27, the repo update.** Student: "scan all files in the repo ... update all that needs to be updated", and a
+better name for the repository, "the system doesn't do hardening". At 05:02 the evaluation batch was running (2 VMs
+on, run 10 of 26), so no edit was made then. At 08:18 the batch was done, both VMs off, and chat 26343d0f had committed
+and pushed the results. Then, with each claim checked at its source (code, DECISIONS, `vmrun`, the thesis folder):
+- **Public pages:** `README.md` (the new title; what the system does; the evaluation results, with the C3 miss; the
+  status table; the method in the code's order); `src/README.md` (Myers, the run checks, the evaluation batch, value
+  classes, 170 tests); `thesis/T1/README.md` and `thesis/README.md` (the title, the spike and the 26 runs);
+  `lab/scripts/README.md` (no `cfg-*` snapshots; the scripts have run; K1 to K3 in `golden-base-v2`).
+- **Maps:** `docs/PROMPT-new-chat.md` (the open items, built versus designed, `170 passed`); `docs/FILE-MAP.md` (new
+  files in the repo and the thesis folder, 52 folders in `data/runs/`, 7 snapshots on WIN-EP-01, FINAL frozen).
+- **Records:** STATUS (lines the evaluation overtook, marked where they stand); OPEN-QUESTIONS (items 1, 18, 20, 21,
+  25, 26, 32, 33, 34, 37, 38, 39 and 41, plus an index of later answers in the Answered section); a correction note
+  in DECISIONS 2026-11-23 and in this file's 2026-11-23 entry: the student said the file is exported from the SIEM
+  (cleaned transcript, line 159).
+- **Smaller:** the spike sentence in `CLAUDE.md`; `docs/RUNBOOK-homelab.md` Phase 6; `lab/blueprint.md` (the measured
+  run count); top notes in `docs/T1-WALKTHROUGH.md` and `docs/T1-PROPOSAL-REVISION.md`; two code comments in
+  `harness.py` and `pipeline.py` (no code line changed); `tools/check_docs.py` (the SIMPLIFIED form is LIVE, FINAL
+  FROZEN, the revisions list SUPERSEDED; the pre-Myers title flagged; Myers an expected step); and outside the repo,
+  one stale line in the working note of `proposal-form-SIMPLIFIED.md`.
+
+**Checked (all read only):** `pytest` 170 passed, before and after the edits; `src/demo.py` prints the same as
+`docs/demo-output.txt`; `check_docs.py` 13 LIVE hits before, 6 after, all in `T1-PANEL-RESPONSE.md` (the old title, 3
+lines) and `ACTIVITY-DIAGRAM-EXPLAINED.md`, and neither mentions Myers; `vmrun listSnapshots` for both VMs; `git status
+-sb`, `main` level with `origin/main`; the GitHub settings with `gh api` (description fine, no topics, no Pages, no
+`.github` folder); no long dash in the added lines; line endings unchanged.
+
+**Broke / wrong on the way:** earlier in this chat one folder listing was run without the explanation the rules
+require. Two wrong statements were corrected in the chat: "5 runs before and 5 after" (the plan is 3 and 3), and "you
+told him the file does not come from the SIEM" (the student corrected it; line 159 of the transcript agrees).
+
+**Not changed, on purpose:** the old entries of COMMANDS, WORKLOG and DECISIONS keep their text (they record what was
+true then; only correction notes, the rename record and new entries were added); the 4 untracked spike files in `data/summaries/`; the thesis
+folder's `T1-PANEL-RESPONSE.md` and `ACTIVITY-DIAGRAM-EXPLAINED.md` (the student's decision; the explainer changes with
+the diagram redraw).
+
+**The rename (student: "hardening-blind-spots", and "I review first").** `gh repo rename` to
+`EASolutions00/hardening-blind-spots`; it printed nothing (the shell is not interactive), so `gh api` on the new name
+was the proof: `hardening-blind-spots`, public. Then `git remote set-url` to the new address; `git ls-remote origin
+HEAD` and `git rev-parse HEAD` both gave `8d6178c`. Recorded in COMMANDS 2.4 and DECISIONS 2026-11-27; the current
+pointers in CLAUDE.md, FILE-MAP and PROMPT-new-chat, and the expected result in COMMANDS 3.3, now use the new name. The
+private `DEFENSE-PREP.md` (prep-local) still names the old address; the redirect covers it, so it was left as is.
+
+**Second pass, 13:00 (student: "update all that needs to be updated AND FIXED DOCS MISMATCH ACROSS ALL FILES").**
+No commit or VM activity since 08:17. Checked across files: the test counts, versions (Wazuh 4.14.7 and VMware
+17.5.1 agree everywhere), snapshot names, run counts, the void rule's range, and every "not built" or "not run" claim.
+Fixed: RUNBOOK Phase 5 (`golden-base-v2` done; the 7 snapshots as built; runs revert to `golden-base-v2`), Phase 6
+step 1, Phase 7's two open boxes (where the spike's answers really are; scope decided); `lab/blueprint.md` (the
+snapshot tree as built); `docs/GOLDEN-BASE-V2.md` (its top line said "Only Phase A has been started"; Phase E added);
+`tools/word/README.md` (FINAL is frozen); `lab/configs/README.md` (a "Not decided yet" right above the note that
+settles it); CLAUDE.md's index (where the spike results are; EXPECTED-RESULTS added; `src/` holds the harness too);
+FILE-MAP (the 4 uncommitted spike files); two docstrings in `differential.py`. Checked and true: the form's numbers
+D = 59 and "8 keys deleted" (OPEN-QUESTIONS 42).
+**Left on purpose:** the header comments of the K1 to K3 scripts ("Not yet run"): editing a script changes its SHA256,
+which the harness records and `golden-base-v2` holds a copy of; the text drawn in the two figures ("Designed, not built
+yet"), which changes with the redraw; the prevention note printed by `report.py`, which is still true (DECISIONS
+2026-11-27, "What it cannot do"); and dated history entries.
+
+**Next:** the student reviews the changes, then says when to commit and push. Nothing above is committed.
+
+---
+
 ## 2026-11-27 (Phase E starts) - eval-ctl-1 stopped twice at the wait for VMware Tools; the wait is fixed
 
 **Chat:** 26343d0f (Claude Code). **Asked:** "start Phase E", then "double check again to avoid unexpected failure
@@ -321,6 +426,21 @@ Nothing committed.
 
 ---
 
+## 2026-11-23 to 2026-11-24 - Chat b9daaeec (read only): Sir Ervin's instructions from the consultation transcript
+
+**Chat:** b9daaeec (Claude Code, in a scratch folder outside the three thesis folders). This entry was written
+2026-11-27 by chat 27d2595d from the private chat log only; that chat's answers were not read.
+
+**Asked:** 2026-11-23 15:30, with the cleaned consultation transcript and the submitted PDF: what Sir Ervin
+instructed. 2026-11-24 12:00: "bring down all his instructions verbatim from the transcript".
+
+**Changed:** no file (the private chat log lists none).
+
+**Result:** not recorded here. The instructions, each with its transcript line and status, are in
+`CONSULTATION-2026-11-23-CHECKLIST.md` (thesis folder, chat 26343d0f) and DECISIONS 2026-11-23.
+
+---
+
 ## 2026-11-23 - Sir Ervin's algorithm list: Myers' diff checked on the real C3 data
 
 **Chat:** ee84ae3f (Claude Code).
@@ -355,6 +475,8 @@ OpenSCAP's Windows support is void from 2022-02-01 (its README on GitHub). Comma
 
 **Found:** two statements in the meeting differ from the record: the imported file comes from the SIEM (the student
 said no when the adviser suggested it), and the impact is a ranking, not a percentage.
+**Corrected 2026-11-27 (chat 27d2595d):** the first statement is wrong. The student said the file is exported from
+the SIEM (cleaned transcript, line 159); see the correction note in DECISIONS 2026-11-23.
 
 **Next:** the student decides item 41; then the one-page algorithm draft and the message to the adviser.
 

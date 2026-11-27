@@ -46,16 +46,20 @@ from pathlib import Path
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
+# Statuses follow docs/FILE-MAP.md sections 2 and 3. Changed 2026-11-27: FINAL was
+# submitted 2026-10-15 (through its Word file), so it is the version the panel read;
+# the revisions list belonged to that submission and was never sent; the next form
+# is proposal-form-SIMPLIFIED.md.
 FROZEN = {
     "proposal-form.md", "proposal.txt", "proposalll.txt",
-    "proposal(ongoing verification).txt",
+    "proposal(ongoing verification).txt", "proposal-form-FINAL.md",
 }
 SUPERSEDED = {
     "proposal-form-REVISED.md", "T1-REVISION-DRAFT.md",
-    "T1-PROPOSAL-REVISION.md",
+    "T1-PROPOSAL-REVISION.md", "T1-REVISIONS-LIST.md",
 }
 LIVE = {
-    "proposal-form-FINAL.md", "T1-REVISIONS-LIST.md", "T1-PANEL-RESPONSE.md",
+    "proposal-form-SIMPLIFIED.md", "T1-PANEL-RESPONSE.md",
     "ACTIVITY-DIAGRAM-EXPLAINED.md",
 }
 
@@ -144,17 +148,19 @@ CHECKS = [
      "interface beside the SIEM, not a web application."),
 
     # Settled 2026-09-14: the panel's title verbatim, WITHOUT the article. The
-    # panel's wording used to be flagged here as old; it is now the current one,
-    # and the version with "a" is the one that was not adopted.
+    # version with "a" is the one that was not adopted. Changed 2026-11-26: the
+    # title now ends "Using Myers' Difference Algorithm", so the panel's 2026-09-14
+    # wording is an old title too. Both old endings are matched in title case
+    # only: ordinary English in lower case ("using a differential analysis
+    # algorithm" in a sentence) is not the title.
     ("title-old",
-     # The article form is matched case-sensitively, in title case only. The
-     # General Objective correctly says "using a differential analysis
-     # algorithm" in lower case as ordinary English, and that is not the title.
      r"Identifying Hardening-Induced|Differential Sequence Alignment|"
-     r"(?-i:Using a Differential Analysis Algorithm)|Using \*\*a\*\* Differential",
-     "A title wording that was not adopted.",
-     "DECISIONS.md 2026-09-14: the panel's proposed title verbatim, with no "
-     "article added. proposal-form-FINAL.md, Proposed Title."),
+     r"(?-i:Using a Differential Analysis Algorithm)|Using \*\*a\*\* Differential|"
+     r"(?-i:Using Differential Analysis Algorithm)",
+     "A title wording that is not the current one.",
+     "DECISIONS.md 2026-11-26: the title ends \"Using Myers' Difference "
+     "Algorithm\" (the student's choice of 2026-11-24). Before that, the panel's "
+     "wording of 2026-09-14. proposal-form-SIMPLIFIED.md, the title line."),
 
     ("figure-png",
      r"T1_(Activity_Diagram_Revised_Sheet[12]|Figure_[A-Za-z_]+)\.png",
@@ -180,6 +186,9 @@ EXPECTED = [
     ("global-gate", r"global gate|chi-square|chi square|χ²",
      "global_gate() in differential.py. Reported as a summary since "
      "2026-09-28; it no longer stops the per-key tests"),
+    # Added 2026-11-27: the core algorithm since 2026-11-26.
+    ("myers", r"Myers",
+     "myers.py, step 3 of pipeline.compare (DECISIONS 2026-11-26)"),
 ]
 
 SUFFIXES = {".md", ".txt"}

@@ -8,6 +8,27 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-11-27 - The repository is renamed hardening-blind-spots
+
+**Decision (student, chat 27d2595d, from three options; chose "hardening-blind-spots").** The public GitHub repository
+`EASolutions00/detection-hardening-lab` is now `EASolutions00/hardening-blind-spots` (COMMANDS 2.4, "Renamed
+2026-11-27"). The repository stays public; its code, history and settings did not change.
+
+**Why.** The student: "the system doesn't do hardening". "Detection hardening" usually means making detection rules
+stronger, a different topic. The system finds the detections that one hardening change breaks. The new name matches the
+title, "Detecting Security Blind Spots Through Pre- and Post-Hardening Events".
+
+**What it changes.** The link to use from now on, for example on the student's resume. The documents already sent keep
+working, because GitHub redirects the old address and old git commands (GitHub Docs, "Renaming a repository"). This
+PC's `origin` points at the new address. The current pointers in CLAUDE.md, FILE-MAP and PROMPT-new-chat are updated;
+the records of what was run (COMMANDS 2.4 and 2.5, older WORKLOG entries) keep the old name.
+
+**Cost if wrong.** Small: a rename back is one command, and GitHub redirects again. **Never create a new repository
+named `detection-hardening-lab` on this account:** that breaks the redirect, and the old links then open the wrong
+repository or none.
+
+---
+
 ## 2026-11-27 - 3 runs per phase; item 22's void rule: the Sysmon 1 fingerprint within the control mean ± 3 sd, and the sign-in step must exit 0
 
 **Decision (student, chat 26343d0f: "Yes, accept both"; 2026-11-26 about 19:20 UTC).**
@@ -350,6 +371,12 @@ changes from FINAL (no DC-01, the ranking), the stakeholder interview, the prepr
 - He asked which application produces the file the system imports, and suggested the SIEM; the student said no. The
   system reads the SIEM's own exports: Wazuh's event archive (`archives.json`, `src/telos/archive.py`) and the rule
   files exported from SIEM-01 (`src/telos/index.py`). No hardening tool produces a file the system reads.
+  **Corrected 2026-11-27 (chat 27d2595d): this bullet is wrong.** In the cleaned transcript
+  (`2026-11-23 10-00-10 +0800.cleaned-transcript.txt`, line 159) the student says the engineers gather the
+  information from the SIEM, export the file, and analyse it with the system (Claude's reading of the Taglish). The
+  student confirmed it in chat 27d2595d on 2026-11-24: "I told him the file will be exported from the SIEM". The
+  student's "yes" at line 163 answers a later question (line 161): which software tools engineers use while
+  hardening. So the file point needs no correction with the adviser. The impact point below stands.
 - The student said the impact score is a percentage. The design is a ranking by three measured numbers, with no
   weights (DECISIONS 2026-11-13).
 

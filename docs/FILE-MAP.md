@@ -4,8 +4,9 @@ Every place that holds work for the TeLoS T1 thesis, inside and outside this rep
 place holds, which files are the source and which are copies, how to make a copy again, and what
 must never be committed.
 
-Checked 2026-10-15 by listing every folder below (chat 27d2595d). Folders change. List the folder
-again before trusting a line here. Private files are named, never quoted.
+Checked 2026-10-15 by listing every folder below (chat 27d2595d). **Checked again 2026-11-27** (chat
+27d2595d): sections 2, 3, 4 and 6 against the repo, the thesis folder, `data/runs/` and `vmrun listSnapshots`.
+Folders change. List the folder again before trusting a line here. Private files are named, never quoted.
 
 Status words used below:
 
@@ -31,7 +32,7 @@ Status words used below:
 | 6 | `C:\Users\Elijah\.telos` | Guest password files and the SSH key for SIEM-01. PRIVATE | none | none found |
 | 7 | `C:\Users\Elijah\claude-backups` | Backups of documents and settings; the archive of every thesis chat | none | it is the backup |
 | 8 | `C:\Users\Elijah\.claude` | Global reply rules, hooks, skills, memory, chat transcripts. PRIVATE | none | rules and settings in `claude-backups\2026-09-26` |
-| 9 | github.com/EASolutions00/detection-hardening-lab | Public copy of REPO | git | |
+| 9 | github.com/EASolutions00/hardening-blind-spots (renamed 2026-11-27 from `detection-hardening-lab`; the old address redirects) | Public copy of REPO | git | |
 
 REPO, DOCS, prep-local and the course folder are all on E:, one hard disk. C: is a different
 physical drive (WORKLOG 2026-09-28, sixth), which is why the backups go there.
@@ -60,23 +61,24 @@ physical drive (WORKLOG 2026-09-28, sixth), which is why the backups go there.
 | `docs/T1-WALKTHROUGH.md` | Worked example of the method. Its C4 example was overtaken 2026-10-01 (banner at the top) | SOURCE |
 | `docs/demo-output.txt` | Output of `src/demo.py` (COMMANDS Part 4 says how to make it) | COPY |
 | `docs/FILE-MAP.md` | This file | SOURCE |
-| `docs/EXPECTED-RESULTS.md` | Each evaluation case's expected result and the scoring rules, written before any run (added 2026-11-26). Never edit an expectation after its runs exist. Section 6: the compliance scan's expected pass or fail | RECORD |
-| `docs/GOLDEN-BASE-V2.md` | The steps to take `golden-base-v2`, then the trial runs and the compliance scans, each command explained (added 2026-11-26; not run) | SOURCE |
+| `docs/EXPECTED-RESULTS.md` | Each evaluation case's expected result and the scoring rules, written before any run (added 2026-11-26). Never edit an expectation after its runs exist. Section 6: the compliance scan's expected pass or fail. Section 7: the results, written after the runs (2026-11-27) | RECORD |
+| `docs/GOLDEN-BASE-V2.md` | The steps to take `golden-base-v2`, then the trial runs and the compliance scans, each command explained (added 2026-11-26). Phases A to D passed 2026-11-26; Phase E's 26 runs all valid 2026-11-27 | SOURCE |
 | `lab/blueprint.md` | Lab design, resource budget, the change catalogue (section 8) | SOURCE |
 | `lab/configs/` | `sysmonconfig.xml`, `wazuh-agent-ossec.conf`, README. Pinned; hash them. Also `c5-client-no-nla.rdp`, a test file from 2026-11-12, not pinned | SOURCE |
-| `lab/scripts/README.md` | Rules for the hardening-change scripts. **No change script exists yet** | SOURCE |
+| `lab/scripts/README.md` | Rules for the hardening-change and test-case scripts, and which scripts exist | SOURCE |
 | `lab/scripts/telos-archive` | Helper on SIEM-01 that reads and exports the Wazuh archive (never writes to it), run as root through one sudoers rule | SOURCE |
 | `lab/scripts/telos-fence.cs` | Makes one process, so Sysmon marks the edge of a capture window | SOURCE |
 | `src/demo.py` | Runs the whole analysis on synthetic data | SOURCE |
-| `src/telos/` | The analysis package: `archive`, `index`, `impact`, `harness` and `pipeline` (all added 2026-11-13), `myers` (added 2026-11-26), `eventkey`, `differential`, `variance`, `baseline`, `model`, `report`, `synth`, `__init__` | SOURCE |
+| `src/telos/` | The analysis package: `archive`, `index`, `impact`, `harness` and `pipeline` (all added 2026-11-13), `catalog` and `spike` (added 2026-11-16), `myers` (added 2026-11-26), `evaluation` (added 2026-11-27), `eventkey`, `differential`, `variance`, `baseline`, `model`, `report`, `synth`, `__init__` | SOURCE |
 | `src/run.py` | The command that runs one comparison from run folders (added 2026-11-13) | SOURCE |
 | `src/spike.py`, `src/telos/spike.py` | The spike's run plan and batch runner (added 2026-11-16; tests in `tests/test_spike.py`) | SOURCE |
 | `src/capture.py`, `src/telos/catalog.py` | The command that runs one real capture window, and the lab's fixed pieces it uses (added 2026-11-16; tests in `tests/test_catalog.py`) | SOURCE |
-| `lab/scripts/change-C1-disable-wdigest.ps1`, `change-C3-lsa-protection.ps1`, `change-C5-rdp-nla.ps1`, `config-S-defender-off.ps1` | Change scripts with `-Verify`, and the after-boot Config S script (added 2026-11-13, not yet run by the harness) | SOURCE |
-| `lab/scripts/change-K1-audit-logon-off.ps1`, `change-K2-cmdline-off.ps1`, `change-K3-audit-process-creation-off.ps1` | Test-case scripts with `-Verify`: configuration mistakes made on purpose, never hardening (added 2026-11-26; not in `golden-base` yet, not yet run; they go into `golden-base-v2`) | SOURCE |
+| `src/evaluate.py` | The command that runs the evaluation's 26 runs in order, unattended; it skips runs already on disk, so it resumes after a stop (added 2026-11-27; plan in `src/telos/evaluation.py`, tests in `tests/test_evaluation.py`) | SOURCE |
+| `lab/scripts/change-C1-disable-wdigest.ps1`, `change-C3-lsa-protection.ps1`, `change-C5-rdp-nla.ps1`, `config-S-defender-off.ps1` | Change scripts with `-Verify`, and the after-boot Config S script (added 2026-11-13; run by the harness since 2026-11-16) | SOURCE |
+| `lab/scripts/change-K1-audit-logon-off.ps1`, `change-K2-cmdline-off.ps1`, `change-K3-audit-process-creation-off.ps1` | Test-case scripts with `-Verify`: configuration mistakes made on purpose, never hardening (added 2026-11-26; in `golden-base-v2`, not in `golden-base`; run in the trials and the evaluation) | SOURCE |
 | `src/known_answer_dryrun.py` | Dry run of the test cases through the real pipeline: real spike noise, synthetic effects. Checks that `docs/EXPECTED-RESULTS.md` and the code agree; not lab evidence (added 2026-11-26) | SOURCE |
 | `lab/knowledge/compensating-controls.json` | Remediation level 2: curated compensating controls per change, each with its source and status. First two entries (C3, C5) from lab measurements, not tested. The student curates it (added 2026-11-13) | SOURCE |
-| `tests/` | `test_archive.py`, `test_index.py`, `test_impact.py`, `test_report_sections.py`, `test_harness.py`, `test_pipeline.py`, `test_eventkey.py`, `test_differential.py`. 118 passed on 2026-11-13 | SOURCE |
+| `tests/` | 12 files: `test_archive.py`, `test_index.py`, `test_impact.py`, `test_report_sections.py`, `test_harness.py`, `test_pipeline.py`, `test_eventkey.py`, `test_differential.py`, `test_catalog.py`, `test_spike.py`, `test_myers.py`, `test_evaluation.py`. 170 passed on 2026-11-27 | SOURCE |
 | `data/rules/` | The Wazuh rule export from SIEM-01 (`wazuh-rules-4.14.7.tar.gz` and its unpacked folder `wazuh-4.14.7/`). **Not in git** (`.gitignore`); folder hash in DECISIONS, pinned table | COPY |
 | `thesis/README.md` | Proposal template and numbering rules | SOURCE |
 | `thesis/T1/README.md` | The thesis summary | SOURCE |
@@ -88,16 +90,17 @@ physical drive (WORKLOG 2026-09-28, sixth), which is why the backups go there.
 | `thesis/T2/`, `thesis/T3/` | README and proposal each. Not chosen | SUPERSEDED |
 | `tools/check_docs.py` | Flags document lines that contradict the code | SOURCE |
 | `tools/word/` | Markdown to Word tools. See `tools/word/README.md` | SOURCE |
-| `data/runs/` | Raw capture archives. Gitignored. **Empty on 2026-10-15** (only `.gitkeep`). `host-vmware-logs-2026-11-16/`: copies of both VMs' VMware logs from the spike day, plus the `ULM` check log of 2026-11-26; the proof that the spike ran with the Windows hypervisor off (added 2026-11-26; hashes in `data/summaries/host-hypervisor-check-2026-11-26.txt`) | |
-| `data/summaries/` | Small derived CSVs, committed. Empty on 2026-10-15. `known-answer-dryrun-2026-11-26.txt`: the dry run's output, committed before any test-case run (added 2026-11-26); `known-answer-dryrun-2026-11-26-after-item-43.txt`: the same after the exact-test rule (DECISIONS 2026-11-26); `host-hypervisor-check-2026-11-26.txt`: the hypervisor found on at the Phase A pre-flight, and the evidence that the spike ran with it off (COMMANDS 2.18); `eval-2026-11-26/<case>/`: **the evaluation's results**, `src/run.py`'s report, findings, comparison and ATT&CK Navigator layer for C1, C3, C5, K1, K2 and K3 (analyser `7850847`; read beside EXPECTED-RESULTS section 7; added 2026-11-27) | |
+| `data/runs/` | Raw capture archives. Gitignored. **Empty on 2026-10-15** (only `.gitkeep`). **52 folders on 2026-11-27:** the 26 evaluation runs `eval-ctl-*`, `eval-pre-*` and `eval-post-<case>-*` (2026-11-26 to 2026-11-27); the spike's 19 runs `spike-*` (2026-11-16); `test-pre-1`, the first real run (2026-11-16); the trials `trial-C5-1` and `trial-K1-1` to `trial-K3-1` (2026-11-26); `scans-2026-11-26/`, the compliance scans of Phase D; and `host-vmware-logs-2026-11-16/`: copies of both VMs' VMware logs from the spike day, plus the `ULM` check log of 2026-11-26; the proof that the spike ran with the Windows hypervisor off (added 2026-11-26; hashes in `data/summaries/host-hypervisor-check-2026-11-26.txt`) | |
+| `data/summaries/` | Small derived CSVs, committed. Empty on 2026-10-15. `known-answer-dryrun-2026-11-26.txt`: the dry run's output, committed before any test-case run (added 2026-11-26); `known-answer-dryrun-2026-11-26-after-item-43.txt`: the same after the exact-test rule (DECISIONS 2026-11-26); `host-hypervisor-check-2026-11-26.txt`: the hypervisor found on at the Phase A pre-flight, and the evidence that the spike ran with it off (COMMANDS 2.18); `eval-2026-11-26/<case>/`: **the evaluation's results**, `src/run.py`'s report, findings, comparison and ATT&CK Navigator layer for C1, C3, C5, K1, K2 and K3 (analyser `7850847`; read beside EXPECTED-RESULTS section 7; added 2026-11-27). **On disk but not committed** (since 2026-11-16): the spike's outputs `cov_control_runs.csv`, `run_timings.csv`, `spike_answers.txt` and `C3/` (made by `src/spike.py --analyse`; RUNBOOK Phase 7). Records that cite them (for example OPEN-QUESTIONS 38) point at files a reader of GitHub cannot see | |
 
 Not tracked, on purpose: `.venv/` (rebuild from `requirements.txt`), Python caches, and
 `.claude/settings.local.json` (personal "don't ask again" choices).
 
-**Where the raw events are.** `data/runs/` is empty. The September checks (for example 1,641 batch
-logons on 2026-09-02, and 0 network logons among 2,892 logon events on 2026-09-26) were counted inside SIEM-01
-from `/var/ossec/logs/archives/`. Whether those archives are still on SIEM-01's disk was not checked on
-2026-10-15 (unverified). No capture run of the study exists yet.
+**Where the raw events are.** Each run's own export is in its folder in `data/runs/` (on E: only, one disk; back it
+up elsewhere). The September checks (for example 1,641 batch logons on 2026-09-02, and 0 network logons among 2,892
+logon events on 2026-09-26) were counted inside SIEM-01 from `/var/ossec/logs/archives/`. Whether those September
+archives are still on SIEM-01's disk was not checked on 2026-10-15 (unverified). The study's results, derived from the
+26 evaluation runs, are committed in `data/summaries/eval-2026-11-26/`.
 
 ---
 
@@ -105,20 +108,23 @@ from `/var/ossec/logs/archives/`. Whether those archives are still on SIEM-01's 
 
 | File | What it is | Status |
 |---|---|---|
-| `proposal-form-FINAL.md` | The revised proposal text | SOURCE, LIVE |
+| `proposal-form-FINAL.md` | The revised proposal text of 2026-10-12, submitted 2026-10-15 through the Word file. Unchanged since; the next revision is `proposal-form-SIMPLIFIED.md` | SOURCE, FROZEN (since 2026-11-27) |
 | `proposal-form-FINAL-for-Word.html` | Paste-ready copy. `tools/word/final_to_html_v2.py` | COPY |
 | `proposal-form-SIMPLIFIED.md` | The simplified revision the panel asked for (2026-10-22). Full draft 2026-11-25 (chat 27d2595d), revised the same day against the cleaned transcript (chat 26343d0f); waiting for the student's choices in its working note. The adviser's instructions are in DECISIONS 2026-11-23 | SOURCE, LIVE |
 | `proposal-form-SIMPLIFIED.2026-11-25.md.bak` | The draft by chat 27d2595d, before the 2026-11-25 revision by chat 26343d0f | SUPERSEDED |
 | `CONSULTATION-2026-11-23-CHECKLIST.md` | Sir Ervin's 47 instructions with transcript lines and status, FINAL section by section, the 10/10 list, a draft demo scenario (2026-11-25) | LIVE, not submitted |
 | `INTERVIEW-GUIDE.md` | Questions for the stakeholder interview the adviser asked for (2026-11-09). No interview recorded | LIVE, not submitted |
 | `CONSULTATION-2026-11-23.md`, `CONSULTATION-2026-11-23-TAGLISH.md` | Notes for the first consultation with the adviser, in English and in Taglish. The results are in DECISIONS 2026-11-23 | FROZEN |
-| `T1-REVISIONS-LIST.md` | What changed after the title defense, by revision. **Not submitted** (not required, 2026-10-15) | SOURCE |
+| `T1-REVISIONS-LIST.md` | What changed after the title defense, by revision. **Not submitted** (not required, 2026-10-15). The revision of 2026-11-25 has its own list, `CONSULTATION-2026-11-23-CHECKLIST.md` | SUPERSEDED (since 2026-11-27) |
 | `T1-REVISIONS-LIST-for-Word.html` | Paste-ready copy. `tools/word/revisions_to_html.py` | COPY |
 | `Detecting … Algorithm.docx` | **The submitted Word file.** Built 2026-10-12 by `tools/word/build_docx.py` as `FINAL … (updated 2026-10-12).docx`; saved under this name by the student 2026-10-15 with the Title and Author properties fixed. Text and pictures unchanged. The source of the submitted text | SOURCE, SUBMITTED |
 | `Detecting … Algorithm.pdf` | **Submitted 2026-10-15.** Made by the student from that Word file; 30 pages; hidden title and author correct | COPY, SUBMITTED |
 | `FINAL Detecting … Algorithm (updated 2026-10-12).pdf` | The 2026-10-12 PDF. Same content, but its hidden title is the template's "A Mobile Application for finding Hospital's Facilities…". Do not send | SUPERSEDED |
 | `FINAL … (updated 2026-10-12).docx` and `FINAL … Algorithm.docx` (the student's own formatted file, input of `build_docx.py`) | No longer in DOCS after 2026-10-15. Both are kept in `claude-backups\thesis-folder-2026-10-15` | SUPERSEDED |
 | `Detecting … Using a Differential.docx` and `.pdf` | The 2026-10-07 version, with "a" in the name | SUPERSEDED |
+| `Detecting Security Blind Spots Through Pre- and Post-Hardening Events Using Myers' Difference Algorithm.docx` | A Word file with the new title, made by hand by the student: created 2026-11-25 21:19, changed 2026-11-26 04:13 (private chat log). **Not opened by any chat**, so whether it matches the later changes to `proposal-form-SIMPLIFIED.md` is not known | SOURCE (the student's), not checked |
+| `checks.csv` | An export of Wazuh's CIS Microsoft Windows 11 Enterprise scan results: one row per check, with its result (passed or failed). **The baseline scan D1 of `golden-base-v2`**, exported by the student from the dashboard and saved 2026-11-26 14:10 UTC; the copy with its SHA256 is `data/runs/scans-2026-11-26/D1-baseline-checks.csv` (COMMANDS 2.19; EXPECTED-RESULTS section 6) | COPY |
+| `session-2026-10-16_2239.md` | A Meeting Copilot session log of 2026-10-16 22:39, made by a tool outside this project (section 12, item 6). Not read beyond its heading. Keep out of the repo | PRIVATE |
 | `T1_Detection of Hardening-Induced Blind Spots REVISED.docx` | Earlier revision | SUPERSEDED |
 | `proposal-form.md` | Same file as `thesis/T1/proposal-form.md` | FROZEN |
 | `proposal-form-REVISED.md` | Same file as `thesis/T1/proposal-form-REVISED.md` | SUPERSEDED |
@@ -127,15 +133,16 @@ from `/var/ossec/logs/archives/`. Whether those archives are still on SIEM-01's 
 | `ACTIVITY-DIAGRAM-EXPLAINED.md` | The diagram in plain words, for study. Not submitted | LIVE, not submitted |
 | `CLAUDE.md` | Rules for chats opened in this folder: points to the repo record and repeats the "keep it simple" rule (2026-10-30) | LIVE, not submitted |
 | `ACTIVITY-DIAGRAM-EXPLAINED.2026-09-29.md.bak`, `.2026-10-19.md.bak`, `.2026-10-19b.md.bak` | The explainer before the 2026-09-29 rewrite, before the 2026-10-19 fixes, and before the 2026-10-19 "where it starts" part | SUPERSEDED |
+| `ACTIVITY-DIAGRAM-EXPLAINED.2026-10-21.md.bak`, `.2026-11-03.md.bak`, `.2026-11-11.md.bak` | Three later backups of the explainer, by their dates (found 2026-11-27; not compared) | SUPERSEDED |
 | The four figure `.svg` files | Copies of `thesis/T1/figures/*.svg` (identical on 2026-10-15) | COPY |
 | The four `*.2026-08-28.svg.bak` files | The figures before 2026-08-28 | SUPERSEDED |
 | `T1_Activity_Diagram_Swimlane.png` | The diagram shown at the title defense | FROZEN |
 | `TopicProposalFormTemplateBLANK.docx` | The school's blank template (also in the course folder). Its Title property is another thesis's title and its Author is "MaryASoriano"; a Word file made from it keeps both until changed in File, Info | SOURCE |
 | `Figure 3 Activity Diagram sheet 1 (full size).pdf`, `Figure 4 Activity Diagram sheet 2 (full size).pdf` | **Submitted 2026-10-15.** The two diagram sheets at full size, one page each, with FINAL's captions and matching hidden titles. Made with Edge headless from `thesis/T1/figures/` | COPY, SUBMITTED |
-| `Activity Diagram\` | Four more copies of the same four SVGs (identical on 2026-10-15) | COPY |
+| `Activity Diagram\` | Four more copies of the same four SVGs (identical on 2026-10-15). Also `T1_Activity_Diagram_Revised_Sheet1.md` and `Sheet2.md`: text versions of the two sheets, for a program that reads only text (found 2026-11-27) | COPY |
 | `UWF Test\` | Empty folder left from the UWF test (item 19) | |
 | `~$NAL Detecting … (updated 2026-10-12).docx` | Word's lock file, dated 2026-10-13. Word makes it while the file is open and removes it on close. Its Word file is gone, so it is left over and can be deleted by hand | |
-| `~$tecting … Algorithm.docx` | Word's lock file for the submitted Word file, 2026-10-15 19:34: Word had it open. It goes away when Word closes | |
+| `~$tecting … Algorithm.docx` | Word's lock file for the submitted Word file, 2026-10-15 19:34: Word had it open. It goes away when Word closes. **Gone on 2026-11-27** | |
 
 ---
 
@@ -154,7 +161,8 @@ Removed from the public repo on 2026-09-10. Never put back.
 | `TELEPROMPTER LIVE.txt`, `TELEPROMPTER WORD SCRIPT.txt` | Teleprompter text of the two masters: spoken text word for word, stage directions as [CUES], no notes. Made 2026-10-19 by chat 27d2595d | COPY |
 | `RE-PRESENTATION-SCRIPT NEW.txt`, `RE-PRESENTATION-SCRIPT LIVE (before personal voice).txt` | Other versions of 2026-10-19 (chat 952071be) | SUPERSEDED |
 | `CUE-CARD LIVE.txt`, `CHEATSHEET.html` | One-page cue card for the LIVE script and a cheat sheet; 2026-10-19 (chat 952071be) | SOURCE |
-| `PANEL-QUESTIONS-CHECKLIST.md` | Every title-defense question, wrong claim and instruction, with the answer now (2026-10-16) | SOURCE |
+| `PANEL-QUESTIONS-CHECKLIST.txt` | Every title-defense question, wrong claim and instruction, with the answer now (2026-10-16). Listed as `.md` until 2026-11-27; the file is `.txt` | SOURCE |
+| `PANEL-QUESTIONS-DRILL.md`, `NEW SCRIPT SAMPLE (algorithms and Phase 0).txt`, `RE-PRESENTATION SCRIPT (new, read and explain).txt`, `TEST session-2026-10-21_1706.md` | Found 2026-11-27 and not opened, so not described here | |
 | The `(before ...)` copies of the 22-minute and full scripts | Backups made before each change on 2026-10-16 and 2026-10-17 | SUPERSEDED |
 | `STUDY-GUIDE.md` | The study plan for the diagram and the re-presentation | SOURCE |
 | `DEFENSE-PREP.md` | Defense preparation notes | SOURCE |
@@ -187,20 +195,22 @@ Removed from the public repo on 2026-09-10. Never put back.
 
 ## 6. F:\TeLoS Homelab (the VMs)
 
-Each VM folder holds the `.vmx` settings file, a `.vmx.telos-20260903T081807Z.bak` copy of it, five
-`.vmdk` disk files, four snapshots and the VMware logs. The permission rules forbid deleting
+Each VM folder holds the `.vmx` settings file, a `.vmx.telos-20260903T081807Z.bak` copy of it, the
+`.vmdk` disk files, the snapshots and the VMware logs. The permission rules forbid deleting
 snapshots or VMs and editing these files.
 
-| VM | Snapshots, oldest first |
+| VM | Snapshots, oldest first (`vmrun listSnapshots`, 2026-11-27) |
 |---|---|
-| SIEM-01 | `phase3-complete-2026-09-02`, `timesync-off-2026-09-03`, `snapd-off-archive-v2-2026-09-03`, `uwf-test-baseline-2026-09-10` (current, with memory) |
-| WIN-EP-01 | `phase3-complete-2026-09-02`, `agent-hardened-2026-09-03`, `tamper-off-2026-09-03`, `uwf-test-baseline-2026-09-10` (current, with memory) |
+| SIEM-01 | `phase3-complete-2026-09-02`, `timesync-off-2026-09-03`, `snapd-off-archive-v2-2026-09-03`, `uwf-test-baseline-2026-09-10` (4) |
+| WIN-EP-01 | `phase3-complete-2026-09-02`, `agent-hardened-2026-09-03`, `tamper-off-2026-09-03`, `uwf-test-baseline-2026-09-10`, `pre-lsass-trial-2026-11-03`, `golden-base` (2026-11-16), `golden-base-v2` (2026-11-26T13:31:48Z) (7) |
 
-There is no golden snapshot yet. DC-01 does not exist yet.
+Every evaluation run reverts WIN-EP-01 to `golden-base-v2`. `golden-base` is kept. DC-01 will not be built
+(dropped 2026-11-11).
 
-**Unrecorded:** both VMs have a `.vmx.lck` lock folder dated 2026-10-08 13:10. The `vmware.log` files
-did not change (last written 2026-09-26 for SIEM-01, 2026-09-11 for WIN-EP-01), so the VMs were
-probably opened in VMware Workstation but not powered on (unverified). Run `vmrun -T ws list` before
+**Lock folders.** On 2026-10-15 both VMs had a `.vmx.lck` lock folder dated 2026-10-08 13:10, with no record.
+On 2026-11-27, with both VMs off, only `SIEM-01.vmx.lck` holds a lock file (`M33907.lck`); WIN-EP-01 has no
+lock file (an empty lock folder was not checked).
+VMware cleared old locks after the power cut of 2026-11-26 (WORKLOG 2026-11-27). Run `vmrun -T ws list` before
 the lab work starts.
 
 ---
@@ -277,7 +287,8 @@ The hook copies text files only (`.md`, `.txt`). It does not copy `.docx`, `.pdf
 1. **Submission.** Done 2026-10-15 (student), after the latest date, 2026-10-12. Sent: the proposal's PDF and
    the two full-size diagram PDFs. The revisions list was not sent (not required), so it has no Word or PDF
    copy. Fixed before sending: the template's wrong Title and Author properties (section 3).
-2. **VM lock folders** dated 2026-10-08 13:10, with no record (section 6).
+2. **VM lock folders** dated 2026-10-08 13:10, with no record (section 6). **2026-11-27:** WIN-EP-01 has
+   no lock file; SIEM-01 has one (section 6).
 3. **A left-over Word lock file** in DOCS, `~$NAL …` (section 3). Delete by hand.
 4. **The Word file and PDF had no copy off drive E:.** Fixed 2026-10-15: `thesis-folder-2026-10-15`, then
    `thesis-folder-2026-10-15-sent` after the submission. The next change needs a new copy (section 8).

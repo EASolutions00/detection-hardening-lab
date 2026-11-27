@@ -1,7 +1,9 @@
 # STATUS
 
 Current blockers and dates. This file changes often. CLAUDE.md does not.
-Last updated: 2026-11-26 (chat 26343d0f): Phase A: the Windows hypervisor found on and turned off again, then a guard
+Last updated: 2026-11-27 (chat 27d2595d): lines the evaluation overtook, marked where they stand (items 1 and 2 of
+"Now", the checkpoints, "Decided 2026-09-29", "Next, in order" d, "The spike", "Also open"). Before that, 2026-11-27
+(chat 26343d0f): all 26 evaluation runs valid and analysed, in item 5 of "Now" and "Lab state". 2026-11-26 (chat 26343d0f): Phase A: the Windows hypervisor found on and turned off again, then a guard
 on the guest scripts, then Phases A to D passed: `golden-base-v2` in the catalog, 42 of 42 scan predictions, 4 valid trial runs. 2026-11-27: Phase E started; the harness's wait for VMware Tools fixed (item 5 and "Lab state"). Earlier the same day: item 5 of "Now, as of 2026-11-23", the test cases and the expected
 results. 2026-11-25 (chat 26343d0f): item 4, the revised form.
 2026-11-23 (chat ee84ae3f): the first consultation with the adviser, in the new section "Now, as of
@@ -26,9 +28,14 @@ to the panel; chapters 1 and 2 start only after the panel approves it.
 
 In order:
 1. **Item 41, the algorithm** (the student, then the adviser). Recommended: an original algorithm in seven steps,
-   sent to him as one page first.
+   sent to him as one page first. **Done 2026-11-26:** the student chose Myers' difference algorithm, an existing one,
+   on 2026-11-24, with the title ending "Using Myers' Difference Algorithm"; recorded and built 2026-11-26 (DECISIONS
+   2026-11-26). The adviser has not seen the revised form yet.
 2. **Tell the adviser the corrections** (DECISIONS 2026-11-23): the file comes from the SIEM; the impact is a ranking,
-   not a percentage; OpenSCAP no longer supports Windows; item 38 is still open.
+   not a percentage; OpenSCAP no longer supports Windows; item 38 is still open. **Corrected 2026-11-27:** the file
+   point needs no correction. The student told him the file will be exported from the SIEM (the student, 2026-11-24;
+   DECISIONS 2026-11-23, correction note). The revised form now proposes a percentage beside the ranking (its choice 2,
+   waiting for the student).
 3. **The facts he asked for:** how engineers harden and check Windows today, who notices a telemetry change, and
    with which tool (problems 2, 4 and 5). The stakeholder interview answers these (`INTERVIEW-GUIDE.md` in the
    thesis folder); none is recorded.
@@ -58,7 +65,8 @@ In order:
    item 44; the results chapter.**
 
 Recommended, not decided: the 5 pinned control runs wait until the form is sent, because the pre-oral needs chapters
-1 to 3, not the results (Claude's reading). Not decided: when the GUI is built. The adviser pictures the system as a
+1 to 3, not the results (Claude's reading). **Overtaken 2026-11-27:** all 26 runs were made before the form was sent.
+Not decided: when the GUI is built. The adviser pictures the system as a
 window (upload the file, "Run analysis", the report); the current plan builds the GUI last.
 
 ---
@@ -93,8 +101,8 @@ window (upload the file, "Run analysis", the report); the current plan builds th
 | 2026-10-22, 3:30 to 5:00 pm | **Re-presentation** (date set by the panel; student, 2026-10-16). **Done: accepted on condition of a simplified revision** (DECISIONS 2026-10-22) |
 | 2026-10-30 (was 2026-10-23), **missed: no lab work recorded as of 2026-11-02; new date after the adviser answers OPEN-QUESTIONS 33** | Sysmon `lsass.exe` rule and audit settings in place, value keying coded and tested (all three done 2026-11-03), golden snapshot taken. DC-01, the domain join and the network-logon test were dropped 2026-11-11 (DECISIONS) |
 | 2026-11-07 (was 2026-10-31) | Spike run, six answers recorded, final number of changes set. Both moves: DECISIONS 2026-10-16 |
-| 2026-11-30 | Data collection done |
-| 2026-12-18 | Rest of the system (impact scoring, remediation, reports) and the evaluation done |
+| 2026-11-30 | Data collection done. **Done 2026-11-27:** 26 of 26 evaluation runs valid (WORKLOG 2026-11-27) |
+| 2026-12-18 | Rest of the system (impact scoring, remediation, reports) and the evaluation done. **2026-11-27:** impact scoring, remediation and reports are built, and the evaluation runs are scored (TP 7, FP 0, FN 0; EXPECTED-RESULTS section 7). Not built: the GUI, the percentage. Not started: the evaluation by security engineers (ISO/IEC 25010, DECISIONS 2026-11-23) |
 | 2027-01-08 | Full draft to the adviser |
 | 2027-01-31 | Final defense |
 
@@ -112,7 +120,8 @@ controls), and record the miss in WORKLOG the same day.
 4. **Item 25:** target January 2027; keep every measurable class C change; cut the graphical interface,
    then class B, first; the spike sets the final number.
 
-**None of it is built.** Each is work for checkpoint 2.
+**None of it is built.** Each is work for checkpoint 2. **Overtaken:** items 18 and 20 were built and applied
+2026-11-03 ("Next, in order", item 3); item 21 was superseded 2026-11-11 (DC-01 dropped); item 25's scope rule stands.
 
 ## Next, in order
 
@@ -191,7 +200,8 @@ controls), and record the miss in WORKLOG the same day.
   Desktop on with NLA off and the firewall rule for `10.20.10.1`, and no `eli` session at shutdown.
 - **d.** Then the minimal harness, one capture window by hand, and the spike. **Checkpoint 2026-11-07 (spike) was
   missed** (no spike run; first recorded 2026-11-13), and 2026-11-30 (data collection) cannot be met. New dates are
-  not set; the student decides them.
+  not set; the student decides them. **Overtaken:** the spike ran 2026-11-16, and data collection finished 2026-11-27,
+  before 2026-11-30.
 
 ## Still waiting on the student
 
@@ -216,7 +226,8 @@ REDUCED key (`Sysmon-10`), T1055 lost, ruled prevention (item 38). **Open from i
 and item 22's void rule. Both are read again from **5 new control runs with the pinned attack list**, decided and
 built 2026-11-18 (DECISIONS 2026-11-18; `catalog.pinned_stimulus()`: RDP sign-in, then LSASS tests 1, 2, 13), because
 the spike measured them with the trial stimulus only. **Next: the student runs those 5 control runs** (2026-11-23:
-recommended to wait until the revised form is sent; see "Now, as of 2026-11-23"). **Decided 2026-11-18:** the study host stays the current Ryzen PC, kept until the defense
+recommended to wait until the revised form is sent; see "Now, as of 2026-11-23"). **Done 2026-11-27:** `eval-ctl-1`
+to `eval-ctl-5`, all valid; from them, 3 runs per phase and item 22's void rule were decided (DECISIONS 2026-11-27). **Decided 2026-11-18:** the study host stays the current Ryzen PC, kept until the defense
 (DECISIONS 2026-11-18).
 
 Original text: T1 is approved and final. There is **no fallback** (DECISIONS.md 2026-09-26). The spike has not run. It
@@ -235,7 +246,8 @@ and with them only C1, C3 and C5 can blind a detection (`DECISIONS.md` 2026-10-0
 ## Also open
 
 - Item 1, the catalogue. 14 changes; several control IDs still `(unverified)`. It still blocks data
-  collection. The count no longer has to reach 16.
+  collection. The count no longer has to reach 16. **2026-11-27:** no longer blocks: the study ran with C1, C3, C5 and
+  the test cases K1 to K3, with CIS v3.0.0 numbers (EXPECTED-RESULTS section 1).
 - Item 26. **Cause confirmed 2026-11-12:** each `vmrun` guest call writes two 4624 type 4 logons by `vmtoolsd.exe`,
   and rule 67022 (level 3) fires on each; with Credential Validation on, also two 4776 (2026-11-03). The harness must
   count its calls per run.
@@ -247,6 +259,7 @@ and with them only C1, C3 and C5 can blind a detection (`DECISIONS.md` 2026-10-0
 - Item 23. **Answered 2026-11-16:** 0 false findings in the spike's 10 control-versus-control pairs.
 - Item 22. The stimulus is asserted identical across runs and never verified. **2026-11-16:** the Sysmon 1 fingerprint
   (37 to 44 per run) did not move under C3, so it cannot mark C3's blocked attack; void rule not decided.
+  **Decided and built 2026-11-27** (DECISIONS 2026-11-27): Sysmon 1 within 79.8 to 141.8, and `rdp-signin-30s` exit 0.
 - Item 31. The event key has no host part. No longer arises with one Windows host (DC-01 dropped 2026-11-11).
 
 ## Lab state

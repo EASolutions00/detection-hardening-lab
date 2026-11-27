@@ -35,7 +35,8 @@ DOCS = E:\Elijah MASTER COPY DO NOT DELETE\Documents\New folder (5)
 Wherever you see `REPO\` or `DOCS\` below, **expand it to the full path above before reading.**
 Commands in section 7 are already written out in full and must be copied literally.
 
-`REPO` is the git repository, public at `github.com/EASolutions00/detection-hardening-lab`.
+`REPO` is the git repository, public at `github.com/EASolutions00/hardening-blind-spots` (renamed
+2026-11-27 from `detection-hardening-lab`; the old address redirects).
 `DOCS` is outside the repository and is not version controlled; the `.docx` files are assembled
 there. `DOCS\prep-local\` holds defense preparation deliberately removed from the public repo on
 2026-09-10. Do not propose putting it back.
@@ -62,10 +63,10 @@ Read these five, in order. Expand `REPO` first.
    The current blockers and dates, kept short. Added to this list 2026-09-28.
 
 3. `REPO\docs\OPEN-QUESTIONS.md`
-   Items **1, 18, 20 to 28, and 30 to 33** are the live ones (23 reframed as a spike check; 18,
-   20, 21, 24, 25 and 30 decided but not built). All
-   are summarised in section 5. Items 0, 15, 16, 17, 19 and 29 are answered. The file is ranked by damage, so read from
-   the top.
+   Items **1, 25 to 28, 32, 33, 35, 38 and 44** are still open, in whole or in part. Items 0, 15 to
+   24, 29, 30, 36, 37 and 39 to 43 are answered, decided or built; item 31 no longer arises and item
+   34 did not arise in the study. All are summarised in section 5
+   (checked 2026-11-27). The file is ranked by damage, so read from the top.
 
 4. `REPO\docs\DECISIONS.md`
    Every entry from the newest back to 2026-09-26 (sixteen entries on 2026-10-08).
@@ -111,9 +112,19 @@ Lab design, resource budget, the hardening change catalogue
 The event key, what is counted, field presence
     -> `REPO\src\telos\eventkey.py`
 
+Myers' difference algorithm, the core algorithm (step 3 of the pipeline)
+    -> `REPO\src\telos\myers.py`; the order of all steps: `REPO\src\telos\pipeline.py`, `compare()`
+
 The statistics: capture check, whole-profile chi-square (a summary, not a gate), rate ratio,
 correction, classification
     -> `REPO\src\telos\differential.py`
+
+One capture window on the lab, and the run checks (item 22's void rule)
+    -> `REPO\src\telos\harness.py`; the lab's fixed pieces: `REPO\src\telos\catalog.py`
+
+The evaluation: each case's expected result, the scoring, and the results
+    -> `REPO\docs\EXPECTED-RESULTS.md` (section 7 holds the results); the reports:
+    `REPO\data\summaries\eval-2026-11-26\`
 
 The noise floor, coefficient of variation, dispersion
     -> `REPO\src\telos\variance.py`
@@ -138,13 +149,17 @@ Proposal numbering and template rules
 The diagram explained in plain words, for a junior analyst
     -> `DOCS\ACTIVITY-DIAGRAM-EXPLAINED.md`
 
-The proposal being submitted
-    -> `DOCS\proposal-form-FINAL.md`
+The proposal revision that goes to the panel next
+    -> `DOCS\proposal-form-SIMPLIFIED.md` (its working note lists the student's open choices)
+    The version submitted 2026-10-15 is `DOCS\proposal-form-FINAL.md`, now frozen.
+
+The adviser's instructions of 2026-11-23, each with its transcript line and status
+    -> `DOCS\CONSULTATION-2026-11-23-CHECKLIST.md`, and `REPO\docs\DECISIONS.md` 2026-11-23
 
 Panel questions and the reasoning behind each answer
     -> `DOCS\T1-PANEL-RESPONSE.md`
 
-What changed after the title defense
+What changed after the title defense, up to the 2026-10-15 submission (superseded)
     -> `DOCS\T1-REVISIONS-LIST.md`
 
 Whether documents contradict the code
@@ -155,7 +170,7 @@ Whether documents contradict the code
 
 1. The code in `REPO\src\telos\`. What is actually built.
 2. `REPO\docs\DECISIONS.md`. What was decided, and why.
-3. `DOCS\proposal-form-FINAL.md`. What will be submitted.
+3. `DOCS\proposal-form-SIMPLIFIED.md`. What will be submitted next.
 4. Everything else is explanatory and loses.
 
 **A document is never evidence about another document.**
@@ -167,17 +182,24 @@ Verify any you rely on. Listed so you do not re-derive them every session. Files
 in `REPO\src\telos\` unless stated otherwise.
 
 - An event key is `Source-EventID[PopulatedField,...]`, for example
-  `Security-4688[CommandLine,NewProcessName]`. A format example only: the lab endpoint writes
-  no 4688 events, because process creation auditing is off (item 20).
+  `Security-4688[CommandLine,NewProcessName]`. The lab endpoint audits process creation with the
+  command line since 2026-11-03 (item 20); test case K2 turns the command line off.
   `eventkey.py`
 
-- The key records **that** a tracked field carried a value, never **which** value. That is the
-  code today. **Decided 2026-09-29, not built:** for a short list of fields (set after the C3
-  capture) the key will record the value, grouped into a few classes. DECISIONS 2026-09-29.
-  Under Wazuh's shipped rules the candidates are `GrantedAccess`, `LogonType` and
-  `AuthenticationPackageName`; `LmPackageName` and the ticket encryption type are not read by any
-  rule, so they are not tracked (DECISIONS 2026-10-01). The key has no host part (item 31).
-  `eventkey.py`, `is_populated()`
+- The key records **that** a tracked field carried a value. **Built 2026-11-03** (decided
+  2026-09-29, item 18): for three fields that rules match by value it also records **which**
+  value, grouped into the classes the rules look for, and `other` for every other value:
+  `GrantedAccess` (Sysmon 10), and `LogonType` and `AuthenticationPackageName` (4624). Each
+  class holds the rule's own pattern. `LmPackageName` and the ticket encryption type are not read
+  by any rule, so they are not tracked (DECISIONS 2026-10-01). The key has no host part (item 31).
+  `eventkey.py`, `VALUE_KEYED_FIELDS`, `is_populated()`
+
+- **Myers' difference algorithm** is step 3 of the pipeline (DECISIONS 2026-11-26): each phase's
+  runs are joined into one sorted list, and D is the number of deletions plus insertions. On
+  sorted lists it equals per-key subtraction, and the module checks this on every run. On the
+  spike's C3 runs, single runs gave D = 1 to 28 control against control, and 56 to 76 before
+  against after. The classification still comes from the statistics below.
+  `myers.py`; `pipeline.py`, `compare()`
 
 - The rule set is **Wazuh 4.14.7's shipped rules**, exported whole: 454 rules in 15 files read a
   Windows event. With them only **C1, C3 and C5** can blind a detection, and the study reports that
@@ -228,20 +250,29 @@ in `REPO\src\telos\` unless stated otherwise.
   strict subset.
   `eventkey.py`, `field_loss_pairs()`
 
-- 5 control runs, 3 pre and 3 post per change, as designed. The catalogue holds 14. **Scope,
-  decided 2026-09-29:** keep every measurable class C change (about 3 under Wazuh's shipped rules:
-  C1, C3, C5, DECISIONS 2026-10-01), reduce the graphical
-  interface first and then class B; the spike sets the final number. "16" is no longer a target.
-  Each phase ends with 3 **valid** runs: a failed run is voided and captured again (design,
-  2026-09-28).
-  `REPO\lab\blueprint.md`
+- **The evaluation, done 2026-11-27:** 5 control runs, 3 before runs shared by all cases, and 3
+  after runs for each of C1, C3, C5 and the test cases K1 to K3: 26 runs, all valid, one
+  parameters hash `9895d0cf...14cd` (DECISIONS 2026-11-27; EXPECTED-RESULTS sections 5 and 7).
+  A run is voided by item 22's rule: Sysmon 1 in the window outside 79.8 to 141.8, or the step
+  `rdp-signin-30s` did not exit 0. A voided run is captured again under a new id.
+  **Scope, decided 2026-09-29:** keep every measurable class C change (3 under Wazuh's shipped
+  rules: C1, C3, C5, DECISIONS 2026-10-01); if a checkpoint is missed, cut the graphical
+  interface first and then class B. "16" is no longer a target.
+  `REPO\src\telos\evaluation.py`; `REPO\lab\blueprint.md`
+
+- **The result, scored as fixed before the runs:** TP 7, FP 0, FN 0 over C1, C5, K1, K2 and K3;
+  plain subtraction found the same 7 with 1 false positive (in K2). K1 is a blind spot: exactly
+  T1021.001, T1078.002 and T1550.002 no longer detected, while the sign-in still worked. K2 shows
+  the field-level loss of `CommandLine`. **C3 did not come out as expected** (item 44).
+  EXPECTED-RESULTS section 7.
 
 - One attack-test list, window and repetition count, pinned once in Phase 0 for every change.
   Remediation suggestions are **two levels**: surviving sources and known compensating controls.
   Fixes are applied **by script**; the accepted baseline is the snapshot plus the scripts.
   All three are design, `REPO\docs\DECISIONS.md` 2026-09-28.
 
-- The feasibility spike answers **six** questions, not two: runbook Phase 7.
+- The feasibility spike answers **six** questions, not two: runbook Phase 7. It ran 2026-11-16,
+  19 of 19 runs valid; the answers are in runbook Phase 7 and STATUS ("The spike").
 
 ### Facts that get stated wrong, including in this project's own documents
 
@@ -258,7 +289,20 @@ in `REPO\src\telos\` unless stated otherwise.
 
 ## 5. Open, so do not state these as settled
 
-Item 21 — decided 2026-09-29, not built
+Item 44: open, new 2026-11-27. C3's real effect is below the REDUCED threshold
+    In the evaluation C3 blocked the dump: rules 92403 and 61625 (T1055, level 12) fired in all 8
+    control and before runs and in none of the 3 C3 runs. But `Sysmon-10` fell only to a rate
+    ratio of 0.672 (q = 8.8e-5), above the 0.5 limit, and T1055 stays "detected" through rules
+    61632 and 61634. So the system says "no blind spot"; by the rules that stopped, the truth is
+    prevention. Reported as found; nothing is re-run or retuned. For the student and the adviser.
+
+Item 38: open, for the adviser. No hardening change shows a blind spot under the shipped rules
+    C1 and C5 show no change, and C3 is prevention: measured in the trials (2026-11-13) and again
+    in the evaluation (2026-11-27). The way forward taken: test cases with a known answer, K1 to
+    K3 (item 42, 2026-11-26). K1 is a blind spot, as expected. The adviser has not yet taken it up
+    (DECISIONS 2026-11-23).
+
+Item 21: ANSWERED 2026-11-11, DC-01 dropped
     Every class C hardening change is an authentication control, and there is no domain
     controller. **The archive count ran 2026-09-26: 4768, 4769 and 4776 are zero on every date,
     and 0 of 2,892 logons were network logons.** **Decided: build DC-01**, with its own Wazuh
@@ -266,8 +310,8 @@ Item 21 — decided 2026-09-29, not built
     2026-11-11: DC-01 is dropped.** The lab is WIN-EP-01 and SIEM-01; C5 uses a local account
     over RDP from the host; C4, C6 and B5 leave the study.
 
-Item 18 — decided 2026-09-29, not built
-    The key sees field presence, not value. Six of the eight class C hardening changes state a
+Item 18: ANSWERED 2026-11-03, built
+    The key saw field presence, not value. Six of the eight class C hardening changes state a
     telemetry effect that is a value change, which the analyser cannot see. The planned capture
     (`RunAsPPL`, then read `GrantedAccess`) **could not run as written**, found 2026-09-26: the
     pinned Sysmon config records no Event 10 at all, and `RunAsPPL = 1` writes a UEFI firmware
@@ -275,19 +319,23 @@ Item 18 — decided 2026-09-29, not built
     capture); an `lsass.exe` Sysmon rule; `RunAsPPL = 2`, a stated deviation, because CIS
     18.9.27.2 (Windows 11 Enterprise v5.1.0) requires the lock. **Built 2026-11-03:** the
     `lsass.exe` Sysmon rule is applied (Sysmon 10 = 121 in the archive that day) and value keying
-    is coded and tested. No class C change has been measured yet: no capture run exists.
+    is coded and tested. C3 was measured with it in the spike (2026-11-16) and in the evaluation
+    (2026-11-27).
 
-Item 22 — blocks the harness design
-    The stimulus is asserted identical across the two phases and never verified. A hardening
-    change that makes an atomic test fail produces a rate drop the analyser reports as LOST.
-    Per-atomic exit status and a stimulus fingerprint must go in the run manifest, because they
-    cannot be reconstructed after the run.
+Item 22: ANSWERED 2026-11-27, decided and built
+    The stimulus was asserted identical across runs and never verified. **The void rule**
+    (DECISIONS 2026-11-27): a run is voided when its stimulus fingerprint, the Sysmon 1 events in
+    the window, is outside the 5 control runs' mean plus or minus 3 standard deviations (79.8 to
+    141.8), or when the step `rdp-signin-30s` did not exit 0. Built as `harness.RunChecks`; each
+    run's fingerprint is in its record, not in the hashed parameters. It cannot tell C3's blocked
+    attack from lost evidence: under C3 the test programs still start.
 
-Item 26 — blocks the harness design
+Item 26: partly built
     The harness's own `vmrun` guest calls write logons inside the window: 2,285 type 4 across the
     archive, 1,641 on 2026-09-02. **Cause confirmed 2026-11-12:** one `vmrun` guest call wrote two
     4624 type 4 logons by `vmtoolsd.exe`, and Wazuh rule 67022 (level 3) fired on each; with
-    Credential Validation on, also two 4776. The harness must count its calls and record the number.
+    Credential Validation on, also two 4776. The harness records the number of guest calls in each
+    run's manifest (`guest_calls`). A different count does not void a run (not built).
 
 Item 27 — the lab network, cause unknown
     The host's VMware adapters broke on their own twice, 2026-08-31 and before 2026-09-26.
@@ -309,36 +357,37 @@ Item 29 — ANSWERED 2026-09-28, all four fixed by decision
     in Phase 0 and a key the control runs never saw is INCONCLUSIVE; remediation is two
     levels; fixes are applied by script. The first two are in code with tests.
 
-Item 25 — the schedule; target and scope decided 2026-09-29
-    The harness does not exist and the spike has never run. The 2026-09-22 tripwire passed with no
-    capture window run. **Decided 2026-09-29:** school deadline 4 June 2027; target a final defense
-    by the end of January 2027 (March was recommended); keep every measurable class C change,
-    reduce the graphical interface first, then class B; the spike sets the number, by 2026-11-07
-    since 2026-10-16 (was 2026-10-31; the lab checkpoint moved to 2026-10-30, after the re-presentation).
-    Checkpoints are in STATUS.md. The panel said the re-presentation will focus on the activity
-    diagram, and sets its date 3 to 7 days after the revised documentation is submitted. It was
-    submitted 2026-10-15, after three missed dates (2026-10-02, 2026-10-07, 2026-10-12); the panel set
-    the re-presentation for Thursday 2026-10-22, 3:30 to 5:00 pm. Also: 30
-    pre-change events over 3 runs is about 10 per run, so many keys may be untestable. The spike
-    measures it.
+Item 25: the schedule. Data collection answered 2026-11-27; the rest open
+    **Data collection is done:** the spike ran 2026-11-16 (19 of 19 valid, 9.8 minutes per run),
+    and the 26 evaluation runs were all valid by 2026-11-27, before the 2026-11-30 checkpoint.
+    Testable keys: 15 of 35 in the evaluation's control runs (WORKLOG 2026-11-27). **Decided
+    2026-09-29:** school deadline 4 June 2027; target a final defense by the end of January 2027
+    (March was recommended); keep every measurable class C change; if a checkpoint is missed, cut
+    the graphical interface first, then class B. **Next defense: the pre-oral**, a 50% working
+    system and chapters 1 to 3; no date stated (DECISIONS 2026-11-23). Still open: the graphical
+    interface, the evaluation by security engineers, the chapters, and the dates. Checkpoints are
+    in STATUS.md.
 
 Item 24 — ANSWERED 2026-11-03, built
     `VarianceModel.from_control()` now refuses a control run that recorded nothing (OPEN-QUESTIONS 24).
 
-Item 23 — reframed 2026-09-28, a spike check
+Item 23: ANSWERED 2026-11-16 by the spike
     The alpha half is fixed. The other half, the gate passing on noise, no longer matters: since
-    2026-09-28 the chi-square is reported, not a filter. What remains is the question it pointed
-    at: do the per-key tests produce false findings on real noise? Run `analyse()` on the ten
-    control-versus-control pairs from the Phase 7 spike. There should be no findings.
+    2026-09-28 the chi-square is reported, not a filter. The question it pointed at, do the per-key
+    tests produce false findings on real noise: 0 false findings in the spike's 10
+    control-versus-control pairs (2026-11-16), and 0 in 70 comparisons of the evaluation's 5
+    control runs (2026-11-27, DECISIONS 2026-11-27).
 
-Item 20 — applied 2026-11-03 in the guest
+Item 20: ANSWERED 2026-11-03
     Process Creation auditing with command line, and Credential Validation auditing, are on in
-    WIN-EP-01 (COMMANDS 2.11); in the archive the same day, 4688 = 117. The golden snapshot does
-    not exist yet, so they are in no snapshot.
+    WIN-EP-01 (COMMANDS 2.11); in the archive the same day, 4688 = 117. Both golden snapshots keep
+    them (`golden-base` 2026-11-16, `golden-base-v2` 2026-11-26).
 
-Item 34 — the run check voids every post-change run of a negative control
-    A negative control blocks its own attack test on purpose, and the run check voids any run
-    whose tests did not all complete. Found 2026-10-20. Open.
+Item 34: did not arise in the study (2026-11-27)
+    A negative control blocks its own attack test on purpose, and the design voided any run whose
+    tests did not all complete. Found 2026-10-20. The void rule built 2026-11-27 checks only the
+    Sysmon 1 fingerprint and the sign-in step, so C3, whose dump the change blocks, kept 3 valid
+    after runs. The study has no class B negative control. Reopen if one is added.
 
 Item 35 — which LSASS tests fire rule 92900
     Part 1 of the LSASS trial (2026-11-03): Defender stopped all three tests, 0 lsass events.
@@ -346,19 +395,21 @@ Item 35 — which LSASS tests fire rule 92900
     Defender's and svchost's own access). Test 13 fires 92403 and 61625 (level 12) with LSA
     Protection off, none with it on: **decided as prevention, not a blind spot** (DECISIONS
     2026-11-13). Test 13 leaves a second `lsass.exe` running, so it must run last. Tests 3, 4,
-    9 (fresh boot), 12 and 14 not run.
+    9 (fresh boot), 12 and 14 not run. The pinned attack list uses tests 1, 2 and 13, after a
+    Remote Desktop sign-in (DECISIONS 2026-11-18).
 
-Item 36 — LSA Protection was already on, decided 2026-11-03
-    The baseline turns it off (`RunAsPPL = 0`); C3 turns it on. Open until the golden image is
-    shown to boot without Wininit event 12.
+Item 36: ANSWERED 2026-11-16. LSA Protection was already on, decided 2026-11-03
+    The baseline turns it off (`RunAsPPL = 0`); C3 turns it on. Shown 2026-11-16 on a test boot of
+    `golden-base`: no Wininit event 12 since boot, and `RunAsPPL 0` (COMMANDS 2.16).
 
-Item 37 — the C5 test, decided 2026-11-12 and 2026-11-13
+Item 37: ANSWERED, the C5 test, decided 2026-11-12 and 2026-11-13
     Baseline: Remote Desktop on, NLA off, firewall open to `10.20.10.1` only. With the default
     client, NLA on and off write the same events (two type 3 NTLM with 92657, two type 10 with
     92653), so C5 is reported as "the predicted effect was not seen". The sign-in runs from the
     host with `eli`'s password stored by `cmdkey`, no box. No sign-out step: the revert ends the
-    session. A second sign-in into an existing session writes type 7 and no 92653. Left open:
-    confirm on the first real revert of the golden snapshot.
+    session. A second sign-in into an existing session writes type 7 and no 92653. Confirmed
+    2026-11-16 on the first revert of `golden-base`: no `eli` logon from the boot until the
+    student's own sign-in (COMMANDS 2.16).
 
 Item 15 — answered 2026-10-15
     Submitted 2026-10-15 by email: `DOCS\Detecting … Algorithm.pdf` (made from
@@ -375,19 +426,28 @@ Item 32 — four harness and index points with no record
     Whether the capture window has a fixed length or ends when the suite ends; whether DC-01 is
     restored before each run; a mapping from Wazuh field names to the key's field names; and
     whether DC-01 still earns its days now that no positive case needs it. Recorded 2026-10-08.
-    The DC-01 points were decided 2026-11-11: dropped. The window length and the mapping remain.
+    The DC-01 points were decided 2026-11-11: dropped. The window has a fixed length (decided
+    2026-11-13), and the field-name mapping is built in `archive.py` and `index.py` (2026-11-13).
+    **Left, for the student:** the key map does not track three 4624 fields that rules read
+    (`IpAddress`, `TargetUserSid`, `WorkstationName`); adding them changes the keys.
 
-Item 33 — the professor's guidelines, four open points
-    From the Research 1A lectures (paths in the item): is January the pre-oral defense (50% working
-    system) or the final; related study 2 is a preprint; no APA in-text citations; no usability
-    evaluation with respondents. Found 2026-10-12. Point 1 changes the schedule.
+Item 33: the professor's guidelines, two of four points open
+    From the Research 1A lectures (paths in the item). Point 1: the next defense is the pre-oral
+    (50% working system, chapters 1 to 3); its date was not stated (DECISIONS 2026-11-23). Point 4:
+    answered 2026-11-23, the form gets an evaluation objective, with security engineers as
+    respondents. Still open: point 2, related study 2 is a preprint; point 3, no APA in-text
+    citations. Found 2026-10-12.
 
-Item 1 — blocks data collection
-    The catalogue: 14 changes, no longer a target of 16. Three control IDs verified, several
-    still `(unverified)`. Under Wazuh's shipped rules, three positive cases (2026-10-01).
+Item 1: the catalogue, no longer blocks data collection
+    The study used C1, C3 and C5, plus the test cases K1 to K3 (EXPECTED-RESULTS section 1). Their
+    numbers are those of CIS Microsoft Windows 11 Enterprise v3.0.0, the version Wazuh's scan
+    checks (DECISIONS 2026-11-26). Several control IDs of changes outside the study are still
+    `(unverified)` (item 4).
 
 Settled 2026-09-14, so do not reopen these
-    The title is the panel's proposed wording, verbatim, with no article added (item 0). The system
+    The title is the panel's proposed wording, verbatim, with no article added (item 0).
+    **Superseded 2026-11-26:** the title of the revised proposal ends "Using Myers' Difference
+    Algorithm" (DECISIONS 2026-11-26); the panel has not yet approved the revision. The system
     is a Python application with a graphical interface beside the SIEM, not a web application
     (item 17; kept 2026-10-07, see below). The interface toolkit is not decided. Both in
     `REPO\docs\DECISIONS.md`.
@@ -402,7 +462,8 @@ Settled 2026-09-29, so do not reopen these
     Target: final defense by the end of January 2027, school deadline 4 June 2027. Scope keeps every
     measurable class C change. Build DC-01 with a network-logon test (dropped 2026-11-11). Value keying for a short list
     of fields, an `lsass.exe` Sysmon rule, `RunAsPPL = 2`. Process creation and credential
-    validation auditing in the golden snapshot. All in `REPO\docs\DECISIONS.md`, none built.
+    validation auditing in the golden snapshot. All in `REPO\docs\DECISIONS.md`; built and applied
+    2026-11-03, and in the golden snapshots since 2026-11-16.
 
 Settled 2026-10-01 to 2026-10-08, so do not reopen these
     Operator access: the system has no login; only the operator's MFA account can read its
@@ -420,9 +481,20 @@ Settled 2026-11-03 to 2026-11-13, so do not reopen these
     Desktop on with NLA off (2026-11-12). C5 uses the default client and is reported as "the
     predicted effect was not seen"; the revert ends the C5 session (both 2026-11-13). C3's lost
     level-12 alerts are prevention, not a blind spot (2026-11-13). All in `REPO\docs\DECISIONS.md`.
-    **Measured the same day, not yet decided:** the C1 trial changed no sign-in event, so no
-    candidate change shows a blind spot under the shipped rules (`REPO\docs\OPEN-QUESTIONS.md`
-    item 38, for the student and the adviser).
+    **Measured the same day:** the C1 trial changed no sign-in event, so no candidate change shows
+    a blind spot under the shipped rules (`REPO\docs\OPEN-QUESTIONS.md` item 38, for the student and
+    the adviser).
+
+Settled 2026-11-16 to 2026-11-27, so do not reopen these
+    `golden-base` taken, with no `cfg-suppressed` or `cfg-natural` snapshot: Config S by an
+    after-boot script (2026-11-16). The pinned attack list: a Remote Desktop sign-in, then LSASS
+    tests 1, 2 and 13 (item 40, 2026-11-18). The study host stays the current PC until the defense
+    (2026-11-18). Test cases K1 to K3 with expected results written before any run (item 42); a
+    key that drops to zero gets the exact test at any count (item 43); `golden-base-v2` with one
+    CIS version, v3.0.0; the guest scripts run only on WIN-EP-01; Myers' difference algorithm is
+    the core algorithm, each phase's runs joined (item 41) (all 2026-11-26). The harness's wait
+    for VMware Tools; 3 runs per phase; item 22's void rule (all 2026-11-27). All in
+    `REPO\docs\DECISIONS.md`.
 
 Not an item yet — no longer blocks anything (the revisions list was not sent, 2026-10-15)
     The REVISED-to-FINAL diff has never been run. Measured 2026-09-10: FINAL is 6,395 words
@@ -433,33 +505,33 @@ Not an item yet — no longer blocks anything (the revisions list was not sent, 
 
 **Do not describe designed parts as if they exist.**
 
-Built and tested, in `REPO\src\telos\`:
-    `archive.py` (reads Wazuh's archive into counts per fenced window, added 2026-11-13),
-    `index.py` (which Wazuh rules read an event key, from the rule export in `REPO\data\rules\`,
-    not in git; added 2026-11-13), `impact.py` (ranks lost keys by blind techniques, highest
-    severity, number of rules; DECISIONS 2026-11-13; added 2026-11-13), `eventkey.py`,
-    `variance.py`, `differential.py`, `baseline.py`, `report.py` (verdict, comparison, ranked
-    blind spots with remediation level 1, coverage change, evaluation; JSON and CSV exports;
-    2026-11-13), `harness.py` (runbook Phase 6, fixed-length windows; tested with a fake
-    `vmrun`, **not yet run on the lab**; 2026-11-13), `pipeline.py` with the command `src/run.py`
-    (run folders to report, JSON, CSV and an ATT&CK Navigator layer, with a reproducibility
-    record and remediation level 2 from `REPO\lab\knowledge\compensating-controls.json`;
-    2026-11-13), `model.py`, `synth.py`. Eight test files in `REPO\tests\`, 123 tests passing
-    (run 2026-11-13). Surviving coverage counts rules
-    that did fire after the change (DECISIONS 2026-11-13). Value keying
-    for the short field list, the control-run check (item 24) and field-loss pairing (item 30)
-    were added 2026-11-03.
+Built, tested, and used on the real lab, in `REPO\src\telos\` (checked 2026-11-27):
+    `archive.py` (reads Wazuh's archive into counts per fenced window), `eventkey.py` (event keys,
+    with value classes since 2026-11-03), `myers.py` (Myers' difference algorithm, step 3,
+    2026-11-26), `variance.py`, `differential.py`, `index.py` (which Wazuh rules read an event key,
+    from the rule export in `REPO\data\rules\`, not in git), `impact.py` (ranks lost keys by blind
+    techniques, highest severity, number of rules; surviving coverage counts rules that did fire
+    after the change, DECISIONS 2026-11-13), `report.py` (verdict, noise floor, findings, ranked
+    blind spots with remediation level 1, coverage change, remediation level 2, reproducibility
+    record; JSON, CSV and ATT&CK Navigator exports; the Myers section comes from `myers.py`), `pipeline.py` with the command
+    `src/run.py`, `harness.py` (one capture window over `vmrun`; fixed-length windows; run checks
+    with item 22's void rule since 2026-11-27), `catalog.py` with `src/capture.py`, `spike.py` with
+    `src/spike.py`, `evaluation.py` with `src/evaluate.py`, `baseline.py`, `model.py`, `synth.py`.
+    12 test files in `REPO\tests\`, 170 tests passing (2026-11-27). Remediation level 2 reads
+    `REPO\lab\knowledge\compensating-controls.json`, which has entries for C3 and C5 only.
 
 Designed only, no code exists:
-    the graphical interface. The harness exists as code but has never run against the lab. Also designed only, added to the diagram 2026-09-28: the per-run
-    check that voids and re-captures a failed run (item 22), and confirming the change on the host
-    (item 28).
+    the graphical interface (a window: upload the export, "Run analysis", then the report); the
+    percentage of techniques lost (proposed in the revised form, not decided); the evaluation form
+    for security engineers (ISO/IEC 25010). Voiding a run whose `vmrun` call count differs
+    (item 26) is not built either.
 
 The lab:
-    SIEM-01 and WIN-EP-01 exist; DC-01 will not be built. The runbook is partly executed: no
-    golden snapshot, no change script and no capture run exist yet (2026-11-13). Read
-    `REPO\docs\STATUS.md` ("Now, as of 2026-11-13" and "Lab state") and `REPO\docs\WORKLOG.md`
-    for how far rather than assuming.
+    SIEM-01 and WIN-EP-01 exist; DC-01 will not be built. Runbook Phases 0 to 7 are done.
+    `golden-base` (2026-11-16) and `golden-base-v2` (2026-11-26) exist; every evaluation run reverts
+    to `golden-base-v2`. The spike's 19 runs (2026-11-16) and the evaluation's 26 runs (2026-11-26
+    to 2026-11-27) are all valid. Read `REPO\docs\STATUS.md` and `REPO\docs\WORKLOG.md` for the
+    current state rather than assuming.
 
 T1 is final and there is no fallback (`REPO\docs\DECISIONS.md` 2026-09-26). T2 and T3 were not
 chosen. If the spike shows T1 cannot finish, the answer is a scope cut (item 25), not a new topic.
@@ -481,8 +553,8 @@ git -C "E:\Claude general" log --oneline -8
 In PowerShell a quoted executable needs the call operator, so write
 `& "E:\Claude general\.venv\Scripts\python.exe" ...`. In cmd or bash the quotes alone are enough.
 
-`pytest` should print `58 passed`. If it prints anything else, stop and tell me, because the
-record is stale.
+`pytest` should print `170 passed` (2026-11-27). If it prints anything else, stop and tell me,
+because the record is stale.
 
 `check_docs.py` flags statements in any document that contradict the code. **It flags, it does
 not judge.** A hit is a question, not a verdict. File status decides whether a hit matters:

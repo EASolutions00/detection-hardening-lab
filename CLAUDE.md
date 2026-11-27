@@ -1,4 +1,4 @@
-# CLAUDE.md (project: detection-hardening-lab)
+# CLAUDE.md (project: hardening-blind-spots)
 
 **Index only. It points at the detail, it does not hold it.**
 Status changes every week, so it lives in `docs/STATUS.md`, not here.
@@ -12,10 +12,10 @@ homelab built to run it. Student: Elijah Amorsolo, OED20-0012616.
 
 T1, T2 and T3 are **alternatives, not components.** One gets built.
 - **T1** is approved and is the thesis. **It is final, and there is no fallback**
-  (DECISIONS.md 2026-09-26). It is gated behind a feasibility spike (runbook Phase 7) that
-  measures run-to-run variance, real wall clock, and four further checks listed there. If the
-  spike shows T1 cannot finish in
-  time, the answer is a scope cut (OPEN-QUESTIONS 25), not a different topic.
+  (DECISIONS.md 2026-09-26). It was gated behind a feasibility spike (runbook Phase 7) that
+  measures run-to-run variance, real wall clock, and four further checks listed there. The spike
+  ran 2026-11-16 and the 26 evaluation runs finished 2026-11-27 host time (2026-11-26 23:58 UTC; STATUS.md). If time runs short,
+  the answer is a scope cut (OPEN-QUESTIONS 25), not a different topic.
 - **T2 and T3 were not chosen.** Kept as a record only. T3 lost its fallback status on
   2026-08-19. Do not spend time on either.
 
@@ -43,9 +43,10 @@ and 2026-10-30). It applies to every answer, design and document in this project
 |---|---|
 | [docs/STATUS.md](docs/STATUS.md) | **Current blockers and dates.** Read first. |
 | [docs/OPEN-QUESTIONS.md](docs/OPEN-QUESTIONS.md) | Unverified things that change the plan. Ranked. |
-| [docs/DECISIONS.md](docs/DECISIONS.md) | Why choices were made. Pinned versions. Spike results. |
+| [docs/DECISIONS.md](docs/DECISIONS.md) | Why choices were made. Pinned versions. The decisions taken from the spike. |
 | [docs/WORKLOG.md](docs/WORKLOG.md) | What happened each session, newest first. |
-| [docs/RUNBOOK-homelab.md](docs/RUNBOOK-homelab.md) | Build the lab from scratch. Phases 0 to 8, each ends with a check. |
+| [docs/RUNBOOK-homelab.md](docs/RUNBOOK-homelab.md) | Build the lab from scratch. Phases 0 to 8, each ends with a check. Phase 7 holds the spike's results. |
+| [docs/EXPECTED-RESULTS.md](docs/EXPECTED-RESULTS.md) | Each evaluation case's expected result, written before the runs; section 7 holds the results. |
 | [docs/COMMANDS.md](docs/COMMANDS.md) | Every command run on this machine, why, and the correct result. Part 5 is the pre-flight check. |
 | [docs/FILE-MAP.md](docs/FILE-MAP.md) | Every thesis file and folder, inside and outside this repo. Sources, copies, backups, never-commit list. |
 | [thesis/](thesis/README.md) | Proposal template and numbering rules. |
@@ -55,7 +56,7 @@ and 2026-10-30). It applies to every answer, design and document in this project
 | [lab/blueprint.md](lab/blueprint.md) | Lab design, resource budget, go/no-go analysis. |
 | [lab/configs/](lab/configs/README.md) | Pinned Sysmon and Wazuh configs. Hash them. |
 | [lab/scripts/](lab/scripts/README.md) | One script per hardening change. Not snapshots. |
-| [src/](src/README.md) | Python package `telos`, the analysis core. |
+| [src/](src/README.md) | Python package `telos`: the analysis core and the lab harness. |
 | [tools/](tools/word/README.md) | `check_docs.py`; `word/` turns FINAL and the revisions list into Word copies. |
 | `data/runs/` | Raw archives. Gitignored, too big for GitHub. One disk only, so back up elsewhere. |
 | `data/summaries/` | Small derived CSVs. Committed. |
@@ -187,7 +188,8 @@ Recorded, not remembered.
 
 ## Git
 
-**Live and public** at https://github.com/EASolutions00/detection-hardening-lab
+**Live and public** at https://github.com/EASolutions00/hardening-blind-spots (renamed 2026-11-27 from
+`detection-hardening-lab`; GitHub redirects the old address)
 The professor confirmed no IP rule and no similarity-check problem. Reason and cost are in
 [DECISIONS.md](docs/DECISIONS.md). `gh` is installed and logged in as EASolutions00, so
 `git push` and `gh` commands work directly.

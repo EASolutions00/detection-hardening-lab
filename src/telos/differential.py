@@ -103,8 +103,9 @@ def capture_problem(pre: Phase, post: Phase) -> str | None:
     An all-zero pre-change phase made every key NEW.
 
     This catches a repetition that recorded nothing. It does not catch a
-    capture that died partway through a window. That needs the harness to
-    confirm the end fence arrived, which is recorded against OPEN-QUESTIONS 22.
+    capture that died partway through a window. The harness does: it voids a
+    run whose window cannot be read, for example one with no END fence
+    (harness.py), so such a run never reaches this function.
     """
     for phase in (pre, post):
         for i, total in enumerate(phase.run_totals(), start=1):
@@ -428,8 +429,9 @@ def analyse(
         reason = f"every event key had too few events to test; {gate.reason}"
     else:
         # A narrower claim than "the change was safe": it rests on the stimulus
-        # having run the same way in both phases, which OPEN-QUESTIONS 22 says is
-        # designed to be checked per run and is not built yet.
+        # having run the same way in both phases. The harness checks that per run
+        # since 2026-11-27 (item 22's void rule, harness.RunChecks); this function
+        # only sees runs that passed it.
         outcome = ProfileOutcome.UNCHANGED
         reason = f"no event key classified LOST or REDUCED; {gate.reason}"
 

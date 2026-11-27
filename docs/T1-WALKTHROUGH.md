@@ -1,5 +1,11 @@
 # T1 System Walkthrough
 
+> **Overtaken further by 2026-11-27; read this first.** This file describes the design of 2026-09-30.
+> Since then: value keying is built (2026-11-03); the harness, the index and the impact ranking are built
+> and ran on the lab; Myers' difference algorithm is step 3 of the pipeline (DECISIONS 2026-11-26); and
+> the 26 evaluation runs are done (`docs/EXPECTED-RESULTS.md` section 7). Its "Designed, not built" notes
+> are true only for 2026-09-30. For what is built today, read `src/README.md`.
+>
 > **Overtaken in part on 2026-10-01; read this first.** The study now uses Wazuh 4.14.7's shipped
 > rules (`docs/DECISIONS.md` 2026-10-01, choice 1). No shipped rule names event 4776, and C4's only
 > affected rules (92652, 92657) detect pass-the-hash, which C4 blocks, so **C4 behaves like a negative

@@ -8,10 +8,14 @@ None of them touches the code or the data. Python standard library only (no pyth
 The thesis folder path is written in each script (`E:\Elijah MASTER COPY DO NOT DELETE\Documents\New
 folder (5)`, called DOCS below). Change it there if the folder moves.
 
+**Since 2026-11-27 FINAL and the revisions list are frozen or superseded** (`docs/FILE-MAP.md` section 3): the next
+form is `proposal-form-SIMPLIFIED.md`, and no script here reads it. The student's Word copy with the new title was made
+by hand. The two converters still work for the files they name, but nothing needs them now.
+
 | Script | Reads | Writes | Use again? |
 |---|---|---|---|
-| `final_to_html_v2.py` | `DOCS\proposal-form-FINAL.md` | `DOCS\proposal-form-FINAL-for-Word.html` | Yes, after every FINAL edit |
-| `revisions_to_html.py` | `DOCS\T1-REVISIONS-LIST.md` | `DOCS\T1-REVISIONS-LIST-for-Word.html` | Yes, after every revisions-list edit |
+| `final_to_html_v2.py` | `DOCS\proposal-form-FINAL.md` | `DOCS\proposal-form-FINAL-for-Word.html` | Only if FINAL is edited again (it is frozen) |
+| `revisions_to_html.py` | `DOCS\T1-REVISIONS-LIST.md` | `DOCS\T1-REVISIONS-LIST-for-Word.html` | Only if the revisions list is edited again (superseded) |
 | `diff_docx_md.py` | a `.docx` and a `.md` given as arguments | nothing (prints) | Yes, to check a Word file against FINAL |
 | `pdf_pages.ps1` | a PDF | `page<N>.png` in the folder you give | Yes, to look at PDF pages |
 | `build_docx.py` | the student's formatted `.docx`, FINAL, four figures | `DOCS\FINAL … (updated 2026-10-12).docx` | No. A record of how that file was made |

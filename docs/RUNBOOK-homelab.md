@@ -685,11 +685,13 @@ noise into the exact window you are measuring.
         with nobody signed in (DECISIONS 2026-11-13, the C5 session).
       - On the host, not in the snapshot: `eli`'s password stored as `TERMSRV/10.20.10.20` (`cmdkey`, COMMANDS 2.12).
 - [x] Take snapshot `golden-base`. **Done 2026-11-16 06:59:45 UTC** (COMMANDS 2.16, DECISIONS 2026-11-16).
-- [ ] Take snapshot `golden-base-v2`: the K scripts, NLA through the Group Policy key, Audit Logon set explicitly.
-  **Prepared 2026-11-26, not run:** every step in `docs/GOLDEN-BASE-V2.md` (DECISIONS 2026-11-26).
+- [x] Take snapshot `golden-base-v2`: the K scripts, NLA through the Group Policy key, Audit Logon set explicitly.
+  Every step in `docs/GOLDEN-BASE-V2.md` (DECISIONS 2026-11-26). **Done 2026-11-26T13:31:48Z** (Phase B, COMMANDS
+  2.18). Since then every run reverts to `golden-base-v2`; `golden-base` is kept.
 - **Superseded 2026-11-16 (DECISIONS 2026-11-16, "No cfg-suppressed or cfg-natural snapshot"):** the next two
-  steps are not done. Runs revert to `golden-base`; Config S is applied after every boot by
-  `lab/scripts/config-S-defender-off.ps1`; Config N is `golden-base` alone. Kept below as written.
+  steps are not done. Runs revert to the golden snapshot (`golden-base`, then `golden-base-v2` since 2026-11-26);
+  Config S is applied after every boot by `lab/scripts/config-S-defender-off.ps1`; Config N is the golden snapshot
+  alone. Kept below as written.
 - [ ] Boot, apply Config S (Defender off, Windows Update off, scheduled tasks disabled),
       **then read the settings back and confirm they actually took effect**, shut down,
       snapshot `cfg-suppressed`. Never assume a `Set-MpPreference` succeeded.
@@ -730,15 +732,20 @@ apply the change by script instead. The script is version controlled and auditab
 what your reproducibility claim needs. Sixteen branching snapshot chains would also fill F:.
 
 **Check:** `vmrun -T ws listSnapshots <path-to-vmx>` prints exactly the three above.
+**As built (checked 2026-11-27):** WIN-EP-01 has 7 snapshots, the build checkpoints were not deleted, and there is no
+`cfg-*` snapshot: `phase3-complete-2026-09-02`, `agent-hardened-2026-09-03`, `tamper-off-2026-09-03`,
+`uwf-test-baseline-2026-09-10`, `pre-lsass-trial-2026-11-03`, `golden-base`, `golden-base-v2`. SIEM-01 has its 4
+(`docs/FILE-MAP.md` section 6).
 
 ---
 
 ## Phase 6. The capture harness
 
 **Written 2026-11-13 as `src/telos/harness.py`** (`capture()`), with 12 tests using a fake `vmrun`, `ssh`,
-`scp` and clock; **not yet run against the lab**. The window has a fixed length (DECISIONS 2026-11-13). It records
-what requirement 3 needs but does not yet void on a moved fingerprint (OPEN-QUESTIONS 22). The student runs it: it
-passes the guest password to `vmrun`.
+`scp` and clock. **Run against the lab since 2026-11-16:** the first run `test-pre-1`, the spike's 19 runs, and
+the evaluation's 26 runs (2026-11-26 to 2026-11-27), all valid. The window has a fixed length (DECISIONS
+2026-11-13). **Since 2026-11-27 it voids on a moved fingerprint** (item 22's rule, `harness.RunChecks`; DECISIONS
+2026-11-27). The student runs it: it passes the guest password to `vmrun`.
 
 Write this in Python on the host, in `src/`. It runs on the **Windows host, not in a VM**,
 because `vmrun.exe` is local and SIEM-01 is reachable over vmnet2 for the archive export in
@@ -746,7 +753,8 @@ step 10.
 
 One capture window, in order:
 
-1. `vmrun -T ws revertToSnapshot <vmx> cfg-suppressed`
+1. `vmrun -T ws revertToSnapshot <vmx> cfg-suppressed` **(since 2026-11-16 the golden snapshot instead, now
+   `golden-base-v2`, with Config S applied after every boot by a script; DECISIONS 2026-11-16, 2026-11-26)**
 2. `vmrun -T ws start <vmx> nogui`
 3. Wait for VMware Tools, then **settle 180 seconds**. Boot produces an event storm.
    Do not count it.
@@ -933,9 +941,12 @@ records carrying the run ID. Its spread is the tolerance that voids a later run.
 Compare a control run with one extra reboot and settle before the start fence against one without.
 Phase 6 step 5; decision D2, DECISIONS 2026-09-14.
 
-- [ ] Record all six answers in `docs/DECISIONS.md`.
-- [ ] Decide scope from Q2 (OPEN-QUESTIONS 25). The topic is already settled: T1, no fallback
-      (`docs/DECISIONS.md` 2026-09-26).
+- [ ] Record all six answers in `docs/DECISIONS.md`. **As done (checked 2026-11-27):** the answers are recorded in
+      "Result, 2026-11-16" at the top of this phase, in WORKLOG 2026-11-16 and in STATUS ("The spike"), not as a
+      DECISIONS entry. The decisions drawn from them are in DECISIONS 2026-11-27. The answers file
+      `data/summaries/spike_answers.txt` is on disk but not committed.
+- [x] Decide scope from Q2 (OPEN-QUESTIONS 25). The topic is already settled: T1, no fallback
+      (`docs/DECISIONS.md` 2026-09-26). **Done 2026-11-27:** 3 runs per phase, 26 runs in all (DECISIONS 2026-11-27).
 
 ---
 

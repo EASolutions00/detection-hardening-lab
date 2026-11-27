@@ -1,7 +1,8 @@
 # T1 Proposal Revision Draft
 
-> **SUPERSEDED. Kept as a record; do not quote from it.** The current revision is
-> `proposal-form-FINAL.md`, outside this repository. Both ASSUMPTION decisions below were settled
+> **SUPERSEDED. Kept as a record; do not quote from it.** It was replaced by
+> `proposal-form-FINAL.md` (submitted 2026-10-15), and that by `proposal-form-SIMPLIFIED.md` (2026-11-25),
+> both outside this repository. Both ASSUMPTION decisions below were settled
 > differently or more narrowly:
 > 1. **"Web-based system with existing agent"**: decided against on 2026-09-14. The system is a
 >    Python application with a graphical interface beside the SIEM, and the SIEM agent executes

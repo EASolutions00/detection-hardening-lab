@@ -52,7 +52,10 @@ defined explicitly in the methodology chapter, since the title no longer does it
 
 **Status:** Open, but substantially advanced 2026-09-08. Raised 2026-08-20 while stress-testing
 T1 against a formal definition of security hardening. This supersedes the older item 4 below in
-priority, and absorbs it.
+priority, and absorbs it. **2026-11-27: it no longer blocks data collection.** The evaluation ran with C1, C3 and C5,
+plus the test cases K1 to K3 (`docs/EXPECTED-RESULTS.md` section 1; DECISIONS 2026-10-01, 2026-11-11, 2026-11-26),
+with the numbers of CIS Windows 11 Enterprise v3.0.0, the version Wazuh's scan checks. Still open: the control IDs
+marked `(unverified)` for changes outside the study (item 4).
 
 ### Progress, 2026-09-08
 
@@ -259,9 +262,9 @@ labeled set.
 
 ---
 
-## 21. Every class C change is an authentication control, and there is no domain controller
+## 21. Every class C change is an authentication control, and there is no domain controller (ANSWERED 2026-11-11: DC-01 dropped, local-only controls)
 
-**Status:** Open. Raised 2026-09-12 during a documentation sweep. **Ranked above item 18 because
+**Status:** **Answered 2026-11-11** (end of this paragraph). Raised 2026-09-12 during a documentation sweep. **Ranked above item 18 because
 item 18's recommended fix does not reach this problem.** **The check ran 2026-09-26 and confirmed
 it: 4768, 4769 and 4776 are zero on every archive date, and the lab has never made a network
 logon.** Results in "The check, run 2026-09-26" below. **Decided 2026-09-29: option 1, build DC-01,
@@ -441,7 +444,8 @@ collection.
 
 ## 25. Can the capture campaign finish by the deadline, and will enough keys be testable?
 
-**Status:** Open. Raised 2026-09-13 in a "will this thesis survive" assessment and recorded 2026-09-14
+**Status:** Open, but **the data-collection half is answered (2026-11-27)**: see "Data collection done" at the end
+of this item. Raised 2026-09-13 in a "will this thesis survive" assessment and recorded 2026-09-14
 before a session was compacted. **The target and the scope rule were decided 2026-09-29** (section at
 the end of "State of the schedule" below, and `DECISIONS.md`). The recommendations above that point are
 kept as the record of what was advised.
@@ -525,11 +529,22 @@ too thin to support its precision and recall claims. Both are recoverable only i
   INCONCLUSIVE (reported, not cleared) or the threshold or stimulus is changed. None decided. **2026-11-26:** the K1
   dry run shows the same problem for the two sign-in keys; options and a recommendation in item 43. **Decided the
   same day (item 43, option (b)): a key that drops to zero is tested at any count, so `Sysmon-8[]` is now LOST on the
-  real C3 runs (6 to 0, q = 0.0198).** The number of runs per phase is still open.
+  real C3 runs (6 to 0, q = 0.0198).** The number of runs per phase is still open. **Decided 2026-11-27: 3 runs per
+  phase** (DECISIONS 2026-11-27).
+
+### Data collection done, 2026-11-27
+
+- **All 26 evaluation runs valid** (5 control, 3 before, 3 after for each of C1, C3, C5, K1, K2 and K3), one parameters
+  hash, before the 2026-11-30 checkpoint. About 8.7 minutes per run, 12.7 for C3. A power cut stopped the batch once;
+  it resumed (WORKLOG 2026-11-27).
+- **Power:** 15 of 35 keys testable in the 5 control runs; 0 false findings in 70 control-against-control comparisons
+  (DECISIONS 2026-11-27). The evaluation still found all 7 expected lost keys (`docs/EXPECTED-RESULTS.md` section 7).
+- **Still open in this item:** the rest of the schedule: the graphical interface, the evaluation by security engineers,
+  chapters 1 to 3 for the pre-oral, and the defense dates (STATUS, checkpoints).
 
 ---
 
-## 20. WIN-EP-01 does not audit process creation, and two headline claims depend on it (ANSWERED 2026-11-03 in the guest; the archive check remains)
+## 20. WIN-EP-01 does not audit process creation, and two headline claims depend on it (ANSWERED 2026-11-03, in the guest and in the archive)
 
 **Applied 2026-11-03 (chat 27d2595d, run by the student; COMMANDS 2.11).** Before: `auditpol` showed `No
 Auditing` for Process Creation and Credential Validation, and `ProcessCreationIncludeCmdLine_Enabled` did not
@@ -542,7 +557,9 @@ the archive. 4776 was 0 at first, because the guest had written none: a screen u
 
 **Status:** Open. Raised 2026-09-11, measured while testing item 19. **Decided 2026-09-29: "yes"
 below, plus Credential Validation, on WIN-EP-01 and DC-01, before the golden snapshot**
-(`DECISIONS.md` 2026-09-29). Open until applied and checked inside the guest.
+(`DECISIONS.md` 2026-09-29). Open until applied and checked inside the guest. **Answered 2026-11-03:** applied and
+checked in the guest and in the archive (the paragraph above). Both golden snapshots keep it (`golden-base`
+2026-11-16, `golden-base-v2` 2026-11-26); the test cases K2 and K3 depend on it.
 
 **What was measured.** 200 process spawns across three test runs produced **zero** Security 4688
 events. Confirmed directly rather than inferred from their absence:
@@ -715,7 +732,10 @@ endpoint's firmware. See "Checked before the capture, 2026-09-26" at the end of 
 decisions come first. **Decided 2026-09-29, all three parts** (`DECISIONS.md` 2026-09-29): option 1
 below, value keying for a short list of fields, with the final list set after the C3 capture; an
 `lsass.exe` rule in the Sysmon config; and `RunAsPPL = 2`, stated as a deviation from CIS. Open until
-built; the C3 capture below is still the next step, now possible once the Sysmon rule is in.
+built; the C3 capture below is still the next step, now possible once the Sysmon rule is in. **Answered for the
+study's changes, 2026-11-27:** built 2026-11-03 (the paragraph at the top of this item), and C3 was measured with the
+value classes in the spike (2026-11-16, `Sysmon-10[GrantedAccess=other,...]`) and in the evaluation (2026-11-27,
+`docs/EXPECTED-RESULTS.md` section 7). The other class C changes left the study (DECISIONS 2026-10-01, 2026-11-11).
 
 **Answer item 21 first.** This item was the most serious in the file until 2026-09-12, when item 21
 found that the two changes it leaves measurable, C4 and C6, both need a domain controller that does
@@ -950,9 +970,10 @@ blind spot" for a change that created one.
 
 ## 32. Four harness and index points with no record, and whether DC-01 still earns its days
 
-**Status:** Open. Found during the diagram study by chat 243e446b (WORKLOG 2026-09-30 and 2026-10-02; listed
-as study guide fix 9) and by chat 27d2595d (WORKLOG 2026-10-06). Recorded here 2026-10-08 so they are not
-lost. None is decided.
+**Status:** Open in one part. Found during the diagram study by chat 243e446b (WORKLOG 2026-09-30 and 2026-10-02;
+listed as study guide fix 9) and by chat 27d2595d (WORKLOG 2026-10-06). Recorded here 2026-10-08 so they are not
+lost. **2026-11-27:** points 1 and 3 answered 2026-11-13, point 4 on 2026-11-11, and point 2 no longer arises (each
+below). **Left, for the student:** point 3's "Found": the key map does not track three 4624 fields that rules read.
 
 1. **Is the capture window a fixed length?** Box 1 pins "the window", and FINAL calls it the window
    duration, a hashed parameter. But runbook Phase 6 fires the end fence when the attack suite finishes,
@@ -1014,7 +1035,8 @@ repeats", while FINAL's run inputs say the thresholds are fixed at the same time
 
 ## 33. Four points from the professor's guidelines that need asking or deciding
 
-**Status:** Open. Found 2026-10-12 by chat 27d2595d, checking FINAL and the revisions list against the
+**Status:** Open in two points (2 and 3). Point 1 answered in part and point 4 answered, both 2026-11-23 (below).
+Found 2026-10-12 by chat 27d2595d, checking FINAL and the revisions list against the
 professor's recorded lectures for Research 1A (RSCH400): `E:\Elijah MASTER COPY DO NOT DELETE\Documents\AMA\MAY
 2025\RSCH400_CS\Week 1-VC-RSCH400_CS-Research Fundamentals 1.txt` and `...\WEEK 12 - VC - RSCH400_CS.txt`
 (transcripts, outside the repo). The fixes found the same day are in WORKLOG 2026-10-12. These four were not
@@ -1049,9 +1071,10 @@ fixed, because each needs the adviser or the student.
 
 ---
 
-## 34. The run check voids every post-change run of a negative control
+## 34. The run check voids every post-change run of a negative control (DID NOT ARISE in the study, 2026-11-27)
 
-**Status:** Open. Found 2026-10-20 by chat 27d2595d, in the sweep of the re-presentation script.
+**Status:** **Did not arise in the study** (end of this item). Found 2026-10-20 by chat 27d2595d, in the sweep of the
+re-presentation script.
 
 **The conflict.** A negative control is a change that removes the attack together with its telemetry
 (FINAL, Scale of the Experiment). FINAL's attack-test list adds "one test for each negative control kept. It
@@ -1082,6 +1105,12 @@ failure is written down before the data exists, as the thresholds are.
 test that the change blocks on purpose, and the rule is written before the trial.
 
 **Blocks:** the negative controls in the evaluation, and the run-check design (item 22) before the trial.
+
+**2026-11-27: did not arise in the study.** The void rule built 2026-11-27 (DECISIONS 2026-11-27, item 22) checks the
+Sysmon 1 fingerprint and one named step, `rdp-signin-30s`, not that every attack test completed; the harness's own
+voids do not read the tests' exit codes either. So C3, whose dump the change blocks, kept 3 valid after runs
+(`docs/EXPECTED-RESULTS.md` section 7). This is close to option 3. The study has no class B negative control. Reopen
+if one is added, or if a change could block the sign-in step.
 
 ---
 
@@ -1248,7 +1277,8 @@ Team was.
 
 ## 37. The C5 test: NLA is already on, the logon type depends on the session, and the client checks the password first
 
-**Status:** Open. **Point 1 decided 2026-11-12: option (a)**, the baseline turns Remote Desktop on with NLA off
+**Status:** **Answered by 2026-11-16:** all five points decided or answered (below). **Point 1 decided 2026-11-12:
+option (a)**, the baseline turns Remote Desktop on with NLA off
 (DECISIONS 2026-11-12). **Points 3 and 4 answered 2026-11-12 by the NLA on test** (below). **Point 5 decided
 2026-11-13: option (a), the default client, C5 reported as "the predicted effect was not seen"** (DECISIONS
 2026-11-13). **The unattended sign-in in point 3 tested 2026-11-12** (below): a stored password works. **Point 2
@@ -1397,11 +1427,17 @@ that was about re-running until nothing is found; this is a measured result.
 **2026-11-23, first consultation: not decided.** The student said only that no blind spot has been found so far; the
 adviser did not take it up. Raise it again with the first page of the revised form (DECISIONS 2026-11-23).
 
+**2026-11-26: the way forward taken:** test cases with a known answer, K1 to K3 (item 42, DECISIONS 2026-11-26), so
+recall can be measured. **2026-11-27, the evaluation** (`docs/EXPECTED-RESULTS.md` section 7): C1 and C5 show no
+change; for C3 the system reports no blind spot, and by the rules that stopped it is prevention (item 44); the test case
+K1 is a blind spot, as expected. So the three hardening changes produced zero blind spots, and the system found the one
+that was made on purpose. Still to raise with the adviser.
+
 ---
 
-## 39. Surviving coverage: rules that could fire, or rules that did fire?
+## 39. Surviving coverage: rules that could fire, or rules that did fire? (ANSWERED 2026-11-13: did fire)
 
-**Status:** Open. Found 2026-11-13 by chat ee84ae3f, building impact ranking (DECISIONS 2026-11-13, "Impact is a
+**Status:** **Answered 2026-11-13: "did fire"** (end of this item). Found 2026-11-13 by chat ee84ae3f, building impact ranking (DECISIONS 2026-11-13, "Impact is a
 ranking"). **For the student.**
 
 **What was found.** `src/telos/impact.py` follows FINAL's wording: a technique is still covered if an alerting rule
@@ -1475,9 +1511,12 @@ are read again from those, and then item 22's tolerance and the runs per phase a
 
 ---
 
-## 41. The adviser does not accept "differential analysis algorithm" as written: define it as an original algorithm, or use a known one?
+## 41. The adviser does not accept "differential analysis algorithm" as written: define it as an original algorithm, or use a known one? (ANSWERED 2026-11-26: Myers' difference algorithm)
 
-**Status:** Open. Raised 2026-11-23 by the adviser at the first consultation (DECISIONS 2026-11-23, point 3). **For
+**Status:** **Answered 2026-11-26:** a known algorithm, Myers' difference algorithm (Myers 1986), the student's choice
+of 2026-11-24; the title ends "Using Myers' Difference Algorithm"; built as step 3 of the pipeline (DECISIONS
+2026-11-26). The adviser has not seen the revised form yet. Raised 2026-11-23 by the adviser at the first consultation
+(DECISIONS 2026-11-23, point 3). **For
 the student, then the adviser.** It blocks the revised form: the title, the general objective, objectives 1 and 4, and
 the end of the area of investigation all name the algorithm.
 
@@ -1814,7 +1853,9 @@ demo and not in the product.
 host wrote **two 4776 events** in WIN-EP-01 (08:14:19), and both reached the archive. So each harness guest call
 adds 4776 events as well as its batch logon. One sample only; the number per call is not established.
 
-**Status:** Open. Found 2026-09-26 while running the item 21 check.
+**Status:** Open in one part. Found 2026-09-26 while running the item 21 check. **2026-11-27:** step 2 below is
+built: the harness records the number of guest calls in each run's manifest (`guest_calls`, `harness.py`). Step 3 is
+not built: the void rule of 2026-11-27 does not compare call counts.
 
 **What was measured.** Grouping every 4624 logon event in the archive (item 21) found one large
 group nobody had described:
@@ -3236,6 +3277,32 @@ data was never collected.
 ---
 
 ## Answered
+
+### Answered since 2026-11-03, kept in place above (index written 2026-11-27)
+
+These items were answered or decided after 2026-10-15. Each stays where it is above, with its full history and a
+marker in its heading or status line. Newest first; the evidence is in the entry named.
+
+- **Item 22**, the stimulus check: the void rule (Sysmon 1 within 79.8 to 141.8, `rdp-signin-30s` exit 0), decided and
+  built 2026-11-27 (DECISIONS 2026-11-27).
+- **Item 25, data collection only:** 26 of 26 evaluation runs valid, 2026-11-27 (WORKLOG 2026-11-27). The rest of the
+  schedule stays open.
+- **Item 18**, for the study's changes: value classes built 2026-11-03 and C3 measured with them, 2026-11-16 and
+  2026-11-27.
+- **Item 41**, the algorithm: Myers' difference algorithm, 2026-11-26 (DECISIONS 2026-11-26).
+- **Items 42 and 43**: the test cases K1 to K3, and the exact test for a key that drops to zero, 2026-11-26
+  (DECISIONS 2026-11-26).
+- **Item 40**, the pinned attack list, 2026-11-18 (DECISIONS 2026-11-18).
+- **Item 37**, the C5 test: all five points decided by 2026-11-13, confirmed on the first revert of `golden-base`,
+  2026-11-16 (COMMANDS 2.16).
+- **Items 23 and 36**: 0 false findings in the spike's 10 control pairs; LSA Protection off in `golden-base`, both
+  2026-11-16 (WORKLOG 2026-11-16, COMMANDS 2.16).
+- **Item 39**, surviving coverage counts rules that did fire, 2026-11-13 (DECISIONS 2026-11-13).
+- **Item 21**, DC-01 dropped, 2026-11-11 (DECISIONS 2026-11-11).
+- **Items 20, 24 and 30**: the audit settings applied, the control-run check and field-loss pairing built, 2026-11-03
+  (COMMANDS 2.11, WORKLOG 2026-11-03).
+
+Did not arise: **item 34** (2026-11-27). No longer arises: **item 31** (2026-11-11).
 
 ### Which submission documents still carry the superseded event key? (answered 2026-10-15, item 15)
 

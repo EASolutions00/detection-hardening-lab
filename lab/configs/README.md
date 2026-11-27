@@ -19,7 +19,8 @@ experiment can be reconstructed exactly.
 logged. The archive agrees: 14,102 Sysmon events on 2026-09-02, 09-03 and 09-10, none with ID 10.
 So any hardening change whose effect is stated as Event 10, C3 LSA Protection and C8 Credential
 Guard, cannot be measured with this file. Adding a rule for `lsass.exe` would change the pinned
-SHA256 and must be recorded in `docs/DECISIONS.md` before the golden snapshot. Not decided yet.
+SHA256 and must be recorded in `docs/DECISIONS.md` before the golden snapshot. Not decided yet on 2026-09-26;
+decided 2026-09-29 and done 2026-11-03 (the next paragraph).
 Found 2026-09-26; `docs/OPEN-QUESTIONS.md` item 18, "Checked before the capture".
 
 **Changed 2026-11-03:** decided 2026-09-29, the `ProcessAccess` section now has one rule, access to
