@@ -17,6 +17,44 @@ Next:
 
 ---
 
+## 2026-11-27 - Fix 4 of 9: the verdict's wording, seen versus potential techniques, and a classify() rule
+
+**Chat:** 26343d0f (Claude Code). **Asked:** "Yes, start fix 4" (the review's point 6 and the verdict's wording; and
+the `classify()` rule found in fix 2).
+
+**Did (code, commit `eeee1a1`):**
+- `classify()`: a key that falls to zero but fails the correction is INCONCLUSIVE at any count; until now it was
+  UNCHANGED from 30 events up.
+- `rank_impact()` reads the before runs' alerts and splits each key's blind techniques into "alerted before" and "never
+  alerted (potential)". The ranking order is unchanged.
+- The verdict, the ranked section, `findings.json` and the Navigator layer use the split. The verdict never says "no
+  blind spot", and it always gives the number of undecided keys.
+- 7 new tests; 177 passed. `tools/check_docs.py`'s reference text follows the new rule. DECISIONS 2026-11-27.
+
+**Checked on the evaluation:** the 6 comparisons, run again with `eeee1a1` into `data/summaries/eval-2026-11-26-fix4/`,
+give `comparison.csv` files identical to the official ones (SHA256, 6 of 6), so no class, number or reason changed.
+The new verdicts: C1, C3, C5 "NO KEY LOST OR REDUCED" (17, 18, 17 undecided); K2, K3 one key lost and no technique
+that lost its alerts; K1 "BLIND SPOTS FOUND: 2" (the two sign-in keys), not 4, because its "other" and type 2 4624
+keys name only T1068, T1078, T1110, T1136 and T1203, which never alerted. Fix 2's zero-loss check, run again: the same
+score; the run tests' failed zero keys are now INCONCLUSIVE. The first re-run used absolute paths; it was repeated from
+the repo folder so that the run lists are relative, as in the official reports.
+
+**Found on the way:** PROMPT-new-chat's summary of item 44 still gave the rules that stopped as the proof of C3's
+block, a copy that fix 3 missed; corrected. In the thesis folder, "no blind spot found" is still in the activity
+diagram (sheet 2, step 9), `ACTIVITY-DIAGRAM-EXPLAINED.md` and `prep-local/STUDY-GUIDE.md` (for fix 9), and
+`T1-PANEL-RESPONSE.md` line 337 describes an older verdict with a weighted score (for fix 7). Not changed here.
+
+**Changed (docs):** DECISIONS (a new entry); EXPECTED-RESULTS section 7 (a dated block, and point 6 of the fix 2 block
+done); OPEN-QUESTIONS 43 (point 1 done); PROMPT-new-chat; the test count 177 in README, CLAUDE.md, FILE-MAP and
+PROMPT-new-chat; FILE-MAP (the new folder); COMMANDS 2.19; STATUS.
+
+**Not decided:** whether the ranking should put the techniques that alerted before first. It still counts both kinds,
+as decided 2026-11-13. That is the student's choice.
+
+**Next:** fix 5 (one list of the freeze dates), after the student's go-ahead.
+
+---
+
 ## 2026-11-27 - Fix 3 of 9: evidence for K1's sign-in and C3's block from the raw events
 
 **Chat:** 26343d0f (Claude Code). **Asked:** "Yes, start fix 3" (the outside review's point 3).

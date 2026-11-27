@@ -1670,8 +1670,8 @@ the ranking. The table's "92653 and 92657 stop" holds; "keys LOST" holds only fo
 ## 43. Complete losses of rare keys are INCONCLUSIVE, so the system misses K1's sign-in keys
 
 **Status:** **Decided 2026-11-26: option (b) (student: "Use the exact test"; DECISIONS 2026-11-26).** Built and tested
-the same day; on the real C3 runs `Sysmon-8[]` is now LOST (6 to 0, q = 0.0198). The two smaller points at the end
-stay open. Found 2026-11-26 by chat 26343d0f, in the dry run of item 42. The same question the spike left open for C3's `Sysmon-8[]` (item 25, "Spike answers": "None decided").
+the same day; on the real C3 runs `Sysmon-8[]` is now LOST (6 to 0, q = 0.0198). Of the two smaller points at the
+end, point 1 is done (2026-11-27, fix 4 of the outside review; DECISIONS 2026-11-27) and point 2 stays open. Found 2026-11-26 by chat 26343d0f, in the dry run of item 42. The same question the spike left open for C3's `Sysmon-8[]` (item 25, "Spike answers": "None decided").
 
 **The problem.** `differential.MIN_PRE_COUNT = 30`: a key with fewer than 30 events in all the before runs together is
 INCONCLUSIVE, and is never tested or ranked. The pinned sign-in writes 2 type 10 and 2 type 3 logons per run, so 6
@@ -1707,7 +1707,9 @@ runs `(unverified exact bound)`.
 1. **The ranked list mixes observed and potential techniques.** For a lost key it lists the techniques of every rule
    that could read it, minus those still firing after. In K1 its top line names T1068, T1078, T1110, T1136 and T1203,
    none of which fired before. The coverage section lists the techniques that really fired. Option: mark each blind
-   technique "fired before" or "could fire only".
+   technique "fired before" or "could fire only". **Done 2026-11-27 (fix 4; DECISIONS 2026-11-27):** the report and
+   the verdict now say "alerted before" or "never alerted (potential)"; the ranking is unchanged. On the evaluation,
+   K1's blind spots fell from 4 to 2 (EXPECTED-RESULTS section 7, last block).
 2. **K2 and K3 get the same ranking numbers** (0 techniques, level 3, 1 rule), although rule 67027 keeps firing in K2
    and stops in K3. A rule with no technique appears in no coverage line. Option: a line per alerting rule that fired
    before and not after.

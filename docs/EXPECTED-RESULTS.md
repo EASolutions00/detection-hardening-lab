@@ -280,7 +280,8 @@ What this shows, in order:
 6. **Found on the way:** under the run tests, keys that fell from 39, 60 or 417 events to none are classed UNCHANGED.
    The reason is a rule in `classify()`: a key with 30 or more events before that falls to zero but fails the
    correction becomes UNCHANGED, not INCONCLUSIVE. UNCHANGED claims that the key survived. No key reached this rule in
-   the official analysis. Proposed for fix 4 (WORKLOG 2026-11-27).
+   the official analysis. **Done in fix 4** (DECISIONS 2026-11-27): such a key is now INCONCLUSIVE at any count (the
+   last block of this section).
 
 **Technique level:** K1 "no longer detected" = **T1021.001, T1078.002, T1550.002, exactly as expected**. C1, C5, K2,
 K3: none, as expected. **C3: none, against the expected {T1055}: a miss** (below).
@@ -330,3 +331,18 @@ so **K1 is a blind spot, as expected.** The evidence uses no finding of the tool
 - T1055 still counts as detected after C3, through rules 61632 and 61634, which fire in every run.
 - So the system says "no blind spot" for C3. The truth, by the raw events above and not by the rules that stopped, is
   **prevention** (section 1). OPEN-QUESTIONS 44.
+
+**The report's wording, changed after the evaluation** (added 2026-11-27, fix 4 of the outside review; DECISIONS
+2026-11-27). The results above come from analyser `7850847` and stay as they are. With the new code (`eeee1a1`), the 6
+comparisons were run again into `data/summaries/eval-2026-11-26-fix4/`:
+- **No result changed.** Each case's `comparison.csv` is identical to the official one (SHA256, 6 of 6): every key's
+  class, totals, q and reason.
+- **The verdict never says "no blind spot".** C1, C3 and C5: "NO KEY LOST OR REDUCED", with 17, 18 and 17 undecided
+  keys. K2 and K3: "KEYS LOST OR REDUCED: 1, BUT NO TECHNIQUE THAT ALERTED BEFORE LOST ITS ALERTS", with 20 and 17
+  undecided. K1: "BLIND SPOTS FOUND: 2", not 4.
+- **Seen versus potential techniques.** K1's two sign-in keys name the techniques whose alerts fired before and none
+  after: T1021.001, T1078.002 and T1550.002, the coverage section's list. The "other" and type 2 4624 keys name only
+  T1068, T1078, T1110, T1136 and T1203, which never alerted, before or after; the old verdict counted those two keys as
+  blind spots. This answers section 2's point 4.
+- Point 6 of the block on the test for a key that falls to zero: such a key is now INCONCLUSIVE at any count
+  (`data/summaries/eval-2026-11-26-fix4/zero-loss-sensitivity.txt`; the score did not change).

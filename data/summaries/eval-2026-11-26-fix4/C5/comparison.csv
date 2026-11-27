@@ -1,0 +1,36 @@
+key,classification,pre_total,post_total,pre_rate,post_rate,rate_ratio,ci_low,ci_high,q_value,cov,dispersion,reason
+Application-1000[],UNCHANGED,30,30,10.0,10.0,1.0,0.6028602759759243,1.658759151747354,1.0,0.0,1.0,not reported: q=1 above alpha=0.05; ratio 1.000 above 0.5; drop 0.0% within noise band 0.0%
+Application-1001[],NEW,0,3,0.0,1.0,,,,,0.9128709291752768,1.4999999999999998,"absent before the change, present after"
+Application-1003[],INCONCLUSIVE,6,6,2.0,2.0,,,,,0.0,1.0,"only 6 occurrences before the change, below the minimum of 30 needed for the rate-ratio test to have power"
+Application-16384[],INCONCLUSIVE,6,6,2.0,2.0,,,,,0.21066252211737155,1.0,"only 6 occurrences before the change, below the minimum of 30 needed for the rate-ratio test to have power"
+Application-16394[],INCONCLUSIVE,5,6,1.6666666666666667,2.0,,,,,0.21066252211737155,1.0,"only 5 occurrences before the change, below the minimum of 30 needed for the rate-ratio test to have power"
+Application-8198[],INCONCLUSIVE,3,3,1.0,1.0,,,,,0.0,1.0,"only 3 occurrences before the change, below the minimum of 30 needed for the rate-ratio test to have power"
+"Security-4624[AuthenticationPackageName=NTLM,LogonType=other,TargetUserName]",INCONCLUSIVE,6,6,2.0,2.0,,,,,0.0,1.0,"only 6 occurrences before the change, below the minimum of 30 needed for the rate-ratio test to have power"
+"Security-4624[AuthenticationPackageName=other,LogonType=10,TargetUserName]",INCONCLUSIVE,6,6,2.0,2.0,,,,,0.0,1.0,"only 6 occurrences before the change, below the minimum of 30 needed for the rate-ratio test to have power"
+"Security-4624[AuthenticationPackageName=other,LogonType=2,TargetUserName]",INCONCLUSIVE,9,9,3.0,3.0,,,,,0.0,1.0,"only 9 occurrences before the change, below the minimum of 30 needed for the rate-ratio test to have power"
+"Security-4624[AuthenticationPackageName=other,LogonType=other,TargetUserName]",UNCHANGED,60,65,20.0,21.666666666666668,1.0833333333333335,0.7627281664256158,1.5387016800638456,1.0,0.10656278388311766,1.0,not reported: q=1 above alpha=0.05; ratio 1.083 above 0.5; drop -8.3% within noise band 32.0%
+Security-4634[],UNCHANGED,33,33,11.0,11.0,1.0,0.6172268573351084,1.6201498494694864,1.0,0.0,1.0,not reported: q=1 above alpha=0.05; ratio 1.000 above 0.5; drop 0.0% within noise band 0.0%
+Security-4648[],UNCHANGED,39,39,13.0,13.0,1.0,0.6415599814770585,1.558700712126258,1.0,0.0,1.0,not reported: q=1 above alpha=0.05; ratio 1.000 above 0.5; drop 0.0% within noise band 0.0%
+Security-4672[],UNCHANGED,81,86,27.0,28.666666666666668,1.0617283950617284,0.7838194213373774,1.438172051104545,1.0,0.08136212553238037,1.0,not reported: q=1 above alpha=0.05; ratio 1.062 above 0.5; drop -6.2% within noise band 24.4%
+"Security-4688[CommandLine,NewProcessName,ParentProcessName]",UNCHANGED,417,446,139.0,148.66666666666666,1.0695443645083933,0.9358678247077724,1.2223148584137478,1.0,0.07790798453707135,1.0,not reported: q=1 above alpha=0.05; ratio 1.070 above 0.5; drop -7.0% within noise band 23.4%
+"Security-4776[PackageName,TargetUserName,Workstation]",UNCHANGED,39,39,13.0,13.0,1.0,0.6415599814770585,1.558700712126258,1.0,0.0,1.0,not reported: q=1 above alpha=0.05; ratio 1.000 above 0.5; drop 0.0% within noise band 0.0%
+Security-4798[],UNCHANGED,66,67,22.0,22.333333333333332,1.0151515151515151,0.7226149011090655,1.4261158981537205,1.0,0.024235511394033897,1.0,not reported: q=1 above alpha=0.05; ratio 1.015 above 0.5; drop -1.5% within noise band 7.3%
+Security-4799[],INCONCLUSIVE,6,6,2.0,2.0,,,,,0.0,1.0,"only 6 occurrences before the change, below the minimum of 30 needed for the rate-ratio test to have power"
+Security-5058[],INCONCLUSIVE,6,6,2.0,2.0,,,,,0.0,1.0,"only 6 occurrences before the change, below the minimum of 30 needed for the rate-ratio test to have power"
+Security-5059[],INCONCLUSIVE,3,3,1.0,1.0,,,,,0.0,1.0,"only 3 occurrences before the change, below the minimum of 30 needed for the rate-ratio test to have power"
+Security-5061[],INCONCLUSIVE,6,6,2.0,2.0,,,,,0.0,1.0,"only 6 occurrences before the change, below the minimum of 30 needed for the rate-ratio test to have power"
+Security-5379[],UNCHANGED,141,171,47.0,57.0,1.2127659574468086,0.8667481982691099,1.696918748119759,1.0,0.18981366258891108,2.2698412698412698,not reported: q=1 above alpha=0.05; ratio 1.213 above 0.5; drop -21.3% within noise band 56.9%
+Security-5382[],NEW,0,1,0.0,0.3333333333333333,,,,,0.912870929175277,1.0,"absent before the change, present after"
+"Sysmon-10[GrantedAccess=other,SourceImage,TargetImage]",UNCHANGED,323,345,107.66666666666667,115.0,1.068111455108359,0.9177230876030764,1.2431441422198688,1.0,0.0805844299575771,1.0,not reported: q=1 above alpha=0.05; ratio 1.068 above 0.5; drop -6.8% within noise band 24.2%
+"Sysmon-11[Image,TargetFilename]",UNCHANGED,36,36,12.0,12.0,1.0,0.630037189507072,1.5872078928902262,1.0,0.0,1.0,not reported: q=1 above alpha=0.05; ratio 1.000 above 0.5; drop 0.0% within noise band 0.0%
+Sysmon-12[],UNCHANGED,45,45,15.0,15.0,1.0,0.661527131647122,1.5116537964363184,1.0,0.0,1.0,not reported: q=1 above alpha=0.05; ratio 1.000 above 0.5; drop 0.0% within noise band 0.0%
+"Sysmon-13[Details,EventType,TargetObject]",UNCHANGED,402,402,134.0,134.0,1.0,0.8708829118687523,1.1482599857817701,1.0,0.0,1.0,not reported: q=1 above alpha=0.05; ratio 1.000 above 0.5; drop 0.0% within noise band 0.0%
+"Sysmon-1[CommandLine,Hashes,Image,OriginalFileName,ParentImage]",UNCHANGED,211,222,70.33333333333333,74.0,1.052132701421801,0.8714256350786947,1.2703128951458602,1.0,0.03861892839380143,1.0,not reported: q=1 above alpha=0.05; ratio 1.052 above 0.5; drop -5.2% within noise band 11.6%
+"Sysmon-1[CommandLine,Hashes,Image,OriginalFileName]",UNCHANGED,80,88,26.666666666666668,29.333333333333332,1.0999999999999999,0.761312270211579,1.5893609591550708,1.0,0.20429022295779148,1.4774011299435028,not reported: q=1 above alpha=0.05; ratio 1.100 above 0.5; drop -10.0% within noise band 61.3%
+"Sysmon-1[CommandLine,Hashes,Image]",NEW,0,1,0.0,0.3333333333333333,,,,,0.5590169943749473,1.0,"absent before the change, present after"
+Sysmon-22[],INCONCLUSIVE,9,9,3.0,3.0,,,,,0.0,1.0,"only 9 occurrences before the change, below the minimum of 30 needed for the rate-ratio test to have power"
+"Sysmon-3[DestinationIp,DestinationPort,Image]",INCONCLUSIVE,6,6,2.0,2.0,,,,,0.0,1.0,"only 6 occurrences before the change, below the minimum of 30 needed for the rate-ratio test to have power"
+Sysmon-5[],INCONCLUSIVE,6,6,2.0,2.0,,,,,0.0,1.0,"only 6 occurrences before the change, below the minimum of 30 needed for the rate-ratio test to have power"
+Sysmon-8[],INCONCLUSIVE,9,9,3.0,3.0,,,,,0.0,1.0,"only 9 occurrences before the change, below the minimum of 30 needed for the rate-ratio test to have power"
+System-1808[],INCONCLUSIVE,3,3,1.0,1.0,,,,,0.0,1.0,"only 3 occurrences before the change, below the minimum of 30 needed for the rate-ratio test to have power"
+System-7001[],INCONCLUSIVE,3,3,1.0,1.0,,,,,0.0,1.0,"only 3 occurrences before the change, below the minimum of 30 needed for the rate-ratio test to have power"

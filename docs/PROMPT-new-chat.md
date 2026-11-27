@@ -298,11 +298,13 @@ in `REPO\src\telos\` unless stated otherwise.
 ## 5. Open, so do not state these as settled
 
 Item 44: open, new 2026-11-27. C3's real effect is below the REDUCED threshold
-    In the evaluation C3 blocked the dump: rules 92403 and 61625 (T1055, level 12) fired in all 8
-    control and before runs and in none of the 3 C3 runs. But `Sysmon-10` fell only to a rate
+    In the evaluation C3 blocked the dump: the three test programs started but never opened
+    `lsass.exe`, and no dump file was written (the raw events, `REPO\src\independent_evidence.py`);
+    rules 92403 and 61625 (T1055, level 12) stopped with it. But `Sysmon-10` fell only to a rate
     ratio of 0.672 (q = 8.8e-5), above the 0.5 limit, and T1055 stays "detected" through rules
-    61632 and 61634. So the system says "no blind spot"; by the rules that stopped, the truth is
-    prevention. Reported as found; nothing is re-run or retuned. For the student and the adviser.
+    61632 and 61634. So the official report says "no blind spot" (since fix 4: "NO KEY LOST OR
+    REDUCED"); by the raw events, the truth is prevention. Reported as found; nothing is re-run or
+    retuned. For the student and the adviser.
 
 Item 38: open, for the adviser. No hardening change shows a blind spot under the shipped rules
     C1 and C5 show no change, and C3 is prevention: measured in the trials (2026-11-13) and again
@@ -525,7 +527,7 @@ Built, tested, and used on the real lab, in `REPO\src\telos\` (checked 2026-11-2
     `src/run.py`, `harness.py` (one capture window over `vmrun`; fixed-length windows; run checks
     with item 22's void rule since 2026-11-27), `catalog.py` with `src/capture.py`, `spike.py` with
     `src/spike.py`, `evaluation.py` with `src/evaluate.py`, `baseline.py`, `model.py`, `synth.py`.
-    12 test files in `REPO\tests\`, 170 tests passing (2026-11-27). Remediation level 2 reads
+    12 test files in `REPO\tests\`, 177 tests passing (2026-11-27). Remediation level 2 reads
     `REPO\lab\knowledge\compensating-controls.json`, which has entries for C3 and C5 only.
 
 Designed only, no code exists:
@@ -561,7 +563,7 @@ git -C "E:\Claude general" log --oneline -8
 In PowerShell a quoted executable needs the call operator, so write
 `& "E:\Claude general\.venv\Scripts\python.exe" ...`. In cmd or bash the quotes alone are enough.
 
-`pytest` should print `170 passed` (2026-11-27). If it prints anything else, stop and tell me,
+`pytest` should print `177 passed` (2026-11-27). If it prints anything else, stop and tell me,
 because the record is stale.
 
 `check_docs.py` flags statements in any document that contradict the code. **It flags, it does

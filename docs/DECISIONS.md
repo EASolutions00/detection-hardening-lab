@@ -8,6 +8,36 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-11-27 - Fix 4 of the outside review: the verdict's wording, seen versus potential techniques, and a classify() rule
+
+**Decision (student, chat 26343d0f: "Yes, start fix 4", for fix 4 as STATUS and the WORKLOG plan described it: the
+report's wording, and the `classify()` rule found in fix 2).** Built in commit `eeee1a1`; 177 tests pass.
+1. **A key that falls to zero but fails the correction is INCONCLUSIVE at any count.** Until now a key with 30 or more
+   events before went to UNCHANGED, which claims that it survived. The rule was found under the other tests of fix 2
+   (the 4688 key, 417 to 0, labelled UNCHANGED); no key of the evaluation reached it under the declared test.
+2. **Blind techniques are split by the before runs.** A technique whose alerts fired before the change and none after
+   is a loss that was seen. One that never alerted, before or after, is potential: a rule names it, but the attack
+   tests never triggered it (OPEN-QUESTIONS 43, point 1; the review's point 6). The ranking still counts both, as
+   decided 2026-11-13. Changing the ranking would be a separate decision; it is not taken.
+3. **The verdict never says "no blind spot".** It says BLIND SPOTS FOUND (keys with a technique that lost its alerts),
+   or KEYS LOST OR REDUCED, BUT NO TECHNIQUE THAT ALERTED BEFORE LOST ITS ALERTS, or NO KEY LOST OR REDUCED. It always
+   gives the number of undecided keys, because an undecided key is not shown safe.
+4. **The Navigator layer** shows a technique that never alerted in grey, not red.
+
+**Why.** An outside review (WORKLOG 2026-11-27) showed that the report counted potential techniques as blind, and
+called a result with many undecided keys "no blind spot". Both say more than the data shows.
+
+**Effect on the evaluation: none on the results.** The 6 comparisons, run again with `eeee1a1` into
+`data/summaries/eval-2026-11-26-fix4/`, give `comparison.csv` files identical to the official ones (SHA256, 6 of 6).
+Only the wording changed: K1 now reports 2 blind spots, not 4, because its "other" and type 2 4624 keys name only
+potential techniques; C1, C3 and C5 report "NO KEY LOST OR REDUCED" with 17, 18 and 17 undecided keys; K2 and K3
+report one key lost and no technique that lost its alerts. The official output (analyser `7850847`) is kept as it was.
+
+**Cost if wrong.** Small. The rule change hides nothing, because INCONCLUSIVE is never reported as safe. The split uses
+one more input, the before runs' alerts, which the pipeline already read for the coverage section.
+
+---
+
 ## 2026-11-27 - The revised form: 4 problems, a percentage beside the ranking, and the lab tool outside the modules
 
 **Decision (student, chat 26343d0f: "Accept all three", after the options were explained).** Choices 1 to 3 of the

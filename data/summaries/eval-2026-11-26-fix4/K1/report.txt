@@ -1,0 +1,251 @@
+Change: K1   parameters sha256: 9895d0cf7c5854231710f0af733e248cd62bfa7a8ca154a3c29bab11c53b14cd
+Runs: control 5, before 3, after 3
+
+==============================================================================
+VERDICT
+==============================================================================
+
+  BLIND SPOTS FOUND: 2
+  (lost or reduced keys read by the rules of a technique whose alerts fired before the change
+  and not after it)
+  top: Security-4624[AuthenticationPackageName=NTLM,LogonType=other,TargetUserName]
+       techniques that lost their alerts 3   highest level 15   rules 14
+  lost or reduced keys 5;  undecided keys (INCONCLUSIVE, not shown safe) 14
+  techniques that never alerted, before or after, named by the lost keys' rules (potential,
+  not seen): 5
+
+  A blind technique can also mean the change stopped the attack itself (prevention, as
+  ruled for C3 and C5); the per-run check must tell the two apart (OPEN-QUESTIONS 22).
+
+==============================================================================
+MYERS COMPARISON  (step 3: what was removed; Myers 1986)
+==============================================================================
+
+  Before: 3 runs joined, 2101 events.   After: 3 runs joined, 2208 events.
+  Edit distance D = 347   (120 deleted, 227 inserted)
+
+  D between single runs, for context:
+    control against control (no change)   7 to 105 (10 pairs)
+    before against after                  47 to 153 (9 pairs)
+
+  Deleted (in the runs before, missing after): 5 keys
+        60  Security-4624[AuthenticationPackageName=other,LogonType=other,TargetUserName]
+        39  Security-4648[]
+         9  Security-4624[AuthenticationPackageName=other,LogonType=2,TargetUserName]
+         6  Security-4624[AuthenticationPackageName=NTLM,LogonType=other,TargetUserName]
+         6  Security-4624[AuthenticationPackageName=other,LogonType=10,TargetUserName]
+
+  Inserted (new in the runs after): 12 keys
+        66  Security-4688[CommandLine,NewProcessName,ParentProcessName]
+        54  Security-5379[]
+        36  Sysmon-10[GrantedAccess=other,SourceImage,TargetImage]
+        29  Sysmon-1[CommandLine,Hashes,Image,OriginalFileName]
+        18  Sysmon-1[CommandLine,Hashes,Image,OriginalFileName,ParentImage]
+        10  Security-4672[]
+         6  Application-1001[]
+         2  Security-4798[]
+         2  Security-5382[]
+         2  Sysmon-1[CommandLine,Hashes,Image]
+    ... and 2 more
+
+  Same result as subtracting the counts per key: yes
+  Myers lists every difference, normal variation included. The telemetry
+  comparison below (step 4) decides which ones are larger than the noise floor.
+
+==============================================================================
+NOISE FLOOR  (measured from the control runs)
+==============================================================================
+
+  event keys measured         36
+  median CoV                  0.00%
+  highest CoV                 91.29%
+  median dispersion           1.00
+  share of types over 5% CoV  31%
+
+  This is the answer to the feasibility spike's question Q1.
+  A median CoV near zero would mean the statistical layer buys
+  nothing inside the laboratory, and the study must say so.
+
+  event key                               mean      CoV  dispersion
+  ---------------------------------- --------- -------- -----------
+  Security-5382[]                          0.6  91.29%        1.00
+  Application-1001[]                       1.8  91.29%        1.50
+  Sysmon-1[CommandLine,Hashes,Image]       0.8  55.90%        1.00
+  Application-16384[]                      2.6  21.07%        1.00
+  Application-16394[]                      2.6  21.07%        1.00
+  Sysmon-1[CommandLine,Hashes,Image,OriginalFileName]      35.4  20.43%        1.48
+
+==============================================================================
+DIFFERENTIAL ANALYSIS
+==============================================================================
+
+STAGE B  capture check, then one chi-square over the whole profile
+         (reported as a summary; since 2026-09-28 it does not stop any key being tested)
+  chi-square = 149.7   p = 3.83e-16   alpha = 0.05
+  profile outcome   CHANGED
+  why               5 event key(s) classified LOST or REDUCED; whole-profile chi-square p = 3.83e-16 is below alpha = 0.05
+  event keys carried into per-key testing: 18
+
+STAGE C  classification
+  LOST              5
+  REDUCED           0
+  NEW               4
+  INCONCLUSIVE     14
+  UNCHANGED        13
+
+REPORTED FINDINGS  (5)
+
+  FINDING 1   LOST   Security-4624[AuthenticationPackageName=NTLM,LogonType=other,TargetUserName]
+    rate before   2.0 per run
+    rate after    0.0 per run
+    rate ratio    0.000   95% CI [0.000, 0.500]
+    q value       0.00892   (BH corrected)
+    noise floor   0.00% CoV, dispersion 1.00
+    why           present before (6 occurrences), absent after
+
+  FINDING 2   LOST   Security-4624[AuthenticationPackageName=other,LogonType=10,TargetUserName]
+    rate before   2.0 per run
+    rate after    0.0 per run
+    rate ratio    0.000   95% CI [0.000, 0.500]
+    q value       0.00892   (BH corrected)
+    noise floor   0.00% CoV, dispersion 1.00
+    why           present before (6 occurrences), absent after
+
+  FINDING 3   LOST   Security-4624[AuthenticationPackageName=other,LogonType=2,TargetUserName]
+    rate before   3.0 per run
+    rate after    0.0 per run
+    rate ratio    0.000   95% CI [0.000, 0.333]
+    q value       0.00074   (BH corrected)
+    noise floor   0.00% CoV, dispersion 1.00
+    why           present before (9 occurrences), absent after
+
+  FINDING 4   LOST   Security-4624[AuthenticationPackageName=other,LogonType=other,TargetUserName]
+    rate before   20.0 per run
+    rate after    0.0 per run
+    rate ratio    0.000   95% CI [0.000, 0.050]
+    q value       1.58e-25   (BH corrected)
+    noise floor   10.66% CoV, dispersion 1.00
+    why           present before (60 occurrences), absent after
+
+  FINDING 5   LOST   Security-4648[]
+    rate before   13.0 per run
+    rate after    0.0 per run
+    rate ratio    0.000   95% CI [0.000, 0.077]
+    q value       1.04e-16   (BH corrected)
+    noise floor   0.00% CoV, dispersion 1.00
+    why           present before (39 occurrences), absent after
+
+NOT DECIDED, REPORTED AS INCONCLUSIVE  (14)
+  These are not cleared. There was not enough data to decide them.
+    Application-1003[]                 6 occurrences before the change
+    Application-16384[]                6 occurrences before the change
+    Application-16394[]                5 occurrences before the change
+    Application-8198[]                 3 occurrences before the change
+    Security-4799[]                    6 occurrences before the change
+    Security-5058[]                    6 occurrences before the change
+    Security-5059[]                    3 occurrences before the change
+    Security-5061[]                    6 occurrences before the change
+    Sysmon-22[]                        9 occurrences before the change
+    Sysmon-3[DestinationIp,DestinationPort,Image] 6 occurrences before the change
+    Sysmon-5[]                         6 occurrences before the change
+    Sysmon-8[]                         9 occurrences before the change
+    System-1808[]                      3 occurrences before the change
+    System-7001[]                      3 occurrences before the change
+
+==============================================================================
+RANKED BLIND SPOTS  (blind techniques, then highest level, then number of rules)
+==============================================================================
+
+  A blind technique: no alert for it fired after the change. Only one whose alerts fired before
+  the change is a loss that was seen; one that never alerted is potential (DECISIONS 2026-11-27).
+
+  1. LOST     Security-4624[AuthenticationPackageName=NTLM,LogonType=other,TargetUserName]
+     blind techniques 8 (3 alerted before, 5 never alerted)   highest level 15   rules 14
+     rules that read it: 10100, 17101, 17102, 40101, 40112, 40501, 60106, 60119, 60200, 67022, 67024, 92652, 92657, 99920
+     techniques: T1021.001, T1068, T1078, T1078.002, T1110, T1136, T1203, T1550.002
+     BLIND (alerts fired before the change, none after): T1021.001, T1078.002, T1550.002
+     no alert before or after (potential, not seen): T1068, T1078, T1110, T1136, T1203
+     remediation (level 1) for T1021.001: rules that read still-observed events but did not
+       fire: 92109
+     remediation (level 1) for T1110: rules that read still-observed events but did not
+       fire: 92102
+
+  2. LOST     Security-4624[AuthenticationPackageName=other,LogonType=10,TargetUserName]
+     blind techniques 7 (2 alerted before, 5 never alerted)   highest level 15   rules 12
+     rules that read it: 10100, 17101, 17102, 40101, 40112, 40501, 60106, 60119, 67022, 92653, 92656, 99920
+     techniques: T1021.001, T1068, T1078, T1078.002, T1110, T1136, T1203
+     BLIND (alerts fired before the change, none after): T1021.001, T1078.002
+     no alert before or after (potential, not seen): T1068, T1078, T1110, T1136, T1203
+     remediation (level 1) for T1021.001: rules that read still-observed events but did not
+       fire: 92109
+     remediation (level 1) for T1110: rules that read still-observed events but did not
+       fire: 92102
+
+  3. LOST     Security-4624[AuthenticationPackageName=other,LogonType=other,TargetUserName]
+     blind techniques 5 (0 alerted before, 5 never alerted)   highest level 15   rules 12
+     rules that read it: 10100, 17101, 17102, 40101, 40112, 40501, 60106, 60119, 60200, 67022, 67024, 99920
+     techniques: T1068, T1078, T1110, T1136, T1203
+     no alert before or after (potential, not seen): T1068, T1078, T1110, T1136, T1203
+     remediation (level 1) for T1110: rules that read still-observed events but did not
+       fire: 92102
+
+  4. LOST     Security-4624[AuthenticationPackageName=other,LogonType=2,TargetUserName]
+     blind techniques 5 (0 alerted before, 5 never alerted)   highest level 15   rules 11
+     rules that read it: 10100, 17101, 17102, 40101, 40112, 40501, 60106, 60118, 60119, 67022, 99920
+     techniques: T1068, T1078, T1110, T1136, T1203
+     no alert before or after (potential, not seen): T1068, T1078, T1110, T1136, T1203
+     remediation (level 1) for T1110: rules that read still-observed events but did not
+       fire: 92102
+
+  5. LOST     Security-4648[]
+     blind techniques 0 (0 alerted before, 0 never alerted)   highest level 0   rules 0
+     no alerting rule reads this key: it affects no detection
+
+==============================================================================
+COVERAGE CHANGE  (techniques with at least one alert that fired)
+==============================================================================
+
+  before the change   11: T1021.001, T1055, T1059.001, T1059.003, T1078.002, T1087, T1105, T1484, T1543.003, T1550.002, T1574.010
+  after the change    8: T1055, T1059.001, T1059.003, T1087, T1105, T1484, T1543.003, T1574.010
+  no longer detected  3: T1021.001, T1078.002, T1550.002
+
+==============================================================================
+REMEDIATION CANDIDATES, LEVEL 2  (curated compensating controls for K1)
+==============================================================================
+
+  no entry in the curated list for this change and these techniques
+
+==============================================================================
+REPRODUCIBILITY RECORD
+==============================================================================
+
+  parameters sha256   9895d0cf7c5854231710f0af733e248cd62bfa7a8ca154a3c29bab11c53b14cd
+  analyser version    eeee1a1  (git commit of the repository)
+  parameters (hashed, the same in every run compared):
+    after_boot             ["config-S"]
+    agent                  "WIN-EP-01"
+    art_commit             "cb486d9a888e921fac5902a06c7b46e420bb14a7"
+    config                 "S"
+    drain_s                120
+    fence_sha256           "D35C939B71ECAC94868947932292531C02A171DECFD3046DEE47DB8E3BD0D814"
+    golden_base            "2026-11-26T13:31:48Z"
+    invoke_atomicredteam_commit "8af478bb9e4637df568ac1e596553b025b16cd1b"
+    rule_folder_sha256     "a3f9749e7bb35978f663c7d7dd0c6d67a92a03d0df552e341c52a4eb55ae2939"
+    settle_s               180
+    snapshot               "golden-base-v2"
+    stimulus               ["rdp-signin-30s", "T1003.001-1", "T1003.001-2", "T1003.001-13", "T1003.001-cleanup"]
+    sysmon_config_sha256   "02C43AC8EA7B27A9D290C2FE4587A5C184B09FC0AEDA263C2C4E24A4EE43B3AD"
+    wazuh_version          "4.14.7"
+    window_s               180
+  runs (raw counts in each run's counts.json, settings in its run_manifest.json):
+    control  eval-ctl-1               used               data\runs\eval-ctl-1
+    control  eval-ctl-2               used               data\runs\eval-ctl-2
+    control  eval-ctl-3               used               data\runs\eval-ctl-3
+    control  eval-ctl-4               used               data\runs\eval-ctl-4
+    control  eval-ctl-5               used               data\runs\eval-ctl-5
+    pre      eval-pre-1               used               data\runs\eval-pre-1
+    pre      eval-pre-2               used               data\runs\eval-pre-2
+    pre      eval-pre-3               used               data\runs\eval-pre-3
+    post     eval-post-K1-1           used               data\runs\eval-post-K1-1
+    post     eval-post-K1-2           used               data\runs\eval-post-K1-2
+    post     eval-post-K1-3           used               data\runs\eval-post-K1-3

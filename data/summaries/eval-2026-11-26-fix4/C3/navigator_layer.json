@@ -1,0 +1,66 @@
+{
+  "name": "TeLoS C3",
+  "domain": "enterprise-attack",
+  "versions": {
+    "layer": "4.5",
+    "navigator": "4.9.0"
+  },
+  "description": "TeLoS coverage change: red = alerts fired before and none after, green = still detected, grey = never alerted (potential).",
+  "techniques": [
+    {
+      "techniqueID": "T1021.001",
+      "color": "#31a354",
+      "comment": "an alert for this technique still fired after the change"
+    },
+    {
+      "techniqueID": "T1055",
+      "color": "#31a354",
+      "comment": "an alert for this technique still fired after the change"
+    },
+    {
+      "techniqueID": "T1059.001",
+      "color": "#31a354",
+      "comment": "an alert for this technique still fired after the change"
+    },
+    {
+      "techniqueID": "T1059.003",
+      "color": "#31a354",
+      "comment": "an alert for this technique still fired after the change"
+    },
+    {
+      "techniqueID": "T1078.002",
+      "color": "#31a354",
+      "comment": "an alert for this technique still fired after the change"
+    },
+    {
+      "techniqueID": "T1087",
+      "color": "#31a354",
+      "comment": "an alert for this technique still fired after the change"
+    },
+    {
+      "techniqueID": "T1105",
+      "color": "#31a354",
+      "comment": "an alert for this technique still fired after the change"
+    },
+    {
+      "techniqueID": "T1484",
+      "color": "#31a354",
+      "comment": "an alert for this technique still fired after the change"
+    },
+    {
+      "techniqueID": "T1543.003",
+      "color": "#31a354",
+      "comment": "an alert for this technique still fired after the change"
+    },
+    {
+      "techniqueID": "T1550.002",
+      "color": "#31a354",
+      "comment": "an alert for this technique still fired after the change"
+    },
+    {
+      "techniqueID": "T1574.010",
+      "color": "#31a354",
+      "comment": "an alert for this technique still fired after the change"
+    }
+  ]
+}

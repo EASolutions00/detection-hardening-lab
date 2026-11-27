@@ -65,9 +65,10 @@ In order:
    44). **2026-11-27: an outside review (Codex) was checked against the code and the data** (WORKLOG 2026-11-27):
    9 fixes, one at a time; fix 1, the scope of the claims, done; fix 2 done: with four other tests for a key that falls
    to zero, the score is 7, 6, 5 or 0 of 7, never a false loss (`src/zero_loss_sensitivity.py`); fix 3 done: K1's
-   sign-in and C3's block shown from the raw events, in all 26 runs (`src/independent_evidence.py`). **Next: fix 4
-   (the report's wording, and a `classify()` rule found in fix 2); the student reads the results; item 44; the
-   results chapter.**
+   sign-in and C3's block shown from the raw events, in all 26 runs (`src/independent_evidence.py`); fix 4 done: the
+   verdict never says "no blind spot", potential techniques are marked, and a failed complete loss is INCONCLUSIVE at
+   any count (`eeee1a1`; no result changed; DECISIONS 2026-11-27). **Next: fix 5 (one list of the freeze dates); the
+   student reads the results; item 44; the results chapter.**
 
 Recommended, not decided: the 5 pinned control runs wait until the form is sent, because the pre-oral needs chapters
 1 to 3, not the results (Claude's reading). **Overtaken 2026-11-27:** all 26 runs were made before the form was sent.
