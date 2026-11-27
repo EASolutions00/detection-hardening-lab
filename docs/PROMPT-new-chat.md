@@ -124,7 +124,8 @@ One capture window on the lab, and the run checks (item 22's void rule)
 
 The evaluation: each case's expected result, the scoring, and the results
     -> `REPO\docs\EXPECTED-RESULTS.md` (section 7 holds the results); the reports:
-    `REPO\data\summaries\eval-2026-11-26\`; how the score depends on the test for a key that
+    `REPO\data\summaries\eval-2026-11-26\`; what was fixed before the data and what after:
+    `REPO\docs\FREEZE-DATES.md`; how the score depends on the test for a key that
     falls to zero: `REPO\src\zero_loss_sensitivity.py`; the evidence that K1's sign-in worked and
     C3's dump was blocked: `REPO\src\independent_evidence.py`
 

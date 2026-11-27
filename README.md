@@ -54,6 +54,7 @@ restored to the same snapshot before every run, with one pinned attack list. Six
   in advance. A test case is a configuration mistake, never a hardening change.
 
 Every expected result was committed before the runs ([docs/EXPECTED-RESULTS.md](docs/EXPECTED-RESULTS.md)).
+Which rules were fixed before the data and which were decided after the control runs: [docs/FREEZE-DATES.md](docs/FREEZE-DATES.md).
 Scored at the level of event keys (defined below):
 
 | Method | Expected losses | Found | False alarms | Missed |

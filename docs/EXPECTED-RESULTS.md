@@ -203,6 +203,10 @@ check 26222's condition line, which was not read. **Image:** `golden-base-v2`. *
 **Data:** 26 valid runs on `golden-base-v2`, one parameters hash `9895d0cf...14cd`: 5 control (`eval-ctl-1` to `-5`),
 3 before (`eval-pre-1` to `-3`), 3 after per case (`eval-post-<case>-1` to `-3`). **Analysis:** `src/run.py` per case,
 analyser `7850847`; output `data\summaries\eval-2026-11-26\<case>\` (report, findings, comparison). COMMANDS 2.19.
+**What was fixed before this data, and what was decided after the control runs:** `docs/FREEZE-DATES.md` (added
+2026-11-28). In short: the expected outcomes and the scoring (section 1 and 3) were committed before any trial, scan or
+run; the rule for a key that falls to zero was chosen with K1's expected answer in view; the void rule was set after
+the 5 control runs.
 
 **Key level, scored as section 3 says:**
 

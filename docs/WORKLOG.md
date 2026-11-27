@@ -17,6 +17,41 @@ Next:
 
 ---
 
+## 2026-11-28 - Fix 5 of 9: one list of the freeze dates
+
+**Chat:** 26343d0f (Claude Code, now on Sonnet 5.5). **Asked:** the student, after "HOW MANY FIX LEFT": "STRAIGHT IT TO 9
+UNINTERRUPTED". So fixes 5 to 9 run in one go, one commit and push each, with no stop for a go-ahead between them. The
+"one at a time" rule of 2026-11-27 is set aside for these five.
+
+**Did:** read the review's point 11, the commit times of the code and documents (`git log`), the first commit of each
+threshold, the start and finish of every run (`tools/run_times.py`, new), and DECISIONS. Wrote `docs/FREEZE-DATES.md`:
+separate dates for the expected outcomes, the analysis rules and the capture rules; the data each had seen; which code
+captured the runs; and what the dates do not prove.
+
+**Checked, which changed what the file says:**
+- Section 6 of EXPECTED-RESULTS (the scan predictions) was added in `bfdad21`, not the first commit: the date in the
+  file is 2026-11-26 04:53 UTC, before any scan.
+- The plan of 3 runs per phase **was** in the first commit (`420720f`), as an estimate. It was confirmed after the
+  controls. Only the **void rule** was new after them. My first draft of the file said the count was decided after the
+  controls; I corrected it.
+- **No analysis file changed from `c654440` (the exact-test rule) to `7850847` (the official analysis)**, and no file
+  under `src` changed from `7850847` to the results commit. Only capture code and guest scripts changed.
+- The thresholds are from `78f41f4` (2026-08-31), before any lab data.
+
+**Said plainly in the file:** the rule for a key that falls to zero was chosen with K1's expected answer in view (the
+dry run). The void rule was set from the 5 control runs, which were captured before it existed. The run records do not
+name the code that captured them: for the 26 runs the evidence is commit times against start times, and for
+`eval-post-C1-2` the working tree is not proven equal to its commit. Fix 6 records the code version in new runs.
+
+**Not changed:** EXPECTED-RESULTS sections 1 to 6; the results.
+
+**Changed:** `docs/FREEZE-DATES.md` (new), `tools/run_times.py` (new), `data/summaries/eval-2026-11-26/run-times.txt`
+(new), README, FILE-MAP, EXPECTED-RESULTS (a pointer in section 7), STATUS, PROMPT-new-chat, COMMANDS 2.19.
+
+**Next:** fix 6, at once.
+
+---
+
 ## 2026-11-27 - Fix 4 of 9: the verdict's wording, seen versus potential techniques, and a classify() rule
 
 **Chat:** 26343d0f (Claude Code). **Asked:** "Yes, start fix 4" (the review's point 6 and the verdict's wording; and
