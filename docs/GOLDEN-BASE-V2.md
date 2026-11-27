@@ -14,7 +14,7 @@ at 2026-11-26T13:31:48Z; B5 gave 25 of 25 after a restart. **Phase C passed:** t
 is clean, and the catalog names `golden-base-v2` since C4. **Phase D passed:** 42 of 42 scan results as
 predicted, 4 trial runs valid. From D1 on, scan results were read from the SIEM archive (COMMANDS 2.18), and a scan
 takes about 11 s. **Phase E done 2026-11-27:** 5 control, 3 before and 18 after runs, all 26 valid with one parameters
-hash, then scored TP 7, FP 0, FN 0 (COMMANDS 2.19; WORKLOG 2026-11-27).
+hash, then scored TP 7, FP 0, FN 0; all 7 losses are in the test cases K1 to K3 (COMMANDS 2.19; WORKLOG 2026-11-27).
 
 ---
 

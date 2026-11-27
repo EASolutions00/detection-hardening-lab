@@ -1,6 +1,6 @@
 # TeLoS
 
-**Te**lemetry **Lo**ss. A tool that finds the detection blind spots created by security hardening.
+**Te**lemetry **Lo**ss. A tool that checks whether a security hardening change created detection blind spots.
 
 Undergraduate BS Computer Science thesis, plus the purple team lab built to run it.
 
@@ -61,6 +61,13 @@ Scored at the level of event keys (defined below):
 | TeLoS | 7 | 7 | 0 | 0 |
 | Plain subtraction of counts | 7 | 7 | 1 | 0 |
 
+**What these numbers cover.** All 7 expected losses come from the three test cases, K1 to K3: logging settings turned
+off on purpose, not hardening. K2 and K3 expect the same event key, so the 7 losses are 6 distinct keys. None of the
+three hardening changes caused a blind spot: in C1 and C5 no key fell at all, and C3 blocked the attack itself. So the table
+shows that TeLoS finds evidence losses that are known to exist. It is not a measured rate for blind spots caused by
+hardening, because this study had no such case. In each case, 15 to 18 of the 35 or 36 event keys had enough events to
+be tested; the others are reported as INCONCLUSIVE or NEW, never as safe.
+
 - **K1, "Audit Logon" off:** the 5 expected event keys LOST, and exactly the 3 expected techniques no
   longer detected: T1021.001, T1078.002 and T1550.002. The sign-in still worked, so this is a blind spot.
 - **K2, command line off:** a field-level loss. Event 4688 was still written, but without `CommandLine`.
@@ -71,7 +78,7 @@ Scored at the level of event keys (defined below):
   through two other rules. Reported as found, not re-run ([docs/OPEN-QUESTIONS.md](docs/OPEN-QUESTIONS.md)
   item 44).
 
-**Read these numbers with care.** It is a small study: 7 expected losses in 6 cases, in one lab. All
+**Read these numbers with care.** It is a small study: 7 expected losses, all in the 3 test cases, in one lab. All
 3 before runs happened to fall in the quieter of two groups the control runs showed, so plain
 subtraction had an easy case in C1 and C5. Full scoring: `docs/EXPECTED-RESULTS.md` section 7. Reports:
 `data/summaries/eval-2026-11-26/`.
@@ -226,7 +233,9 @@ turns out to be negligible, I report that plainly and restrict the claim to prod
 deployment, where the variance floor is not controlled by snapshot restoration.
 **Measured since:** in the feasibility spike (2026-11-16), the median event key did not vary between
 runs with no change, and 5 of 20 keys varied by more than 5%. In the evaluation, plain subtraction
-reported 1 false loss and TeLoS none (`docs/EXPECTED-RESULTS.md` section 7).
+reported 1 false loss and TeLoS none (`docs/EXPECTED-RESULTS.md` section 7). That one false loss, a key that fell
+from 211 to 209, is also removed by the simple rule that a loss must at least halve, and every true loss fell to zero.
+So this evaluation does not yet show what measuring the noise adds.
 
 **Untestable is reported, not assumed safe.** An event key seen too few times before a change
 cannot be tested with any power. TeLoS reports these as INCONCLUSIVE rather than folding them

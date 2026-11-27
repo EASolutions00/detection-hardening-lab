@@ -260,8 +260,10 @@ in `REPO\src\telos\` unless stated otherwise.
   interface first and then class B. "16" is no longer a target.
   `REPO\src\telos\evaluation.py`; `REPO\lab\blueprint.md`
 
-- **The result, scored as fixed before the runs:** TP 7, FP 0, FN 0 over C1, C5, K1, K2 and K3;
-  plain subtraction found the same 7 with 1 false positive (in K2). K1 is a blind spot: exactly
+- **The result, scored as fixed before the runs:** TP 7, FP 0, FN 0 over C1, C5, K1, K2 and K3.
+  All 7 losses are in the three test cases, and no hardening change caused a blind spot, so this is
+  not a recall for hardening (EXPECTED-RESULTS section 7, "Scope of these scores"). Plain
+  subtraction found the same 7 with 1 false positive (in K2). K1 is a blind spot: exactly
   T1021.001, T1078.002 and T1550.002 no longer detected, while the sign-in still worked. K2 shows
   the field-level loss of `CommandLine`. **C3 did not come out as expected** (item 44).
   EXPECTED-RESULTS section 7.

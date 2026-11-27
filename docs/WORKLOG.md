@@ -17,6 +17,89 @@ Next:
 
 ---
 
+## 2026-11-27 - An outside review (Codex) checked against the code and the data; fix 1 of 9: the claims scoped
+
+**Chat:** 26343d0f (Claude Code). **Asked:** the student gave a review by Codex, 14 points, with "dont be a pleaser, if
+right or wrong tell me. if needs to defend, do it"; then "Yes, start fix 1". The fixes go one at a time (the student's
+rule). The PC turned off during fix 1; after the restart, `git status` showed the README edits complete.
+
+**Verdicts,** each point checked against the code, the run data or the current documents:
+- **Right:** 1, the recall covers only the three test cases. 2, the test for a key that falls to zero treats the before
+  rate as known, and the answer depends on that choice (below). 5, the benefit of the noise model is not shown (in K2,
+  15 keys tested and 20 undecided). 6, a lost key's "blind" techniques include techniques that never alerted before
+  (known since 2026-11-26, EXPECTED-RESULTS section 2 point 4). 7 and 10, the walkthrough is out of date (less
+  serious). 11, the freeze dates are not in one list, and the rule for rare keys changed after a dry run on partly
+  made-up data, before any evaluation run. 12, the parameters hash covers typed values, not the files:
+  `rule_folder_sha256`, `sysmon_config_sha256` and `fence_sha256` are constants in `catalog.py`; COMMANDS line 881
+  gives the method for the rule-folder value, but no code in the repo computes it.
+- **Partly right:** 3, our written proof was weak or circular (C3's "blocked" rested on the rules that stopped; K1's
+  sign-in partly on `Security-4672[]`, which does not prove that this sign-in worked), but separate Sysmon evidence
+  supports both verdicts (below). 4, other changes between the runs are a real limit, but they cannot explain a key
+  that falls to zero, because each lost key is lost only in its own case's runs. 9, the current activity diagram has
+  the right order, but sheet 2 still says "no blind spot found" (step 9) and gives the old 30-event rule (step 7).
+- **Wrong for the current material:** 8, 13 and 14. They read `docs/T1-PROPOSAL-REVISION.md`, which the revised form
+  replaced. The form in use has no 17.6.2, no 12 rules, no web interface and no weighted score.
+
+**Point 2, rechecked with four other tests** on K1's 5 keys that fell to zero (`k1_sensitivity.py`, a read-only script
+in the chat's scratch folder, not in the repo; run again after the restart, the same numbers). The two sign-in keys are
+`Security-4624[AuthenticationPackageName=NTLM,LogonType=other,TargetUserName]` and
+`Security-4624[AuthenticationPackageName=other,LogonType=10,TargetUserName]`: 6 events before (2 per run), 0 after, 10
+in the 5 control runs. q is after the Benjamini-Hochberg correction over the 18 tested keys; LOST needs q 0.05 or less.
+
+| Test for a key that falls to zero | The two sign-in keys | K1's other 3 keys |
+|---|---|---|
+| The system's: chance of 0 after if the rate stayed at the before rate, exp(-6) | p 0.0025, q 0.0089, LOST | LOST |
+| Chance that all 6 events fall in the before runs if nothing changed, (1/2)^6; 3 runs against 3 | p 0.0156, q 0.056, **not LOST** (the review's number) | LOST |
+| The same, with the 5 control runs added to the before side (8 against 3) | p 0.0061, q 0.022, LOST | LOST |
+| Count the runs that have the key, not the events; 3 against 3 | p 0.05, q 0.13, **not LOST** | **not LOST** |
+| The same, 8 against 3 | p 0.0061, q 0.022, LOST | LOST |
+
+So with 3 runs on each side, K1's result depends on the test: from 5 of 5 keys to 0 of 5. Adding the control runs to
+the before side makes every test find all 5. Fix 2 puts this in section 7.
+
+**Point 3, separate evidence from Sysmon** (`independent_proof.py`, the same folder, read-only; run again after the
+restart):
+- **K1's sign-in opened a session.** In each run's own window, Sysmon event 1 logged `rdpclip.exe` (the Remote Desktop
+  clipboard program), `userinit.exe` and `explorer.exe` once each: in all 3 K1 runs, as in all 5 control and 3 before
+  runs. Sysmon does not depend on the "Audit Logon" setting that K1 turns off.
+- **C3 blocked the dump.** Sysmon event 11 (a file was created) logged `C:\Windows\Temp\lsass_dump.dmp` (by
+  `ProcDump64.exe`) and `C:\Users\eli\AppData\Local\Temp\lsass-comsvcs.dmp` (by `rundll32.exe`) in all 3 before runs
+  and in none of the 3 C3 runs. Each C3 run still logged 9 other new files, so event 11 still worked under C3.
+- **Not explained:** ProcDump's helper file (`...\Temp\PDM....tmp\ProcDump64.exe`, written by `procdump.exe`) is also
+  missing in all 3 C3 runs.
+- **My expectation was wrong in one detail:** I said the 3 before runs would show the same files. They differ, but only
+  in files with random names (PowerShell's `__PSScriptPolicyTest_*` files and the helper's folder name). Both dump
+  files are in all 3 before runs.
+
+**The plan, one fix at a time, each after the student's go-ahead:**
+1. Scope the claims (README, section 7). **Done, below.**
+2. Add the tests above to section 7; the test declared before the runs stays the main result.
+3. Record the Sysmon evidence above; correct section 7's circular C3 sentence and its use of `Security-4672[]`.
+4. The report: say which techniques really alerted before and which only could; say "no key lost or reduced; N
+   undecided" instead of "no blind spot" (code and tests).
+5. One list of the freeze dates.
+6. The hash: compute the rule-folder value from the files at analysis time; record the harness commit in each run record.
+7. Mark the walkthrough and the old revision "historical, do not present".
+8. Chapter 3 limits, and a run of the analysis without the noise part.
+9. Redraw the activity diagram.
+
+**Fix 1, done:**
+- `README.md`: the first line; a new paragraph after the results table, "What these numbers cover"; "7 expected
+  losses, all in the 3 test cases"; the note on plain subtraction now says that its one false loss also falls to the
+  rule "a loss must at least halve".
+- `docs/EXPECTED-RESULTS.md` section 7: a dated block, "Scope of these scores", with the tested and undecided keys per
+  case (counted again after the restart: the same). No number above it changed.
+- STATUS (two places), PROMPT-new-chat, `thesis/T1/README.md` and GOLDEN-BASE-V2: the score now says that all 7
+  losses are in the three test cases.
+- Left as they are: COMMANDS line 1091 and this log's entry on the evaluation, because they record what was printed.
+
+**Not known:** why ProcDump's helper file is missing under C3; how the typed rule-folder value was first computed
+(COMMANDS line 881 gives the method; no script in the repo does it; fix 6).
+
+**Next:** fix 2, after the student's go-ahead.
+
+---
+
 ## 2026-11-27 - The revised form's choices 1 to 3 are confirmed
 
 **Chat:** 26343d0f (Claude Code). **Asked:** "whats next"; then, for choices a to c of the form's working note, "tell me

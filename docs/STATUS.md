@@ -60,9 +60,11 @@ In order:
    `eval-ctl-5` are all valid** (COMMANDS 2.19). **Decided 2026-11-27:** 3 runs per phase, and item 22's void
    rule, built into the harness (DECISIONS 2026-11-27; 0 false findings in 70 control comparisons). **The 3 before
    runs are valid** (`eval-pre-1` to `eval-pre-3`). **All 26 evaluation runs valid** (2026-11-26, the last at 23:58 UTC;
-   a power cut at 22:55 cost one unfinished run). **Analysed 2026-11-27: TP 7, FP 0, FN 0** (EXPECTED-RESULTS section 7);
-   K1 a blind spot as expected; **C3 not as expected** (OPEN-QUESTIONS 44). **Next: the student reads the results;
-   item 44; the results chapter.**
+   a power cut at 22:55 cost one unfinished run). **Analysed 2026-11-27: TP 7, FP 0, FN 0**; all 7 losses are in the
+   three test cases (EXPECTED-RESULTS section 7); K1 a blind spot as expected; **C3 not as expected** (OPEN-QUESTIONS
+   44). **2026-11-27: an outside review (Codex) was checked against the code and the data** (WORKLOG 2026-11-27):
+   9 fixes, one at a time; fix 1, the scope of the claims, done. **Next: fix 2 (how the result depends on the test);
+   the student reads the results; item 44; the results chapter.**
 
 Recommended, not decided: the 5 pinned control runs wait until the form is sent, because the pre-oral needs chapters
 1 to 3, not the results (Claude's reading). **Overtaken 2026-11-27:** all 26 runs were made before the form was sent.
@@ -102,7 +104,7 @@ window (upload the file, "Run analysis", the report); the current plan builds th
 | 2026-10-30 (was 2026-10-23), **missed: no lab work recorded as of 2026-11-02; new date after the adviser answers OPEN-QUESTIONS 33** | Sysmon `lsass.exe` rule and audit settings in place, value keying coded and tested (all three done 2026-11-03), golden snapshot taken. DC-01, the domain join and the network-logon test were dropped 2026-11-11 (DECISIONS) |
 | 2026-11-07 (was 2026-10-31) | Spike run, six answers recorded, final number of changes set. Both moves: DECISIONS 2026-10-16 |
 | 2026-11-30 | Data collection done. **Done 2026-11-27:** 26 of 26 evaluation runs valid (WORKLOG 2026-11-27) |
-| 2026-12-18 | Rest of the system (impact scoring, remediation, reports) and the evaluation done. **2026-11-27:** impact scoring, remediation and reports are built, and the evaluation runs are scored (TP 7, FP 0, FN 0; EXPECTED-RESULTS section 7). Not built: the GUI, the percentage. Not started: the evaluation by security engineers (ISO/IEC 25010, DECISIONS 2026-11-23) |
+| 2026-12-18 | Rest of the system (impact scoring, remediation, reports) and the evaluation done. **2026-11-27:** impact scoring, remediation and reports are built, and the evaluation runs are scored (TP 7, FP 0, FN 0, all 7 losses in the three test cases; EXPECTED-RESULTS section 7). Not built: the GUI, the percentage. Not started: the evaluation by security engineers (ISO/IEC 25010, DECISIONS 2026-11-23) |
 | 2027-01-08 | Full draft to the adviser |
 | 2027-01-31 | Final defense |
 

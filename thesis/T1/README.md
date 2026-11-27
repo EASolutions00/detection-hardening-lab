@@ -12,7 +12,8 @@ read.
 
 **Status:** The thesis. Final, with no fallback topic (`docs/DECISIONS.md` 2026-09-26). The feasibility
 spike (runbook Phase 7) ran 2026-11-16, 19 of 19 runs valid. The evaluation runs finished 2026-11-27 host time (2026-11-26 23:58 UTC): 26 of
-26 valid, scored TP 7, FP 0, FN 0 (`docs/EXPECTED-RESULTS.md` section 7). Current blockers are in
+26 valid, scored TP 7, FP 0, FN 0. All 7 losses are in the three test cases, and the three hardening changes caused
+no blind spot (`docs/EXPECTED-RESULTS.md` section 7). Current blockers are in
 `docs/STATUS.md`.
 
 ## The idea in one paragraph

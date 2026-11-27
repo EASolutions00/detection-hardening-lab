@@ -219,6 +219,34 @@ analyser `7850847`; output `data\summaries\eval-2026-11-26\<case>\` (report, fin
 recall 1.00. Caution for the reading: all 3 before runs fell in the "low" group of the control runs, so in C1 and C5
 no key fell at all; plain subtraction had an easy case there.
 
+**Scope of these scores** (added 2026-11-27 after an outside review, WORKLOG 2026-11-27; no number above changed):
+- **What they measure:** whether the system finds evidence losses that are known to exist. All 7 expected keys come
+  from the three test cases, logging settings turned off on purpose and never called hardening (section 1). K2 and K3
+  expect the same key, `Security-4688[CommandLine,NewProcessName,ParentProcessName]`, so the 7 losses are 6 distinct
+  keys.
+- **What they do not measure:** a recall for blind spots caused by hardening. None of the three hardening changes
+  caused one (OPEN-QUESTIONS 38): in C1 and C5 no key fell at all, and C3 is prevention (section 1; OPEN-QUESTIONS 44).
+  So C1 and C5 only check that nothing false is reported, and C3 is not scored for recall (section 3).
+- **Tested and undecided keys.** "Tested" means classified LOST, REDUCED or UNCHANGED. "Undecided" means INCONCLUSIVE:
+  too few events before the change to test, so the key is never counted as safe. No expected key was undecided.
+  Counted from the `classification` column of each case's `comparison.csv`:
+
+| Case | Keys | Tested | Undecided (INCONCLUSIVE) | NEW | LOST | REDUCED | UNCHANGED | Expected keys left undecided |
+|---|---|---|---|---|---|---|---|---|
+| C1 | 35 | 15 | 17 | 3 | 0 | 0 | 15 | none expected |
+| C3 | 35 | 15 | 18 | 2 | 0 | 0 | 15 | not scored for recall |
+| C5 | 35 | 15 | 17 | 3 | 0 | 0 | 15 | none expected |
+| K1 | 36 | 18 | 14 | 4 | 5 | 0 | 13 | 0 of 5 |
+| K2 | 36 | 15 | 20 | 1 | 1 | 0 | 14 | 0 of 1 |
+| K3 | 36 | 15 | 17 | 4 | 1 | 0 | 14 | 0 of 1 |
+
+- **What the comparison with plain subtraction shows, and what it does not.** Its one false loss is in K2:
+  `Sysmon-1[CommandLine,Hashes,Image,OriginalFileName,ParentImage]`, 211 to 209 events over 3 runs each (ratio 0.991).
+  The simple rule "a loss must at least halve" also removes it, and all 7 true losses fell to zero. So here the halving
+  rule alone gives the same TP 7, FP 0, FN 0 as the full system. Section 3 planned this comparison so that "the noise
+  floor's benefit is measured"; this evaluation does not measure it. A run of the analysis without the noise part is
+  planned (WORKLOG 2026-11-27, fix 8).
+
 **Technique level:** K1 "no longer detected" = **T1021.001, T1078.002, T1550.002, exactly as expected**. C1, C5, K2,
 K3: none, as expected. **C3: none, against the expected {T1055}: a miss** (below).
 
