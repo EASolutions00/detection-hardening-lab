@@ -80,8 +80,10 @@ be tested; the others are reported as INCONCLUSIVE or NEW, never as safe.
 
 **Read these numbers with care.** It is a small study: 7 expected losses, all in the 3 test cases, in one lab. All
 3 before runs happened to fall in the quieter of two groups the control runs showed, so plain
-subtraction had an easy case in C1 and C5. Full scoring: `docs/EXPECTED-RESULTS.md` section 7. Reports:
-`data/summaries/eval-2026-11-26/`.
+subtraction had an easy case in C1 and C5. The score also depends on the test used for a key that falls to zero.
+Four other tests, tried after the runs, find 7, 6, 5 and 0 of the 7 losses, and none finds a false one; the 0 comes
+from a test that counts runs, which cannot pass the correction with only 3 runs per side. Full scoring:
+`docs/EXPECTED-RESULTS.md` section 7. Reports: `data/summaries/eval-2026-11-26/`.
 
 ---
 

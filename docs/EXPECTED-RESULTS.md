@@ -247,6 +247,41 @@ no key fell at all; plain subtraction had an easy case there.
   floor's benefit is measured"; this evaluation does not measure it. A run of the analysis without the noise part is
   planned (WORKLOG 2026-11-27, fix 8).
 
+**How the score depends on the test for a key that falls to zero** (added 2026-11-27, fix 2 of the same review, its
+point 2; WORKLOG 2026-11-27). The declared test stays the main result: it was fixed before any run (DECISIONS
+2026-11-26), and the other four were chosen after the runs. `src/zero_loss_sensitivity.py` first reproduces the official
+class, totals and q of every key in all 6 cases. Then it swaps only the test for the keys that fell to zero and redoes
+the correction; everything else stays the code's. Output: `data/summaries/eval-2026-11-26/zero-loss-sensitivity.txt`.
+Only the 7 expected keys fell to zero, in any case. For a key with `a` events in the 3 before runs and none in the 3
+after runs:
+
+| Test | What it assumes | K1 found (of 5) | K2 (of 1) | K3 (of 1) | TP | FP | FN |
+|---|---|---|---|---|---|---|---|
+| **Declared:** the chance of no event after if the rate stayed at the before rate, `exp(-a)` here (phi was 1 for all 7 keys) | the before rate is known | 5 | 1 | 1 | **7** | **0** | **0** |
+| Split of events: the chance that all `a` events fall in the before runs if nothing changed, `(1/2)^a` | events are independent; no rate is assumed | 3 | 1 | 1 | 5 | 0 | 2 |
+| The same, with the 5 control runs counted as before runs (8 against 3): `(8/11)^(a + control events)` | also: the control runs are like the before runs | 5 | 1 | 1 | 7 | 0 | 0 |
+| Runs with the key (Fisher's exact test on runs, not events): at best `1/C(6,3) = 1/20 = 0.05` | only runs are independent | 0 | 0 | 0 | 0 | 0 | 7 |
+| The same, 8 against 3: at best `1/C(11,3) = 1/165 = 0.0061` | also: the control runs are like the before runs | 5 | 0 | 1 | 6 | 0 | 1 |
+
+What this shows, in order:
+1. **No test found a false loss:** FP is 0 under all five.
+2. **Among the tests that count events, only K1's two sign-in keys change.** They have 6 events each, 2 per run: LOST
+   under the declared test (q 0.0089) and with the control runs added (q 0.022), INCONCLUSIVE with 3 against 3
+   (q 0.056). The other 5 keys have 9 to 417 events and are LOST under all three.
+3. **A test that counts runs finds nothing with 3 runs against 3.** Its best p is 0.05, and the correction over the 15
+   to 18 tested keys raises q to 0.13 to 0.75. This is a limit of 3 runs per phase (DECISIONS 2026-11-27), not a
+   property of the changes.
+4. **The same key can get a different q in two cases.** With 8 against 3, the 4688 key has p 0.0061 in K2 and in K3.
+   In K2 no other tested key has a smaller p, so q = 0.0061 × 15 / 1 = 0.091: not LOST. In K3 two other keys rose and
+   had smaller p values (`Security-5379[]`, q 0.026, and `Sysmon-10[GrantedAccess=other,SourceImage,TargetImage]`,
+   q 0.0048, in `comparison.csv`), so q = 0.0061 × 15 / 3 = 0.030: LOST.
+5. **The technique result uses no test.** K1's "no longer detected" list comes from the alerts: the techniques of
+   rules that fired at least once before and never after (`report.py`, `coverage_change`).
+6. **Found on the way:** under the run tests, keys that fell from 39, 60 or 417 events to none are classed UNCHANGED.
+   The reason is a rule in `classify()`: a key with 30 or more events before that falls to zero but fails the
+   correction becomes UNCHANGED, not INCONCLUSIVE. UNCHANGED claims that the key survived. No key reached this rule in
+   the official analysis. Proposed for fix 4 (WORKLOG 2026-11-27).
+
 **Technique level:** K1 "no longer detected" = **T1021.001, T1078.002, T1550.002, exactly as expected**. C1, C5, K2,
 K3: none, as expected. **C3: none, against the expected {T1055}: a miss** (below).
 

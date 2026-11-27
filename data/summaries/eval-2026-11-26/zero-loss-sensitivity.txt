@@ -1,0 +1,86 @@
+ZERO-LOSS SENSITIVITY, evaluation runs of 2026-11-26 (src/zero_loss_sensitivity.py)
+Runs: eval-ctl-1 to -5 (control), eval-pre-1 to -3 (before), eval-post-<case>-1 to -3 (after).
+The declared test is the main result. The other four were chosen after the runs.
+
+SELF-CHECKS (the formulas against values worked out by hand)
+  split, 6 events, 3 v 3: (1/2)^6: 0.015625  ok
+  runs, 3 of 3 before, 0 of 3 after: 1/C(6,3) = 1/20: 0.05  ok
+  runs, 2 of 3 before, 0 of 3 after: C(3,2)/C(6,2) = 3/15: 0.2  ok
+  runs, 8 of 8 before, 0 of 3 after: 1/C(11,3) = 1/165: 0.00606061  ok
+  runs, 3 of 3 before, 0 of 3 after: scipy's Fisher test: 0.05  ok
+  runs, 2 of 3 before, 0 of 3 after: scipy's Fisher test: 0.2  ok
+  runs, 8 of 8 before, 0 of 3 after: scipy's Fisher test: 0.00606061  ok
+  runs, 5 of 8 before, 0 of 3 after: scipy's Fisher test: 0.121212  ok
+
+REPRODUCTION (the declared test against the official comparison.csv of each case)
+  C1: 35 keys; class, totals and q the same for every key: yes
+  C3: 35 keys; class, totals and q the same for every key: yes
+  C5: 35 keys; class, totals and q the same for every key: yes
+  K1: 36 keys; class, totals and q the same for every key: yes
+  K2: 36 keys; class, totals and q the same for every key: yes
+  K3: 36 keys; class, totals and q the same for every key: yes
+
+SCORE PER TEST (keys found LOST or REDUCED per case; TP, FP, FN over C1, C5, K1, K2 and K3)
+  test                            C1  C5  K1  K2  K3    TP  FP  FN   C3 (not scored)
+  declared (before rate known)     0   0   5   1   1     7   0   0   0
+  split of events, 3 v 3           0   0   3   1   1     5   0   2   0
+  split of events, 8 v 3           0   0   5   1   1     7   0   0   0
+  runs with the key, 3 v 3         0   0   0   0   0     0   0   7   0
+  runs with the key, 8 v 3         0   0   5   0   1     6   0   1   0
+
+EACH TESTED KEY THAT FELL TO ZERO (p before the correction, q after it, and the class)
+  C1: none
+  C3: none
+  C5: none
+  K1  Security-4624[AuthenticationPackageName=NTLM,LogonType=other,TargetUserName]   expected LOST: yes
+      before 6 (in 3 of 3 runs), after 0, control 10 (in 5 of 5 runs)
+      declared (before rate known)   p 0.00248    q 0.008924   LOST
+      split of events, 3 v 3         p 0.0156     q 0.05625    INCONCLUSIVE
+      split of events, 8 v 3         p 0.00613    q 0.02205    LOST
+      runs with the key, 3 v 3       p 0.05       q 0.1326     INCONCLUSIVE
+      runs with the key, 8 v 3       p 0.00606    q 0.02182    LOST
+  K1  Security-4624[AuthenticationPackageName=other,LogonType=10,TargetUserName]   expected LOST: yes
+      before 6 (in 3 of 3 runs), after 0, control 10 (in 5 of 5 runs)
+      declared (before rate known)   p 0.00248    q 0.008924   LOST
+      split of events, 3 v 3         p 0.0156     q 0.05625    INCONCLUSIVE
+      split of events, 8 v 3         p 0.00613    q 0.02205    LOST
+      runs with the key, 3 v 3       p 0.05       q 0.1326     INCONCLUSIVE
+      runs with the key, 8 v 3       p 0.00606    q 0.02182    LOST
+  K1  Security-4624[AuthenticationPackageName=other,LogonType=2,TargetUserName]   expected LOST: yes
+      before 9 (in 3 of 3 runs), after 0, control 15 (in 5 of 5 runs)
+      declared (before rate known)   p 0.000123   q 0.0007405  LOST
+      split of events, 3 v 3         p 0.00195    q 0.01172    LOST
+      split of events, 8 v 3         p 0.000479   q 0.002877   LOST
+      runs with the key, 3 v 3       p 0.05       q 0.1326     INCONCLUSIVE
+      runs with the key, 8 v 3       p 0.00606    q 0.02182    LOST
+  K1  Security-4624[AuthenticationPackageName=other,LogonType=other,TargetUserName]   expected LOST: yes
+      before 60 (in 3 of 3 runs), after 0, control 113 (in 5 of 5 runs)
+      declared (before rate known)   p 8.76e-27   q 1.576e-25  LOST
+      split of events, 3 v 3         p 8.67e-19   q 1.561e-17  LOST
+      split of events, 8 v 3         p 1.18e-24   q 2.133e-23  LOST
+      runs with the key, 3 v 3       p 0.05       q 0.1326     UNCHANGED
+      runs with the key, 8 v 3       p 0.00606    q 0.02182    LOST
+  K1  Security-4648[]   expected LOST: yes
+      before 39 (in 3 of 3 runs), after 0, control 65 (in 5 of 5 runs)
+      declared (before rate known)   p 1.15e-17   q 1.039e-16  LOST
+      split of events, 3 v 3         p 1.82e-12   q 1.637e-11  LOST
+      split of events, 8 v 3         p 4.14e-15   q 3.722e-14  LOST
+      runs with the key, 3 v 3       p 0.05       q 0.1326     UNCHANGED
+      runs with the key, 8 v 3       p 0.00606    q 0.02182    LOST
+  K2  Security-4688[CommandLine,NewProcessName,ParentProcessName]   expected LOST: yes
+      before 417 (in 3 of 3 runs), after 0, control 776 (in 5 of 5 runs)
+      declared (before rate known)   p 7.93e-182  q 1.189e-180 LOST
+      split of events, 3 v 3         p 2.95e-126  q 4.432e-125 LOST
+      split of events, 8 v 3         p 1.01e-165  q 1.517e-164 LOST
+      runs with the key, 3 v 3       p 0.05       q 0.75       UNCHANGED
+      runs with the key, 8 v 3       p 0.00606    q 0.09091    UNCHANGED
+  K3  Security-4688[CommandLine,NewProcessName,ParentProcessName]   expected LOST: yes
+      before 417 (in 3 of 3 runs), after 0, control 776 (in 5 of 5 runs)
+      declared (before rate known)   p 7.93e-182  q 1.189e-180 LOST
+      split of events, 3 v 3         p 2.95e-126  q 4.432e-125 LOST
+      split of events, 8 v 3         p 1.01e-165  q 1.517e-164 LOST
+      runs with the key, 3 v 3       p 0.05       q 0.1875     UNCHANGED
+      runs with the key, 8 v 3       p 0.00606    q 0.0303     LOST
+
+Everything else is the code's: the same keys, the same noise model, the same correction
+(Benjamini-Hochberg at 0.05), the same rules for REDUCED and for a rare key.

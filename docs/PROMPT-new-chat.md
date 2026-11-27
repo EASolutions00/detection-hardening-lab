@@ -124,7 +124,8 @@ One capture window on the lab, and the run checks (item 22's void rule)
 
 The evaluation: each case's expected result, the scoring, and the results
     -> `REPO\docs\EXPECTED-RESULTS.md` (section 7 holds the results); the reports:
-    `REPO\data\summaries\eval-2026-11-26\`
+    `REPO\data\summaries\eval-2026-11-26\`; how the score depends on the test for a key that
+    falls to zero: `REPO\src\zero_loss_sensitivity.py`
 
 The noise floor, coefficient of variation, dispersion
     -> `REPO\src\telos\variance.py`
@@ -262,8 +263,10 @@ in `REPO\src\telos\` unless stated otherwise.
 
 - **The result, scored as fixed before the runs:** TP 7, FP 0, FN 0 over C1, C5, K1, K2 and K3.
   All 7 losses are in the three test cases, and no hardening change caused a blind spot, so this is
-  not a recall for hardening (EXPECTED-RESULTS section 7, "Scope of these scores"). Plain
-  subtraction found the same 7 with 1 false positive (in K2). K1 is a blind spot: exactly
+  not a recall for hardening (EXPECTED-RESULTS section 7, "Scope of these scores"). With four other
+  tests for a key that falls to zero, tried after the runs, the system finds 7, 6, 5 or 0 of the 7,
+  never a false one (`REPO\src\zero_loss_sensitivity.py`). Plain subtraction found the same 7 with
+  1 false positive (in K2). K1 is a blind spot: exactly
   T1021.001, T1078.002 and T1550.002 no longer detected, while the sign-in still worked. K2 shows
   the field-level loss of `CommandLine`. **C3 did not come out as expected** (item 44).
   EXPECTED-RESULTS section 7.

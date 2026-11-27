@@ -17,6 +17,39 @@ Next:
 
 ---
 
+## 2026-11-27 - Fix 2 of 9: how the score depends on the test for a key that falls to zero
+
+**Chat:** 26343d0f (Claude Code). **Asked:** "Yes, start fix 2" (the outside review's point 2; the plan is in the
+entry below).
+
+**Did:** wrote `src/zero_loss_sensitivity.py`. It reads the 26 evaluation runs and the 6 official `comparison.csv`
+files, and writes only its summary. It checks its formulas against values worked out by hand and against scipy's
+Fisher test. Then it runs the code's own per-key steps for each case and stops unless every key gets the official
+class, totals and q. Only then does it swap the test for the keys that fell to zero and redo the correction. No
+separate pytest file: the checks are in the script and in its output, as in `src/known_answer_dryrun.py`. No existing
+code changed, so the 170 tests were not run again. COMMANDS 2.19, last row.
+
+**Result** (`data/summaries/eval-2026-11-26/zero-loss-sensitivity.txt`): self-checks 8 of 8; the official output
+reproduced in 6 of 6 cases. Only the 7 expected keys fell to zero, in any case. TP, FP, FN over C1, C5, K1, K2 and K3:
+declared 7, 0, 0; split of events 3 v 3: 5, 0, 2 (K1's two sign-in keys INCONCLUSIVE, q 0.056); 8 v 3, the control
+runs counted as before runs: 7, 0, 0; runs with the key 3 v 3: 0, 0, 7 (best p 1/20, q 0.13 to 0.75 after the
+correction); 8 v 3: 6, 0, 1 (K2's key q 0.091; the same key in K3 q 0.030, because two other K3 keys rose with smaller
+p values). FP 0 under all five. Written into EXPECTED-RESULTS section 7, with the declared test kept as the main
+result.
+
+**Found on the way:** under the run tests, keys that fell from 39, 60 or 417 events to none are classed UNCHANGED:
+`classify()` sends a zero key with 30 or more events before that fails the correction to UNCHANGED, not INCONCLUSIVE.
+UNCHANGED claims that the key survived. No key reached this rule in the official analysis. Proposed for fix 4 (the
+report's wording, code and tests).
+
+**Changed:** `src/zero_loss_sensitivity.py` (new) and its output (new); EXPECTED-RESULTS section 7 (a dated block);
+README ("Read these numbers with care"); STATUS; PROMPT-new-chat (the result, and where the evaluation is); FILE-MAP
+(the script and its output); COMMANDS 2.19 (one row).
+
+**Next:** fix 3 (the Sysmon evidence for K1 and C3), after the student's go-ahead.
+
+---
+
 ## 2026-11-27 - An outside review (Codex) checked against the code and the data; fix 1 of 9: the claims scoped
 
 **Chat:** 26343d0f (Claude Code). **Asked:** the student gave a review by Codex, 14 points, with "dont be a pleaser, if

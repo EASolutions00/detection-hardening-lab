@@ -63,8 +63,9 @@ In order:
    a power cut at 22:55 cost one unfinished run). **Analysed 2026-11-27: TP 7, FP 0, FN 0**; all 7 losses are in the
    three test cases (EXPECTED-RESULTS section 7); K1 a blind spot as expected; **C3 not as expected** (OPEN-QUESTIONS
    44). **2026-11-27: an outside review (Codex) was checked against the code and the data** (WORKLOG 2026-11-27):
-   9 fixes, one at a time; fix 1, the scope of the claims, done. **Next: fix 2 (how the result depends on the test);
-   the student reads the results; item 44; the results chapter.**
+   9 fixes, one at a time; fix 1, the scope of the claims, done; fix 2 done: with four other tests for a key that falls
+   to zero, the score is 7, 6, 5 or 0 of 7, never a false loss (`src/zero_loss_sensitivity.py`). **Next: fix 3 (the
+   Sysmon evidence for K1 and C3); the student reads the results; item 44; the results chapter.**
 
 Recommended, not decided: the 5 pinned control runs wait until the form is sent, because the pre-oral needs chapters
 1 to 3, not the results (Claude's reading). **Overtaken 2026-11-27:** all 26 runs were made before the form was sent.
