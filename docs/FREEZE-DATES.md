@@ -55,8 +55,8 @@ Later lines in EXPECTED-RESULTS are dated and appended. No expectation was edite
 
 | Rule | Frozen at | Where | Data seen | Data not seen |
 |---|---|---|---|---|
-| Alpha 0.05; REDUCED needs a ratio of 0.5 or less and a drop above 3 times the key's CoV; Benjamini-Hochberg correction; a minimum of 30 events before a key is tested (since 2026-11-25 for a partial drop only: see the last row) | 2026-08-31 (`78f41f4`) | `src/telos/differential.py` | None: no lab data existed | Everything |
-| The event key; the whole-profile chi-square as a summary only; a key never seen in the control runs is not tested | 2026-09-04 to 2026-09-29 (DECISIONS; OPEN-QUESTIONS 29) | `eventkey.py`, `differential.py` | None | Everything |
+| Alpha 0.05; REDUCED needs a ratio of 0.5 or less and a drop above 3 times the key's CoV; Benjamini-Hochberg correction; a minimum of 30 events before a key is tested (since 2026-11-25 for a partial drop only: see the last row) | 2026-08-31 (`78f41f4`) | `src/telos/differential.py` | None: no capture run existed (the first, `test-pre-1`, is from 2026-11-16) | Every capture run |
+| The event key; the whole-profile chi-square as a summary only; a key never seen in the control runs is not tested | 2026-09-04 to 2026-09-29 (DECISIONS; OPEN-QUESTIONS 29) | `eventkey.py`, `differential.py` | No capture run; only the lab's own event counts of September (FILE-MAP, "Where the raw events are") | Every capture run |
 | The impact ranking by three measured numbers; coverage counts alerts that did fire | 2026-11-13 (DECISIONS) | `impact.py` | The hand trials | The spike and later |
 | Myers' algorithm as step 3 of the pipeline. It reports edits and classifies no key | 2026-11-25 16:51 (`e6b9235`) | `myers.py` | The spike | The trials and later |
 | **A key that falls to zero is tested exactly at any count.** A rare one that fails the correction is INCONCLUSIVE | **2026-11-25 20:06 (`c654440`)** | DECISIONS 2026-11-26; OPEN-QUESTIONS 43 | The spike (C3's `Sysmon-8[]` became LOST) and **the dry run, where K1's two sign-in keys were INCONCLUSIVE under the old rule** | The trials, the scans, the evaluation runs |
@@ -123,8 +123,9 @@ each after run records its change script's SHA256 (`change_script_sha256`).
 
 **It proves:**
 - The expected outcomes and the scoring were in git before any trial, scan or evaluation run.
-- Every threshold of the analysis was in git before any lab data. The one rule added later, the exact test for a key
-  that falls to zero, was committed before any trial, scan or evaluation run.
+- Every threshold of the analysis was in git before any capture run (2026-08-31; the first capture run is from
+  2026-11-16). The one rule added later, the exact test for a key that falls to zero, was committed before any trial,
+  scan or evaluation run.
 - No analysis code changed between that rule and the official analysis, and none between the official analysis and the
   recorded results.
 
