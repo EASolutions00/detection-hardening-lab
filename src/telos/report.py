@@ -12,6 +12,7 @@ import json
 from collections.abc import Mapping
 
 from .baseline import BaselineFinding
+from .gitinfo import describe
 from .impact import ImpactFinding
 from .index import RuleIndex
 from .model import AnalysisResult, Classification, ProfileOutcome
@@ -222,14 +223,31 @@ def render_reproducibility(repro: dict) -> str:
     """FINAL's sixth section: everything needed to repeat or check this comparison."""
     out = [LINE, "REPRODUCIBILITY RECORD", LINE, ""]
     out.append(f"  parameters sha256   {repro['parameters_sha256']}")
+    out.append("    What it covers: exactly the parameters listed below, and nothing else. It was recomputed from each")
+    out.append("    run's own parameters before the comparison. It does not cover each run's code version, its run")
+    out.append("    checks or the analysis settings: those are recorded beside it, below (DECISIONS 2026-11-28).")
     out.append(f"  analyser version    {repro['analyser_version']}  (git commit of the repository)")
+    export = repro.get("rule_export")
+    if export:
+        state = ("not pinned in the runs, so not compared" if export["matches_runs"] is None
+                 else "MATCHES the value pinned in the runs")
+        out.append(f"  rule export         SHA256 {export['sha256']}")
+        out.append(f"                      computed from {export['folder']}: {state}")
+    settings = repro.get("analysis_settings")
+    if settings:
+        out.append("  analysis settings (the code's values, not hashed):")
+        out.append(f"    alpha {settings['alpha']}; REDUCED needs a ratio of at most {settings['max_ratio']} and a drop "
+                   f"above {settings['noise_sigmas']} x the key's CoV;")
+        out.append(f"    at least {settings['min_pre_count']} events before for a partial drop; "
+                   f"at least {settings['min_control_runs']} control runs")
     out.append("  parameters (hashed, the same in every run compared):")
     for k, v in sorted(repro["parameters"].items()):
         out.append(f"    {k:<22} {json.dumps(v)}")
     out.append("  runs (raw counts in each run's counts.json, settings in its run_manifest.json):")
     for r in repro["runs"]:
         state = "used" if r["valid"] else "LEFT OUT (voided)"
-        out.append(f"    {r['phase']:<8} {r['run_id']:<24} {state:<18} {r['folder']}")
+        code = describe(r.get("code_commit"), r.get("code_dirty"))
+        out.append(f"    {r['phase']:<8} {r['run_id']:<24} {state:<18} code {code:<12} {r['folder']}")
     out.append("")
     return "\n".join(out)
 

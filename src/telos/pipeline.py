@@ -16,9 +16,18 @@ Checks, each a reason the comparison would otherwise be wrong:
   past the window, whose change was not confirmed, or whose window could not be read,
   and, since 2026-11-27, a run outside item 22's void rule; `harness.RunChecks`).
 - **Each phase needs at least `min_runs` valid runs** (3 by design; blueprint).
+- **Every run's stored parameters hash must equal the hash of its own parameters**, recomputed here
+  (since 2026-11-28; outside review, point 12), so an edited manifest is refused.
 - **Every run must have the same `parameters` hash.** Runs with different settings
-  (window, snapshot, attack list, rule set) are not comparable (runbook step 11).
+  (window, snapshot, attack list, rule set) are not comparable (runbook step 11). The error
+  names the parameters that differ.
+- **The rule export must be the one the runs were captured with:** its SHA256 is computed from the
+  folder given (`rulehash.rule_folder_sha256`) and compared with `rule_folder_sha256` in the runs'
+  parameters, when they have one (since 2026-11-28).
 - **All "after" runs must be of one change.**
+
+The hash covers the parameters only. Each run's code version, its run checks and the analysis settings are
+recorded beside it, in the reproducibility record (DECISIONS 2026-11-28).
 """
 
 from __future__ import annotations
@@ -27,7 +36,8 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
-from .differential import analyse
+from .differential import ALPHA, MAX_RATIO, MIN_PRE_COUNT, NOISE_SIGMAS, analyse
+from .harness import parameters_hash
 from .impact import ImpactFinding, rank_impact
 from .index import build_index, load_rules
 from .model import AnalysisResult, Phase
@@ -35,6 +45,7 @@ from .myers import MyersComparison, compare_phases, render_myers
 from .report import (comparison_csv, coverage_change, findings_json, load_controls, navigator_layer,
                      remediation_level2, render_analysis, render_coverage, render_impact, render_remediation2,
                      render_reproducibility, render_variance, render_verdict)
+from .rulehash import rule_folder_sha256
 from .variance import VarianceModel
 
 
@@ -96,6 +107,17 @@ class ComparisonOutput:
     myers: MyersComparison | None = None
 
 
+def _differing_fields(runs: list[RunData]) -> str:
+    """The parameters whose values differ between runs, for the "not comparable" error."""
+    names = sorted({k for r in runs for k in r.manifest.get("parameters", {})})
+    out = []
+    for k in names:
+        values = {json.dumps(r.manifest.get("parameters", {}).get(k, "<missing>"), sort_keys=True) for r in runs}
+        if len(values) > 1:
+            out.append(f"{k} ({len(values)} values)")
+    return ", ".join(out)
+
+
 def _valid(name: str, runs: list[RunData], min_runs: int) -> list[RunData]:
     good = [r for r in runs if r.valid]
     if len(good) < min_runs:
@@ -118,14 +140,33 @@ def compare(control_dirs: list, pre_dirs: list, post_dirs: list, rules_dir: str 
     left_out = [r.run_id for runs in groups.values() for r in runs if not r.valid]
     valid = {name: _valid(name, runs, min_runs) for name, runs in groups.items()}
 
-    hashes = {r.params_hash for runs in valid.values() for r in runs}
+    used = [r for runs in valid.values() for r in runs]
+    for r in used:                      # the stored hash must be the hash of the run's own parameters
+        recomputed = parameters_hash(r.manifest.get("parameters", {}))
+        if recomputed != r.params_hash:
+            raise PipelineError(f"{r.run_id}: its parameters do not match its stored hash "
+                                f"({r.params_hash[:8] or 'none'} stored, {recomputed[:8]} recomputed): "
+                                "the manifest was changed or damaged")
+    hashes = {r.params_hash for r in used}
     if len(hashes) != 1:
-        raise PipelineError(f"runs are not comparable: {len(hashes)} different parameters hashes")
+        raise PipelineError(f"runs are not comparable: {len(hashes)} different parameters hashes; "
+                            f"parameters that differ: {_differing_fields(used) or 'none found'}")
     changes = {r.change_id for r in valid["post"]}
     if len(changes) != 1:
         raise PipelineError(f"the after runs belong to more than one change: {sorted(map(str, changes))}")
 
     params = valid["pre"][0].manifest.get("parameters", {})
+    # The rule export read below must be the one the runs were captured with: computed from the files, not typed.
+    try:
+        rules_sha = rule_folder_sha256(rules_dir)
+    except ValueError as exc:                       # a missing folder: say so, no traceback
+        raise PipelineError(f"cannot read the rule export: {exc}") from exc
+    pinned = params.get("rule_folder_sha256")
+    if pinned is not None and str(pinned) != rules_sha:
+        raise PipelineError(f"the rule export in {rules_dir} (SHA256 {rules_sha[:8]}...) is not the one the runs were "
+                            f"captured with ({str(pinned)[:8]}...): the index and the ranking would read other rules")
+    rule_export = {"folder": str(rules_dir), "sha256": rules_sha, "pinned_in_runs": pinned,
+                   "matches_runs": None if pinned is None else True}
     window_minutes = float(params.get("window_s", 900)) / 60.0
     keys = sorted({k for runs in valid.values() for r in runs for k in r.counts})
     control, _, _ = load_phase("control", [r.path for r in valid["control"]], keys, window_minutes)
@@ -149,7 +190,12 @@ def compare(control_dirs: list, pre_dirs: list, post_dirs: list, rules_dir: str 
               + (f"   left out (voided): {', '.join(left_out)}" if left_out else ""), ""]
     repro = {"parameters": params, "parameters_sha256": next(iter(hashes)),
              "analyser_version": analyser_version,
+             "rule_export": rule_export,
+             "analysis_settings": {"alpha": ALPHA, "max_ratio": MAX_RATIO, "min_pre_count": MIN_PRE_COUNT,
+                                   "noise_sigmas": NOISE_SIGMAS, "min_control_runs": min_runs},
              "runs": [{"phase": name, "run_id": r.run_id, "valid": r.valid, "change_id": r.change_id,
+                       "code_commit": r.manifest.get("record", {}).get("code_commit"),
+                       "code_dirty": r.manifest.get("record", {}).get("code_dirty"),
                        "folder": str(r.path)} for name, runs in groups.items() for r in runs]}
     sections = [render_verdict(result, ranked), render_myers(myers), render_variance(vm), render_analysis(result),
                 render_impact(ranked), render_coverage(before, after, lost)]

@@ -17,6 +17,43 @@ Next:
 
 ---
 
+## 2026-11-28 - Fix 6 of 9: the hash, computed and checked; the code version in each new run
+
+**Chat:** 26343d0f (Claude Code). **Asked:** "STRAIGHT IT TO 9 UNINTERRUPTED". The work stopped in the middle of this
+fix (the student: "unexpected termination of fix. DOUBLE CHECK 5 TO 9 FIX UNINTERRUPTED"). The code and the tests were
+written before the stop, the documents after it. **Fix 5 was checked again first:** one claim was too strong ("no lab
+data" before September; the lab existed, but no capture run did), corrected in `8047720`.
+
+**Did (code):**
+- `src/telos/rulehash.py` (new): the rule export's hash, computed from the files.
+- `src/telos/gitinfo.py` (new): the code version, the commit and whether a file under `src/` or `lab/` differs from it.
+- `pipeline.compare`: recomputes each run's parameters hash and refuses a run whose stored hash differs; names the
+  parameters that differ between runs; computes the rule export's hash and refuses another export; records the
+  analysis settings and each run's code version. A missing rules folder is a clear error, not a traceback.
+- `harness.capture` records `code_commit` and `code_dirty` in the record, from `LabConfig.code_version`, which
+  `capture.lab_config()` fills, so `src/evaluate.py` records it too. Not hashed.
+- The report's reproducibility section states what the hash covers. `src/run.py`'s analyser version says "(files
+  changed since)" when that is so. `src/known_answer_dryrun.py` writes a real hash for its made-up runs.
+- 19 new tests (2 new files); 196 passed.
+
+**Found:**
+- **The pinned rule-folder value reproduces exactly** from the real export (169 files). The method's details that were
+  never written down: path relative to the export folder, forward slashes, lower-case file hash, sorted by path.
+- **The Sysmon config's pinned hash equals the committed file's.** The fence's pinned hash cannot be checked from the
+  repository (the compiled program is not in it).
+- **With the new checks, the 6 official comparisons run unchanged** (6 of 6 `comparison.csv` the same), and the dry run
+  gives the recorded result.
+- My mistake, not used: a first try to hash the committed bytes of the Sysmon config through a PowerShell pipe hashed an
+  empty stream. The working copy's hash is the one that matters, and `.gitattributes` keeps those bytes.
+
+**Changed (documents):** DECISIONS (a new entry; the exact method in the pinned table's rule export row); COMMANDS
+(the method, and five rows in 2.19); FILE-MAP; the test count 196 in README, CLAUDE.md and PROMPT-new-chat;
+FREEZE-DATES (section 3); STATUS.
+
+**Next:** fix 7, at once.
+
+---
+
 ## 2026-11-28 - Fix 5 of 9: one list of the freeze dates
 
 **Chat:** 26343d0f (Claude Code, now on Sonnet 5.5). **Asked:** the student, after "HOW MANY FIX LEFT": "STRAIGHT IT TO 9

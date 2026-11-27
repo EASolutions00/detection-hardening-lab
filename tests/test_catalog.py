@@ -104,3 +104,12 @@ def test_parameters_carry_the_pinned_versions_and_the_config():
     assert p["sysmon_config_sha256"] == "02C43AC8EA7B27A9D290C2FE4587A5C184B09FC0AEDA263C2C4E24A4EE43B3AD"
     assert p["config"] == "S"
     assert parameters(config="N")["config"] == "N"
+
+
+def test_the_pinned_sysmon_config_hash_is_the_hash_of_the_committed_file():
+    """Outside review, point 12: the constant is checked against the file in the repository, not only typed.
+    lab/configs is `-text` in .gitattributes, so git never rewrites its bytes. The fence's hash cannot be checked
+    the same way: the compiled `telos-fence.exe` is built on the host and only its source is in the repository."""
+    import hashlib
+    path = Path(__file__).parent.parent / "lab" / "configs" / "sysmonconfig.xml"
+    assert hashlib.sha256(path.read_bytes()).hexdigest().upper() == parameters("S")["sysmon_config_sha256"]

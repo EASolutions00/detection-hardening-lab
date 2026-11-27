@@ -8,6 +8,45 @@ Format: date, the decision, why, and what it costs if wrong.
 
 ---
 
+## 2026-11-28 - Fix 6 of the outside review: what the parameters hash covers, and what the analysis now computes and checks
+
+**Decision (student, chat 26343d0f: "STRAIGHT IT TO 9 UNINTERRUPTED", then, after a stop in this fix, "DOUBLE CHECK 5
+TO 9 FIX UNINTERRUPTED"; fix 6 as the WORKLOG plan of 2026-11-27 describes it: "compute the rule-folder value from the
+files at analysis time; record the harness commit in each run record").** 196 tests pass.
+1. **What the hash covers, stated in every report.** The parameters hash is SHA256 of a run's `parameters` with sorted
+   keys: the pinned versions and file hashes, the window, settle and drain times, the snapshot, the agent, the stimulus
+   names and the after-boot steps. It covers nothing else: not the code version, not the run checks, not the analysis
+   settings. For the pinned file hashes it covers the typed values, not the files: it shows that two runs were made with
+   the same pins, not that the files match them.
+2. **The rule export is checked against its files.** `src/telos/rulehash.py` computes the folder hash. The method
+   reproduces the pinned `a3f9749e...2939` from the 169 real files, so the typed value was right. `pipeline.compare`
+   computes it from the folder it reads the rules from, and refuses the comparison when it differs from the runs'
+   `rule_folder_sha256`.
+3. **Each run's stored hash is recomputed** from its own parameters; a run whose stored hash differs is refused. When
+   runs differ, the error names the parameters that differ.
+4. **Each new run records its code version:** `record.code_commit`, and `record.code_dirty`, true when a file under
+   `src/` or `lab/` differed from that commit or was new. Not hashed, so runs from two commits still compare. The
+   analyser version in a report also says "(files changed since)" when that is so.
+5. **The analysis settings** (alpha, the halving ratio, the noise sigmas, the minimum count, the minimum control runs)
+   are printed and saved in the reproducibility record.
+6. **The Sysmon config's pinned hash is tested against the committed file** (equal). The fence's cannot be: the
+   compiled `telos-fence.exe` is built on the host, and only its source is in the repository. The Atomic Red Team and
+   Invoke-AtomicRedTeam commits and the `golden_base` time are typed too, and cannot be checked from the repository.
+
+**Why.** The outside review, point 12: the hash proved less than the walkthrough claimed, the pins were typed and never
+computed again, and the runs named no code.
+
+**Effect on the evaluation: none on the results.** The 6 comparisons, run with the new code: no run refused; every
+recomputed hash equal to the stored one; the rule export computed from `data/rules/wazuh-4.14.7` equal to the pinned
+value; each `comparison.csv` identical to the official one (SHA256, 6 of 6; output in the chat's scratch folder, not
+committed). The 26 evaluation runs recorded no code version, and none can be added after the fact (FREEZE-DATES
+section 5).
+
+**Cost if wrong.** The check is strict on purpose: a file added to or changed in the rule export folder stops the
+analysis, so keep only the export in that folder. A run whose manifest was edited by hand is refused; capture it again.
+
+---
+
 ## 2026-11-27 - Fix 4 of the outside review: the verdict's wording, seen versus potential techniques, and a classify() rule
 
 **Decision (student, chat 26343d0f: "Yes, start fix 4", for fix 4 as STATUS and the WORKLOG plan described it: the
@@ -2775,7 +2814,7 @@ which belonged to T3 and is no longer in scope.
 | Fence tool | `telos-fence.exe`, 4,096 bytes, SHA256 `D35C939B71ECAC94868947932292531C02A171DECFD3046DEE47DB8E3BD0D814`. Built on the host from `lab/scripts/telos-fence.cs` with the .NET Framework compiler. Verified to emit **exactly one** Sysmon Event ID 1 per run, carrying the run id in its command line. | 2026-09-02 |
 | **golden-base** (WIN-EP-01) | Cold snapshot, 2026-11-16 06:59:45 UTC, from `pre-lsass-trial-2026-11-03` plus `lab/scripts/baseline-golden.ps1 -WDigest On`: RunAsPPL 0, Remote Desktop on, NLA off, firewall rule to `10.20.10.1`, `UseLogonCredential = 1`; Sysmon config `02C43AC8...B3AD`, fence tool `D35C939B...D814`, ProcDump `099FD0CD...6BD9`; NAT not connected at power on; no `eli` session. DECISIONS 2026-11-16. **The spike's image; kept as the fallback** since `golden-base-v2` | 2026-11-16 |
 | **golden-base-v2** (WIN-EP-01) | Cold snapshot, **2026-11-26 13:31:48 UTC**, from `golden-base` plus the 8 guest scripts after the guard (hashes in COMMANDS 2.18, checked in B3) and `baseline-golden.ps1 -WDigest On`: as `golden-base`, plus NLA off through the Group Policy key (`UserAuthentication = 0`) and Audit Logon Success and Failure; 25 of 25 checks before a restart, after it (B5) and at the test boot (C2); NAT (`ethernet0`) not connected at power on; no `eli` logon at boot (C3). **Every run from 2026-11-26 reverts to it** (`catalog.GOLDEN_SNAPSHOT`). DECISIONS 2026-11-26; `docs/GOLDEN-BASE-V2.md` | 2026-11-26 |
-| Wazuh rule export | From SIEM-01, `/var/ossec/ruleset/rules` (168 files) and `/var/ossec/etc/rules` (1 file, `local_rules.xml`, Wazuh's sshd example only), packed by the student with `sudo tar` (COMMANDS 2.15). **Folder hash `a3f9749e7bb35978f663c7d7dd0c6d67a92a03d0df552e341c52a4eb55ae2939`**: SHA256 over the sorted lines "file SHA256, two spaces, relative path", one per file, each ending in a line feed. The `.tar.gz` (SHA256 `6fca773b...67ae`) changes if repacked; the folder hash does not. Kept in `data/rules/` on the host, not in git (third-party, GPL). Read by `src/telos/index.py`. | 2026-11-13 |
+| Wazuh rule export | From SIEM-01, `/var/ossec/ruleset/rules` (168 files) and `/var/ossec/etc/rules` (1 file, `local_rules.xml`, Wazuh's sshd example only), packed by the student with `sudo tar` (COMMANDS 2.15). **Folder hash `a3f9749e7bb35978f663c7d7dd0c6d67a92a03d0df552e341c52a4eb55ae2939`**: SHA256 over the sorted lines "file SHA256, two spaces, relative path", one per file, each ending in a line feed. **Exact method, reproduced 2026-11-28 (`src/telos/rulehash.py`; DECISIONS 2026-11-28):** the path is relative to `wazuh-4.14.7`, with forward slashes; the file hash is lower-case; the lines are sorted by path. The analysis computes it and refuses another export. The `.tar.gz` (SHA256 `6fca773b...67ae`) changes if repacked; the folder hash does not. Kept in `data/rules/` on the host, not in git (third-party, GPL). Read by `src/telos/index.py`. | 2026-11-13 |
 | Ubuntu ISO used | `ubuntu-24.04.4-live-server-amd64.iso`, **installed on SIEM-01**. Installer self-update to 24.04.4.1 declined on purpose. | 2026-09-02 |
 | **Windows ISO used** | **`E:\Homelab files\Win11_24H2_English_x64.iso`**, retail multi-edition, **Windows 11 Education selected**, left unactivated. Supersedes the Enterprise Evaluation ISO chosen on 2026-08-20. See the decision entry of 2026-09-02. | 2026-09-02 |
 

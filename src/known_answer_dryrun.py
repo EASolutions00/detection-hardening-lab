@@ -35,6 +35,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
+from telos.harness import parameters_hash  # noqa: E402
 from telos.model import Classification  # noqa: E402
 from telos.pipeline import compare  # noqa: E402
 
@@ -118,7 +119,8 @@ def _write_run(folder: Path, run_id: str, phase: str, change_id: str | None, cou
     folder.mkdir(parents=True, exist_ok=True)
     (folder / "counts.json").write_text(json.dumps({"run_id": run_id, "counts": counts, "fired": fired}, indent=1),
                                         encoding="utf-8")
-    manifest = {"parameters": {"window_s": 180, "dry_run": True}, "parameters_sha256": "dry-run",
+    params = {"window_s": 180, "dry_run": True}
+    manifest = {"parameters": params, "parameters_sha256": parameters_hash(params),    # the pipeline recomputes it
                 "record": {"run_id": run_id, "phase": phase, "change_id": change_id, "valid": True}}
     (folder / "run_manifest.json").write_text(json.dumps(manifest, indent=1), encoding="utf-8")
     return folder

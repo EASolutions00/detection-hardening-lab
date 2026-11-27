@@ -163,7 +163,7 @@ Honest state of the work, not a plan. Checked 2026-11-27.
 | Evaluation by security engineers with an ISO/IEC 25010 form | Not started |
 | Domain controller `DC-01` (decided 2026-09-29, dropped 2026-11-11) | Will not be built |
 
-177 tests pass (`pytest`, 2026-11-27). Day-to-day status: [docs/STATUS.md](docs/STATUS.md).
+196 tests pass (`pytest`, 2026-11-28). Day-to-day status: [docs/STATUS.md](docs/STATUS.md).
 
 ---
 
@@ -204,7 +204,7 @@ INCONCLUSIVE (`docs/DECISIONS.md` 2026-11-26).
 ```
 docs/     runbook, decision log, work log, open questions, command record, expected results
 src/      TeLoS analyser and the lab harness (Python)
-tests/    177 tests
+tests/    196 tests
 thesis/   the proposal, its figures, and the two alternatives that were not chosen
 lab/      lab design, pinned configs, change scripts
 data/     runs/ is local only; summaries/ holds the committed results

@@ -21,6 +21,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from telos.catalog import (CHANGES, CONFIG_S, GOLDEN_SNAPSHOT, RUN_CHECKS, parameters,  # noqa: E402
                            pinned_stimulus, trial_stimulus)
+from telos.gitinfo import code_version  # noqa: E402
 from telos.harness import HarnessError, Lab, LabConfig, capture, recount  # noqa: E402
 
 REPO = Path(__file__).resolve().parent.parent
@@ -41,6 +42,7 @@ def lab_config(window_s: int, backup_dir: str | None, config: str) -> LabConfig:
         backup_dir=Path(backup_dir) if backup_dir else None,
         window_s=window_s,
         after_boot=CONFIG_S if config == "S" else (),
+        code_version=code_version(REPO),   # recorded in the run's record, not hashed (DECISIONS 2026-11-28)
     )
 
 
@@ -86,6 +88,7 @@ def main() -> int:
     print(f"after-boot: {r['after_boot']}")
     print(f"stimulus: {[(s['name'], s['exit_code'], s['seconds']) for s in r['stimulus']]}")
     print(f"guest calls: {r['guest_calls']}   window: {r['window']}")
+    print(f"code version: {r['code_commit']} (files under src or lab changed since that commit: {r['code_dirty']})")
     if r.get("run_checks"):
         rc = r["run_checks"]
         print(f"fingerprint: {rc['fingerprint']} (range {rc['fingerprint_min']:.1f} to {rc['fingerprint_max']:.1f})")

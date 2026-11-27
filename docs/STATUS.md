@@ -67,9 +67,12 @@ In order:
    to zero, the score is 7, 6, 5 or 0 of 7, never a false loss (`src/zero_loss_sensitivity.py`); fix 3 done: K1's
    sign-in and C3's block shown from the raw events, in all 26 runs (`src/independent_evidence.py`); fix 4 done: the
    verdict never says "no blind spot", potential techniques are marked, and a failed complete loss is INCONCLUSIVE at
-   any count (`eeee1a1`; no result changed; DECISIONS 2026-11-27); fix 5 done: `docs/FREEZE-DATES.md` (2026-11-28).
-   **The student said "STRAIGHT IT TO 9 UNINTERRUPTED" (2026-11-28): fixes 6 to 9 run in one go.** **Next: fix 6
-   (the hash and the code version); the student reads the results; item 44; the results chapter.**
+   any count (`eeee1a1`; no result changed; DECISIONS 2026-11-27); fix 5 done: `docs/FREEZE-DATES.md` (2026-11-28;
+   checked again, one claim corrected); fix 6 done: the analysis computes the rule export's hash and recomputes each
+   run's parameters hash, and each new run records its code version (DECISIONS 2026-11-28; no result changed).
+   **The student said "STRAIGHT IT TO 9 UNINTERRUPTED", then, after a stop in fix 6, "DOUBLE CHECK 5 TO 9 FIX
+   UNINTERRUPTED" (2026-11-28): fixes 5 to 9 in one go, each checked again.** **Next: fix 7 (mark the old documents
+   historical); the student reads the results; item 44; the results chapter.**
 
 Recommended, not decided: the 5 pinned control runs wait until the form is sent, because the pre-oral needs chapters
 1 to 3, not the results (Claude's reading). **Overtaken 2026-11-27:** all 26 runs were made before the form was sent.

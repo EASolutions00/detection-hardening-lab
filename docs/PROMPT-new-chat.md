@@ -528,7 +528,7 @@ Built, tested, and used on the real lab, in `REPO\src\telos\` (checked 2026-11-2
     `src/run.py`, `harness.py` (one capture window over `vmrun`; fixed-length windows; run checks
     with item 22's void rule since 2026-11-27), `catalog.py` with `src/capture.py`, `spike.py` with
     `src/spike.py`, `evaluation.py` with `src/evaluate.py`, `baseline.py`, `model.py`, `synth.py`.
-    12 test files in `REPO\tests\`, 177 tests passing (2026-11-27). Remediation level 2 reads
+    14 test files in `REPO\tests\`, 196 tests passing (2026-11-28). Remediation level 2 reads
     `REPO\lab\knowledge\compensating-controls.json`, which has entries for C3 and C5 only.
 
 Designed only, no code exists:
@@ -564,7 +564,7 @@ git -C "E:\Claude general" log --oneline -8
 In PowerShell a quoted executable needs the call operator, so write
 `& "E:\Claude general\.venv\Scripts\python.exe" ...`. In cmd or bash the quotes alone are enough.
 
-`pytest` should print `177 passed` (2026-11-27). If it prints anything else, stop and tell me,
+`pytest` should print `196 passed` (2026-11-28). If it prints anything else, stop and tell me,
 because the record is stale.
 
 `check_docs.py` flags statements in any document that contradict the code. **It flags, it does

@@ -171,6 +171,9 @@ class LabConfig:
     # Guest steps run after every boot (after the reset and after a change's reboot), for
     # example Config S's Defender-off script; exit code 0 = in force, otherwise the run is voided.
     after_boot: tuple[GuestStep, ...] = ()
+    # (commit, changed) of the code that makes the run, from gitinfo.code_version. Recorded in the run's
+    # record, never in the hashed parameters (outside review, point 12; DECISIONS 2026-11-28). None = not recorded.
+    code_version: tuple[str, bool | None] | None = None
 
 
 def parameters_hash(parameters: dict) -> str:
@@ -426,6 +429,8 @@ def capture(lab: Lab, run_id: str, phase: str, stimulus: list[Step], parameters:
             "after_boot": after_boot, "stimulus": steps, "guest_calls": lab.guest_calls,
             "exports": exports, "window": window, "checks": preflight_checks,
             "run_checks": run_checks,
+            "code_commit": cfg.code_version[0] if cfg.code_version else None,
+            "code_dirty": cfg.code_version[1] if cfg.code_version else None,
             "void_reasons": reasons, "valid": not reasons,
         },
     }

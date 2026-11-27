@@ -428,6 +428,24 @@ def test_the_void_rule_never_changes_the_parameters_hash(tmp_path):
     assert "run_checks" not in with_rule["parameters"]
 
 
+def test_the_record_names_the_code_version_and_the_hash_ignores_it(tmp_path):
+    """Outside review, point 12 (DECISIONS 2026-11-28): the code that made the run is recorded beside the
+    parameters, never in them, so runs from two commits still share one hash."""
+    (tmp_path / "a").mkdir()
+    (tmp_path / "b").mkdir()
+    a_lab, _, _ = make(tmp_path / "a", archive=archive_with_processes(3))
+    b_lab, _, _ = make(tmp_path / "b", archive=archive_with_processes(3))
+    b_lab.cfg.code_version = ("abc1234", True)
+    without = capture(a_lab, "run-1", "pre", ATTACK, PARAMS)
+    with_version = capture(b_lab, "run-1", "pre", ATTACK, PARAMS)
+    assert without["record"]["code_commit"] is None and without["record"]["code_dirty"] is None
+    assert with_version["record"]["code_commit"] == "abc1234" and with_version["record"]["code_dirty"] is True
+    assert with_version["parameters_sha256"] == without["parameters_sha256"]
+    assert "code_commit" not in with_version["parameters"]
+    saved = json.loads((tmp_path / "b" / "runs" / "run-1" / "run_manifest.json").read_text())
+    assert saved["record"]["code_commit"] == "abc1234"
+
+
 def test_the_catalogs_range_is_the_control_mean_plus_or_minus_3_sd():
     """From eval-ctl-1 to eval-ctl-5 (COMMANDS 2.19): 100, 118, 119, 99, 118."""
     import statistics

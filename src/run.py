@@ -15,18 +15,14 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
+from telos.gitinfo import code_version, describe  # noqa: E402
 from telos.pipeline import PipelineError, compare  # noqa: E402
 
 
 def _git_commit() -> str:
-    """The repository's current commit, recorded as the analyser version (read-only)."""
-    import subprocess
-    try:
-        p = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True,
-                           cwd=Path(__file__).parent.parent)
-        return p.stdout.strip() or "unknown"
-    except OSError:
-        return "unknown"
+    """The repository's current commit, recorded as the analyser version (read-only). Since 2026-11-28 it
+    also says when a file under src or lab was changed since that commit: "abc1234 (files changed since)"."""
+    return describe(*code_version(Path(__file__).parent.parent))
 
 
 def _expand(patterns: list[str]) -> list[str]:
